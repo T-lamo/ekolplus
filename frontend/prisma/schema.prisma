@@ -46,7 +46,7 @@ model User {
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
   // on their domain models.
-  ownedOrganizations Organization[]      @relation("OrgOwner")
+  ownedOrganizations Organization[]       @relation("OrgOwner")
   memberships        OrganizationMember[] @relation("OrgMembership")
 
   @@index([email])
@@ -95,20 +95,20 @@ model AdminAction {
 // used as a stable URL segment.
 // ───────────────────────────────────────────────────────────────────────
 model Organization {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String               @id @default(cuid())
+  slug      String               @unique
   name      String
   ownerId   String
-  owner     User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  owner     User                 @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   members   OrganizationMember[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   // EkolPlus: the school's domain-specific profile. Kept on a separate 1:1
   // model rather than fields on Organization itself, so the generic
   // multi-tenancy primitive stays untouched (see .planning/banani/OVERVIEW.md
   // architecture v2 decision log).
-  school    School?
+  school School?
 
   @@index([ownerId])
 }
@@ -157,17 +157,17 @@ model School {
 // unique index in this version).
 // ───────────────────────────────────────────────────────────────────────
 model AcademicYear {
-  id        String   @id @default(cuid())
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  label     String // e.g. "2024-2025"
-  startDate DateTime
-  endDate   DateTime
-  isActive  Boolean  @default(true)
+  id           String   @id @default(cuid())
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  label        String // e.g. "2024-2025"
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean  @default(true)
   // Free text for now (e.g. "Sur 20 points") — no grading-scale catalog yet.
   gradingScale String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   terms       Term[]
   classes     Class[]
@@ -188,6 +188,9 @@ model Term {
   startDate      DateTime
   endDate        DateTime
   createdAt      DateTime     @default(now())
+
+  evaluations Evaluation[]
+  goals       Goal[]
 
   @@index([academicYearId, order])
 }
@@ -228,6 +231,7 @@ model Subject {
   updatedAt DateTime @updatedAt
 
   classSubjects ClassSubject[]
+  goals         Goal[]
 
   @@index([schoolId])
 }
@@ -289,6 +293,8 @@ model ClassSubject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  evaluations Evaluation[]
+
   @@unique([classId, subjectId])
   @@index([subjectId])
   @@index([teacherId])
@@ -320,6 +326,8 @@ model Student {
 
   guardians   Guardian[]
   enrollments Enrollment[]
+  grades      Grade[]
+  goals       Goal[]
 
   @@index([schoolId])
 }
@@ -351,6 +359,63 @@ model Enrollment {
 
   @@unique([studentId, academicYearId])
   @@index([classId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Epic 6 — grades / évaluations. Evaluation hangs off ClassSubject (the
+// Epic 4 shared pivot) + Term. Grade is per-student per-evaluation, nullable
+// score (absence / not-yet-graded is a real state). Goal is the optional
+// per-subject (or overall, subjectId null) target score a student/parent
+// can set — see .planning/banani/epic-6-data-model.md for the weighting,
+// trend, ranking and appreciation-bucket formulas the read side applies.
+// ───────────────────────────────────────────────────────────────────────
+model Evaluation {
+  id             String       @id @default(cuid())
+  classSubjectId String
+  classSubject   ClassSubject @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  termId         String
+  term           Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  label          String // "DS 1", "Interro" — teacher-authored free text
+  type           String       @default("AUTRE") // DS | INTERROGATION | EXAMEN | AUTRE — display only
+  maxScore       Int          @default(20)
+  order          Int          @default(0)
+  date           DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  grades Grade[]
+
+  @@index([classSubjectId, termId, order])
+}
+
+model Grade {
+  id           String     @id @default(cuid())
+  evaluationId String
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score        Float? // null = not yet graded / absent
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([evaluationId, studentId])
+  @@index([studentId])
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  termId      String
+  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  subjectId   String? // null = "Moyenne générale" (overall) goal
+  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  targetScore Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, termId, subjectId])
+  @@index([studentId, termId])
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -503,21 +568,21 @@ model WebhookLog {
 // at the call site — the schema is currency-agnostic.
 // ───────────────────────────────────────────────────────────────────────
 model Order {
-  id              String    @id @default(cuid())
-  userId          String? // nullable — guest checkout supported
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  amount          Int // gross amount, smallest unit
-  currency        String    @default("XOF") // ISO 4217
-  status          String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
-  customerEmail   String?
-  customerPhone   String?
-  customerName    String?
-  metadata        Json? // app-specific fields
+  id            String  @id @default(cuid())
+  userId        String? // nullable — guest checkout supported
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  amount        Int // gross amount, smallest unit
+  currency      String  @default("XOF") // ISO 4217
+  status        String  @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
+  customerEmail String?
+  customerPhone String?
+  customerName  String?
+  metadata      Json? // app-specific fields
 
   // Stripe-grade idempotency. Required header on POST /api/orders; replay
   // with same value returns the original Order row instead of double-charging.
   // Nullable so existing rows pre-migration don't break the @unique constraint.
-  idempotencyKey  String?   @unique
+  idempotencyKey String? @unique
 
   // Provider reference
   provider         String // e.g. "bictorys"
@@ -541,12 +606,12 @@ model Order {
 }
 
 model Withdrawal {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user        User   @relation(fields: [userId], references: [id], onDelete: Restrict)
   amount      Int // requested amount, smallest unit
-  currency    String   @default("XOF")
-  status      String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
+  currency    String @default("XOF")
+  status      String @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
   destination Json // { method: "WAVE" | "ORANGE_MONEY" | ..., phone: "+221...", accountName?: "..." }
 
   // Provider reference

@@ -23,7 +23,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { StudentFormModal } from '../StudentFormModal';
-import type { ClassOption, StudentDetail, StudentStatus } from '../types';
+import { NotesResultatsTab } from './NotesResultatsTab';
+import type { ClassOption, StudentDetail, StudentResults, StudentStatus } from '../types';
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',
@@ -68,6 +69,7 @@ export default function StudentProfilePage() {
   const { toast } = useToast();
   const [student, setStudent] = useState<StudentDetail | null>(null);
   const [classes, setClasses] = useState<ClassOption[]>([]);
+  const [results, setResults] = useState<StudentResults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
   const [editing, setEditing] = useState(false);
@@ -77,10 +79,12 @@ export default function StudentProfilePage() {
     Promise.all([
       api<{ student: StudentDetail }>(`/api/school/students/${params.id}`),
       api<{ classes: ClassOption[] }>('/api/school/classes'),
+      api<StudentResults>(`/api/school/students/${params.id}/results`),
     ])
-      .then(([s, c]) => {
+      .then(([s, c, r]) => {
         setStudent(s.student);
         setClasses(c.classes);
+        setResults(r);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -207,13 +211,16 @@ export default function StudentProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-5 sm:gap-6">
-            <Stat label="Moyenne générale" value="—" />
+            <Stat
+              label="Moyenne générale"
+              value={results?.overallAverage != null ? `${results.overallAverage.toFixed(1)}` : '—'}
+            />
             <div className="h-9 w-px bg-border" />
             <Stat label="Taux de présence" value="—" />
             <div className="h-9 w-px bg-border" />
             <Stat label="Absences ce trimestre" value="—" />
             <div className="h-9 w-px bg-border" />
-            <Stat label="Rang de classe" value="—" />
+            <Stat label="Rang de classe" value={results?.rank ? `${results.rank}e` : '—'} />
           </div>
         </div>
       </Card>
@@ -295,11 +302,11 @@ export default function StudentProfilePage() {
         </div>
       )}
 
-      {tab === 'grades' && (
-        <EmptyTab
-          icon={BarChart2}
-          text="Les notes et résultats apparaîtront ici une fois le carnet de notes configuré."
-          epic="Epic 6"
+      {tab === 'grades' && results && (
+        <NotesResultatsTab
+          studentId={student.id}
+          studentName={`${student.firstName} ${student.lastName}`}
+          initial={results}
         />
       )}
       {tab === 'attendance' && (

@@ -9,6 +9,8 @@ import { COOKIE_PREFIX } from '@/lib/constants';
 export interface User {
   id: string;
   email: string;
+  /** App-wide role — USER for everyone except EkolPlus platform staff. */
+  role: 'USER' | 'ADMIN' | 'SUPERADMIN';
   emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -138,5 +140,28 @@ export function useUser(redirectTo: string = '/login'): User | null {
   }, [loading, user, redirectTo, router]);
 
   if (loading || !user) return null;
+  return user;
+}
+
+/**
+ * Auth-required + role-gated helper for the `/admin/*` back-office (EkolPlus
+ * platform staff). Redirects to `/login` when logged out, and to `/` when
+ * logged in but role is plain USER — mirrors `useUser()`.
+ */
+export function useAdminUser(redirectTo: string = '/login'): User | null {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.replace(redirectTo);
+    } else if (!isAdmin) {
+      router.replace('/');
+    }
+  }, [loading, user, isAdmin, redirectTo, router]);
+
+  if (loading || !user || !isAdmin) return null;
   return user;
 }

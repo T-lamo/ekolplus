@@ -104,7 +104,36 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // EkolPlus: the school's domain-specific profile. Kept on a separate 1:1
+  // model rather than fields on Organization itself, so the generic
+  // multi-tenancy primitive stays untouched (see .planning/banani/OVERVIEW.md
+  // architecture v2 decision log).
+  school    School?
+
   @@index([ownerId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// EkolPlus domain — school profile, 1:1 with Organization (the tenant).
+// See .planning/banani/create-school.md for the screen this backs.
+// ───────────────────────────────────────────────────────────────────────
+model School {
+  id                String       @id @default(cuid())
+  organizationId    String       @unique
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name              String
+  shortName         String?
+  country           String
+  city              String
+  schoolType        String // free-form for now (e.g. "École primaire & secondaire") — no fixed catalog yet
+  primaryLanguage   String?
+  address           String?
+  phone             String?
+  estimatedStudents Int?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([organizationId])
 }
 
 // Role precedence: OWNER > ADMIN > MEMBER. The owner is also a member row

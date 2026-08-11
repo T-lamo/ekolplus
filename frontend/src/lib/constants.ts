@@ -42,3 +42,57 @@ export const AUTH_LOGIN = {
     network: 'Erreur réseau. Réessaie.',
   },
 } as const;
+
+// French copy for the "Créer une école" admin screen — see
+// .planning/banani/create-school.md.
+export const ADMIN_CREATE_SCHOOL = {
+  backToSchools: 'Retour aux écoles',
+  title: 'Créer une nouvelle école',
+  subtitle: "Renseignez les informations de l'établissement",
+  schoolSection: {
+    title: "Informations de l'établissement",
+    subtitle: "Nom, localisation et type d'école",
+    schoolName: "Nom de l'école",
+    shortName: 'Nom abrégé / Sigle',
+    shortNameHint: 'Utilisé pour les avatars et badges de l’école',
+    country: 'Pays',
+    city: 'Ville',
+    schoolType: "Type d'établissement",
+    primaryLanguage: 'Langue principale',
+    address: 'Adresse complète',
+    addressPlaceholder: 'Ex : 12, Rue des Mangues, Pétion-Ville',
+    phone: 'Téléphone',
+    phonePlaceholder: '+509...',
+    estimatedStudents: "Nombre d'élèves estimé",
+    estimatedStudentsHint: 'Utilisé pour estimer le coût mensuel',
+  },
+  adminSection: {
+    title: 'Administrateur responsable',
+    subtitle: 'Compte principal qui recevra les identifiants',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    email: 'Adresse e-mail',
+    emailHint: 'Les identifiants de connexion seront envoyés à cette adresse',
+    role: 'Rôle',
+    phone: 'Téléphone',
+  },
+  schoolTypes: [
+    'École primaire',
+    'École secondaire',
+    'École primaire & secondaire',
+    'Université',
+    'Autre',
+  ],
+  submit: 'Créer l’école',
+  submitting: 'Création…',
+  requiredFieldsError: 'Merci de remplir tous les champs obligatoires.',
+  successTitle: 'École créée avec succès',
+  newAccountCreated: 'Un nouveau compte administrateur a été créé.',
+  existingAccountLinked: 'Le compte existant a été ajouté comme propriétaire de cette école.',
+  tempPasswordLabel: 'Mot de passe temporaire',
+  tempPasswordNote:
+    "Communique ces identifiants à l'administrateur — ils ne seront plus affichés après avoir quitté cette page.",
+  copy: 'Copier',
+  copied: 'Copié',
+  backToDashboard: 'Retour au tableau de bord',
+} as const;

@@ -141,6 +141,7 @@ model School {
   subjects      Subject[]
   teachers      Teacher[]
   classes       Class[]
+  students      Student[]
 
   @@index([organizationId])
 }
@@ -168,8 +169,9 @@ model AcademicYear {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  terms   Term[]
-  classes Class[]
+  terms       Term[]
+  classes     Class[]
+  enrollments Enrollment[]
 
   @@index([schoolId, isActive])
 }
@@ -240,6 +242,9 @@ model Teacher {
   email     String?
   phone     String?
   isActive  Boolean  @default(true)
+  // Employment status shown on the Teachers List — separate from `isActive`
+  // (which only gates visibility in assignment pickers, see epic-5-data-model.md).
+  status    String   @default("ACTIVE") // ACTIVE | ON_LEAVE | INACTIVE
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -265,6 +270,7 @@ model Class {
   updatedAt         DateTime     @updatedAt
 
   classSubjects ClassSubject[]
+  enrollments   Enrollment[]
 
   @@unique([academicYearId, name])
   @@index([schoolId])
@@ -286,6 +292,65 @@ model ClassSubject {
   @@unique([classId, subjectId])
   @@index([subjectId])
   @@index([teacherId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Epic 5 — people. Student/Guardian/Enrollment. Enrollment is year-scoped
+// (not a direct Student.classId) so promotion doesn't corrupt prior years'
+// historical bulletins — the reasoning OVERVIEW.md flagged up front as the
+// single highest-leverage schema decision before any Epic 4/5 work started.
+// See .planning/banani/epic-5-data-model.md.
+// ───────────────────────────────────────────────────────────────────────
+model Student {
+  id            String   @id @default(cuid())
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentNumber String // "EL-2024-001" — generated at creation, sequential per school
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  placeOfBirth  String?
+  gender        String? // free text, no fixed catalog yet
+  nationality   String?
+  address       String?
+  enrolledAt    DateTime @default(now())
+  status        String   @default("ENROLLED") // ENROLLED | REPEATED_ABSENCES | SUSPENDED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  guardians   Guardian[]
+  enrollments Enrollment[]
+
+  @@index([schoolId])
+}
+
+model Guardian {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name         String
+  relationship String // "Père" | "Mère" | "Tuteur" — free text
+  phone        String?
+  email        String?
+  profession   String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([studentId])
+}
+
+model Enrollment {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  enrolledAt     DateTime     @default(now())
+
+  @@unique([studentId, academicYearId])
+  @@index([classId])
 }
 
 // ───────────────────────────────────────────────────────────────────────

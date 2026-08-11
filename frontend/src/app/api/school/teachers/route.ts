@@ -1,4 +1,8 @@
-// GET /api/school/teachers — minimal teacher list for dropdowns.
+// GET /api/school/teachers — teacher list. Defaults to `isActive: true`
+// only (the shape Epic 4's TeacherPicker dropdown wants); `?scope=all`
+// returns every teacher regardless of isActive, with Matière(s)/Classes/
+// Heures-per-week aggregates derived from ClassSubject for the Teachers
+// List screen. See .planning/banani/teachers-list.md.
 // POST /api/school/teachers — minimal inline create (name + optional
 // email/phone). Full profile/CRUD is Epic 5's teachers-list screen — see
 // .planning/banani/epic-4-data-model.md.
@@ -28,13 +32,46 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const scopeAll = req.nextUrl.searchParams.get('scope') === 'all';
+
+    if (!scopeAll) {
+      const teachers = await prisma.teacher.findMany({
+        where: { schoolId: mySchool.schoolId, isActive: true },
+        orderBy: { name: 'asc' },
+        select: { id: true, name: true, email: true, phone: true },
+      });
+      return NextResponse.json({ teachers }, { headers: { 'x-request-id': ctx.requestId } });
+    }
+
     const teachers = await prisma.teacher.findMany({
-      where: { schoolId: mySchool.schoolId, isActive: true },
+      where: { schoolId: mySchool.schoolId },
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, email: true, phone: true },
+      include: {
+        classSubjects: {
+          include: {
+            subject: { select: { id: true, name: true } },
+            class: { select: { id: true, name: true } },
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ teachers }, { headers: { 'x-request-id': ctx.requestId } });
+    return NextResponse.json(
+      {
+        teachers: teachers.map((t) => ({
+          id: t.id,
+          name: t.name,
+          email: t.email,
+          phone: t.phone,
+          status: t.status,
+          isActive: t.isActive,
+          subjects: [...new Map(t.classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
+          classes: [...new Map(t.classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
+          weeklyHours: t.classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),
+        })),
+      },
+      { headers: { 'x-request-id': ctx.requestId } },
+    );
   });
 }
 

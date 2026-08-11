@@ -37,12 +37,14 @@ export function hasMinRole(role: OrgRole, min: OrgRole): boolean {
 
 // Used by Epic 4 (Classes) — a Class is year-scoped, so creating one needs
 // the school's active AcademicYear. Mirrors the query in /api/school GET.
+// `startDate` is also used by Epic 5 (Students) to derive the studentNumber
+// year prefix ("EL-2024-001").
 export async function resolveActiveAcademicYear(
   schoolId: string,
-): Promise<{ id: string; label: string } | null> {
+): Promise<{ id: string; label: string; startDate: Date } | null> {
   return prisma.academicYear.findFirst({
     where: { schoolId, isActive: true },
     orderBy: { startDate: 'desc' },
-    select: { id: true, label: true },
+    select: { id: true, label: true, startDate: true },
   });
 }

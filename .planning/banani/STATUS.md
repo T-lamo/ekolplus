@@ -44,10 +44,21 @@ Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/Academic
     - Affectations gained a **Période column** (read-only, from the school's active `AcademicYear` date range — cheap, already-available data, no reason it was cut originally beyond time).
   - Re-verified again: `pnpm format && pnpm lint && pnpm typecheck && pnpm build && pnpm test` all green (580/580). Real end-to-end check as Marie: confirmed `/api/school/subjects` now returns per-subject `coefficients` arrays with real values from the seeded curriculum; confirmed the archive toggle flips `isActive` both directions via `PATCH`; all 4 pages still 200 with no server-log errors. **Screenshot-tool caveat unchanged.**
 
+- [x] `students-list` (`irP1FJzNcIpq`) → `/eleves` — plan: `students-list.md` — V1 scope only
+- [x] `student-profile` (`IOcz_ptC61M8`) → `/eleves/[id]` — plan: `student-profile.md` — V1 scope only
+- [x] `teachers-list` (`OyxtQcFdbEC9`) → `/enseignants` — plan: `teachers-list.md` — V1 scope only
+  - **Data-model discovery**: Student Profile is far more Epic-6/7/8-coupled than any screen before it — 4 of its 5 tabs (Notes & Résultats, Présences, Appréciations, Bulletins) and all 4 hero stats (Moyenne générale/Taux de présence/Absences ce trimestre/Rang de classe) are entirely grade/attendance data that doesn't exist. Extended the Epic 4 "honest placeholder" precedent one level further: individual missing *data points* still get `—` (Students List's Moyenne/Présence columns), but an entire missing *tab* gets a clean "Disponible avec Epic X" empty state instead of a fake table full of dashes — a dash in one cell reads as "not tracked yet," a whole table of them reads as broken. Full reasoning in `epic-5-data-model.md`.
+  - Teachers List is the one screen in this epic that's almost entirely real — Matière(s)/Classes assignées/Heures per week are all derived live from the `ClassSubject` rows Epic 4 already created (verified: M. Dupont shows 28h/semaine = 4h × 7 classes, matching the seeded curriculum exactly). Only the employment `status` (Actif/En congé/Inactif) was new.
+  - New Prisma models: `Student`, `Guardian`, `Enrollment` (year-scoped — the model OVERVIEW.md flagged up front as the highest-leverage decision in the whole schema, so promotion never corrupts a prior year's historical bulletin), plus an additive `Teacher.status` field kept separate from the existing `isActive` (two different questions: "pickable in assignment dropdowns" vs. "current employment state"). Migration `8_epic5_people`, `--create-only` → rename → `deploy` workflow again, no naming-order bug.
+  - New API: `GET/POST /api/school/students`, `GET/PATCH/DELETE /api/school/students/[id]` (student+guardians+enrollment created/updated inside one transaction), `PATCH/DELETE /api/school/teachers/[id]` (Epic 4 only had list+create), `GET /api/school/teachers?scope=all` (the Epic 4 default stays `isActive`-filtered for `TeacherPicker`'s dropdown use — `scope=all` is additive, opted into by Teachers List for the full roster + aggregates).
+  - New frontend: `StudentFormModal` (identity + up to 2 guardian sub-forms — Banani shows exactly 2, matched rather than building an add/remove-N list), `TeacherFormModal`, both list pages with real grille/liste toggle (same pattern as Classes), Student Profile's tabbed detail page.
+  - **V1 scope cuts**: CSV Importer on both list screens (stub toast — bulk import needs validation/duplicate-detection that export doesn't, a real V2 not a quick add), "Trier par" dropdown (cosmetic in Banani's own mockup too), multi-select/bulk actions, student/guardian photo upload (Avatar-by-initials covers this consistently with Epic 4), "Envoyer un message" (no messaging system), a dedicated Teacher Profile page (Student Profile set the pattern but a mirror page is out of scope this round — Teachers List's "Voir le profil" is a stub), Student Profile's "Activité récente" card (no backing audit-log source for student-domain events yet).
+  - Verified: `pnpm format && pnpm lint && pnpm typecheck && pnpm build && pnpm test` all green (583/583). Dev server restarted after the schema change. **Real end-to-end check** as Marie: created a student with 2 guardians in one call, confirmed the transaction (student+enrollment+guardians) committed atomically and the detail fetch correctly resolves the current-year class *and* that class's homeroom teacher; confirmed the Teachers List aggregate query against the real Epic 4 seed data (M. Dupont's 28h/week check above); confirmed the teacher delete guard returns 409 while assignments exist; all 3 new pages (`/eleves`, `/eleves/[id]`, `/enseignants`) return 200 with no server-log errors. Seeded 11 students across the existing 7 classes with varied statuses (one `REPEATED_ABSENCES`, one `SUSPENDED`) so all badge states are visible. **Screenshot-tool caveat unchanged — not eyeballed in a real browser.**
+
 ## In progress
 (none)
 
-## Pending — fetched, not yet individually planned (21 screens remaining, grouped by epic)
+## Pending — fetched, not yet individually planned (18 screens remaining, grouped by epic)
 
 ### Epic 0 — Shell & primitives (prerequisite, no Banani screen)
 - [x] Tailwind `@theme` tokens (Lavender SaaS palette) — `globals.css`
@@ -69,11 +80,6 @@ Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/Academic
 ### Epic 3 — School onboarding & settings
 - [ ] `school-dashboard` (`R94lpPCRDLa8`) → `/dashboard` — **deferred until Epic 4+5 exist** (see Done section note above)
 - [x] `school-settings` / `parametres` (`J-YtPdRZUsjN` / `o2cW8OmWvqhD`) → `/settings` — **V1 only**, see Done section
-
-### Epic 5 — People
-- [ ] `students-list` (`irP1FJzNcIpq`) → `/eleves`
-- [ ] `student-profile` (`IOcz_ptC61M8`) → `/eleves/[id]`
-- [ ] `teachers-list` (`OyxtQcFdbEC9`) → `/enseignants`
 
 ### Epic 6 — Grades / evaluations
 - [ ] `grade-notebook` (`AsaJl2Igbuoc`) → `/pedagogie/carnet-de-notes`

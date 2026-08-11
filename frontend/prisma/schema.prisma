@@ -130,10 +130,60 @@ model School {
   address           String?
   phone             String?
   estimatedStudents Int?
+  // Added for the Établissement settings tab (school-settings.md).
+  officialCode      String?
+  officialEmail     String?
+  website           String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
+  academicYears AcademicYear[]
+
   @@index([organizationId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Année scolaire — first-class per the v2 architecture decision (see
+// OVERVIEW.md): everything year-scoped (classes, evaluations, grades,
+// attendance, bulletins — added in later epics) hangs off this rather than
+// a free-text "year" field, so promotion/rollover doesn't corrupt history.
+// One school can have many AcademicYears over time; `isActive` marks the
+// current one (app-level invariant: at most one active per school —
+// enforced in the route, not the schema, since Prisma has no partial
+// unique index in this version).
+// ───────────────────────────────────────────────────────────────────────
+model AcademicYear {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  label     String // e.g. "2024-2025"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  // Free text for now (e.g. "Sur 20 points") — no grading-scale catalog yet.
+  gradingScale String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  terms Term[]
+
+  @@index([schoolId, isActive])
+}
+
+// Trimestre/Semestre. `status` (Terminé/En cours/À venir) is NOT stored —
+// computed from startDate/endDate vs. now() at read time, so it can't drift
+// out of sync with the dates themselves.
+model Term {
+  id             String       @id @default(cuid())
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  label          String // e.g. "1er Trimestre"
+  order          Int
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime     @default(now())
+
+  @@index([academicYearId, order])
 }
 
 // Role precedence: OWNER > ADMIN > MEMBER. The owner is also a member row

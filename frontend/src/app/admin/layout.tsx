@@ -5,10 +5,12 @@ import { X } from 'lucide-react';
 import { useAdminUser } from '@/contexts/AuthContext';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminTopbar } from '@/components/layout/AdminTopbar';
+import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const admin = useAdminUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, toggleCollapsed] = useSidebarCollapse();
 
   if (!admin) {
     return (
@@ -44,7 +46,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       )}
 
       <div className="hidden lg:flex">
-        <AdminSidebar />
+        <AdminSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">

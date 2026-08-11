@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
+import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
 
 // Basic auth gate here (any logged-in user) — school-membership itself is
 // checked by individual pages that need it (e.g. /settings via GET
@@ -13,6 +14,7 @@ import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
 export default function SchoolLayout({ children }: { children: ReactNode }) {
   const user = useUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, toggleCollapsed] = useSidebarCollapse();
 
   if (!user) {
     return (
@@ -46,7 +48,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
       )}
 
       <div className="hidden lg:flex">
-        <SchoolSidebar />
+        <SchoolSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">

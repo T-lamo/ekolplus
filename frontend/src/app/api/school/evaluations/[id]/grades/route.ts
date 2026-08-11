@@ -21,6 +21,8 @@ const BulkGradesBody = z.object({
       z.object({
         studentId: z.string().min(1),
         score: z.number().min(0).max(1000).nullable(),
+        absent: z.boolean().optional(),
+        comment: z.string().trim().max(300).nullable().optional(),
       }),
     )
     .min(1)
@@ -93,8 +95,18 @@ export async function PUT(
       parsed.data.grades.map((g) =>
         prisma.grade.upsert({
           where: { evaluationId_studentId: { evaluationId: id, studentId: g.studentId } },
-          create: { evaluationId: id, studentId: g.studentId, score: g.score },
-          update: { score: g.score },
+          create: {
+            evaluationId: id,
+            studentId: g.studentId,
+            score: g.absent ? null : g.score,
+            absent: g.absent ?? false,
+            comment: g.comment ?? null,
+          },
+          update: {
+            score: g.absent ? null : g.score,
+            absent: g.absent ?? false,
+            ...(g.comment !== undefined ? { comment: g.comment } : {}),
+          },
         }),
       ),
     );

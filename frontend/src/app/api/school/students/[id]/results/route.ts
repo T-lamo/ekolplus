@@ -27,15 +27,29 @@ import {
 } from '@/lib/server/grades';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
+// Only PUBLISHED + countsTowardAverage evaluations move a student's
+// average — a teacher's in-progress draft shouldn't affect it, and a
+// formative-only evaluation is explicitly excluded ("Prise en compte").
+// Weighted by each evaluation's own coefficient (distinct from
+// ClassSubject.coefficient, which weights subjects against each other).
 function scoreOf(
-  evaluations: { grades: { studentId: string; score: number | null }[] }[],
+  evaluations: {
+    coefficient: number;
+    status: string;
+    countsTowardAverage: boolean;
+    grades: { studentId: string; score: number | null; absent: boolean }[];
+  }[],
   studentId: string,
 ): number | null {
-  const scores = evaluations
-    .map((e) => e.grades.find((g) => g.studentId === studentId)?.score)
-    .filter((s): s is number => s != null);
-  if (scores.length === 0) return null;
-  return scores.reduce((a, b) => a + b, 0) / scores.length;
+  const rows = evaluations
+    .filter((e) => e.status === 'PUBLISHED' && e.countsTowardAverage)
+    .map((e) => {
+      const g = e.grades.find((gr) => gr.studentId === studentId);
+      if (!g || g.absent || g.score == null) return null;
+      return { value: g.score, weight: e.coefficient };
+    })
+    .filter((r): r is { value: number; weight: number } => r != null);
+  return weightedAverage(rows);
 }
 
 export async function GET(
@@ -166,7 +180,7 @@ export async function GET(
                 : { term: { academicYearId: year.id } }),
             },
             orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
-            include: { grades: { select: { studentId: true, score: true } } },
+            include: { grades: { select: { studentId: true, score: true, absent: true } } },
           });
 
     const prevTerm =
@@ -175,7 +189,7 @@ export async function GET(
       prevTerm && classSubjectIds.length > 0
         ? await prisma.evaluation.findMany({
             where: { classSubjectId: { in: classSubjectIds }, termId: prevTerm.id },
-            include: { grades: { select: { studentId: true, score: true } } },
+            include: { grades: { select: { studentId: true, score: true, absent: true } } },
           })
         : [];
 

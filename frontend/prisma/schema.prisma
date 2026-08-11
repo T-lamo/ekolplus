@@ -370,18 +370,32 @@ model Enrollment {
 // trend, ranking and appreciation-bucket formulas the read side applies.
 // ───────────────────────────────────────────────────────────────────────
 model Evaluation {
-  id             String       @id @default(cuid())
-  classSubjectId String
-  classSubject   ClassSubject @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
-  termId         String
-  term           Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
-  label          String // "DS 1", "Interro" — teacher-authored free text
-  type           String       @default("AUTRE") // DS | INTERROGATION | EXAMEN | AUTRE — display only
-  maxScore       Int          @default(20)
-  order          Int          @default(0)
-  date           DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                  String       @id @default(cuid())
+  classSubjectId      String
+  classSubject        ClassSubject @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  termId              String
+  term                Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  label               String // "DS 1", "Interro" — teacher-authored free text
+  type                String       @default("AUTRE") // DS | INTERROGATION | EXAMEN | AUTRE — display only
+  maxScore            Int          @default(20)
+  // Weight of this evaluation within its subject's average — distinct from
+  // ClassSubject.coefficient (the subject's weight in the *overall* average).
+  // "Devoir 1" and "Composition 1" in the same subject/term can carry
+  // different weights against each other.
+  coefficient         Int          @default(1)
+  // "Prise en compte dans la moyenne" — a formative/practice evaluation can
+  // be recorded without moving any average.
+  countsTowardAverage Boolean      @default(true)
+  // DRAFT | PUBLISHED. Only PUBLISHED evaluations count toward averages —
+  // "Enregistrer brouillon" vs "Valider les notes" on Grade Entry.
+  status              String       @default("DRAFT")
+  // Internal remark, admin/teacher-only — distinct from Grade.comment
+  // (which is per-student).
+  notes               String?
+  order               Int          @default(0)
+  date                DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   grades Grade[]
 
@@ -394,7 +408,12 @@ model Grade {
   evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
   studentId    String
   student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  score        Float? // null = not yet graded / absent
+  score        Float? // null = not yet graded
+  // Explicit state — distinct from score:null. An absent student and a
+  // not-yet-graded student are different things (Grade Notebook counts
+  // them separately).
+  absent       Boolean    @default(false)
+  comment      String? // per-student per-evaluation teacher remark
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

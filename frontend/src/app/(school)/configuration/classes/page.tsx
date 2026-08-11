@@ -17,6 +17,8 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
+import { getClassDotColor } from '@/lib/subject-visuals';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { ClassFormModal } from './ClassFormModal';
 import type { ClassData } from './types';
@@ -183,17 +185,29 @@ export default function ClassesPage() {
                   {filtered.map((c) => (
                     <tr key={c.id} className="border-b border-border last:border-none">
                       <td className="px-3.5 py-2.5">
-                        <div className="font-semibold text-foreground">{c.name}</div>
-                        {c.room && (
-                          <div className="text-[11px] text-muted-foreground">{c.room}</div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <span
+                            aria-hidden
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: getClassDotColor(c.id) }}
+                          />
+                          <div>
+                            <div className="font-semibold text-foreground">{c.name}</div>
+                            {c.room && (
+                              <div className="text-[11px] text-muted-foreground">{c.room}</div>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-3.5 py-2.5">
                         <Badge>{c.level}</Badge>
                       </td>
                       <td className="px-3.5 py-2.5 text-foreground">
                         {c.homeroomTeacher ? (
-                          c.homeroomTeacher.name
+                          <div className="flex items-center gap-1.5">
+                            <Avatar name={c.homeroomTeacher.name} size={22} />
+                            <span>{c.homeroomTeacher.name}</span>
+                          </div>
                         ) : (
                           <span className="italic text-muted-foreground">Non affecté</span>
                         )}

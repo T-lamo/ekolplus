@@ -8,6 +8,8 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 import { SubjectFormModal } from './SubjectFormModal';
 import type { SubjectData } from './types';
 
@@ -163,56 +165,80 @@ export default function MatieresPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((s) => (
-                    <tr key={s.id} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <div className="font-semibold text-foreground">{s.name}</div>
-                        {s.code && (
-                          <div className="text-[11px] text-muted-foreground">{s.code}</div>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        {s.domain ? (
-                          <Badge>{s.domain}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-foreground">
-                        {s.teacherNames.length > 0 ? (
-                          s.teacherNames.join(', ')
-                        ) : (
-                          <span className="italic text-muted-foreground">Non assigné</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex flex-wrap gap-1">
-                          {s.classes.length > 0 ? (
-                            s.classes.map((c) => <Badge key={c.id}>{c.name}</Badge>)
+                  {filtered.map((s) => {
+                    const visual = getSubjectVisual(s.name);
+                    return (
+                      <tr key={s.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                              style={{ background: visual.iconBg, color: visual.iconFg }}
+                            >
+                              <visual.Icon size={16} />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-foreground">{s.name}</div>
+                              {s.code && (
+                                <div className="text-[11px] text-muted-foreground">{s.code}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {s.domain ? (
+                            <span
+                              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
+                              style={{ background: visual.badgeBg, color: visual.badgeFg }}
+                            >
+                              {s.domain}
+                            </span>
                           ) : (
-                            <span className="italic text-muted-foreground">Aucune classe</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        {s.classes.length > 0 ? (
-                          <Badge tone="success">Active</Badge>
-                        ) : (
-                          <Badge tone="warning">Non affectée</Badge>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-1">
-                          <IconButton onClick={() => setEditing(s)} label="Modifier">
-                            <Pencil size={14} />
-                          </IconButton>
-                          <IconButton onClick={() => onDelete(s)} label="Supprimer">
-                            <Trash2 size={14} />
-                          </IconButton>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-foreground">
+                          {s.teacherNames.length > 0 ? (
+                            <div className="flex items-center gap-1.5">
+                              <Avatar name={s.teacherNames[0]!} size={22} />
+                              <span>
+                                {s.teacherNames[0]}
+                                {s.teacherNames.length > 1 && ` +${s.teacherNames.length - 1}`}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="italic text-muted-foreground">Non assigné</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex flex-wrap gap-1">
+                            {s.classes.length > 0 ? (
+                              s.classes.map((c) => <Badge key={c.id}>{c.name}</Badge>)
+                            ) : (
+                              <span className="italic text-muted-foreground">Aucune classe</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {s.classes.length > 0 ? (
+                            <Badge tone="success">Active</Badge>
+                          ) : (
+                            <Badge tone="warning">Non affectée</Badge>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-1">
+                            <IconButton onClick={() => setEditing(s)} label="Modifier">
+                              <Pencil size={14} />
+                            </IconButton>
+                            <IconButton onClick={() => onDelete(s)} label="Supprimer">
+                              <Trash2 size={14} />
+                            </IconButton>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

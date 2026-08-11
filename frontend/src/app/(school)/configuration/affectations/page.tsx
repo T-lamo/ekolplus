@@ -16,6 +16,8 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
@@ -209,53 +211,71 @@ export default function AffectationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r) => (
-                    <tr key={r.id} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <div className="font-semibold text-foreground">{r.subject.name}</div>
-                        {r.subject.code && (
-                          <div className="text-[11px] text-muted-foreground">{r.subject.code}</div>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-foreground">
-                        {r.teacher ? (
-                          r.teacher.name
-                        ) : (
-                          <span className="italic text-muted-foreground">Non assigné</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <Badge>{r.class.name}</Badge>
-                      </td>
-                      <td className="px-3.5 py-2.5 text-foreground">
-                        {r.weeklyHours ? (
-                          `${r.weeklyHours}h / semaine`
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5 font-bold text-foreground">
-                        {r.coefficient ?? '—'}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        {r.teacher ? (
-                          <Badge tone="success">Active</Badge>
-                        ) : (
-                          <Badge tone="warning">Sans enseignant</Badge>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-1">
-                          <IconButton onClick={() => setEditing(r)} label="Modifier">
-                            <Pencil size={14} />
-                          </IconButton>
-                          <IconButton onClick={() => onDelete(r)} label="Supprimer">
-                            <Trash2 size={14} />
-                          </IconButton>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filtered.map((r) => {
+                    const visual = getSubjectVisual(r.subject.name);
+                    return (
+                      <tr key={r.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                              style={{ background: visual.iconBg, color: visual.iconFg }}
+                            >
+                              <visual.Icon size={15} />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-foreground">{r.subject.name}</div>
+                              {r.subject.code && (
+                                <div className="text-[11px] text-muted-foreground">
+                                  {r.subject.code}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-foreground">
+                          {r.teacher ? (
+                            <div className="flex items-center gap-1.5">
+                              <Avatar name={r.teacher.name} size={22} />
+                              <span>{r.teacher.name}</span>
+                            </div>
+                          ) : (
+                            <span className="italic text-muted-foreground">Non assigné</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <Badge>{r.class.name}</Badge>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-foreground">
+                          {r.weeklyHours ? (
+                            `${r.weeklyHours}h / semaine`
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5 font-bold text-foreground">
+                          {r.coefficient ?? '—'}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {r.teacher ? (
+                            <Badge tone="success">Active</Badge>
+                          ) : (
+                            <Badge tone="warning">Sans enseignant</Badge>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-1">
+                            <IconButton onClick={() => setEditing(r)} label="Modifier">
+                              <Pencil size={14} />
+                            </IconButton>
+                            <IconButton onClick={() => onDelete(r)} label="Supprimer">
+                              <Trash2 size={14} />
+                            </IconButton>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 import { CoefficientStepper } from './CoefficientStepper';
 import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
 
@@ -200,17 +201,33 @@ function CoefficientsPageInner() {
                       sumCoefficients > 0 && coefficient !== null
                         ? Math.round((coefficient / sumCoefficients) * 1000) / 10
                         : 0;
+                    const visual = getSubjectVisual(subject.name);
                     return (
                       <tr key={subject.id} className="border-b border-border last:border-none">
                         <td className="px-3.5 py-2.5">
-                          <div className="font-semibold text-foreground">{subject.name}</div>
-                          {subject.code && (
-                            <div className="text-[11px] text-muted-foreground">{subject.code}</div>
-                          )}
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                              style={{ background: visual.iconBg, color: visual.iconFg }}
+                            >
+                              <visual.Icon size={16} />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-foreground">{subject.name}</div>
+                              {subject.code && (
+                                <div className="text-[11px] text-muted-foreground">
+                                  {subject.code}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-3.5 py-2.5">
                           {subject.domain ? (
-                            <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-secondary-foreground">
+                            <span
+                              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                              style={{ background: visual.badgeBg, color: visual.badgeFg }}
+                            >
                               {subject.domain}
                             </span>
                           ) : (

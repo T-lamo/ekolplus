@@ -1,1 +1,39 @@
 @import 'tailwindcss';
+
+/* EkolPlus design tokens — from Banani "Lavender SaaS" theme, shared across
+   every screen export (Login, School Dashboard, SaaS Admin Dashboard). See
+   .planning/banani/epic-0-shell.md for the full token mapping table. */
+@theme {
+  --color-background: #f3f3f7;
+  --color-foreground: #1a1a2e;
+  --color-border: #e2e2ee;
+  --color-input: #ffffff;
+  --color-primary: #6c2bd9;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #ede9fb;
+  --color-secondary-foreground: #6c2bd9;
+  --color-muted: #ececf3;
+  --color-muted-foreground: #8884a0;
+  --color-success: #e6f9f0;
+  --color-success-foreground: #1a9e5c;
+  --color-accent: #7c3aed;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #fdecea;
+  --color-destructive-foreground: #d93025;
+  --color-warning: #fff8e1;
+  --color-warning-foreground: #f59e0b;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a1a2e;
+
+  /* Two sidebar variants: school shell is light, SaaS admin shell + login's
+     branding panel are dark. Not a single reusable token (see epic-0-shell.md). */
+  --color-sidebar-light: #ffffff;
+  --color-sidebar-light-foreground: #1a1a2e;
+  --color-sidebar-dark: #16102e;
+  --color-sidebar-dark-foreground: #e8e3f7;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}

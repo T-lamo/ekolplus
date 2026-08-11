@@ -37,3 +37,39 @@
   --radius-lg: 8px;
   --radius-xl: 12px;
 }
+
+/* Radix Accordion — content height driven by --radix-accordion-content-height,
+   which Radix sets automatically after measuring. See SidebarSection.tsx. */
+.accordion-content[data-state='open'] {
+  animation: accordion-down 200ms ease-out;
+}
+.accordion-content[data-state='closed'] {
+  animation: accordion-up 200ms ease-out;
+}
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* cmdk's Command.Dialog renders a Radix Dialog overlay carrying a
+   [cmdk-overlay] attribute — dim the backdrop. See CommandPalette.tsx.
+   If the installed cmdk version emits a different attribute, inspect the
+   DOM in the browser (Task 15's manual check) and adjust this selector. */
+[cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.4);
+}

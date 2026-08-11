@@ -1,0 +1,310 @@
+'use client';
+
+import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { api, ApiError } from '@/lib/api';
+import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Tabs } from '@/components/ui/Tabs';
+import { CoefficientStepper } from './CoefficientStepper';
+import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
+
+function CoefficientsPageInner() {
+  const user = useUser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+
+  const [classes, setClasses] = useState<ClassOption[] | null>(null);
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
+  const [rows, setRows] = useState<ClassSubjectRow[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [classId, setClassId] = useState<string | null>(searchParams.get('classId'));
+  const [domain, setDomain] = useState('');
+  const [edits, setEdits] = useState<Record<string, number>>({});
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      api<{ classes: ClassOption[] }>('/api/school/classes'),
+      api<{ subjects: SubjectOption[] }>('/api/school/subjects'),
+      api<{ classSubjects: ClassSubjectRow[] }>('/api/school/class-subjects'),
+    ])
+      .then(([c, s, cs]) => {
+        setClasses(c.classes);
+        setSubjects(s.subjects);
+        setRows(cs.classSubjects);
+        setClassId((prev) => prev ?? c.classes[0]?.id ?? null);
+      })
+      .catch((err) => {
+        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+          router.replace('/');
+          return;
+        }
+        setError('Impossible de charger les coefficients.');
+      });
+  }, [user, router]);
+
+  function selectClass(id: string) {
+    setClassId(id);
+    setEdits({});
+    router.replace(`/configuration/coefficients?classId=${id}`, { scroll: false });
+  }
+
+  const domains = useMemo(
+    () => [...new Set(subjects.map((s) => s.domain).filter((d): d is string => !!d))],
+    [subjects],
+  );
+
+  const classRows = useMemo(() => {
+    return subjects
+      .filter((s) => !domain || s.domain === domain)
+      .map((subject) => {
+        const existing = rows.find((r) => r.classId === classId && r.subjectId === subject.id);
+        const otherClasses = rows.filter(
+          (r) => r.subjectId === subject.id && r.classId !== classId && r.coefficient !== null,
+        );
+        const coefficient =
+          subject.id in edits ? edits[subject.id] : (existing?.coefficient ?? null);
+        return { subject, existing, otherClasses, coefficient: coefficient ?? null };
+      });
+  }, [subjects, rows, classId, domain, edits]);
+
+  const sumCoefficients = useMemo(
+    () => classRows.reduce((sum, r) => sum + (r.coefficient ?? 0), 0),
+    [classRows],
+  );
+  const configuredCount = classRows.filter((r) => r.coefficient !== null).length;
+  const dirtyCount = Object.keys(edits).length;
+
+  async function onSave() {
+    if (!classId || dirtyCount === 0) return;
+    setSaving(true);
+    try {
+      const results = await Promise.all(
+        Object.entries(edits).map(([subjectId, coefficient]) =>
+          api<{ classSubject: ClassSubjectRow }>('/api/school/class-subjects', {
+            method: 'POST',
+            body: { classId, subjectId, coefficient },
+          }),
+        ),
+      );
+      setRows((prev) => {
+        const byId = new Map(prev.map((r) => [r.id, r]));
+        for (const { classSubject } of results) byId.set(classSubject.id, classSubject);
+        return [...byId.values()];
+      });
+      setEdits({});
+      toast('Coefficients enregistrés.', 'success');
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Chargement…</p>
+      </main>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <h1 className="text-xl font-extrabold tracking-tight text-foreground">Coefficients</h1>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Gestion des coefficients par matière et par classe.
+        </p>
+      </div>
+
+      {error && (
+        <p role="alert" className="text-sm text-destructive-foreground">
+          {error}
+        </p>
+      )}
+
+      {classes === null && !error && <p className="text-sm text-muted-foreground">Chargement…</p>}
+
+      {classes !== null && classes.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Aucune classe configurée — crée d&apos;abord une classe dans « Classes ».
+        </p>
+      )}
+
+      {classes !== null && classes.length > 0 && classId && (
+        <>
+          <div className="rounded-lg border border-primary/20 bg-secondary p-3.5 text-xs text-secondary-foreground">
+            <div className="mb-0.5 font-bold">Coefficients par classe</div>
+            Les coefficients définissent le poids de chaque matière dans le calcul de la moyenne
+            générale. Les modifications sont appliquées à la génération des bulletins.
+          </div>
+
+          <Tabs
+            tabs={classes.map((c) => ({ key: c.id, label: c.name }))}
+            active={classId}
+            onChange={selectClass}
+          />
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <select
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
+            >
+              <option value="">Tous les domaines</option>
+              {domains.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <span className="ml-auto text-sm text-muted-foreground">
+              {classRows.length} matières
+            </span>
+          </div>
+
+          <Card className="overflow-x-auto">
+            {classRows.length === 0 ? (
+              <p className="p-5 text-sm text-muted-foreground">Aucune matière à configurer.</p>
+            ) : (
+              <table className="w-full min-w-[760px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Matière
+                    </th>
+                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Domaine
+                    </th>
+                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Coefficient
+                    </th>
+                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Poids relatif
+                    </th>
+                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Coefficient autres classes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classRows.map(({ subject, otherClasses, coefficient }) => {
+                    const isDirty = subject.id in edits;
+                    const weight =
+                      sumCoefficients > 0 && coefficient !== null
+                        ? Math.round((coefficient / sumCoefficients) * 1000) / 10
+                        : 0;
+                    return (
+                      <tr key={subject.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="font-semibold text-foreground">{subject.name}</div>
+                          {subject.code && (
+                            <div className="text-[11px] text-muted-foreground">{subject.code}</div>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {subject.domain ? (
+                            <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-secondary-foreground">
+                              {subject.domain}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <CoefficientStepper
+                              value={coefficient}
+                              onChange={(v) => setEdits((prev) => ({ ...prev, [subject.id]: v }))}
+                            />
+                            {isDirty && (
+                              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                Modifié
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {coefficient !== null ? (
+                            <div className="flex items-center gap-2">
+                              <div className="h-1.5 w-[50px] rounded-full bg-muted">
+                                <div
+                                  className="h-1.5 rounded-full bg-primary"
+                                  style={{ width: `${weight}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground">{weight}%</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex flex-wrap gap-1">
+                            {otherClasses.length > 0 ? (
+                              otherClasses.map((oc) => (
+                                <span
+                                  key={oc.id}
+                                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground"
+                                >
+                                  {oc.class.name}: {oc.coefficient}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">
+                                Non configuré
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+
+            <div className="flex flex-col items-start justify-between gap-3 border-t border-border p-4 sm:flex-row sm:items-center">
+              <div className="flex flex-wrap items-center gap-4 text-xs">
+                <span className="text-muted-foreground">
+                  Somme :{' '}
+                  <span className="text-base font-bold text-primary">{sumCoefficients}</span>
+                </span>
+                <span className="text-muted-foreground">
+                  Matières configurées :{' '}
+                  <span className="font-semibold text-success-foreground">
+                    {configuredCount} / {classRows.length}
+                  </span>
+                </span>
+              </div>
+              <Button
+                className="w-fit"
+                onClick={onSave}
+                loading={saving}
+                disabled={dirtyCount === 0}
+              >
+                {saving
+                  ? 'Enregistrement…'
+                  : `Enregistrer${dirtyCount > 0 ? ` (${dirtyCount})` : ''}`}
+              </Button>
+            </div>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function CoefficientsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">Chargement…</p>}>
+      <CoefficientsPageInner />
+    </Suspense>
+  );
+}

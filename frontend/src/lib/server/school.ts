@@ -34,3 +34,15 @@ export async function resolveMySchool(userId: string): Promise<MySchool | null> 
 export function hasMinRole(role: OrgRole, min: OrgRole): boolean {
   return ORG_ROLE_RANK[role] >= ORG_ROLE_RANK[min];
 }
+
+// Used by Epic 4 (Classes) — a Class is year-scoped, so creating one needs
+// the school's active AcademicYear. Mirrors the query in /api/school GET.
+export async function resolveActiveAcademicYear(
+  schoolId: string,
+): Promise<{ id: string; label: string } | null> {
+  return prisma.academicYear.findFirst({
+    where: { schoolId, isActive: true },
+    orderBy: { startDate: 'desc' },
+    select: { id: true, label: true },
+  });
+}

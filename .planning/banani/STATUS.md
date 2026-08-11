@@ -21,10 +21,21 @@ Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/Academic
   - **Migration-naming bug hit and fixed**: this repo's existing migrations use sequential-integer folder names (`0_init`, `1_oauth_accounts`, …) rather than Prisma's default timestamp prefix. My first two migrations this project (`create-school`'s `School` model, and this one) were generated with the default `prisma migrate dev --name X` and got timestamp-prefixed folders, which **sort lexicographically in the wrong place** relative to the integer-named ones (`"2026..." < "2_organizations"` as strings) — this silently corrupted shadow-DB replay ordering and broke the next `migrate dev` call. Fixed by renaming folders to the next sequential integer (`5_add_school_model`, `6_add_academic_year_and_school_fields`) and hand-patching the `_prisma_migrations` history table to match. **Going forward**: always generate with `prisma migrate dev --name X --create-only`, rename the folder to `N_name` before applying, then apply via `prisma migrate deploy` — never let a plain `migrate dev` commit a timestamp-prefixed folder to this repo.
   - Verified: `pnpm format && pnpm lint && pnpm typecheck && pnpm build && pnpm test` all green (573/573 tests). Dev server restarted after the schema change (per the Create School lesson) — real authenticated end-to-end check as Marie (the school owner): `GET /api/school`, `PUT /api/school` (address/officialCode/officialEmail persisted), `POST /api/school/terms` ×2 (AcademicYear auto-created as "2024-2025", date span widened correctly on the 2nd term, `order` incremented, `status` computed as `DONE` for both against real dates). **Same screenshot-tool caveat — not eyeballed in a real browser.**
 
+- [x] `classes-config` (`S_OTSGjwNm4c`) → `/configuration/classes` — plan: `classes-config.md` — V1 scope only
+- [x] `matieres-list` (`0sucz8IfcpKT`) → `/configuration/matieres` — plan: `matieres-list.md` — V1 scope only
+- [x] `coefficients-config` (`1pYQiqgzPagc`) → `/configuration/coefficients` — plan: `coefficients-config.md` — V1 scope only
+- [x] `affectations` (`ufpxQ7cv5ffm`) → `/configuration/affectations` — plan: `affectations.md` — V1 scope only
+  - **Data-model discovery** (documented in full in [epic-4-data-model.md](./epic-4-data-model.md)): the 4 screens don't map to 4 independent resources. Coefficients (per-class edit) and Affectations (cross-class edit) both read/write the same `ClassSubject` pivot row (class × subject × teacher × coefficient × weeklyHours) — confirmed by cross-referencing identical coefficient values shown in both screens' Banani mockups for the same (class, subject) pairs. Matières'/Classes' per-row aggregates (Classes/Enseignant assigné/Matières count) are computed from the same pivot grouped the other way. One pivot table, four views.
+  - New Prisma models: `Subject`, `Teacher` (minimal stub — full profile is Epic 5's `teachers-list`), `Class`, `ClassSubject` (the shared pivot). Migration `7_epic4_academic_config`, following the corrected `--create-only` → rename → `migrate deploy` workflow from the `school-settings` lesson — no naming-order bug this time.
+  - New API surface: `GET/POST /api/school/subjects`, `PATCH/DELETE /api/school/subjects/[id]`, `GET/POST /api/school/teachers`, `GET/POST /api/school/classes`, `PATCH/DELETE /api/school/classes/[id]`, `GET/POST /api/school/class-subjects` (upsert on `(classId, subjectId)` — partial body accepted, e.g. Coefficients sends `{coefficient}` only and it doesn't clobber `teacherId`/`weeklyHours`), `DELETE /api/school/class-subjects/[id]`.
+  - New frontend: `Modal` primitive (first consumer — shared by all 3 form modals this pass); `TeacherPicker` (`src/components/school/`, shared by Class/Assignment forms — inline "+ Nouvel enseignant" create, since full Teacher CRUD doesn't exist until Epic 5); `SubjectFormModal`, `ClassFormModal`, `AssignmentFormModal`, `CoefficientStepper`.
+  - **V1 scope cuts** (all depend on Epic 5/6 data that doesn't exist yet, or cut for time — full list in `epic-4-data-model.md`): no élèves/enrollment counts, no "moyenne générale", no CSV export on any of the 4 screens, no bulk actions/multi-select, no coefficient-change history, no "copier vers une classe"/"dupliquer" bulk-copy actions, no per-assignment editable "Période" (shown read-only from the school's active `AcademicYear`).
+  - Verified: `pnpm format && pnpm lint && pnpm typecheck && pnpm build && pnpm test` all green (580/580 tests — up from 573, the runtime-enforcement tripwire auto-covers the 10 new route files). Dev server restarted after the schema change before testing (lesson from Create School applied without incident this time). **Real end-to-end check** as Marie: created a Subject, a Class, a Teacher; created a full assignment (teacher+hours+coefficient) via `POST /api/school/class-subjects`; re-POSTed the same `(classId, subjectId)` pair with a coefficient-only body and confirmed it updated the *same row* while preserving `teacherId`/`weeklyHours` (upsert semantics work as designed, this is the core mechanism both Coefficients and Affectations depend on); confirmed the Matières aggregate view reflects the join; confirmed `DELETE` on a still-referenced Subject returns 409, then 204 after removing the reference. Compiled-CSS check confirmed arbitrary-value classes (`min-w-[720px]`, `w-[70px]`, `bg-[#e0f0ff]`) generated correctly. **Same screenshot-tool caveat as prior screens — not eyeballed in a real browser**, but this pass had unusually thorough API-contract verification given the shared-pivot design's correctness hinges entirely on the upsert behavior.
+
 ## In progress
 (none)
 
-## Pending — fetched, not yet individually planned (25 screens remaining, grouped by epic)
+## Pending — fetched, not yet individually planned (21 screens remaining, grouped by epic)
 
 ### Epic 0 — Shell & primitives (prerequisite, no Banani screen)
 - [x] Tailwind `@theme` tokens (Lavender SaaS palette) — `globals.css`
@@ -32,7 +43,8 @@ Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/Academic
 - [ ] `Badge` — still no consumer, skipped (rule-of-three)
 - [x] Admin shell (`AdminSidebar`/`AdminTopbar`/`src/app/admin/layout.tsx`) — built for Create School
 - [x] School shell (`SchoolSidebar`/`SchoolTopbar`/`src/app/(school)/layout.tsx`) — built for School Settings
-- [ ] Table, StatCard, Modal — still no consumer
+- [x] `Modal` — built for Epic 4's form modals
+- [ ] Table, StatCard — still no consumer
 
 ### Epic 2 — SaaS platform admin
 - [ ] `saas-admin-dashboard` (`VZVQxm_1YTAi`) → `/admin` (sidebar link exists, page doesn't — 404 until built)
@@ -45,12 +57,6 @@ Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/Academic
 ### Epic 3 — School onboarding & settings
 - [ ] `school-dashboard` (`R94lpPCRDLa8`) → `/dashboard` — **deferred until Epic 4+5 exist** (see Done section note above)
 - [x] `school-settings` / `parametres` (`J-YtPdRZUsjN` / `o2cW8OmWvqhD`) → `/settings` — **V1 only**, see Done section
-
-### Epic 4 — Academic configuration
-- [ ] `classes-config` (`S_OTSGjwNm4c`) → `/configuration/classes`
-- [ ] `matieres-list` (`0sucz8IfcpKT`) → `/configuration/matieres`
-- [ ] `coefficients-config` (`1pYQiqgzPagc`) → `/configuration/coefficients`
-- [ ] `affectations` (`ufpxQ7cv5ffm`) → `/configuration/affectations`
 
 ### Epic 5 — People
 - [ ] `students-list` (`irP1FJzNcIpq`) → `/eleves`

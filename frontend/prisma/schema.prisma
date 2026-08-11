@@ -138,6 +138,9 @@ model School {
   updatedAt         DateTime     @updatedAt
 
   academicYears AcademicYear[]
+  subjects      Subject[]
+  teachers      Teacher[]
+  classes       Class[]
 
   @@index([organizationId])
 }
@@ -165,7 +168,8 @@ model AcademicYear {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  terms Term[]
+  terms   Term[]
+  classes Class[]
 
   @@index([schoolId, isActive])
 }
@@ -200,6 +204,88 @@ model OrganizationMember {
 
   @@unique([organizationId, userId])
   @@index([userId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Epic 4 — academic configuration. Subject/Teacher/Class are school-wide
+// catalogs; ClassSubject is the shared pivot backing both the Coefficients
+// screen (per-class edit of `coefficient`) and the Affectations screen
+// (cross-class edit of `teacherId`/`weeklyHours`/`coefficient`). See
+// .planning/banani/epic-4-data-model.md for the discovery that led to one
+// pivot table instead of two independent ones.
+// ───────────────────────────────────────────────────────────────────────
+model Subject {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  code      String?
+  domain    String? // free text ("Sciences", "Lettres & Langues", ...) — no fixed catalog yet
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classSubjects ClassSubject[]
+
+  @@index([schoolId])
+}
+
+// Minimal stub — full profile/CRUD is Epic 5's `teachers-list` screen. V1
+// only needs enough to populate ClassSubject.teacherId and Class.homeroomTeacherId.
+model Teacher {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classSubjects   ClassSubject[]
+  homeroomClasses Class[]        @relation("HomeroomTeacher")
+
+  @@index([schoolId])
+}
+
+model Class {
+  id                String       @id @default(cuid())
+  schoolId          String
+  school            School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYearId    String
+  academicYear      AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  name              String // "3ème A"
+  level             String // "3ème" — free text, no fixed catalog yet
+  room              String?
+  capacity          Int?
+  homeroomTeacherId String?
+  homeroomTeacher   Teacher?     @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  classSubjects ClassSubject[]
+
+  @@unique([academicYearId, name])
+  @@index([schoolId])
+}
+
+model ClassSubject {
+  id          String   @id @default(cuid())
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId   String?
+  teacher     Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  coefficient Int?
+  weeklyHours Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([classId, subjectId])
+  @@index([subjectId])
+  @@index([teacherId])
 }
 
 // ───────────────────────────────────────────────────────────────────────

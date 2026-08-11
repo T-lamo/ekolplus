@@ -126,9 +126,10 @@ A cheaper v1-style model (`Student.classId` direct, no `AcademicYear`) would wor
 
 1. **Epic 0 + Epic 1** — Shell (both layouts), primitives, Tailwind theme, Login. Nothing works without this.
 2. **Epic 2 (partial: Create School only)** — platform admin creates a tenant (`Organization` + `School` + first `OrganizationMember` OWNER) so a school can exist to log into. Rest of Epic 2 (billing, stats) deferred to step 8.
-3. **Epic 3** — School onboarding/dashboard/settings, `AcademicYear`/`Term` setup.
-4. **Epic 4** — Academic configuration (Classes/Matières/Coefficients/Affectations) — data other epics depend on.
-5. **Epic 5** — People (Students/Teachers, `Enrollment`).
+3. **Epic 3 (settings only)** — School Settings (`AcademicYear`/`Term` setup). **Correction, 2026-08-11**: School Dashboard was originally slotted here too, but it turned out to be a rollup of Epic 4-8 data (classes/students/grades/attendance/bulletins) that doesn't exist yet — it would render 100% zeros. Dashboard moved after step 4 below; see STATUS.md's `school-settings` entry for the discovery.
+4. **Epic 4** — Academic configuration (Classes/Matières/Coefficients/Affectations) — data other epics depend on. Also revealed mid-flow that Coefficients and Affectations aren't independent resources — both read/write one shared `ClassSubject` pivot (class × subject × teacher × coefficient × hours); see `epic-4-data-model.md`.
+4b. **Epic 3 (dashboard, deferred)** — School Dashboard now has real data to aggregate (classes/subjects exist) — revisit once Epic 5 (students) lands too, since headcount is Dashboard's other core metric.
+5. **Epic 5** — People (Students/Teachers, `Enrollment`). Note: Epic 4 already introduced a minimal `Teacher` stub model (name/email/phone) to unblock Affectations — this epic owns the full Teacher profile/CRUD screen on top of that existing model, not a fresh one.
 6. **Epic 6** — Grades/evaluations.
 7. **Epic 8** — Attendance (independent, can slot in anytime after Epic 5).
 8. **Epic 7** — Bulletins (depends on 4, 5, 6 all being live — it aggregates their data). HTML preview only per decision #4.

@@ -40,6 +40,7 @@ export function SubjectFormModal({
         ...res.subject,
         classes: subject?.classes ?? [],
         teacherNames: subject?.teacherNames ?? [],
+        coefficients: subject?.coefficients ?? [],
       });
       toast(subject ? 'Matière mise à jour.' : 'Matière ajoutée.', 'success');
       onClose();

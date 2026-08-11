@@ -51,6 +51,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           isActive: s.isActive,
           classes: s.classSubjects.map((cs) => ({ id: cs.class.id, name: cs.class.name })),
           teacherNames: [...new Set(s.classSubjects.map((cs) => cs.teacher?.name).filter(Boolean))],
+          coefficients: s.classSubjects
+            .map((cs) => cs.coefficient)
+            .filter((c): c is number => c !== null),
         })),
       },
       { headers: { 'x-request-id': ctx.requestId } },

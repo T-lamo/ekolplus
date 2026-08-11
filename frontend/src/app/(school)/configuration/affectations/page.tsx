@@ -9,6 +9,10 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Download,
+  Eye,
+  UserCog,
+  Copy,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
@@ -17,10 +21,31 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
+
+type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
+
+interface SchoolInfo {
+  academicYear: { label: string; startDate: string; endDate: string } | null;
+}
+
+function periodLabel(academicYear: SchoolInfo['academicYear']): string {
+  if (!academicYear) return '—';
+  const start = new Date(academicYear.startDate).toLocaleDateString('fr-FR', {
+    month: 'short',
+    year: 'numeric',
+  });
+  const end = new Date(academicYear.endDate).toLocaleDateString('fr-FR', {
+    month: 'short',
+    year: 'numeric',
+  });
+  return `${start} – ${end}`;
+}
 
 export default function AffectationsPage() {
   const user = useUser();
@@ -31,10 +56,12 @@ export default function AffectationsPage() {
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
+  const [school, setSchool] = useState<SchoolInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [teacherFilter, setTeacherFilter] = useState('');
+  const [status, setStatus] = useState<StatusFilter>('');
   const [editing, setEditing] = useState<AssignmentRow | 'new' | null>(null);
 
   useEffect(() => {
@@ -44,12 +71,14 @@ export default function AffectationsPage() {
       api<{ classes: ClassOption[] }>('/api/school/classes'),
       api<{ subjects: SubjectOption[] }>('/api/school/subjects'),
       api<{ teachers: TeacherOption[] }>('/api/school/teachers'),
+      api<SchoolInfo>('/api/school'),
     ])
-      .then(([cs, c, s, t]) => {
+      .then(([cs, c, s, t, sc]) => {
         setRows(cs.classSubjects);
         setClasses(c.classes);
         setSubjects(s.subjects);
         setTeachers(t.teachers);
+        setSchool(sc);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -64,10 +93,13 @@ export default function AffectationsPage() {
     return (rows ?? []).filter((r) => {
       if (classFilter && r.classId !== classFilter) return false;
       if (teacherFilter && r.teacher?.id !== teacherFilter) return false;
+      if (status === 'active' && !r.teacher) return false;
+      if (status === 'unassigned' && r.teacher) return false;
+      if (status === 'archived') return false; // no archival concept on assignments yet
       if (search && !r.subject.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [rows, search, classFilter, teacherFilter]);
+  }, [rows, search, classFilter, teacherFilter, status]);
 
   const stats = useMemo(() => {
     const all = rows ?? [];
@@ -91,6 +123,42 @@ export default function AffectationsPage() {
     }
   }
 
+  function onExport() {
+    exportToCsv(
+      'affectations.csv',
+      ['Matière', 'Enseignant', 'Classe', 'Volume horaire', 'Coefficient', 'Période', 'Statut'],
+      filtered.map((r) => [
+        r.subject.name,
+        r.teacher?.name ?? '',
+        r.class.name,
+        r.weeklyHours ?? '',
+        r.coefficient ?? '',
+        periodLabel(school?.academicYear ?? null),
+        r.teacher ? 'Active' : 'Sans enseignant',
+      ]),
+    );
+  }
+
+  function menuItemsFor(r: AssignmentRow) {
+    return [
+      { label: 'Voir les détails', icon: <Eye size={14} />, onClick: () => setEditing(r) },
+      { label: "Modifier l'affectation", icon: <Pencil size={14} />, onClick: () => setEditing(r) },
+      { label: "Changer l'enseignant", icon: <UserCog size={14} />, onClick: () => setEditing(r) },
+      {
+        label: 'Dupliquer vers une autre classe',
+        icon: <Copy size={14} />,
+        onClick: () => toast('Duplication vers une autre classe — bientôt disponible.', 'info'),
+      },
+      {
+        label: "Supprimer l'affectation",
+        icon: <Trash2 size={14} />,
+        onClick: () => onDelete(r),
+        tone: 'danger' as const,
+        divider: true,
+      },
+    ];
+  }
+
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -110,12 +178,18 @@ export default function AffectationsPage() {
             Gestion des affectations enseignant–matière–classe.
           </p>
         </div>
-        {canCreate && (
-          <Button className="w-fit" onClick={() => setEditing('new')}>
-            <Plus size={14} />
-            Nouvelle affectation
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+            <Download size={14} />
+            Exporter
           </Button>
-        )}
+          {canCreate && (
+            <Button className="w-fit" onClick={() => setEditing('new')}>
+              <Plus size={14} />
+              Nouvelle affectation
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -187,6 +261,16 @@ export default function AffectationsPage() {
                 </option>
               ))}
             </select>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as StatusFilter)}
+              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="active">Active</option>
+              <option value="unassigned">Sans enseignant</option>
+              <option value="archived">Archivée</option>
+            </select>
             <span className="ml-auto text-sm text-muted-foreground">
               {filtered.length} affectations
             </span>
@@ -198,7 +282,7 @@ export default function AffectationsPage() {
                 {rows.length === 0 ? 'Aucune affectation — crée la première.' : 'Aucun résultat.'}
               </p>
             ) : (
-              <table className="w-full min-w-[820px] border-collapse text-sm">
+              <table className="w-full min-w-[960px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <Th>Matière</Th>
@@ -206,8 +290,9 @@ export default function AffectationsPage() {
                     <Th>Classe</Th>
                     <Th>Volume horaire</Th>
                     <Th>Coefficient</Th>
+                    <Th>Période</Th>
                     <Th>Statut</Th>
-                    <Th className="w-[70px]" />
+                    <Th className="w-[80px]" />
                   </tr>
                 </thead>
                 <tbody>
@@ -256,6 +341,9 @@ export default function AffectationsPage() {
                         <td className="px-3.5 py-2.5 font-bold text-foreground">
                           {r.coefficient ?? '—'}
                         </td>
+                        <td className="px-3.5 py-2.5 text-xs text-muted-foreground">
+                          {periodLabel(school?.academicYear ?? null)}
+                        </td>
                         <td className="px-3.5 py-2.5">
                           {r.teacher ? (
                             <Badge tone="success">Active</Badge>
@@ -268,9 +356,7 @@ export default function AffectationsPage() {
                             <IconButton onClick={() => setEditing(r)} label="Modifier">
                               <Pencil size={14} />
                             </IconButton>
-                            <IconButton onClick={() => onDelete(r)} label="Supprimer">
-                              <Trash2 size={14} />
-                            </IconButton>
+                            <ActionMenu items={menuItemsFor(r)} />
                           </div>
                         </td>
                       </tr>

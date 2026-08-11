@@ -6,4 +6,5 @@ export interface SubjectData {
   isActive: boolean;
   classes: { id: string; name: string }[];
   teacherNames: string[];
+  coefficients: number[];
 }

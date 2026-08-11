@@ -9,6 +9,13 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Download,
+  LayoutGrid,
+  List as ListIcon,
+  Eye,
+  Users,
+  UserPlus,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,10 +25,16 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { getClassDotColor } from '@/lib/subject-visuals';
+import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { ClassFormModal } from './ClassFormModal';
 import type { ClassData } from './types';
+
+interface SchoolInfo {
+  academicYear: { label: string } | null;
+}
 
 export default function ClassesPage() {
   const user = useUser();
@@ -29,9 +42,11 @@ export default function ClassesPage() {
   const { toast } = useToast();
   const [classes, setClasses] = useState<ClassData[] | null>(null);
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
+  const [school, setSchool] = useState<SchoolInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
+  const [view, setView] = useState<'list' | 'grid'>('list');
   const [editing, setEditing] = useState<ClassData | 'new' | null>(null);
 
   useEffect(() => {
@@ -39,10 +54,12 @@ export default function ClassesPage() {
     Promise.all([
       api<{ classes: ClassData[] }>('/api/school/classes'),
       api<{ teachers: TeacherOption[] }>('/api/school/teachers'),
+      api<SchoolInfo>('/api/school'),
     ])
-      .then(([c, t]) => {
+      .then(([c, t, s]) => {
         setClasses(c.classes);
         setTeachers(t.teachers);
+        setSchool(s);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -88,6 +105,55 @@ export default function ClassesPage() {
     }
   }
 
+  function onExport() {
+    exportToCsv(
+      'classes.csv',
+      ['Classe', 'Niveau', 'Salle', 'Professeur principal', 'Capacité', 'Matières'],
+      filtered.map((c) => [
+        c.name,
+        c.level,
+        c.room ?? '',
+        c.homeroomTeacher?.name ?? '',
+        c.capacity ?? '',
+        c.subjectCount,
+      ]),
+    );
+  }
+
+  function menuItemsFor(c: ClassData) {
+    return [
+      {
+        label: 'Voir la classe',
+        icon: <Eye size={14} />,
+        onClick: () => toast('Fiche classe détaillée — disponible avec Epic 5 (Élèves).', 'info'),
+      },
+      { label: 'Modifier', icon: <Pencil size={14} />, onClick: () => setEditing(c) },
+      {
+        label: 'Gérer les élèves',
+        icon: <Users size={14} />,
+        onClick: () => toast('Disponible avec Epic 5 (Élèves).', 'info'),
+      },
+      { label: 'Affecter enseignants', icon: <UserPlus size={14} />, onClick: () => setEditing(c) },
+      {
+        label: 'Voir les matières',
+        icon: <BookOpen size={14} />,
+        onClick: () => router.push(`/configuration/coefficients?classId=${c.id}`),
+      },
+      {
+        label: 'Bulletins de la classe',
+        icon: <FileText size={14} />,
+        onClick: () => toast('Disponible avec Epic 7 (Bulletins).', 'info'),
+      },
+      {
+        label: 'Supprimer la classe',
+        icon: <Trash2 size={14} />,
+        onClick: () => onDelete(c),
+        tone: 'danger' as const,
+        divider: true,
+      },
+    ];
+  }
+
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -105,10 +171,16 @@ export default function ClassesPage() {
             Gestion des classes de l&apos;établissement.
           </p>
         </div>
-        <Button className="w-fit" onClick={() => setEditing('new')}>
-          <Plus size={14} />
-          Ajouter une classe
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+            <Download size={14} />
+            Exporter
+          </Button>
+          <Button className="w-fit" onClick={() => setEditing('new')}>
+            <Plus size={14} />
+            Ajouter une classe
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -162,23 +234,106 @@ export default function ClassesPage() {
                 </option>
               ))}
             </select>
-            <span className="ml-auto text-sm text-muted-foreground">{filtered.length} classes</span>
+            <select
+              disabled
+              value={school?.academicYear?.label ?? ''}
+              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground disabled:cursor-not-allowed disabled:opacity-70"
+              title="Sélecteur multi-année à venir — une seule année scolaire active pour l'instant"
+            >
+              <option value={school?.academicYear?.label ?? ''}>
+                {school?.academicYear?.label ?? 'Aucune année active'}
+              </option>
+            </select>
+            <span className="text-sm text-muted-foreground">{filtered.length} classes</span>
+            <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
+              <button
+                type="button"
+                onClick={() => setView('grid')}
+                aria-label="Vue grille"
+                aria-pressed={view === 'grid'}
+                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'grid' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('list')}
+                aria-label="Vue liste"
+                aria-pressed={view === 'list'}
+                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'list' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
+              >
+                <ListIcon size={15} />
+              </button>
+            </div>
           </div>
 
-          <Card className="overflow-x-auto">
-            {filtered.length === 0 ? (
+          {filtered.length === 0 ? (
+            <Card>
               <p className="p-5 text-sm text-muted-foreground">
                 {classes.length === 0 ? 'Aucune classe — ajoute la première.' : 'Aucun résultat.'}
               </p>
-            ) : (
-              <table className="w-full min-w-[720px] border-collapse text-sm">
+            </Card>
+          ) : view === 'grid' ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((c) => (
+                <Card key={c.id} className="gap-3 p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ background: getClassDotColor(c.id) }}
+                      />
+                      <div>
+                        <div className="font-bold text-foreground">{c.name}</div>
+                        {c.room && (
+                          <div className="text-[11px] text-muted-foreground">{c.room}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ActionMenu items={menuItemsFor(c)} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge>{c.level}</Badge>
+                    <Badge tone="success">Active</Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-foreground">
+                    {c.homeroomTeacher ? (
+                      <>
+                        <Avatar name={c.homeroomTeacher.name} size={20} />
+                        <span>{c.homeroomTeacher.name}</span>
+                      </>
+                    ) : (
+                      <span className="italic text-muted-foreground">
+                        Professeur principal non affecté
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-3 text-xs">
+                    <Link
+                      href={`/configuration/coefficients?classId=${c.id}`}
+                      className="font-semibold text-primary hover:underline"
+                    >
+                      {c.subjectCount} matières
+                    </Link>
+                    <span className="text-muted-foreground">— / {c.capacity ?? '—'} places</span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="overflow-x-auto">
+              <table className="w-full min-w-[920px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <Th>Classe</Th>
                     <Th>Niveau</Th>
                     <Th>Professeur principal</Th>
+                    <Th>Élèves</Th>
                     <Th>Matières</Th>
-                    <Th className="w-[70px]" />
+                    <Th>Moyenne générale</Th>
+                    <Th>Statut</Th>
+                    <Th className="w-[80px]" />
                   </tr>
                 </thead>
                 <tbody>
@@ -212,6 +367,10 @@ export default function ClassesPage() {
                           <span className="italic text-muted-foreground">Non affecté</span>
                         )}
                       </td>
+                      <td className="px-3.5 py-2.5 text-foreground">
+                        <span className="font-semibold">—</span>
+                        <span className="text-muted-foreground"> / {c.capacity ?? '—'} places</span>
+                      </td>
                       <td className="px-3.5 py-2.5">
                         <Link
                           href={`/configuration/coefficients?classId=${c.id}`}
@@ -220,22 +379,24 @@ export default function ClassesPage() {
                           {c.subjectCount}
                         </Link>
                       </td>
+                      <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
+                      <td className="px-3.5 py-2.5">
+                        <Badge tone="success">Active</Badge>
+                      </td>
                       <td className="px-3.5 py-2.5">
                         <div className="flex items-center gap-1">
                           <IconButton onClick={() => setEditing(c)} label="Modifier">
                             <Pencil size={14} />
                           </IconButton>
-                          <IconButton onClick={() => onDelete(c)} label="Supprimer">
-                            <Trash2 size={14} />
-                          </IconButton>
+                          <ActionMenu items={menuItemsFor(c)} />
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </Card>
+            </Card>
+          )}
         </>
       )}
 
@@ -268,9 +429,21 @@ function Th({ children, className = '' }: { children?: ReactNode; className?: st
   );
 }
 
-function Badge({ children }: { children: ReactNode }) {
+function Badge({
+  children,
+  tone = 'secondary',
+}: {
+  children: ReactNode;
+  tone?: 'secondary' | 'success';
+}) {
+  const toneClasses = {
+    secondary: 'bg-secondary text-secondary-foreground',
+    success: 'bg-success text-success-foreground',
+  } as const;
   return (
-    <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-secondary-foreground">
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+    >
       {children}
     </span>
   );

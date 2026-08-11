@@ -1,7 +1,23 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, Users, Pencil, Trash2, Plus } from 'lucide-react';
+import {
+  BookOpen,
+  CheckCircle2,
+  AlertCircle,
+  Users,
+  Pencil,
+  Trash2,
+  Plus,
+  Download,
+  Eye,
+  UserPlus,
+  Link as LinkIcon,
+  Percent,
+  Copy,
+  Archive,
+  ArchiveRestore,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -9,9 +25,20 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { exportToCsv } from '@/lib/csv-export';
 import { SubjectFormModal } from './SubjectFormModal';
 import type { SubjectData } from './types';
+
+type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
+
+function coefficientLabel(coefficients: number[]): string {
+  if (coefficients.length === 0) return '—';
+  const uniq = [...new Set(coefficients)];
+  if (uniq.length === 1) return String(uniq[0]);
+  return `${Math.min(...uniq)}–${Math.max(...uniq)}`;
+}
 
 export default function MatieresPage() {
   const user = useUser();
@@ -21,6 +48,7 @@ export default function MatieresPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [domain, setDomain] = useState('');
+  const [status, setStatus] = useState<StatusFilter>('');
   const [editing, setEditing] = useState<SubjectData | 'new' | null>(null);
 
   useEffect(() => {
@@ -44,17 +72,20 @@ export default function MatieresPage() {
   const filtered = useMemo(() => {
     return (subjects ?? []).filter((s) => {
       if (domain && s.domain !== domain) return false;
+      if (status === 'archived' && s.isActive) return false;
+      if (status === 'active' && (!s.isActive || s.classes.length === 0)) return false;
+      if (status === 'unassigned' && (!s.isActive || s.classes.length > 0)) return false;
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [subjects, search, domain]);
+  }, [subjects, search, domain, status]);
 
   const stats = useMemo(() => {
     const all = subjects ?? [];
     return {
       total: all.length,
-      active: all.filter((s) => s.classes.length > 0).length,
-      unassigned: all.filter((s) => s.classes.length === 0).length,
+      active: all.filter((s) => s.isActive && s.classes.length > 0).length,
+      unassigned: all.filter((s) => s.isActive && s.classes.length === 0).length,
       teachers: new Set(all.flatMap((s) => s.teacherNames)).size,
     };
   }, [subjects]);
@@ -68,6 +99,81 @@ export default function MatieresPage() {
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
     }
+  }
+
+  async function onToggleArchive(subject: SubjectData) {
+    try {
+      const res = await api<{ subject: { isActive: boolean } }>(
+        `/api/school/subjects/${subject.id}`,
+        {
+          method: 'PATCH',
+          body: { isActive: !subject.isActive },
+        },
+      );
+      setSubjects((prev) =>
+        prev
+          ? prev.map((s) => (s.id === subject.id ? { ...s, isActive: res.subject.isActive } : s))
+          : prev,
+      );
+      toast(res.subject.isActive ? 'Matière désarchivée.' : 'Matière archivée.', 'success');
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+    }
+  }
+
+  function onExport() {
+    exportToCsv(
+      'matieres.csv',
+      ['Matière', 'Code', 'Domaine', 'Coefficient', 'Enseignants', 'Classes', 'Statut'],
+      filtered.map((s) => [
+        s.name,
+        s.code ?? '',
+        s.domain ?? '',
+        coefficientLabel(s.coefficients),
+        s.teacherNames.join('; '),
+        s.classes.map((c) => c.name).join('; '),
+        !s.isActive ? 'Archivée' : s.classes.length > 0 ? 'Active' : 'Non affectée',
+      ]),
+    );
+  }
+
+  function menuItemsFor(s: SubjectData) {
+    return [
+      { label: 'Voir les détails', icon: <Eye size={14} />, onClick: () => setEditing(s) },
+      { label: 'Modifier la matière', icon: <Pencil size={14} />, onClick: () => setEditing(s) },
+      {
+        label: 'Assigner un enseignant',
+        icon: <UserPlus size={14} />,
+        onClick: () => router.push('/configuration/affectations'),
+      },
+      {
+        label: 'Gérer les affectations',
+        icon: <LinkIcon size={14} />,
+        onClick: () => router.push('/configuration/affectations'),
+      },
+      {
+        label: 'Modifier le coefficient',
+        icon: <Percent size={14} />,
+        onClick: () => router.push('/configuration/coefficients'),
+      },
+      {
+        label: 'Dupliquer',
+        icon: <Copy size={14} />,
+        onClick: () => toast('Duplication de matière — bientôt disponible.', 'info'),
+        divider: true,
+      },
+      {
+        label: s.isActive ? 'Archiver la matière' : 'Désarchiver la matière',
+        icon: s.isActive ? <Archive size={14} /> : <ArchiveRestore size={14} />,
+        onClick: () => onToggleArchive(s),
+      },
+      {
+        label: 'Supprimer la matière',
+        icon: <Trash2 size={14} />,
+        onClick: () => onDelete(s),
+        tone: 'danger' as const,
+      },
+    ];
   }
 
   if (!user) {
@@ -85,10 +191,16 @@ export default function MatieresPage() {
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Matières</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">Gestion des matières enseignées.</p>
         </div>
-        <Button className="w-fit" onClick={() => setEditing('new')}>
-          <Plus size={14} />
-          Ajouter une matière
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+            <Download size={14} />
+            Exporter
+          </Button>
+          <Button className="w-fit" onClick={() => setEditing('new')}>
+            <Plus size={14} />
+            Ajouter une matière
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -142,6 +254,16 @@ export default function MatieresPage() {
                 </option>
               ))}
             </select>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as StatusFilter)}
+              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="active">Active</option>
+              <option value="unassigned">Non affectée</option>
+              <option value="archived">Archivée</option>
+            </select>
             <span className="ml-auto text-sm text-muted-foreground">
               {filtered.length} matières
             </span>
@@ -153,15 +275,17 @@ export default function MatieresPage() {
                 {subjects.length === 0 ? 'Aucune matière — ajoute la première.' : 'Aucun résultat.'}
               </p>
             ) : (
-              <table className="w-full min-w-[720px] border-collapse text-sm">
+              <table className="w-full min-w-[900px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <Th>Matière</Th>
                     <Th>Domaine</Th>
+                    <Th>Coefficient</Th>
                     <Th>Enseignant assigné</Th>
                     <Th>Classes</Th>
+                    <Th>Nb. évaluations</Th>
                     <Th>Statut</Th>
-                    <Th className="w-[70px]" />
+                    <Th className="w-[80px]" />
                   </tr>
                 </thead>
                 <tbody>
@@ -197,6 +321,9 @@ export default function MatieresPage() {
                             <span className="text-muted-foreground">—</span>
                           )}
                         </td>
+                        <td className="px-3.5 py-2.5 font-bold text-foreground">
+                          {coefficientLabel(s.coefficients)}
+                        </td>
                         <td className="px-3.5 py-2.5 text-foreground">
                           {s.teacherNames.length > 0 ? (
                             <div className="flex items-center gap-1.5">
@@ -219,8 +346,11 @@ export default function MatieresPage() {
                             )}
                           </div>
                         </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                         <td className="px-3.5 py-2.5">
-                          {s.classes.length > 0 ? (
+                          {!s.isActive ? (
+                            <Badge>Archivée</Badge>
+                          ) : s.classes.length > 0 ? (
                             <Badge tone="success">Active</Badge>
                           ) : (
                             <Badge tone="warning">Non affectée</Badge>
@@ -231,9 +361,7 @@ export default function MatieresPage() {
                             <IconButton onClick={() => setEditing(s)} label="Modifier">
                               <Pencil size={14} />
                             </IconButton>
-                            <IconButton onClick={() => onDelete(s)} label="Supprimer">
-                              <Trash2 size={14} />
-                            </IconButton>
+                            <ActionMenu items={menuItemsFor(s)} />
                           </div>
                         </td>
                       </tr>

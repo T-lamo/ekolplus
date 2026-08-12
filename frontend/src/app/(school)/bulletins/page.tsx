@@ -2,16 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  FileText,
   Users,
   CheckCircle2,
   Clock,
   TrendingUp,
   AlertTriangle,
   Download,
-  List,
-  BarChart2,
-  Send,
   Eye,
   Pencil,
 } from 'lucide-react';
@@ -19,7 +15,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect } from '@/components/ui/FilterSelect';
@@ -49,14 +44,12 @@ function moyToneClass(avg: number | null): string {
 export default function BulletinsListPage() {
   const user = useUser();
   const router = useRouter();
-  const { toast } = useToast();
   const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
   const [data, setData] = useState<BulletinsListData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'list' | 'struggling'>('list');
 
   useEffect(() => {
     if (!user) return;
@@ -93,12 +86,10 @@ export default function BulletinsListPage() {
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];
-    let rows = data.students;
     const q = search.trim().toLowerCase();
-    if (q) rows = rows.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(q));
-    if (tab === 'struggling') rows = rows.filter((s) => s.average != null && s.average < 8);
-    return rows;
-  }, [data, search, tab]);
+    if (!q) return data.students;
+    return data.students.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(q));
+  }, [data, search]);
 
   function exportCsv() {
     if (!data) return;
@@ -140,29 +131,14 @@ export default function BulletinsListPage() {
             Génération et suivi des bulletins — {data.className}
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
-          >
-            <Download size={14} />
-            Exporter tout
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              toast(
-                'Les bulletins se génèrent automatiquement dès que des notes existent — cliquez « Voir » sur un élève pour le consulter.',
-                'info',
-              )
-            }
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground"
-          >
-            <FileText size={14} />
-            Générer les bulletins
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={exportCsv}
+          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
+        >
+          <Download size={14} />
+          Exporter tout
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -227,38 +203,9 @@ export default function BulletinsListPage() {
         </span>
       </Card>
 
-      <div role="tablist" className="flex w-fit gap-1 rounded-lg bg-muted p-1">
-        <TabButton active={tab === 'list'} onClick={() => setTab('list')} icon={List}>
-          Liste des bulletins
-          <TabBadge>{data.totalCount}</TabBadge>
-        </TabButton>
-        <TabButton
-          active={false}
-          onClick={() => toast('Statistiques de classe — bientôt disponible.', 'info')}
-          icon={BarChart2}
-        >
-          Statistiques de classe
-        </TabButton>
-        <TabButton
-          active={tab === 'struggling'}
-          onClick={() => setTab('struggling')}
-          icon={AlertTriangle}
-        >
-          Élèves en difficulté
-          <TabBadge tone="destructive">{data.strugglingCount}</TabBadge>
-        </TabButton>
-        <TabButton
-          active={false}
-          onClick={() => toast('Envois aux parents — bientôt disponible.', 'info')}
-          icon={Send}
-        >
-          Envois aux parents
-        </TabButton>
-      </div>
-
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] border-collapse text-sm">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border">
                 <Th>Élève</Th>
@@ -266,14 +213,13 @@ export default function BulletinsListPage() {
                 <Th>Rang</Th>
                 <Th>Appréciation</Th>
                 <Th>Statut bulletin</Th>
-                <Th>Envoyé aux parents</Th>
                 <Th className="w-[60px]" />
               </tr>
             </thead>
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">
                     Aucun élève trouvé.
                   </td>
                 </tr>
@@ -291,7 +237,6 @@ export default function BulletinsListPage() {
 }
 
 function StudentRow({ student, termId }: { student: ListStudentRow; termId: string | null }) {
-  const { toast } = useToast();
   const viewHref = `/bulletins/${student.studentId}/${termId ?? ''}`;
   const items: ActionMenuItem[] = [
     {
@@ -304,17 +249,6 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
       icon: <Pencil size={13} />,
       onClick: () =>
         (window.location.href = `/pedagogie/appreciations/${student.studentId}/saisie?termId=${termId ?? ''}`),
-    },
-    {
-      label: 'Générer le bulletin PDF',
-      icon: <FileText size={13} />,
-      onClick: () => toast('Export PDF — bientôt disponible.', 'info'),
-      divider: true,
-    },
-    {
-      label: 'Envoyer aux parents',
-      icon: <Send size={13} />,
-      onClick: () => toast('Messagerie — bientôt disponible.', 'info'),
     },
   ];
 
@@ -363,11 +297,6 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
         </span>
       </td>
       <td className="px-3.5 py-2.5">
-        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-          Non envoyé
-        </span>
-      </td>
-      <td className="px-3.5 py-2.5">
         <div className="flex items-center gap-1">
           <Link
             href={viewHref}
@@ -389,41 +318,6 @@ function Th({ children, className = '' }: { children?: React.ReactNode; classNam
     >
       {children}
     </th>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  icon: Icon,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ComponentType<{ size?: number }>;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium ${active ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
-    >
-      <Icon size={13} />
-      {children}
-    </button>
-  );
-}
-
-function TabBadge({ children, tone }: { children: React.ReactNode; tone?: 'destructive' }) {
-  return (
-    <span
-      className={`inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1 text-[11px] font-bold ${tone === 'destructive' ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-primary'}`}
-    >
-      {children}
-    </span>
   );
 }
 

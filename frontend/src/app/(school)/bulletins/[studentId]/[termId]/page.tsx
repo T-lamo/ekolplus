@@ -5,11 +5,8 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Download,
   Printer,
-  Send,
   Pencil,
-  Trash2,
   ZoomIn,
   ZoomOut,
   Maximize2,
@@ -19,14 +16,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
 import type { StudentBulletinData } from '../../types';
 
 export default function BulletinViewerPage() {
   const user = useUser();
-  const { toast } = useToast();
   const params = useParams<{ studentId: string; termId: string }>();
   const [data, setData] = useState<StudentBulletinData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -137,32 +132,14 @@ export default function BulletinViewerPage() {
           <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
             Actions
           </div>
-          <ActionBtn
-            icon={Download}
-            label="Télécharger PDF"
-            primary
-            onClick={() => toast('Export PDF — bientôt disponible.', 'info')}
-          />
-          <ActionBtn icon={Printer} label="Imprimer" onClick={() => window.print()} />
-          <ActionBtn
-            icon={Send}
-            label="Envoyer aux parents"
-            onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
-          />
+          <ActionBtn icon={Printer} label="Imprimer" primary onClick={() => window.print()} />
           <Link
             href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
-            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
+            className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
           >
             <Pencil size={14} className="text-muted-foreground" />
             Modifier l&apos;appréciation
           </Link>
-          <div className="my-1.5 h-px bg-border" />
-          <ActionBtn
-            icon={Trash2}
-            label="Supprimer le bulletin"
-            danger
-            onClick={() => toast('Les bulletins ne sont pas stockés — rien à supprimer.', 'info')}
-          />
         </div>
 
         <div className="rounded-lg bg-card p-3.5">
@@ -241,24 +218,14 @@ export default function BulletinViewerPage() {
               : '—'}{' '}
             — Modèle : {data.template?.name ?? '—'}
           </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground"
-            >
-              <Printer size={13} />
-              Imprimer
-            </button>
-            <button
-              type="button"
-              onClick={() => toast('Export PDF — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-            >
-              <Download size={13} />
-              Exporter PDF
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+          >
+            <Printer size={13} />
+            Imprimer
+          </button>
         </div>
 
         <div id="bulletin-page-wrap" className="flex justify-center py-2">

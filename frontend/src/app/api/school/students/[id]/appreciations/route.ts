@@ -89,9 +89,31 @@ export async function GET(
       orderBy: { order: 'asc' },
     });
     const termIdParam = req.nextUrl.searchParams.get('termId');
-    const term = termIdParam
-      ? (terms.find((t) => t.id === termIdParam) ?? null)
-      : resolveCurrentTerm(terms);
+    let term: (typeof terms)[number] | null;
+    if (termIdParam) {
+      term = terms.find((t) => t.id === termIdParam) ?? null;
+    } else {
+      // No explicit termId: resolveCurrentTerm's date-based default can miss
+      // an appreciation that was saved against an earlier term (e.g. the
+      // author had switched the term filter before saving). Prefer whichever
+      // term actually holds data for this student over the naive "current"
+      // one, so a freshly-saved appreciation is never invisible by default.
+      const current = resolveCurrentTerm(terms);
+      const termIds = terms.map((t) => t.id);
+      const existing =
+        termIds.length === 0
+          ? []
+          : await prisma.appreciation.findMany({
+              where: { studentId, termId: { in: termIds } },
+              select: { termId: true },
+            });
+      const termIdsWithData = new Set(existing.map((a) => a.termId));
+      term =
+        current && !termIdsWithData.has(current.id) && termIdsWithData.size > 0
+          ? (terms.filter((t) => termIdsWithData.has(t.id)).sort((a, b) => b.order - a.order)[0] ??
+            current)
+          : current;
+    }
 
     const classmates = await prisma.enrollment.findMany({
       where: { classId: enrollment.classId, academicYearId: enrollment.class.academicYearId },

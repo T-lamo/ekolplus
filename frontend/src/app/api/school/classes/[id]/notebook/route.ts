@@ -13,7 +13,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool } from '@/lib/server/school';
-import { resolveCurrentTerm, subjectAverageFor, weightedAverage } from '@/lib/server/grades';
+import {
+  competitionRank,
+  resolveCurrentTerm,
+  subjectAverageFor,
+  weightedAverage,
+} from '@/lib/server/grades';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(
@@ -143,7 +148,8 @@ export async function GET(
     const ranked = [...students]
       .filter((s) => s.generalAverage != null)
       .sort((a, b) => b.generalAverage! - a.generalAverage!);
-    const rankByStudent = new Map(ranked.map((s, i) => [s.studentId, i + 1]));
+    const ranks = competitionRank(ranked, (s) => s.generalAverage!);
+    const rankByStudent = new Map(ranked.map((s, i) => [s.studentId, ranks[i]!]));
     const studentsWithRank = students.map((s) => ({
       ...s,
       rank: rankByStudent.get(s.studentId) ?? null,

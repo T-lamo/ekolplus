@@ -67,7 +67,7 @@ export async function GET(
 const UpsertGoalBody = z.object({
   termId: z.string().min(1),
   subjectId: z.string().min(1).nullable(),
-  targetScore: z.number().min(0).max(1000),
+  targetScore: z.number().min(0).max(20),
 });
 
 export async function PUT(

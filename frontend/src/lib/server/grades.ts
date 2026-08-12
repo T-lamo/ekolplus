@@ -55,6 +55,19 @@ export function subjectAverageFor(evaluations: EvaluationLike[], studentId: stri
   return weightedAverage(rows);
 }
 
+// Competition ("1224") ranking: entries tied on value share the same rank,
+// and the next distinct value skips ahead by the number of entries tied
+// above it — matches how French bulletins show "ex-aequo" instead of
+// arbitrarily breaking ties by insertion order. `sortedDesc` must already
+// be sorted by value descending; returns one rank per entry, same order.
+export function competitionRank<T>(sortedDesc: T[], valueOf: (item: T) => number): number[] {
+  let rank = 1;
+  return sortedDesc.map((item, i) => {
+    if (i > 0 && valueOf(item) !== valueOf(sortedDesc[i - 1]!)) rank = i + 1;
+    return rank;
+  });
+}
+
 export function appreciationFor(average: number | null): string | null {
   if (average == null) return null;
   if (average < 8) return 'Faible';

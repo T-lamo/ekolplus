@@ -21,6 +21,7 @@ import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool } from '@/lib/server/school';
 import {
   appreciationFor,
+  competitionRank,
   resolveCurrentTerm,
   subjectAverageFor as scoreOf,
   trendBetween,
@@ -256,12 +257,13 @@ export async function GET(
       }))
       .filter((r): r is { studentId: string; name: string; average: number } => r.average != null)
       .sort((a, b) => b.average - a.average);
-    const rankIndex = rankingRaw.findIndex((r) => r.studentId === studentId);
+    const positions = competitionRank(rankingRaw, (r) => r.average);
     const ranking = rankingRaw.map((r, i) => ({
       ...r,
-      position: i + 1,
+      position: positions[i]!,
       isSelf: r.studentId === studentId,
     }));
+    const selfRanking = ranking.find((r) => r.studentId === studentId);
 
     let goals:
       | {
@@ -296,7 +298,7 @@ export async function GET(
         subjects,
         overallAverage,
         classOverallAverage,
-        rank: rankIndex >= 0 ? rankIndex + 1 : null,
+        rank: selfRanking?.position ?? null,
         rankedCount: rankingRaw.length,
         bestSubject: bestSubject
           ? { name: bestSubject.subjectName, average: bestSubject.average }

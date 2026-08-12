@@ -15,7 +15,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
     return (
       <label htmlFor={inputId} className="flex flex-col gap-1.5 text-sm">
         <span className="text-xs font-semibold text-foreground">{label}</span>
-        <span className="flex items-center gap-2 rounded-md border-[1.5px] border-border bg-input px-3 py-2.5 focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/10">
+        <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-input px-3 focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/10">
           {icon && <span className="flex shrink-0 items-center text-primary">{icon}</span>}
           <input
             ref={ref}

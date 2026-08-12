@@ -136,16 +136,16 @@ export default function StudentProfilePage() {
         </Link>
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            className="w-fit border border-border"
+            variant="outline"
+            className="w-fit"
             onClick={() => toast('Export PDF du dossier — bientôt disponible.', 'info')}
           >
             <Download size={14} />
             Exporter le dossier
           </Button>
           <Button
-            variant="ghost"
-            className="w-fit border border-border"
+            variant="outline"
+            className="w-fit"
             onClick={() => toast('Disponible avec Epic 7 (Bulletins).', 'info')}
           >
             <FileText size={14} />

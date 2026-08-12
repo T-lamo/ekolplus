@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { GoalRow } from '../types';
@@ -69,12 +69,12 @@ export function GoalModal({
   return (
     <Modal title="Définir un objectif" onClose={onClose}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
-        <Select label="Matière" value={subjectId} onChange={(e) => onSubjectChange(e.target.value)}>
-          <option value={OVERALL_VALUE}>Moyenne générale</option>
+        <Select label="Matière" value={subjectId} onValueChange={onSubjectChange}>
+          <SelectItem value={OVERALL_VALUE}>Moyenne générale</SelectItem>
           {subjects.map((s) => (
-            <option key={s.subjectId} value={s.subjectId}>
+            <SelectItem key={s.subjectId} value={s.subjectId}>
               {s.subjectName}
-            </option>
+            </SelectItem>
           ))}
         </Select>
         <Field

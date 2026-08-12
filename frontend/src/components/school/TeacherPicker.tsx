@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 
@@ -70,15 +70,10 @@ export function TeacherPicker({
           </p>
         )}
         <div className="flex gap-2">
-          <Button type="submit" loading={submitting} className="min-h-9 py-2 text-xs">
+          <Button type="submit" loading={submitting} size="sm">
             Ajouter
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="min-h-9 py-2 text-xs"
-            onClick={() => setCreating(false)}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>
             Annuler
           </Button>
         </div>
@@ -88,12 +83,12 @@ export function TeacherPicker({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Select label={label} value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
-        <option value="">— Aucun —</option>
+      <Select label={label} value={value ?? ''} onValueChange={(v) => onChange(v || null)}>
+        <SelectItem value="">— Aucun —</SelectItem>
         {teachers.map((t) => (
-          <option key={t.id} value={t.id}>
+          <SelectItem key={t.id} value={t.id}>
             {t.name}
-          </option>
+          </SelectItem>
         ))}
       </Select>
       <button

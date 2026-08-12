@@ -13,15 +13,21 @@
   --color-secondary: #ede9fb;
   --color-secondary-foreground: #6c2bd9;
   --color-muted: #ececf3;
-  --color-muted-foreground: #8884a0;
+  /* Darkened from Banani's #8884a0 (~3.2:1 on --background) to clear WCAG AA's
+     4.5:1 for normal text — muted-foreground is the app's default secondary-
+     text color, used at text-sm/text-xs on nearly every screen. */
+  --color-muted-foreground: #696582;
   --color-success: #e6f9f0;
-  --color-success-foreground: #1a9e5c;
+  /* Darkened from Banani's #1a9e5c (~3.2:1 on --success) for the same reason. */
+  --color-success-foreground: #157d49;
   --color-accent: #7c3aed;
   --color-accent-foreground: #ffffff;
   --color-destructive: #fdecea;
-  --color-destructive-foreground: #d93025;
+  /* Darkened from Banani's #d93025 (~4.2:1 on --destructive, under 4.5:1). */
+  --color-destructive-foreground: #c82c22;
   --color-warning: #fff8e1;
-  --color-warning-foreground: #f59e0b;
+  /* Darkened from Banani's #f59e0b (~2:1 on --warning, badly under 4.5:1). */
+  --color-warning-foreground: #996206;
   --color-card: #ffffff;
   --color-card-foreground: #1a1a2e;
 

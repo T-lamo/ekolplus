@@ -276,8 +276,8 @@ export default function GradeEntryPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            className="w-fit border border-border"
+            variant="outline"
+            className="w-fit"
             onClick={() => toast('Import CSV — bientôt disponible.', 'info')}
           >
             <Upload size={14} />
@@ -421,6 +421,7 @@ export default function GradeEntryPage() {
                       <button
                         type="button"
                         onClick={() => setRow(s.studentId, { absent: !row.absent, score: '' })}
+                        aria-label="Marquer absent"
                         aria-pressed={row.absent}
                         className={`mx-auto flex h-6.5 w-6.5 items-center justify-center rounded-md ${row.absent ? 'bg-destructive text-destructive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
                       >
@@ -531,8 +532,8 @@ export default function GradeEntryPage() {
             Annuler
           </Button>
           <Button
-            variant="ghost"
-            className="w-fit border border-border"
+            variant="outline"
+            className="w-fit"
             onClick={() => save(false)}
             loading={saving}
             disabled={hasInvalidScore}

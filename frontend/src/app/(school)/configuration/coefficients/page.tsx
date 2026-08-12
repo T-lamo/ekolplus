@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { CoefficientStepper } from './CoefficientStepper';
 import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
@@ -153,18 +154,14 @@ function CoefficientsPageInner() {
           />
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <select
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Tous les domaines</option>
+            <FilterSelect value={domain} onValueChange={setDomain}>
+              <SelectItem value="">Tous les domaines</SelectItem>
               {domains.map((d) => (
-                <option key={d} value={d}>
+                <SelectItem key={d} value={d}>
                   {d}
-                </option>
+                </SelectItem>
               ))}
-            </select>
+            </FilterSelect>
             <span className="ml-auto text-sm text-muted-foreground">
               {classRows.length} matières
             </span>

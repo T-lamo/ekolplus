@@ -11,7 +11,6 @@ import {
   Plus,
   Download,
   Printer,
-  Search,
   Eye,
   Star,
   History,
@@ -27,7 +26,8 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { exportToCsv } from '@/lib/csv-export';
@@ -404,15 +404,11 @@ export default function GradeNotebookPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+          <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter
           </Button>
-          <Button
-            variant="ghost"
-            className="w-fit border border-border"
-            onClick={() => window.print()}
-          >
+          <Button variant="outline" className="w-fit" onClick={() => window.print()}>
             <Printer size={14} />
             Imprimer
           </Button>
@@ -483,60 +479,44 @@ export default function GradeNotebookPage() {
           )}
 
           <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
-            <div className="flex min-w-[200px] max-w-[280px] flex-1 items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5">
-              <Search size={14} className="text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Rechercher un élève..."
-                className="w-full border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-            <Select
-              label=""
-              className="min-h-9 py-1.5"
-              value={classId}
+            <SearchInput
+              value={search}
               onChange={(e) => {
-                const newClassId = e.target.value;
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Rechercher un élève..."
+              className="min-w-[200px] max-w-[280px]"
+            />
+            <FilterSelect
+              value={classId}
+              onValueChange={(newClassId) => {
                 setClassId(newClassId);
                 const first = classSubjects.find((cs) => cs.classId === newClassId);
                 setSubjectValue(first ? first.id : 'ALL');
               }}
             >
               {classes.map((c) => (
-                <option key={c.id} value={c.id}>
+                <SelectItem key={c.id} value={c.id}>
                   {c.name}
-                </option>
+                </SelectItem>
               ))}
-            </Select>
-            <Select
-              label=""
-              className="min-h-9 py-1.5"
-              value={subjectValue}
-              onChange={(e) => setSubjectValue(e.target.value)}
-            >
-              <option value="ALL">Toutes les matières</option>
+            </FilterSelect>
+            <FilterSelect value={subjectValue} onValueChange={setSubjectValue}>
+              <SelectItem value="ALL">Toutes les matières</SelectItem>
               {subjectsForClass.map((cs) => (
-                <option key={cs.id} value={cs.id}>
+                <SelectItem key={cs.id} value={cs.id}>
                   {cs.subject.name}
-                </option>
+                </SelectItem>
               ))}
-            </Select>
-            <Select
-              label=""
-              className="min-h-9 py-1.5"
-              value={termId}
-              onChange={(e) => setTermId(e.target.value)}
-            >
+            </FilterSelect>
+            <FilterSelect value={termId} onValueChange={setTermId}>
               {terms.map((t) => (
-                <option key={t.id} value={t.id}>
+                <SelectItem key={t.id} value={t.id}>
                   {t.label}
-                </option>
+                </SelectItem>
               ))}
-            </Select>
+            </FilterSelect>
             <span className="ml-auto text-xs text-muted-foreground">
               {filteredStudents.length} élèves
             </span>

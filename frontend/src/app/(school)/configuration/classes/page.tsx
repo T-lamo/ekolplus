@@ -26,6 +26,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { getClassDotColor } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
@@ -172,7 +174,7 @@ export default function ClassesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+          <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter
           </Button>
@@ -216,34 +218,30 @@ export default function ClassesPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <input
+            <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une classe..."
-              className="min-h-11 max-w-[260px] flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              className="max-w-[260px]"
             />
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Tous niveaux</option>
+            <FilterSelect value={level} onValueChange={setLevel}>
+              <SelectItem value="">Tous niveaux</SelectItem>
               {levels.map((l) => (
-                <option key={l} value={l}>
+                <SelectItem key={l} value={l}>
                   {l}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <select
+            </FilterSelect>
+            <FilterSelect
               disabled
               value={school?.academicYear?.label ?? ''}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground disabled:cursor-not-allowed disabled:opacity-70"
+              onValueChange={() => {}}
               title="Sélecteur multi-année à venir — une seule année scolaire active pour l'instant"
             >
-              <option value={school?.academicYear?.label ?? ''}>
+              <SelectItem value={school?.academicYear?.label ?? ''}>
                 {school?.academicYear?.label ?? 'Aucune année active'}
-              </option>
-            </select>
+              </SelectItem>
+            </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} classes</span>
             <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
               <button

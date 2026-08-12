@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { TeacherListItem, TeacherStatus } from './types';
@@ -75,11 +75,11 @@ export function TeacherFormModal({
           <Select
             label="Statut"
             value={status}
-            onChange={(e) => setStatus(e.target.value as TeacherStatus)}
+            onValueChange={(v) => setStatus(v as TeacherStatus)}
           >
-            <option value="ACTIVE">Actif(ve)</option>
-            <option value="ON_LEAVE">En congé</option>
-            <option value="INACTIVE">Inactif(ve)</option>
+            <SelectItem value="ACTIVE">Actif(ve)</SelectItem>
+            <SelectItem value="ON_LEAVE">En congé</SelectItem>
+            <SelectItem value="INACTIVE">Inactif(ve)</SelectItem>
           </Select>
         )}
         {error && (

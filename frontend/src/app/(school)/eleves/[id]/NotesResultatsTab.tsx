@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
 import { exportToCsv } from '@/lib/csv-export';
 import { GoalModal } from './GoalModal';
@@ -164,31 +164,21 @@ export function NotesResultatsTab({
       {/* Filter bar */}
       <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
         <span className="text-xs font-semibold text-muted-foreground">Filtrer par :</span>
-        <Select
-          label=""
-          className="min-h-9 py-1.5"
-          value={yearId}
-          onChange={(e) => onYearChange(e.target.value)}
-        >
+        <FilterSelect value={yearId} onValueChange={onYearChange}>
           {data.years.map((y) => (
-            <option key={y.id} value={y.id}>
+            <SelectItem key={y.id} value={y.id}>
               Année {y.label}
-            </option>
+            </SelectItem>
           ))}
-        </Select>
-        <Select
-          label=""
-          className="min-h-9 py-1.5"
-          value={termSel}
-          onChange={(e) => setTermSel(e.target.value)}
-        >
+        </FilterSelect>
+        <FilterSelect value={termSel} onValueChange={setTermSel}>
           {data.terms.map((t) => (
-            <option key={t.id} value={t.id}>
+            <SelectItem key={t.id} value={t.id}>
               {t.label}
-            </option>
+            </SelectItem>
           ))}
-          <option value="all">Tous les trimestres</option>
-        </Select>
+          <SelectItem value="all">Tous les trimestres</SelectItem>
+        </FilterSelect>
         <span className="ml-auto text-xs text-muted-foreground">
           Affichage :{' '}
           <strong className="text-foreground">

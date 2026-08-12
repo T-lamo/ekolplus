@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ClassSubjectOption, EvaluationConfig, EvaluationType, TermOption } from './types';
 
@@ -48,28 +48,23 @@ export function EvaluationConfigForm({
   return (
     <div className="flex flex-col gap-3.5">
       <div className="grid grid-cols-2 gap-3.5">
-        <Select
-          label="Classe"
-          value={classId}
-          disabled={lockPair}
-          onChange={(e) => onClassChange(e.target.value)}
-        >
+        <Select label="Classe" value={classId} disabled={lockPair} onValueChange={onClassChange}>
           {classes.map((c) => (
-            <option key={c.id} value={c.id}>
+            <SelectItem key={c.id} value={c.id}>
               {c.name}
-            </option>
+            </SelectItem>
           ))}
         </Select>
         <Select
           label="Matière"
           value={value.classSubjectId}
           disabled={lockPair}
-          onChange={(e) => set('classSubjectId', e.target.value)}
+          onValueChange={(v) => set('classSubjectId', v)}
         >
           {subjectsForClass.map((cs) => (
-            <option key={cs.id} value={cs.id}>
+            <SelectItem key={cs.id} value={cs.id}>
               {cs.subject.name}
-            </option>
+            </SelectItem>
           ))}
         </Select>
       </div>
@@ -78,23 +73,23 @@ export function EvaluationConfigForm({
         <Select
           label="Trimestre / Période"
           value={value.termId}
-          onChange={(e) => set('termId', e.target.value)}
+          onValueChange={(v) => set('termId', v)}
         >
           {terms.map((t) => (
-            <option key={t.id} value={t.id}>
+            <SelectItem key={t.id} value={t.id}>
               {t.label}
-            </option>
+            </SelectItem>
           ))}
         </Select>
         <Select
           label="Type d'évaluation"
           value={value.type}
-          onChange={(e) => set('type', e.target.value as EvaluationType)}
+          onValueChange={(v) => set('type', v as EvaluationType)}
         >
           {(Object.keys(TYPE_LABEL) as EvaluationType[]).map((t) => (
-            <option key={t} value={t}>
+            <SelectItem key={t} value={t}>
               {TYPE_LABEL[t]}
-            </option>
+            </SelectItem>
           ))}
         </Select>
       </div>
@@ -117,12 +112,12 @@ export function EvaluationConfigForm({
         <Select
           label="Note maximale"
           value={String(value.maxScore)}
-          onChange={(e) => set('maxScore', Number(e.target.value))}
+          onValueChange={(v) => set('maxScore', Number(v))}
         >
           {[5, 10, 20, 100].map((n) => (
-            <option key={n} value={n}>
+            <SelectItem key={n} value={String(n)}>
               Sur {n}
-            </option>
+            </SelectItem>
           ))}
         </Select>
         <Field

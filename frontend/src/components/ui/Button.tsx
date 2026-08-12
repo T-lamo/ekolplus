@@ -1,27 +1,47 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-type ButtonVariant = 'primary' | 'ghost';
+type ButtonVariant = 'primary' | 'outline' | 'ghost';
+type ButtonSize = 'default' | 'sm';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+  outline: 'border border-border bg-card text-foreground hover:bg-muted',
   ghost: 'bg-transparent text-muted-foreground hover:bg-muted',
 };
 
+const sizeClasses: Record<ButtonSize, string> = {
+  default: 'h-10 gap-2 px-4 text-sm',
+  sm: 'h-9 gap-1.5 px-3 text-xs',
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', loading = false, disabled, className, children, ...props }, ref) => {
+  (
+    {
+      variant = 'primary',
+      size = 'default',
+      loading = false,
+      disabled,
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-bold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+          'flex w-full items-center justify-center rounded-md font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50',
           variantClasses[variant],
+          sizeClasses[size],
           className,
         )}
         {...props}

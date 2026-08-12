@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { ClassOption, GuardianData, StudentDetail } from './types';
@@ -131,10 +131,10 @@ export function StudentFormModal({
             />
           </div>
           <div className="grid grid-cols-2 gap-3.5">
-            <Select label="Genre" value={gender} onChange={(e) => setGender(e.target.value)}>
-              <option value="">—</option>
-              <option value="Masculin">Masculin</option>
-              <option value="Féminin">Féminin</option>
+            <Select label="Genre" value={gender} onValueChange={setGender}>
+              <SelectItem value="">—</SelectItem>
+              <SelectItem value="Masculin">Masculin</SelectItem>
+              <SelectItem value="Féminin">Féminin</SelectItem>
             </Select>
             <Field
               label="Nationalité"
@@ -143,16 +143,11 @@ export function StudentFormModal({
             />
           </div>
           <Field label="Adresse" value={address} onChange={(e) => setAddress(e.target.value)} />
-          <Select
-            label="Classe"
-            required
-            value={classId}
-            onChange={(e) => setClassId(e.target.value)}
-          >
+          <Select label="Classe" required value={classId} onValueChange={setClassId}>
             {classes.map((c) => (
-              <option key={c.id} value={c.id}>
+              <SelectItem key={c.id} value={c.id}>
                 {c.name}
-              </option>
+              </SelectItem>
             ))}
           </Select>
         </div>
@@ -219,11 +214,11 @@ function GuardianFields({
         <Select
           label="Lien de parenté"
           value={value.relationship}
-          onChange={(e) => onChange({ ...value, relationship: e.target.value })}
+          onValueChange={(v) => onChange({ ...value, relationship: v })}
         >
-          <option value="Père">Père</option>
-          <option value="Mère">Mère</option>
-          <option value="Tuteur">Tuteur</option>
+          <SelectItem value="Père">Père</SelectItem>
+          <SelectItem value="Mère">Mère</SelectItem>
+          <SelectItem value="Tuteur">Tuteur</SelectItem>
         </Select>
       </div>
       <div className="grid grid-cols-2 gap-3.5">

@@ -17,7 +17,7 @@ import { api, ApiError } from '@/lib/api';
 import { ADMIN_CREATE_SCHOOL as T } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 
 interface CreateSchoolResponse {
@@ -223,12 +223,12 @@ export default function CreateSchoolPage() {
                 label={T.schoolSection.schoolType}
                 required
                 value={form.schoolType}
-                onChange={(e) => set('schoolType', e.target.value)}
+                onValueChange={(v) => set('schoolType', v)}
               >
                 {T.schoolTypes.map((t) => (
-                  <option key={t} value={t}>
+                  <SelectItem key={t} value={t}>
                     {t}
-                  </option>
+                  </SelectItem>
                 ))}
               </Select>
               <Field
@@ -312,12 +312,12 @@ export default function CreateSchoolPage() {
               <Select
                 label={T.adminSection.role}
                 value={form.ownerRole}
-                onChange={(e) => set('ownerRole', e.target.value)}
+                onValueChange={(v) => set('ownerRole', v)}
               >
-                <option value="Directeur / Directrice">Directeur / Directrice</option>
-                <option value="Administrateur / Administratrice">
+                <SelectItem value="Directeur / Directrice">Directeur / Directrice</SelectItem>
+                <SelectItem value="Administrateur / Administratrice">
                   Administrateur / Administratrice
-                </option>
+                </SelectItem>
               </Select>
               <Field
                 label={T.adminSection.phone}

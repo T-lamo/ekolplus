@@ -22,6 +22,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
@@ -179,7 +181,7 @@ export default function AffectationsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+          <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter
           </Button>
@@ -231,46 +233,34 @@ export default function AffectationsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <input
+            <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une matière..."
-              className="min-h-11 max-w-[260px] flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              className="max-w-[260px]"
             />
-            <select
-              value={classFilter}
-              onChange={(e) => setClassFilter(e.target.value)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Toutes les classes</option>
+            <FilterSelect value={classFilter} onValueChange={setClassFilter}>
+              <SelectItem value="">Toutes les classes</SelectItem>
               {classes.map((c) => (
-                <option key={c.id} value={c.id}>
+                <SelectItem key={c.id} value={c.id}>
                   {c.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <select
-              value={teacherFilter}
-              onChange={(e) => setTeacherFilter(e.target.value)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Tous les enseignants</option>
+            </FilterSelect>
+            <FilterSelect value={teacherFilter} onValueChange={setTeacherFilter}>
+              <SelectItem value="">Tous les enseignants</SelectItem>
               {teachers.map((t) => (
-                <option key={t.id} value={t.id}>
+                <SelectItem key={t.id} value={t.id}>
                   {t.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as StatusFilter)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Tous les statuts</option>
-              <option value="active">Active</option>
-              <option value="unassigned">Sans enseignant</option>
-              <option value="archived">Archivée</option>
-            </select>
+            </FilterSelect>
+            <FilterSelect value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>
+              <SelectItem value="">Tous les statuts</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="unassigned">Sans enseignant</SelectItem>
+              <SelectItem value="archived">Archivée</SelectItem>
+            </FilterSelect>
             <span className="ml-auto text-sm text-muted-foreground">
               {filtered.length} affectations
             </span>

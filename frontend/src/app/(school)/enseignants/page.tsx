@@ -23,6 +23,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { TeacherFormModal } from './TeacherFormModal';
@@ -180,14 +182,14 @@ export default function TeachersPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            className="w-fit border border-border"
+            variant="outline"
+            className="w-fit"
             onClick={() => toast('Import CSV — bientôt disponible.', 'info')}
           >
             <Upload size={14} />
             Importer
           </Button>
-          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+          <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter
           </Button>
@@ -209,39 +211,32 @@ export default function TeachersPage() {
       {teachers !== null && (
         <>
           <div className="flex flex-wrap items-center gap-2.5">
-            <input
+            <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher un enseignant..."
-              className="min-h-11 max-w-[300px] flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              className="max-w-[300px]"
             />
-            <select
-              value={subjectFilter}
-              onChange={(e) => setSubjectFilter(e.target.value)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Toutes les matières</option>
+            <FilterSelect value={subjectFilter} onValueChange={setSubjectFilter}>
+              <SelectItem value="">Toutes les matières</SelectItem>
               {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id}>
                   {s.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as '' | TeacherStatus)}
-              className="min-h-11 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
-            >
-              <option value="">Tous les statuts</option>
-              <option value="ACTIVE">Actif(ve)</option>
-              <option value="ON_LEAVE">En congé</option>
-              <option value="INACTIVE">Inactif(ve)</option>
-            </select>
+            </FilterSelect>
+            <FilterSelect value={status} onValueChange={(v) => setStatus(v as '' | TeacherStatus)}>
+              <SelectItem value="">Tous les statuts</SelectItem>
+              <SelectItem value="ACTIVE">Actif(ve)</SelectItem>
+              <SelectItem value="ON_LEAVE">En congé</SelectItem>
+              <SelectItem value="INACTIVE">Inactif(ve)</SelectItem>
+            </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} résultats</span>
             <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
               <button
                 type="button"
                 onClick={() => setView('list')}
+                aria-label="Vue liste"
                 aria-pressed={view === 'list'}
                 className={`flex h-8 w-8 items-center justify-center rounded ${view === 'list' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
               >
@@ -250,6 +245,7 @@ export default function TeachersPage() {
               <button
                 type="button"
                 onClick={() => setView('grid')}
+                aria-label="Vue grille"
                 aria-pressed={view === 'grid'}
                 className={`flex h-8 w-8 items-center justify-center rounded ${view === 'grid' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
               >

@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { TeacherPicker, type TeacherOption } from '@/components/school/TeacherPicker';
@@ -89,24 +89,24 @@ export function AssignmentFormModal({
             label="Classe"
             value={classId}
             disabled={locked}
-            onChange={(e) => onPairChange(e.target.value, subjectId)}
+            onValueChange={(v) => onPairChange(v, subjectId)}
           >
             {classes.map((c) => (
-              <option key={c.id} value={c.id}>
+              <SelectItem key={c.id} value={c.id}>
                 {c.name}
-              </option>
+              </SelectItem>
             ))}
           </Select>
           <Select
             label="Matière"
             value={subjectId}
             disabled={locked}
-            onChange={(e) => onPairChange(classId, e.target.value)}
+            onValueChange={(v) => onPairChange(classId, v)}
           >
             {subjects.map((s) => (
-              <option key={s.id} value={s.id}>
+              <SelectItem key={s.id} value={s.id}>
                 {s.name}
-              </option>
+              </SelectItem>
             ))}
           </Select>
         </div>

@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Off-canvas drawer below lg — Banani only shipped the 1280px desktop
           mockup, mobile/tablet behavior designed per epic-0-shell.md. */}
       {drawerOpen && (
@@ -51,9 +51,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar onMenuClick={() => setDrawerOpen(true)} />
-        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+        <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

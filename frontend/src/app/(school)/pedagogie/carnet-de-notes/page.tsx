@@ -43,13 +43,31 @@ import type {
 
 const PAGE_SIZE = 8;
 
-// Sticky-right offsets, stacked from the table's right edge inward: kebab
-// (44px, matches its w-11) → Rang (56px) → Moyenne (84px). Kept as
-// constants so the <th> and <td> cells for the same column always agree.
-const STICKY_LEFT = 'sticky left-0 z-10 bg-card';
-const STICKY_KEBAB = 'sticky right-0 z-10 w-11 bg-card';
-const STICKY_RANG = 'sticky right-11 z-10 min-w-14 bg-card';
-const STICKY_MOYENNE = 'sticky right-[100px] z-10 min-w-[84px] border-l-2 border-border bg-card';
+// Every column gets an EXPLICIT pixel width via <colgroup> + table-layout:
+// fixed, instead of letting the browser auto-size them. With table-layout:
+// auto, a class with many subjects/evaluations (5 subjects × 3-4 evals =
+// ~20 columns) squeezes every column to fit the viewport, wrapping "Coeff.
+// N" onto its own line and making the header unreadable. Fixed widths also
+// let the sticky-right columns' offsets be computed exactly (no drift
+// between what a <th>/<td> claims via a Tailwind min-w utility and what
+// the browser actually renders).
+const ELEVE_W = 200;
+const EVAL_COL_W = 104;
+const SUBJECT_AVG_COL_W = 76;
+const MOYENNE_W = 92;
+const RANG_W = 64;
+const KEBAB_W = 44;
+const RIGHT_RANG = KEBAB_W;
+const RIGHT_MOYENNE = KEBAB_W + RANG_W;
+
+const STICKY_LEFT = 'sticky z-10 bg-card';
+const STICKY_KEBAB = 'sticky z-10 bg-card';
+const STICKY_RANG = 'sticky z-10 bg-card';
+const STICKY_MOYENNE = 'sticky z-10 border-l-2 border-border bg-card';
+const stickyLeftStyle = { left: 0 };
+const stickyKebabStyle = { right: 0 };
+const stickyRangStyle = { right: RIGHT_RANG };
+const stickyMoyenneStyle = { right: RIGHT_MOYENNE };
 
 function tone(avg: number | null): 'excellent' | 'good' | 'average' | 'poor' | 'neutral' {
   if (avg == null) return 'neutral';
@@ -203,6 +221,15 @@ export default function GradeNotebookPage() {
 
   const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
   const combined = subjectValue === 'ALL';
+
+  const tableWidth = unified
+    ? ELEVE_W +
+      unified.subjects.reduce((n, s) => n + s.evaluations.length, 0) * EVAL_COL_W +
+      (unified.combined ? unified.subjects.length * SUBJECT_AVG_COL_W : 0) +
+      MOYENNE_W +
+      RANG_W +
+      KEBAB_W
+    : ELEVE_W + MOYENNE_W + RANG_W + KEBAB_W;
 
   const filteredStudents = useMemo(() => {
     if (!unified) return [];
@@ -557,13 +584,31 @@ export default function GradeNotebookPage() {
           ) : (
             <Card className="gap-0 overflow-visible">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] border-collapse text-sm">
+                <table
+                  style={{ width: tableWidth, tableLayout: 'fixed' }}
+                  className="border-collapse text-sm"
+                >
+                  <colgroup>
+                    <col style={{ width: ELEVE_W }} />
+                    {unified.subjects.map((sub) => (
+                      <Fragment key={sub.classSubjectId}>
+                        {sub.evaluations.map((ev) => (
+                          <col key={ev.id} style={{ width: EVAL_COL_W }} />
+                        ))}
+                        {unified.combined && <col style={{ width: SUBJECT_AVG_COL_W }} />}
+                      </Fragment>
+                    ))}
+                    <col style={{ width: MOYENNE_W }} />
+                    <col style={{ width: RANG_W }} />
+                    <col style={{ width: KEBAB_W }} />
+                  </colgroup>
                   <thead>
                     {unified.combined && (
                       <tr className="border-b border-border">
                         <th
                           rowSpan={2}
-                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                          style={stickyLeftStyle}
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
                           Élève
                         </th>
@@ -571,30 +616,33 @@ export default function GradeNotebookPage() {
                           <th
                             key={sub.classSubjectId}
                             colSpan={sub.evaluations.length + 1}
-                            className="border-l-2 border-border px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-foreground uppercase"
+                            className="overflow-hidden border-l-2 border-border px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-ellipsis whitespace-nowrap text-foreground uppercase"
                           >
                             {sub.subjectName}
                           </th>
                         ))}
                         <th
                           rowSpan={2}
-                          className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-primary uppercase`}
+                          style={stickyMoyenneStyle}
+                          className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
                         >
                           Moyenne
                         </th>
                         <th
                           rowSpan={2}
-                          className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                          style={stickyRangStyle}
+                          className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
                           Rang
                         </th>
-                        <th rowSpan={2} className={STICKY_KEBAB} />
+                        <th rowSpan={2} style={stickyKebabStyle} className={STICKY_KEBAB} />
                       </tr>
                     )}
                     <tr className="border-b border-border">
                       {!unified.combined && (
                         <th
-                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                          style={stickyLeftStyle}
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
                           Élève
                         </th>
@@ -604,14 +652,14 @@ export default function GradeNotebookPage() {
                           {sub.evaluations.map((ev) => (
                             <th
                               key={ev.id}
-                              className="px-3 py-2.5 text-center"
+                              className="overflow-hidden px-2 py-2.5 text-center"
                               title={`${ev.label} — Coeff. ${ev.coefficient}${ev.status === 'DRAFT' ? ' (brouillon)' : ''}`}
                             >
                               <div className="flex flex-col items-center gap-0.5">
-                                <span className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+                                <span className="overflow-hidden text-[10px] font-bold tracking-wide text-ellipsis whitespace-nowrap text-muted-foreground uppercase">
                                   {ev.label}
                                 </span>
-                                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap text-muted-foreground">
                                   Coeff. {ev.coefficient}
                                 </span>
                               </div>
@@ -620,7 +668,7 @@ export default function GradeNotebookPage() {
                           {unified.combined && (
                             <th
                               key={`${sub.classSubjectId}-avg`}
-                              className="border-r-2 border-border bg-muted/40 px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-muted-foreground uppercase"
+                              className="border-r-2 border-border bg-muted/40 px-2 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-muted-foreground uppercase"
                             >
                               Moy.
                             </th>
@@ -630,16 +678,18 @@ export default function GradeNotebookPage() {
                       {!unified.combined && (
                         <>
                           <th
-                            className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-primary uppercase`}
+                            style={stickyMoyenneStyle}
+                            className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
                           >
                             Moyenne
                           </th>
                           <th
-                            className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                            style={stickyRangStyle}
+                            className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                           >
                             Rang
                           </th>
-                          <th className={STICKY_KEBAB} />
+                          <th style={stickyKebabStyle} className={STICKY_KEBAB} />
                         </>
                       )}
                     </tr>
@@ -647,7 +697,7 @@ export default function GradeNotebookPage() {
                   <tbody>
                     {pageStudents.map((s) => (
                       <tr key={s.studentId} className="border-b border-border last:border-b-0">
-                        <td className={`${STICKY_LEFT} px-3.5 py-2.5`}>
+                        <td style={stickyLeftStyle} className={`${STICKY_LEFT} px-3.5 py-2.5`}>
                           <div className="flex items-center gap-2.5">
                             <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
                             <div>
@@ -699,21 +749,27 @@ export default function GradeNotebookPage() {
                             </Fragment>
                           );
                         })}
-                        <td className={`${STICKY_MOYENNE} px-3 py-2.5 text-center`}>
+                        <td
+                          style={stickyMoyenneStyle}
+                          className={`${STICKY_MOYENNE} px-3 py-2.5 text-center`}
+                        >
                           <span
                             className={`inline-flex min-w-12 items-center justify-center rounded-md px-2 py-1 text-sm font-bold ${PILL_CLASS[tone(s.generalAverage)]}`}
                           >
                             {fmt(s.generalAverage)}
                           </span>
                         </td>
-                        <td className={`${STICKY_RANG} px-3 py-2.5 text-center`}>
+                        <td
+                          style={stickyRangStyle}
+                          className={`${STICKY_RANG} px-3 py-2.5 text-center`}
+                        >
                           <span
                             className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${s.rank && RANK_CLASS[s.rank] ? RANK_CLASS[s.rank] : 'bg-muted text-muted-foreground'}`}
                           >
                             {s.rank ?? '—'}
                           </span>
                         </td>
-                        <td className={`${STICKY_KEBAB} px-1.5 py-2.5`}>
+                        <td style={stickyKebabStyle} className={`${STICKY_KEBAB} px-1.5 py-2.5`}>
                           <ActionMenu items={menuItemsFor(s)} />
                         </td>
                       </tr>

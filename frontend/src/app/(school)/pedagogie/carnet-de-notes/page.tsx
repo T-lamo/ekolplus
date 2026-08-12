@@ -43,14 +43,19 @@ import type {
 
 const PAGE_SIZE = 8;
 
-// Every column gets an EXPLICIT pixel width via <colgroup> + table-layout:
-// fixed, instead of letting the browser auto-size them. With table-layout:
-// auto, a class with many subjects/evaluations (5 subjects × 3-4 evals =
-// ~20 columns) squeezes every column to fit the viewport, wrapping "Coeff.
-// N" onto its own line and making the header unreadable. Fixed widths also
-// let the sticky-right columns' offsets be computed exactly (no drift
-// between what a <th>/<td> claims via a Tailwind min-w utility and what
-// the browser actually renders).
+// table-layout: fixed drives column sizing instead of the browser
+// auto-sizing to content. Élève/Moyenne/Rang/kebab get an EXPLICIT pixel
+// width via <colgroup> — they must never flex, or the sticky-right offsets
+// (computed from these same constants) drift out of alignment. Evaluation
+// and per-subject "Moy." columns get NO <colgroup> width, only a
+// min-width on their actual cells: under table-layout:fixed, an
+// unspecified <col> shares any leftover space equally once the table is
+// wider than its content — so a sparse table (few subjects/evaluations)
+// stretches to fill the screen instead of leaving dead space after
+// Moyenne/Rang/kebab — while the min-width still stops them shrinking
+// below a readable size when there are enough columns to overflow (5
+// subjects × 3-4 evals = ~20 columns used to wrap "Coeff. N" onto its own
+// line under table-layout:auto).
 const ELEVE_W = 200;
 const EVAL_COL_W = 104;
 const SUBJECT_AVG_COL_W = 76;
@@ -590,21 +595,23 @@ export default function GradeNotebookPage() {
                 >
                   <colgroup>
                     <col style={{ width: ELEVE_W }} />
+                    {/* No explicit width here on purpose — these are the
+                        flexible columns. Under table-layout:fixed, every
+                        <col> WITHOUT a width shares any leftover space
+                        equally once the table is wider than its content
+                        (so a sparse table fills the screen instead of
+                        leaving dead space after Moyenne/Rang/le kebab).
+                        Each cell still carries a min-width below so they
+                        never shrink under many-column layouts — that's
+                        what keeps "Coeff. N" from wrapping. */}
                     {unified.subjects.map((sub) => (
                       <Fragment key={sub.classSubjectId}>
                         {sub.evaluations.map((ev) => (
-                          <col key={ev.id} style={{ width: EVAL_COL_W }} />
+                          <col key={ev.id} />
                         ))}
-                        {unified.combined && <col style={{ width: SUBJECT_AVG_COL_W }} />}
+                        {unified.combined && <col />}
                       </Fragment>
                     ))}
-                    {/* Flexible filler — the only column with no explicit
-                        width, so it (and only it) absorbs any leftover
-                        space once the table is wider than its columns'
-                        combined minimum, keeping Moyenne/Rang/le kebab
-                        pinned to the table's actual right edge instead of
-                        floating with dead space after them. */}
-                    <col />
                     <col style={{ width: MOYENNE_W }} />
                     <col style={{ width: RANG_W }} />
                     <col style={{ width: KEBAB_W }} />
@@ -628,7 +635,6 @@ export default function GradeNotebookPage() {
                             {sub.subjectName}
                           </th>
                         ))}
-                        <th rowSpan={2} />
                         <th
                           rowSpan={2}
                           style={stickyMoyenneStyle}
@@ -660,6 +666,7 @@ export default function GradeNotebookPage() {
                           {sub.evaluations.map((ev) => (
                             <th
                               key={ev.id}
+                              style={{ minWidth: EVAL_COL_W }}
                               className="overflow-hidden px-2 py-2.5 text-center"
                               title={`${ev.label} — Coeff. ${ev.coefficient}${ev.status === 'DRAFT' ? ' (brouillon)' : ''}`}
                             >
@@ -676,6 +683,7 @@ export default function GradeNotebookPage() {
                           {unified.combined && (
                             <th
                               key={`${sub.classSubjectId}-avg`}
+                              style={{ minWidth: SUBJECT_AVG_COL_W }}
                               className="border-r-2 border-border bg-muted/40 px-2 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-muted-foreground uppercase"
                             >
                               Moy.
@@ -685,7 +693,6 @@ export default function GradeNotebookPage() {
                       ))}
                       {!unified.combined && (
                         <>
-                          <th />
                           <th
                             style={stickyMoyenneStyle}
                             className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
@@ -726,7 +733,11 @@ export default function GradeNotebookPage() {
                               {sub.evaluations.map((ev) => {
                                 const g = cell?.grades.find((gr) => gr.evaluationId === ev.id);
                                 return (
-                                  <td key={ev.id} className="px-3 py-2.5 text-center">
+                                  <td
+                                    key={ev.id}
+                                    style={{ minWidth: EVAL_COL_W }}
+                                    className="px-3 py-2.5 text-center"
+                                  >
                                     {g?.absent ? (
                                       <span
                                         className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold ${PILL_CLASS.neutral}`}
@@ -746,6 +757,7 @@ export default function GradeNotebookPage() {
                               {unified.combined && (
                                 <td
                                   key={`${sub.classSubjectId}-avg`}
+                                  style={{ minWidth: SUBJECT_AVG_COL_W }}
                                   className="border-r-2 border-border bg-muted/40 px-3 py-2.5 text-center"
                                 >
                                   <span
@@ -758,7 +770,6 @@ export default function GradeNotebookPage() {
                             </Fragment>
                           );
                         })}
-                        <td />
                         <td
                           style={stickyMoyenneStyle}
                           className={`${STICKY_MOYENNE} px-3 py-2.5 text-center`}

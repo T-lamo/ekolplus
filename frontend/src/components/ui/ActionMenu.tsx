@@ -46,7 +46,7 @@ export function ActionMenu({ items }: { items: ActionMenuItem[] }) {
         <MoreHorizontal size={14} />
       </button>
       {open && (
-        <div className="absolute top-9 right-0 z-20 min-w-[210px] rounded-lg border border-border bg-card p-1.5 shadow-lg">
+        <div className="absolute top-9 right-0 z-20 max-h-[320px] min-w-[210px] overflow-y-auto rounded-lg border border-border bg-card p-1.5 shadow-lg">
           {items.map((item, i) => (
             <div key={item.label}>
               {item.divider && i > 0 && <div className="my-1 h-px bg-border" />}

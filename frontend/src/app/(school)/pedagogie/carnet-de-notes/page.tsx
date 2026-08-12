@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   NotebookPen,
   Users,
@@ -32,9 +32,24 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { exportToCsv } from '@/lib/csv-export';
 import { NewEvaluationModal } from './NewEvaluationModal';
-import type { ClassSubjectOption, NotebookData, NotebookStudentRow, TermOption } from './types';
+import type {
+  ClassSubjectOption,
+  CombinedNotebookData,
+  NotebookData,
+  TermOption,
+  UnifiedNotebookData,
+  UnifiedStudentRow,
+} from './types';
 
 const PAGE_SIZE = 8;
+
+// Sticky-right offsets, stacked from the table's right edge inward: kebab
+// (44px, matches its w-11) → Rang (56px) → Moyenne (84px). Kept as
+// constants so the <th> and <td> cells for the same column always agree.
+const STICKY_LEFT = 'sticky left-0 z-10 bg-card';
+const STICKY_KEBAB = 'sticky right-0 z-10 w-11 bg-card';
+const STICKY_RANG = 'sticky right-11 z-10 min-w-14 bg-card';
+const STICKY_MOYENNE = 'sticky right-[100px] z-10 min-w-[84px] border-l-2 border-border bg-card';
 
 function tone(avg: number | null): 'excellent' | 'good' | 'average' | 'poor' | 'neutral' {
   if (avg == null) return 'neutral';
@@ -62,15 +77,76 @@ function fmt(n: number | null): string {
   return n == null ? '—' : n.toFixed(1).replace('.', ',');
 }
 
+function toUnifiedSingle(d: NotebookData): UnifiedNotebookData {
+  return {
+    combined: false,
+    className: d.className,
+    terms: d.terms,
+    resolvedTermId: d.resolvedTermId,
+    subjects: [
+      { classSubjectId: d.classSubjectId, subjectName: d.subjectName, evaluations: d.evaluations },
+    ],
+    students: d.students.map((s) => ({
+      studentId: s.studentId,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      studentNumber: s.studentNumber,
+      bySubject: {
+        [d.classSubjectId]: {
+          classSubjectId: d.classSubjectId,
+          grades: s.grades,
+          average: s.average,
+        },
+      },
+      generalAverage: s.average,
+      rank: s.rank,
+    })),
+    classAverage: d.classAverage,
+    bestScore: d.bestScore,
+    worstScore: d.worstScore,
+    gradedCount: d.gradedCount,
+    totalCount: d.totalCount,
+  };
+}
+
+function toUnifiedCombined(d: CombinedNotebookData): UnifiedNotebookData {
+  return {
+    combined: true,
+    className: d.className,
+    terms: d.terms,
+    resolvedTermId: d.resolvedTermId,
+    subjects: d.subjects.map((s) => ({
+      classSubjectId: s.classSubjectId,
+      subjectName: s.subjectName,
+      evaluations: s.evaluations,
+    })),
+    students: d.students.map((s) => ({
+      studentId: s.studentId,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      studentNumber: s.studentNumber,
+      bySubject: Object.fromEntries(s.subjects.map((sc) => [sc.classSubjectId, sc])),
+      generalAverage: s.generalAverage,
+      rank: s.rank,
+    })),
+    classAverage: d.classAverage,
+    bestScore: d.bestScore,
+    worstScore: d.worstScore,
+    gradedCount: d.gradedCount,
+    totalCount: d.totalCount,
+  };
+}
+
 export default function GradeNotebookPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
   const [terms, setTerms] = useState<TermOption[]>([]);
-  const [classSubjectId, setClassSubjectId] = useState('');
+  const [classId, setClassId] = useState('');
+  const [subjectValue, setSubjectValue] = useState(''); // classSubjectId, or 'ALL' for combined view
   const [termId, setTermId] = useState('');
-  const [data, setData] = useState<NotebookData | null>(null);
+  const [unified, setUnified] = useState<UnifiedNotebookData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -85,7 +161,10 @@ export default function GradeNotebookPage() {
       .then(([cs, school]) => {
         setClassSubjects(cs.classSubjects);
         setTerms(school.academicYear?.terms ?? []);
-        if (cs.classSubjects[0]) setClassSubjectId(cs.classSubjects[0].id);
+        if (cs.classSubjects[0]) {
+          setClassId(cs.classSubjects[0].classId);
+          setSubjectValue(cs.classSubjects[0].id);
+        }
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -97,16 +176,24 @@ export default function GradeNotebookPage() {
   }, [user, router]);
 
   useEffect(() => {
-    if (!classSubjectId) return;
+    if (!classId || !subjectValue) return;
     const qs = termId ? `?termId=${termId}` : '';
-    api<NotebookData>(`/api/school/class-subjects/${classSubjectId}/notebook${qs}`)
-      .then((d) => {
-        setData(d);
-        setTermId(d.resolvedTermId ?? '');
+    const request =
+      subjectValue === 'ALL'
+        ? api<CombinedNotebookData>(`/api/school/classes/${classId}/notebook${qs}`).then(
+            toUnifiedCombined,
+          )
+        : api<NotebookData>(`/api/school/class-subjects/${subjectValue}/notebook${qs}`).then(
+            toUnifiedSingle,
+          );
+    request
+      .then((u) => {
+        setUnified(u);
+        setTermId(u.resolvedTermId ?? '');
         setPage(1);
       })
       .catch(() => setError('Impossible de charger le carnet de notes.'));
-  }, [classSubjectId, termId]);
+  }, [classId, subjectValue, termId]);
 
   const classes = useMemo(() => {
     const seen = new Map<string, string>();
@@ -114,20 +201,22 @@ export default function GradeNotebookPage() {
     return [...seen.entries()].map(([id, name]) => ({ id, name }));
   }, [classSubjects]);
 
-  const current = classSubjects.find((cs) => cs.id === classSubjectId) ?? null;
-  const subjectsForClass = classSubjects.filter((cs) => cs.classId === current?.classId);
+  const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
+  const combined = subjectValue === 'ALL';
 
   const filteredStudents = useMemo(() => {
-    if (!data) return [];
+    if (!unified) return [];
     const q = search.trim().toLowerCase();
-    if (!q) return data.students;
-    return data.students.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(q));
-  }, [data, search]);
+    if (!q) return unified.students;
+    return unified.students.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(q));
+  }, [unified, search]);
   const pageCount = Math.max(1, Math.ceil(filteredStudents.length / PAGE_SIZE));
   const pageStudents = filteredStudents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  async function clearStudentGrades(student: NotebookStudentRow) {
-    if (!data || data.evaluations.length === 0) return;
+  async function clearStudentGrades(student: UnifiedStudentRow) {
+    if (!unified) return;
+    const allEvals = unified.subjects.flatMap((s) => s.evaluations);
+    if (allEvals.length === 0) return;
     if (
       !confirm(
         `Supprimer toutes les notes de ${student.firstName} ${student.lastName} pour cette période ?`,
@@ -136,50 +225,76 @@ export default function GradeNotebookPage() {
       return;
     try {
       await Promise.all(
-        data.evaluations.map((ev) =>
+        allEvals.map((ev) =>
           api(`/api/school/evaluations/${ev.id}/grades`, {
             method: 'PUT',
             body: { grades: [{ studentId: student.studentId, score: null, absent: false }] },
           }),
         ),
       );
-      setData({
-        ...data,
-        students: data.students.map((s) =>
-          s.studentId === student.studentId
-            ? {
-                ...s,
-                average: null,
-                grades: s.grades.map((g) => ({ ...g, score: null, absent: false })),
-              }
-            : s,
-        ),
-      });
+      setUnified((prev) =>
+        prev
+          ? {
+              ...prev,
+              students: prev.students.map((s) =>
+                s.studentId === student.studentId
+                  ? {
+                      ...s,
+                      generalAverage: null,
+                      bySubject: Object.fromEntries(
+                        Object.entries(s.bySubject).map(([csId, cell]) => [
+                          csId,
+                          {
+                            ...cell,
+                            average: null,
+                            grades: cell.grades.map((g) => ({ ...g, score: null, absent: false })),
+                          },
+                        ]),
+                      ),
+                    }
+                  : s,
+              ),
+            }
+          : prev,
+      );
       toast('Notes supprimées.', 'success');
     } catch {
       toast('Erreur lors de la suppression.', 'error');
     }
   }
 
-  function menuItemsFor(student: NotebookStudentRow): ActionMenuItem[] {
-    const lastEval = data?.evaluations[data.evaluations.length - 1];
+  function menuItemsFor(student: UnifiedStudentRow): ActionMenuItem[] {
+    const evalMenuItems: ActionMenuItem[] = unified
+      ? unified.subjects
+          .flatMap((sub) => sub.evaluations.map((ev) => ({ subjectName: sub.subjectName, ev })))
+          .map(({ subjectName, ev }, i) => ({
+            label: unified.combined ? `${subjectName} — ${ev.label}` : ev.label,
+            icon: <Pencil size={14} />,
+            divider: i === 0,
+            onClick: () => router.push(`/pedagogie/carnet-de-notes/${ev.id}/saisie`),
+          }))
+      : [];
+
     return [
       {
         label: 'Voir le bulletin',
         icon: <Eye size={14} />,
         onClick: () => toast('Disponible avec Epic 7 (Bulletins).', 'info'),
       },
-      {
-        label: 'Modifier les notes',
-        icon: <Pencil size={14} />,
-        onClick: () =>
-          lastEval
-            ? router.push(`/pedagogie/carnet-de-notes/${lastEval.id}/saisie`)
-            : toast("Crée d'abord une évaluation.", 'info'),
-      },
+      ...(evalMenuItems.length > 0
+        ? evalMenuItems
+        : [
+            {
+              label: 'Modifier les notes',
+              icon: <Pencil size={14} />,
+              divider: true,
+              onClick: () => toast("Crée d'abord une évaluation.", 'info'),
+            },
+          ]),
       {
         label: 'Historique des notes',
         icon: <History size={14} />,
+        divider: true,
         onClick: () => toast('Historique — bientôt disponible.', 'info'),
       },
       {
@@ -203,17 +318,39 @@ export default function GradeNotebookPage() {
   }
 
   function onExport() {
-    if (!data) return;
-    exportToCsv(
-      `carnet-notes-${data.className}-${data.subjectName}.csv`.toLowerCase().replace(/\s+/g, '-'),
-      ['Élève', 'N°', ...data.evaluations.map((e) => e.label), 'Moyenne', 'Rang'],
-      filteredStudents.map((s) => [
-        `${s.firstName} ${s.lastName}`,
-        s.studentNumber,
-        ...s.grades.map((g) => (g.absent ? 'Abs.' : (g.score ?? ''))),
-        s.average ?? '',
-        s.rank ?? '',
+    if (!unified) return;
+    const header = [
+      'Élève',
+      'N°',
+      ...unified.subjects.flatMap((sub) => [
+        ...sub.evaluations.map((ev) =>
+          unified.combined ? `${sub.subjectName} — ${ev.label}` : ev.label,
+        ),
+        ...(unified.combined ? [`${sub.subjectName} — Moy.`] : []),
       ]),
+      'Moyenne générale',
+      'Rang',
+    ];
+    const rows = filteredStudents.map((s) => [
+      `${s.firstName} ${s.lastName}`,
+      s.studentNumber,
+      ...unified.subjects.flatMap((sub) => {
+        const cell = s.bySubject[sub.classSubjectId];
+        const gradeVals = sub.evaluations.map((ev) => {
+          const g = cell?.grades.find((gr) => gr.evaluationId === ev.id);
+          return g?.absent ? 'Abs.' : (g?.score ?? '');
+        });
+        return unified.combined ? [...gradeVals, cell?.average ?? ''] : gradeVals;
+      }),
+      s.generalAverage ?? '',
+      s.rank ?? '',
+    ]);
+    exportToCsv(
+      `carnet-notes-${unified.className}${unified.combined ? '-toutes-matieres' : `-${unified.subjects[0]!.subjectName}`}.csv`
+        .toLowerCase()
+        .replace(/\s+/g, '-'),
+      header,
+      rows,
     );
   }
 
@@ -247,7 +384,11 @@ export default function GradeNotebookPage() {
             <Printer size={14} />
             Imprimer
           </Button>
-          <Button className="w-fit" onClick={() => setShowNew(true)} disabled={!classSubjectId}>
+          <Button
+            className="w-fit"
+            onClick={() => setShowNew(true)}
+            disabled={combined || !subjectValue}
+          >
             <Plus size={14} />
             Saisir des notes
           </Button>
@@ -269,41 +410,41 @@ export default function GradeNotebookPage() {
         </Card>
       ) : (
         <>
-          {data && (
+          {unified && (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
               <SummaryCard
                 icon={Users}
                 tone="secondary"
                 label="Élèves notés"
-                value={`${data.gradedCount}`}
-                sub={`sur ${data.totalCount} élèves`}
+                value={`${unified.gradedCount}`}
+                sub={`sur ${unified.totalCount} élèves`}
               />
               <SummaryCard
                 icon={BarChart2}
                 tone="blue"
-                label="Moyenne de classe"
-                value={fmt(data.classAverage)}
+                label={combined ? 'Moyenne générale de classe' : 'Moyenne de classe'}
+                value={fmt(unified.classAverage)}
                 sub="sur 20 pts"
               />
               <SummaryCard
                 icon={TrendingUp}
                 tone="success"
-                label="Meilleure note"
-                value={fmt(data.bestScore)}
+                label="Meilleure moyenne"
+                value={fmt(unified.bestScore)}
                 sub=""
               />
               <SummaryCard
                 icon={TrendingDown}
                 tone="destructive"
                 label="Note insuffisante"
-                value={`${data.students.filter((s) => s.average != null && s.average < 8).length}`}
+                value={`${unified.students.filter((s) => s.generalAverage != null && s.generalAverage < 8).length}`}
                 sub="élèves sous la moyenne"
               />
               <SummaryCard
                 icon={Calendar}
                 tone="warning"
                 label="Période"
-                value={terms.find((t) => t.id === data.resolvedTermId)?.label ?? '—'}
+                value={terms.find((t) => t.id === unified.resolvedTermId)?.label ?? '—'}
                 sub=""
               />
             </div>
@@ -325,10 +466,12 @@ export default function GradeNotebookPage() {
             <Select
               label=""
               className="min-h-9 py-1.5"
-              value={current?.classId ?? ''}
+              value={classId}
               onChange={(e) => {
-                const first = classSubjects.find((cs) => cs.classId === e.target.value);
-                if (first) setClassSubjectId(first.id);
+                const newClassId = e.target.value;
+                setClassId(newClassId);
+                const first = classSubjects.find((cs) => cs.classId === newClassId);
+                setSubjectValue(first ? first.id : 'ALL');
               }}
             >
               {classes.map((c) => (
@@ -340,9 +483,10 @@ export default function GradeNotebookPage() {
             <Select
               label=""
               className="min-h-9 py-1.5"
-              value={classSubjectId}
-              onChange={(e) => setClassSubjectId(e.target.value)}
+              value={subjectValue}
+              onChange={(e) => setSubjectValue(e.target.value)}
             >
+              <option value="ALL">Toutes les matières</option>
               {subjectsForClass.map((cs) => (
                 <option key={cs.id} value={cs.id}>
                   {cs.subject.name}
@@ -393,17 +537,17 @@ export default function GradeNotebookPage() {
             >
               <FileText size={13} />
               Par évaluation
-              {data && data.evaluations.length > 0 && (
+              {unified && unified.subjects.reduce((n, s) => n + s.evaluations.length, 0) > 0 && (
                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
-                  {data.evaluations.length}
+                  {unified.subjects.reduce((n, s) => n + s.evaluations.length, 0)}
                 </span>
               )}
             </button>
           </div>
 
-          {!data ? (
+          {!unified ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>
-          ) : data.totalCount === 0 ? (
+          ) : unified.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
@@ -415,39 +559,95 @@ export default function GradeNotebookPage() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-                        Élève
-                      </th>
-                      {data.evaluations.map((ev) => (
+                    {unified.combined && (
+                      <tr className="border-b border-border">
                         <th
-                          key={ev.id}
-                          className="px-3 py-2.5 text-center"
-                          title={`${ev.label} — Coeff. ${ev.coefficient}${ev.status === 'DRAFT' ? ' (brouillon)' : ''}`}
+                          rowSpan={2}
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase`}
                         >
-                          <div className="flex flex-col items-center gap-0.5">
-                            <span className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
-                              {ev.label}
-                            </span>
-                            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
-                              Coeff. {ev.coefficient}
-                            </span>
-                          </div>
+                          Élève
                         </th>
+                        {unified.subjects.map((sub) => (
+                          <th
+                            key={sub.classSubjectId}
+                            colSpan={sub.evaluations.length + 1}
+                            className="border-l-2 border-border px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-foreground uppercase"
+                          >
+                            {sub.subjectName}
+                          </th>
+                        ))}
+                        <th
+                          rowSpan={2}
+                          className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-primary uppercase`}
+                        >
+                          Moyenne
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                        >
+                          Rang
+                        </th>
+                        <th rowSpan={2} className={STICKY_KEBAB} />
+                      </tr>
+                    )}
+                    <tr className="border-b border-border">
+                      {!unified.combined && (
+                        <th
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                        >
+                          Élève
+                        </th>
+                      )}
+                      {unified.subjects.map((sub) => (
+                        <Fragment key={sub.classSubjectId}>
+                          {sub.evaluations.map((ev) => (
+                            <th
+                              key={ev.id}
+                              className="px-3 py-2.5 text-center"
+                              title={`${ev.label} — Coeff. ${ev.coefficient}${ev.status === 'DRAFT' ? ' (brouillon)' : ''}`}
+                            >
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+                                  {ev.label}
+                                </span>
+                                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                                  Coeff. {ev.coefficient}
+                                </span>
+                              </div>
+                            </th>
+                          ))}
+                          {unified.combined && (
+                            <th
+                              key={`${sub.classSubjectId}-avg`}
+                              className="border-r-2 border-border bg-muted/40 px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-muted-foreground uppercase"
+                            >
+                              Moy.
+                            </th>
+                          )}
+                        </Fragment>
                       ))}
-                      <th className="border-l-2 border-border px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-primary uppercase">
-                        Moyenne
-                      </th>
-                      <th className="px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                        Rang
-                      </th>
-                      <th className="w-11" />
+                      {!unified.combined && (
+                        <>
+                          <th
+                            className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide text-primary uppercase`}
+                          >
+                            Moyenne
+                          </th>
+                          <th
+                            className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase`}
+                          >
+                            Rang
+                          </th>
+                          <th className={STICKY_KEBAB} />
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {pageStudents.map((s) => (
                       <tr key={s.studentId} className="border-b border-border last:border-b-0">
-                        <td className="px-3.5 py-2.5">
+                        <td className={`${STICKY_LEFT} px-3.5 py-2.5`}>
                           <div className="flex items-center gap-2.5">
                             <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
                             <div>
@@ -460,38 +660,60 @@ export default function GradeNotebookPage() {
                             </div>
                           </div>
                         </td>
-                        {s.grades.map((g) => (
-                          <td key={g.evaluationId} className="px-3 py-2.5 text-center">
-                            {g.absent ? (
-                              <span
-                                className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold ${PILL_CLASS.neutral}`}
-                              >
-                                Abs.
-                              </span>
-                            ) : (
-                              <span
-                                className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-sm font-bold ${PILL_CLASS[tone(g.score)]}`}
-                              >
-                                {g.score != null ? fmt(g.score) : '—'}
-                              </span>
-                            )}
-                          </td>
-                        ))}
-                        <td className="border-l-2 border-border px-3 py-2.5 text-center">
+                        {unified.subjects.map((sub) => {
+                          const cell = s.bySubject[sub.classSubjectId];
+                          return (
+                            <Fragment key={sub.classSubjectId}>
+                              {sub.evaluations.map((ev) => {
+                                const g = cell?.grades.find((gr) => gr.evaluationId === ev.id);
+                                return (
+                                  <td key={ev.id} className="px-3 py-2.5 text-center">
+                                    {g?.absent ? (
+                                      <span
+                                        className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold ${PILL_CLASS.neutral}`}
+                                      >
+                                        Abs.
+                                      </span>
+                                    ) : (
+                                      <span
+                                        className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-sm font-bold ${PILL_CLASS[tone(g?.score ?? null)]}`}
+                                      >
+                                        {g?.score != null ? fmt(g.score) : '—'}
+                                      </span>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                              {unified.combined && (
+                                <td
+                                  key={`${sub.classSubjectId}-avg`}
+                                  className="border-r-2 border-border bg-muted/40 px-3 py-2.5 text-center"
+                                >
+                                  <span
+                                    className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-xs font-bold ${PILL_CLASS[tone(cell?.average ?? null)]}`}
+                                  >
+                                    {fmt(cell?.average ?? null)}
+                                  </span>
+                                </td>
+                              )}
+                            </Fragment>
+                          );
+                        })}
+                        <td className={`${STICKY_MOYENNE} px-3 py-2.5 text-center`}>
                           <span
-                            className={`inline-flex min-w-12 items-center justify-center rounded-md px-2 py-1 text-sm font-bold ${PILL_CLASS[tone(s.average)]}`}
+                            className={`inline-flex min-w-12 items-center justify-center rounded-md px-2 py-1 text-sm font-bold ${PILL_CLASS[tone(s.generalAverage)]}`}
                           >
-                            {fmt(s.average)}
+                            {fmt(s.generalAverage)}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className={`${STICKY_RANG} px-3 py-2.5 text-center`}>
                           <span
                             className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${s.rank && RANK_CLASS[s.rank] ? RANK_CLASS[s.rank] : 'bg-muted text-muted-foreground'}`}
                           >
                             {s.rank ?? '—'}
                           </span>
                         </td>
-                        <td className="px-1.5 py-2.5">
+                        <td className={`${STICKY_KEBAB} px-1.5 py-2.5`}>
                           <ActionMenu items={menuItemsFor(s)} />
                         </td>
                       </tr>
@@ -503,8 +725,8 @@ export default function GradeNotebookPage() {
                 <span className="text-xs text-muted-foreground">
                   Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}
                   {Math.min(page * PAGE_SIZE, filteredStudents.length)} sur{' '}
-                  {filteredStudents.length} élèves — Moy. classe :{' '}
-                  <strong className="text-foreground">{fmt(data.classAverage)}/20</strong>
+                  {filteredStudents.length} élèves — Moy. {combined ? 'générale' : 'classe'} :{' '}
+                  <strong className="text-foreground">{fmt(unified.classAverage)}/20</strong>
                 </span>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
@@ -523,11 +745,11 @@ export default function GradeNotebookPage() {
         </>
       )}
 
-      {showNew && classSubjectId && termId && (
+      {showNew && !combined && subjectValue && termId && (
         <NewEvaluationModal
           classSubjects={classSubjects}
           terms={terms}
-          defaultClassSubjectId={classSubjectId}
+          defaultClassSubjectId={subjectValue}
           defaultTermId={termId}
           onClose={() => setShowNew(false)}
           onCreated={(evaluationId) =>

@@ -585,7 +585,7 @@ export default function GradeNotebookPage() {
             <Card className="gap-0 overflow-visible">
               <div className="overflow-x-auto">
                 <table
-                  style={{ width: tableWidth, tableLayout: 'fixed' }}
+                  style={{ width: '100%', minWidth: tableWidth, tableLayout: 'fixed' }}
                   className="border-collapse text-sm"
                 >
                   <colgroup>
@@ -598,6 +598,13 @@ export default function GradeNotebookPage() {
                         {unified.combined && <col style={{ width: SUBJECT_AVG_COL_W }} />}
                       </Fragment>
                     ))}
+                    {/* Flexible filler — the only column with no explicit
+                        width, so it (and only it) absorbs any leftover
+                        space once the table is wider than its columns'
+                        combined minimum, keeping Moyenne/Rang/le kebab
+                        pinned to the table's actual right edge instead of
+                        floating with dead space after them. */}
+                    <col />
                     <col style={{ width: MOYENNE_W }} />
                     <col style={{ width: RANG_W }} />
                     <col style={{ width: KEBAB_W }} />
@@ -621,6 +628,7 @@ export default function GradeNotebookPage() {
                             {sub.subjectName}
                           </th>
                         ))}
+                        <th rowSpan={2} />
                         <th
                           rowSpan={2}
                           style={stickyMoyenneStyle}
@@ -677,6 +685,7 @@ export default function GradeNotebookPage() {
                       ))}
                       {!unified.combined && (
                         <>
+                          <th />
                           <th
                             style={stickyMoyenneStyle}
                             className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
@@ -749,6 +758,7 @@ export default function GradeNotebookPage() {
                             </Fragment>
                           );
                         })}
+                        <td />
                         <td
                           style={stickyMoyenneStyle}
                           className={`${STICKY_MOYENNE} px-3 py-2.5 text-center`}

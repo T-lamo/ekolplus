@@ -18,6 +18,43 @@ export function weightedAverage(rows: { value: number; weight: number | null }[]
   return roundToTenth(sum / totalWeight);
 }
 
+interface EvaluationLike {
+  coefficient: number;
+  maxScore: number;
+  status: string;
+  countsTowardAverage: boolean;
+  grades: { studentId: string; score: number | null; absent: boolean }[];
+}
+
+// The single source of truth for "what is this student's average in this
+// subject" — used identically by the results/notebook (single-subject) and
+// notebook (all-subjects) endpoints so the three never drift apart.
+//
+// Only PUBLISHED + countsTowardAverage evaluations count. An absent or
+// not-yet-graded student is excluded from that evaluation entirely (not
+// scored as 0) — Grade.absent is a real state, not a zero.
+//
+// Every score is rescaled to a common /20 basis via (score / maxScore) *
+// 20 before being weighted by the evaluation's own coefficient.
+// Evaluation.maxScore is a free per-evaluation field (a quick quiz might
+// be graded out of 10 while a DS is out of 20) — averaging raw scores
+// across evaluations with different maxScore without rescaling first
+// would silently produce a meaningless number, and every other part of
+// the app (tone()/appreciationFor() thresholds, "sur 20" labels, Goal
+// targets, cross-subject ranking) assumes a genuine 0–20 scale.
+export function subjectAverageFor(evaluations: EvaluationLike[], studentId: string): number | null {
+  const rows = evaluations
+    .filter((e) => e.status === 'PUBLISHED' && e.countsTowardAverage)
+    .map((e) => {
+      const g = e.grades.find((gr) => gr.studentId === studentId);
+      if (!g || g.absent || g.score == null) return null;
+      const normalized = e.maxScore > 0 ? (g.score / e.maxScore) * 20 : 0;
+      return { value: normalized, weight: e.coefficient };
+    })
+    .filter((r): r is { value: number; weight: number } => r != null);
+  return weightedAverage(rows);
+}
+
 export function appreciationFor(average: number | null): string | null {
   if (average == null) return null;
   if (average < 8) return 'Faible';

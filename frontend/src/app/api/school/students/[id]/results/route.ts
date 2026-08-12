@@ -22,35 +22,11 @@ import { resolveMySchool } from '@/lib/server/school';
 import {
   appreciationFor,
   resolveCurrentTerm,
+  subjectAverageFor as scoreOf,
   trendBetween,
   weightedAverage,
 } from '@/lib/server/grades';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
-
-// Only PUBLISHED + countsTowardAverage evaluations move a student's
-// average — a teacher's in-progress draft shouldn't affect it, and a
-// formative-only evaluation is explicitly excluded ("Prise en compte").
-// Weighted by each evaluation's own coefficient (distinct from
-// ClassSubject.coefficient, which weights subjects against each other).
-function scoreOf(
-  evaluations: {
-    coefficient: number;
-    status: string;
-    countsTowardAverage: boolean;
-    grades: { studentId: string; score: number | null; absent: boolean }[];
-  }[],
-  studentId: string,
-): number | null {
-  const rows = evaluations
-    .filter((e) => e.status === 'PUBLISHED' && e.countsTowardAverage)
-    .map((e) => {
-      const g = e.grades.find((gr) => gr.studentId === studentId);
-      if (!g || g.absent || g.score == null) return null;
-      return { value: g.score, weight: e.coefficient };
-    })
-    .filter((r): r is { value: number; weight: number } => r != null);
-  return weightedAverage(rows);
-}
 
 export async function GET(
   req: NextRequest,

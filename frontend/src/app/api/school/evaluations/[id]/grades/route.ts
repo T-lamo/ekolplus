@@ -77,6 +77,24 @@ export async function PUT(
       );
     }
 
+    // The client's own max-score hint is cosmetic (a red border, not a
+    // disabled button) — this is the real boundary. A score above this
+    // evaluation's maxScore would silently corrupt every average/rank/
+    // appreciation computed from it, so the whole batch is rejected rather
+    // than clamped or partially applied.
+    const scoreTooHigh = parsed.data.grades.some(
+      (g) => !g.absent && g.score != null && g.score > evaluation.maxScore,
+    );
+    if (scoreTooHigh) {
+      return NextResponse.json(
+        {
+          error: 'VALIDATION_FAILED',
+          message: `Score exceeds this evaluation's max score (${evaluation.maxScore})`,
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     const studentIds = parsed.data.grades.map((g) => g.studentId);
     const enrolledCount = await prisma.enrollment.count({
       where: { classId: evaluation.classSubject.classId, studentId: { in: studentIds } },

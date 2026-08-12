@@ -13,7 +13,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool } from '@/lib/server/school';
-import { resolveCurrentTerm, weightedAverage } from '@/lib/server/grades';
+import { resolveCurrentTerm, subjectAverageFor, weightedAverage } from '@/lib/server/grades';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(
@@ -105,18 +105,6 @@ export async function GET(
       evalsByClassSubject.set(ev.classSubjectId, list);
     }
 
-    function subjectAverage(evals: typeof evaluations, studentId: string): number | null {
-      const rows = evals
-        .filter((e) => e.status === 'PUBLISHED' && e.countsTowardAverage)
-        .map((e) => {
-          const g = e.grades.find((gr) => gr.studentId === studentId);
-          if (!g || g.absent || g.score == null) return null;
-          return { value: g.score, weight: e.coefficient };
-        })
-        .filter((r): r is { value: number; weight: number } => r != null);
-      return weightedAverage(rows);
-    }
-
     const students = enrollments.map((en) => {
       const subjectCells = classSubjects.map((cs) => {
         const evals = evalsByClassSubject.get(cs.id) ?? [];
@@ -131,7 +119,7 @@ export async function GET(
               comment: g?.comment ?? null,
             };
           }),
-          average: subjectAverage(evals, en.studentId),
+          average: subjectAverageFor(evals, en.studentId),
         };
       });
       const generalAverage = weightedAverage(

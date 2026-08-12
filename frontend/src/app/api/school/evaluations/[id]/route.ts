@@ -141,6 +141,26 @@ export async function PATCH(
       }
     }
 
+    // Lowering maxScore on an evaluation that already has grades would
+    // silently leave stale scores above the new ceiling — and since
+    // subjectAverageFor() normalizes score/maxScore*20, a now-over-max
+    // score would push the normalized value past 20, distorting the
+    // average worse than an unnormalized system ever would have.
+    if (parsed.data.maxScore != null) {
+      const overMax = await prisma.grade.findFirst({
+        where: { evaluationId: id, score: { gt: parsed.data.maxScore } },
+      });
+      if (overMax) {
+        return NextResponse.json(
+          {
+            error: 'VALIDATION_FAILED',
+            message: 'Existing grades exceed the new max score — update those grades first',
+          },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+    }
+
     const data = Object.fromEntries(Object.entries(parsed.data).filter(([, v]) => v !== undefined));
     const evaluation = await prisma.evaluation.update({ where: { id }, data });
 

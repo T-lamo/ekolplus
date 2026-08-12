@@ -166,6 +166,19 @@ export default function GradeEntryPage() {
     };
   }, [rows]);
 
+  // The server rejects a score above evaluation.maxScore outright (it
+  // would corrupt every average computed from it) — mirror that here so
+  // "Enregistrer"/"Valider" are disabled instead of firing a request that
+  // will 400, and the teacher sees why before they click.
+  const hasInvalidScore = useMemo(() => {
+    if (!evaluation) return false;
+    return Object.values(rows).some((r) => {
+      if (r.absent || r.score.trim() === '') return false;
+      const num = Number(r.score);
+      return Number.isNaN(num) || num > evaluation.maxScore || num < 0;
+    });
+  }, [rows, evaluation]);
+
   function setRow(studentId: string, patch: Partial<RowState>) {
     setRows((prev) => ({ ...prev, [studentId]: { ...prev[studentId]!, ...patch } }));
   }
@@ -489,9 +502,15 @@ export default function GradeEntryPage() {
 
       <Card className="flex-row items-center justify-between p-3.5">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-warning-foreground" />
+          <span
+            className={`h-2 w-2 rounded-full ${hasInvalidScore ? 'bg-destructive-foreground' : 'bg-warning-foreground'}`}
+          />
           <span className="text-[13px] text-muted-foreground">
-            {stats.pending > 0 ? (
+            {hasInvalidScore ? (
+              <strong className="text-destructive-foreground">
+                Corrige les notes au-dessus de {evaluation.maxScore} avant d&apos;enregistrer.
+              </strong>
+            ) : stats.pending > 0 ? (
               <>
                 Modifications non enregistrées —{' '}
                 <strong className="text-foreground">
@@ -516,11 +535,17 @@ export default function GradeEntryPage() {
             className="w-fit border border-border"
             onClick={() => save(false)}
             loading={saving}
+            disabled={hasInvalidScore}
           >
             <Save size={14} />
             Enregistrer brouillon
           </Button>
-          <Button className="w-fit" onClick={() => save(true)} loading={saving}>
+          <Button
+            className="w-fit"
+            onClick={() => save(true)}
+            loading={saving}
+            disabled={hasInvalidScore}
+          >
             <Check size={14} />
             Valider les notes
           </Button>

@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool } from '@/lib/server/school';
-import { resolveCurrentTerm, weightedAverage } from '@/lib/server/grades';
+import { resolveCurrentTerm, subjectAverageFor } from '@/lib/server/grades';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(
@@ -95,21 +95,6 @@ export async function GET(
       }),
     ]);
 
-    const publishedEvals = evaluations.filter(
-      (e) => e.status === 'PUBLISHED' && e.countsTowardAverage,
-    );
-
-    function computeAverage(studentId: string): number | null {
-      const rows = publishedEvals
-        .map((e) => {
-          const g = e.grades.find((gr) => gr.studentId === studentId);
-          if (!g || g.absent || g.score == null) return null;
-          return { value: g.score, weight: e.coefficient };
-        })
-        .filter((r): r is { value: number; weight: number } => r != null);
-      return weightedAverage(rows);
-    }
-
     const students = enrollments.map((en) => ({
       studentId: en.studentId,
       firstName: en.student.firstName,
@@ -124,7 +109,7 @@ export async function GET(
           comment: g?.comment ?? null,
         };
       }),
-      average: computeAverage(en.studentId),
+      average: subjectAverageFor(evaluations, en.studentId),
     }));
 
     const ranked = [...students]

@@ -1,0 +1,381 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import {
+  LayoutTemplate,
+  Plus,
+  Upload,
+  CheckCircle2,
+  Globe,
+  User,
+  Lock,
+  Copy,
+  Pencil,
+  Trash2,
+  Edit2,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { api, ApiError } from '@/lib/api';
+import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import type { TemplateListData, TemplateRow } from './types';
+
+const SAMPLE_ROWS = [
+  { subject: 'Mathématiques', avg: 15.67, tone: 'good' as const },
+  { subject: 'Français', avg: 12.0, tone: 'mid' as const },
+  { subject: 'Sciences', avg: 18.0, tone: 'good' as const },
+  { subject: 'Anglais', avg: 10.0, tone: 'low' as const },
+];
+const TONE_COLOR: Record<'good' | 'mid' | 'low', string> = {
+  good: '#1a9e5c',
+  mid: '#f59e0b',
+  low: '#d93025',
+};
+
+export default function BulletinTemplatesPage() {
+  const user = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [data, setData] = useState<TemplateListData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<'personal' | 'global'>('personal');
+
+  useEffect(() => {
+    if (!user) return;
+    api<TemplateListData>('/api/school/bulletin-templates')
+      .then(setData)
+      .catch((err) => {
+        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+          router.replace('/');
+          return;
+        }
+        setError('Impossible de charger les modèles de bulletin.');
+      });
+  }, [user, router]);
+
+  async function fork(id: string) {
+    try {
+      const res = await api<{ template: { id: string } }>(
+        `/api/school/bulletin-templates/${id}/fork`,
+        { method: 'POST' },
+      );
+      toast('Modèle dupliqué — vous pouvez maintenant le personnaliser.', 'success');
+      router.push(`/configuration/modele-bulletin/${res.template.id}/edit`);
+    } catch {
+      toast('Erreur lors de la duplication du modèle.', 'error');
+    }
+  }
+
+  async function remove(id: string) {
+    if (!confirm('Supprimer ce modèle de bulletin ?')) return;
+    try {
+      await api(`/api/school/bulletin-templates/${id}`, { method: 'DELETE' });
+      toast('Modèle supprimé.', 'success');
+      setData((d) => (d ? { ...d, personal: d.personal.filter((t) => t.id !== id) } : d));
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'VALIDATION_FAILED') {
+        toast(err.message, 'error');
+        return;
+      }
+      toast('Erreur lors de la suppression.', 'error');
+    }
+  }
+
+  if (!user || (!data && !error)) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Chargement…</p>
+      </main>
+    );
+  }
+  if (error || !data) {
+    return (
+      <p role="alert" className="text-sm text-destructive-foreground">
+        {error}
+      </p>
+    );
+  }
+
+  const active = data.personal.find((t) => t.isActive);
+  const rows = tab === 'personal' ? data.personal : data.global;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Modèles de bulletin</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            className="w-fit"
+            onClick={() => toast('Import de modèle — bientôt disponible.', 'info')}
+          >
+            <Upload size={14} />
+            Importer un modèle
+          </Button>
+          <Button
+            className="w-fit"
+            onClick={() => toast('Création de modèle vierge — bientôt disponible.', 'info')}
+          >
+            <Plus size={14} />
+            Nouveau modèle
+          </Button>
+        </div>
+      </div>
+
+      {active && (
+        <Card className="flex-row items-center gap-3 bg-secondary p-4">
+          <CheckCircle2 size={20} className="shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold text-primary">
+              Modèle actif : {active.name}
+            </div>
+            <div className="mt-0.5 text-xs text-secondary-foreground opacity-85">
+              Ce modèle est actuellement utilisé pour la génération des bulletins. Dernière
+              modification :{' '}
+              {new Date(active.updatedAt).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </div>
+          </div>
+          <Link
+            href={`/configuration/modele-bulletin/${active.id}/edit`}
+            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+          >
+            <Edit2 size={12} />
+            Modifier
+          </Link>
+        </Card>
+      )}
+
+      <div role="tablist" className="flex w-fit gap-1 rounded-lg bg-muted p-1">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'personal'}
+          onClick={() => setTab('personal')}
+          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          <User size={13} />
+          Mes modèles
+          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-[11px] font-bold text-primary">
+            {data.personal.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'global'}
+          onClick={() => setTab('global')}
+          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          <Globe size={13} />
+          Modèles globaux
+          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-[11px] font-bold text-primary">
+            {data.global.length}
+          </span>
+        </button>
+      </div>
+
+      {tab === 'global' && (
+        <div className="flex w-fit items-center gap-1.5 rounded-md bg-warning px-2.5 py-1.5 text-xs font-medium text-warning-foreground">
+          Dupliquez un modèle pour le personnaliser — les modèles globaux ne sont pas modifiables
+          directement.
+        </div>
+      )}
+
+      {rows.length === 0 ? (
+        <Card className="items-center gap-2 p-10 text-center">
+          <LayoutTemplate size={28} className="text-muted-foreground" />
+          <p className="max-w-sm text-sm text-muted-foreground">
+            {tab === 'personal'
+              ? "Vous n'avez pas encore de modèle personnalisé — dupliquez un modèle global pour commencer."
+              : 'Aucun modèle global disponible.'}
+          </p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {rows.map((t) => (
+            <TemplateCard
+              key={t.id}
+              template={t}
+              isGlobal={tab === 'global'}
+              onFork={() => fork(t.id)}
+              onDelete={() => remove(t.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TemplateCard({
+  template,
+  isGlobal,
+  onFork,
+  onDelete,
+}: {
+  template: TemplateRow;
+  isGlobal: boolean;
+  onFork: () => void;
+  onDelete: () => void;
+}) {
+  const items: ActionMenuItem[] = isGlobal
+    ? []
+    : [
+        {
+          label: 'Dupliquer',
+          icon: <Copy size={13} />,
+          onClick: onFork,
+        },
+        {
+          label: 'Supprimer',
+          icon: <Trash2 size={13} />,
+          onClick: onDelete,
+          tone: 'danger',
+          divider: true,
+        },
+      ];
+
+  return (
+    <Card className="overflow-hidden">
+      <div
+        className="relative flex h-[170px] items-center justify-center"
+        style={{ background: `${template.primaryColor}14` }}
+      >
+        <MiniBulletin color={template.primaryColor} />
+        {template.isActive && (
+          <span className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold text-primary-foreground">
+            <CheckCircle2 size={10} />
+            Actif
+          </span>
+        )}
+        {isGlobal && (
+          <span
+            className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold"
+            style={{
+              background: `${template.primaryColor}1a`,
+              borderColor: `${template.primaryColor}55`,
+              color: template.primaryColor,
+            }}
+          >
+            <Globe size={10} />
+            Global
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-1 p-4">
+        <div className="text-[15px] font-semibold text-foreground">{template.name}</div>
+        <div className="text-xs leading-relaxed text-muted-foreground">{template.description}</div>
+        <div className="mt-3.5 flex items-center justify-between">
+          {isGlobal ? (
+            <span
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+              style={{ background: `${template.primaryColor}1a`, color: template.primaryColor }}
+            >
+              <Lock size={11} />
+              Prédéfini
+            </span>
+          ) : (
+            <span
+              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${template.isActive ? 'bg-success text-success-foreground' : 'bg-secondary text-secondary-foreground'}`}
+            >
+              {template.isActive ? <CheckCircle2 size={11} /> : <LayoutTemplate size={11} />}
+              {template.isActive ? 'Actif' : 'Personnel'}
+            </span>
+          )}
+          <div className="flex items-center gap-1.5">
+            {isGlobal ? (
+              <button
+                type="button"
+                onClick={onFork}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+              >
+                <Copy size={12} className="text-primary" />
+                Dupliquer
+              </button>
+            ) : (
+              <Link
+                href={`/configuration/modele-bulletin/${template.id}/edit`}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-xs font-medium text-foreground"
+              >
+                <Pencil size={11} className="text-primary" />
+                Éditer
+              </Link>
+            )}
+            {!isGlobal && <ActionMenu items={items} />}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function MiniBulletin({ color }: { color: string }) {
+  return (
+    <div className="w-[87%] overflow-hidden rounded-[3px] bg-white text-[5px] shadow-lg">
+      <div className="h-1" style={{ background: color }} />
+      <div className="flex items-center justify-between border-b border-[#eee] px-1.5 py-1">
+        <div className="flex items-center gap-1">
+          <div
+            className="flex h-3 w-3 shrink-0 items-center justify-center rounded-[2px] border border-dashed"
+            style={{ borderColor: color }}
+          >
+            <LayoutTemplate size={5} style={{ color }} />
+          </div>
+          <div className="text-[6px] font-extrabold" style={{ color }}>
+            École LesÉtoiles
+          </div>
+        </div>
+        <div className="flex-1 px-1 text-center text-[7px] font-extrabold text-[#1a1a2e]">
+          BULLETIN SCOLAIRE
+        </div>
+        <div
+          className="min-w-[46px] rounded-[2px] px-1 py-0.5"
+          style={{ background: `${color}14` }}
+        >
+          <div className="text-[5.5px] font-bold text-[#1a1a2e]">JEAN-PIERRE M.</div>
+          <div className="text-[4.5px] text-[#6b6b8d]">3ème A · N° 2024-0047</div>
+        </div>
+      </div>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr style={{ background: color }}>
+            <th className="p-0.5 text-left text-[4.5px] font-bold text-white">Matière</th>
+            <th className="p-0.5 text-left text-[4.5px] font-bold text-white">Coeff.</th>
+            <th className="p-0.5 text-left text-[4.5px] font-bold text-white">Moy.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {SAMPLE_ROWS.map((r, i) => (
+            <tr key={r.subject} style={i % 2 === 1 ? { background: '#faf9ff' } : undefined}>
+              <td className="p-0.5 text-[4.5px] text-[#1a1a2e]">{r.subject}</td>
+              <td className="p-0.5 text-[4.5px] text-[#1a1a2e]">4</td>
+              <td className="p-0.5 text-[4.5px] font-bold" style={{ color: TONE_COLOR[r.tone] }}>
+                {r.avg.toFixed(2)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex items-center gap-1.5 border-t border-[#eee] px-1.5 py-1">
+        <div className="text-[11px] font-extrabold" style={{ color }}>
+          14.38
+        </div>
+        <div className="text-[4px] text-[#999]">Moyenne / Rang 4ème</div>
+      </div>
+      <div className="h-0.5" style={{ background: color }} />
+    </div>
+  );
+}

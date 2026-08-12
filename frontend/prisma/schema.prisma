@@ -138,11 +138,12 @@ model School {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  academicYears AcademicYear[]
-  subjects      Subject[]
-  teachers      Teacher[]
-  classes       Class[]
-  students      Student[]
+  academicYears     AcademicYear[]
+  subjects          Subject[]
+  teachers          Teacher[]
+  classes           Class[]
+  students          Student[]
+  bulletinTemplates BulletinTemplate[]
 
   @@index([organizationId])
 }
@@ -471,6 +472,31 @@ model Appreciation {
 
   @@unique([studentId, termId, subjectId])
   @@index([studentId, termId])
+}
+
+// Fork-on-write template library: `schoolId: null` rows are the global/
+// system gallery (seeded, shared read-only across every school); a school
+// "personalizes" one by forking it (new row, schoolId set, forkedFromId
+// traces lineage) rather than mutating the shared original in place. Forks
+// never re-sync with their source — permanently independent once created.
+// `isActive` is the school's currently-used template for generation; "at
+// most one active per school" is an app-level invariant enforced in the
+// route (same pattern as AcademicYear.isActive), not the schema.
+model BulletinTemplate {
+  id           String             @id @default(cuid())
+  schoolId     String?
+  school       School?            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  isActive     Boolean            @default(false)
+  forkedFromId String?
+  forkedFrom   BulletinTemplate?  @relation("TemplateFork", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks        BulletinTemplate[] @relation("TemplateFork")
+  config       Json
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([schoolId])
 }
 
 // ───────────────────────────────────────────────────────────────────────

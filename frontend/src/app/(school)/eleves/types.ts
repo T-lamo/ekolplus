@@ -99,3 +99,53 @@ export interface StudentResults {
   ranking: RankingRow[];
   goals: GoalRow[] | null;
 }
+
+// ── Epic 6 — Appréciations ─────────────────────────────────────────────────
+
+export type Mention = 'TRES_BIEN' | 'BIEN' | 'ASSEZ_BIEN' | 'PASSABLE' | 'INSUFFISANT' | 'FAIBLE';
+export type AppreciationStatus = 'NONE' | 'DRAFT' | 'PUBLISHED';
+
+export const MENTION_LABEL: Record<Mention, string> = {
+  TRES_BIEN: 'Très Bien',
+  BIEN: 'Bien',
+  ASSEZ_BIEN: 'Assez Bien',
+  PASSABLE: 'Passable',
+  INSUFFISANT: 'Insuffisant',
+  FAIBLE: 'Faible',
+};
+
+export interface GeneralAppreciation {
+  mention: Mention | null;
+  text: string | null;
+  comportement: string | null;
+  investissement: string | null;
+  assiduite: string | null;
+  status: AppreciationStatus;
+  authorName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubjectAppreciationRow {
+  classSubjectId: string;
+  subjectId: string;
+  subjectName: string;
+  coefficient: number | null;
+  teacherName: string | null;
+  average: number | null;
+  mention: Mention | null;
+  text: string | null;
+  status: AppreciationStatus;
+}
+
+export interface StudentAppreciationData {
+  studentId: string;
+  terms: { id: string; label: string; order: number }[];
+  resolvedTermId: string | null;
+  overallAverage: number | null;
+  classAverage: number | null;
+  rank: number | null;
+  rankedCount: number;
+  general: GeneralAppreciation | null;
+  subjects: SubjectAppreciationRow[];
+}

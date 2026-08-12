@@ -194,9 +194,6 @@ export function NotesResultatsTab({
           <p className="max-w-sm text-sm text-muted-foreground">
             Aucune note enregistrée pour cette période.
           </p>
-          <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-primary">
-            Disponible via le carnet de notes (Epic 6, à venir)
-          </span>
         </Card>
       ) : (
         <>

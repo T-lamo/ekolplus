@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { StudentFormModal } from '../StudentFormModal';
 import { NotesResultatsTab } from './NotesResultatsTab';
+import { AppreciationsTab } from './AppreciationsTab';
 import type { ClassOption, StudentDetail, StudentResults, StudentStatus } from '../types';
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
@@ -316,13 +317,7 @@ export default function StudentProfilePage() {
           epic="Epic 8"
         />
       )}
-      {tab === 'appreciations' && (
-        <EmptyTab
-          icon={Star}
-          text="Les appréciations des enseignants apparaîtront ici."
-          epic="Epic 6"
-        />
-      )}
+      {tab === 'appreciations' && <AppreciationsTab studentId={student.id} />}
       {tab === 'bulletins' && (
         <EmptyTab icon={FileText} text="Les bulletins générés apparaîtront ici." epic="Epic 7" />
       )}

@@ -193,6 +193,12 @@ export async function api<T = unknown>(path: string, options: ApiOptions = {}): 
         throw new ApiError(response.status, errorMessage, errorBody);
       }
 
+      // 204 No Content (DELETE routes) has no body — response.json() throws
+      // a SyntaxError on empty input, which every caller was catching as a
+      // false failure even though the request had already succeeded.
+      if (response.status === 204) {
+        return undefined as T;
+      }
       return response.json() as Promise<T>;
     } catch (err) {
       lastError = err;

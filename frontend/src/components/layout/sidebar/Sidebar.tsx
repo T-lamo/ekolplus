@@ -95,7 +95,6 @@ export function Sidebar({
                 section={section}
                 variant={variant}
                 collapsed
-                open={false}
                 activeHref={activeHref}
                 onNavigate={onNavigate}
               />

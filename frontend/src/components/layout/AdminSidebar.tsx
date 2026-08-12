@@ -83,7 +83,7 @@ export function AdminSidebar({
         </div>
       }
       roleLabel="Propriétaire SaaS"
-      profileHref="/settings"
+      profileHref="/admin"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       footer={

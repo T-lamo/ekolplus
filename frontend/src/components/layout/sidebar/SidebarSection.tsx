@@ -10,7 +10,7 @@ interface SidebarSectionProps {
   section: NavSection;
   variant: 'light' | 'dark';
   collapsed: boolean;
-  open: boolean;
+  open?: boolean;
   activeHref: string | null;
   onNavigate?: (() => void) | undefined;
 }

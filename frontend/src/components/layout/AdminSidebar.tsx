@@ -83,7 +83,10 @@ export function AdminSidebar({
         </div>
       }
       roleLabel="Propriétaire SaaS"
-      profileHref="/admin"
+      // /admin has no page.tsx yet (hard 404); /settings NO_SCHOOL-redirects
+      // to / gracefully for an admin with no school membership — the lesser
+      // of two broken destinations until a real admin profile page exists.
+      profileHref="/settings"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       footer={

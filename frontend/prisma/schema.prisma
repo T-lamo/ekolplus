@@ -42,6 +42,7 @@ model User {
   withdrawals       Withdrawal[]
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
+  appreciations     Appreciation[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -189,8 +190,9 @@ model Term {
   endDate        DateTime
   createdAt      DateTime     @default(now())
 
-  evaluations Evaluation[]
-  goals       Goal[]
+  evaluations   Evaluation[]
+  goals         Goal[]
+  appreciations Appreciation[]
 
   @@index([academicYearId, order])
 }
@@ -232,6 +234,7 @@ model Subject {
 
   classSubjects ClassSubject[]
   goals         Goal[]
+  appreciations Appreciation[]
 
   @@index([schoolId])
 }
@@ -324,10 +327,11 @@ model Student {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  guardians   Guardian[]
-  enrollments Enrollment[]
-  grades      Grade[]
-  goals       Goal[]
+  guardians     Guardian[]
+  enrollments   Enrollment[]
+  grades        Grade[]
+  goals         Goal[]
+  appreciations Appreciation[]
 
   @@index([schoolId])
 }
@@ -432,6 +436,38 @@ model Goal {
   targetScore Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, termId, subjectId])
+  @@index([studentId, termId])
+}
+
+// Two-level appreciation per (student, term): one "générale" row
+// (subjectId null — mention, free-text comment, comportement/
+// investissement/assiduité) and one row per subject the student is
+// graded in. Same nullable-subjectId scoping as Goal, reused rather than
+// inventing a second convention. `mention` is teacher-set, not purely
+// derived from appreciationFor(average) — see .planning/banani/
+// appreciations.md for why the two can legitimately disagree.
+model Appreciation {
+  id             String   @id @default(cuid())
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  termId         String
+  term           Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  subjectId      String? // null = générale
+  subject        Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  mention        String? // TRES_BIEN | BIEN | ASSEZ_BIEN | PASSABLE | INSUFFISANT | FAIBLE
+  text           String? // free-text remark
+  comportement   String? // générale only
+  investissement String? // générale only
+  assiduite      String? // générale only
+  // DRAFT | PUBLISHED — mirrors Evaluation.status; only PUBLISHED counts as
+  // "Saisie" on the list screen (a draft doesn't appear on the bulletin).
+  status         String   @default("DRAFT")
+  authorId       String?
+  author         User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@unique([studentId, termId, subjectId])
   @@index([studentId, termId])

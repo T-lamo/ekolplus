@@ -192,6 +192,20 @@ export default function BulletinEditorPage() {
     }
   }
 
+  async function setActive() {
+    if (!data) return;
+    try {
+      await api(`/api/school/bulletin-templates/${data.id}`, {
+        method: 'PATCH',
+        body: { isActive: true },
+      });
+      toast('Modèle défini comme actif.', 'success');
+      setData((d) => (d ? { ...d, isActive: true } : d));
+    } catch {
+      toast("Erreur lors de l'activation du modèle.", 'error');
+    }
+  }
+
   const orderedBlocks = useMemo(() => config?.blocks ?? [], [config]);
 
   if (!user || (!data && !error)) {
@@ -286,6 +300,16 @@ export default function BulletinEditorPage() {
               </button>
             </div>
             <div className="h-5 w-px bg-border" />
+            {!data.isActive && (
+              <button
+                type="button"
+                onClick={setActive}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+              >
+                <CheckCircle2 size={12} />
+                Définir comme actif
+              </button>
+            )}
             <button
               type="button"
               onClick={() => toast('Export PDF — bientôt disponible.', 'info')}

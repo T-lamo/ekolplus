@@ -70,6 +70,21 @@ export default function BulletinTemplatesPage() {
     }
   }
 
+  async function setActive(id: string) {
+    try {
+      await api(`/api/school/bulletin-templates/${id}`, {
+        method: 'PATCH',
+        body: { isActive: true },
+      });
+      toast('Modèle défini comme actif.', 'success');
+      setData((d) =>
+        d ? { ...d, personal: d.personal.map((t) => ({ ...t, isActive: t.id === id })) } : d,
+      );
+    } catch {
+      toast("Erreur lors de l'activation du modèle.", 'error');
+    }
+  }
+
   async function remove(id: string) {
     if (!confirm('Supprimer ce modèle de bulletin ?')) return;
     try {
@@ -212,6 +227,7 @@ export default function BulletinTemplatesPage() {
               isGlobal={tab === 'global'}
               onFork={() => fork(t.id)}
               onDelete={() => remove(t.id)}
+              onSetActive={() => setActive(t.id)}
             />
           ))}
         </div>
@@ -225,15 +241,26 @@ function TemplateCard({
   isGlobal,
   onFork,
   onDelete,
+  onSetActive,
 }: {
   template: TemplateRow;
   isGlobal: boolean;
   onFork: () => void;
   onDelete: () => void;
+  onSetActive: () => void;
 }) {
   const items: ActionMenuItem[] = isGlobal
     ? []
     : [
+        ...(template.isActive
+          ? []
+          : [
+              {
+                label: 'Définir comme actif',
+                icon: <CheckCircle2 size={13} />,
+                onClick: onSetActive,
+              },
+            ]),
         {
           label: 'Dupliquer',
           icon: <Copy size={13} />,

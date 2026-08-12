@@ -48,18 +48,28 @@ export function ActionMenu({ items }: { items: ActionMenuItem[] }) {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false);
     }
-    function onScrollOrResize() {
+    // Capture-phase listener sees scroll events from ANY descendant,
+    // including the menu's own internal overflow-y-auto list — scrolling
+    // through a long item list must not close the menu, only scrolling an
+    // ancestor (the page, the table's overflow-x-auto wrapper) should.
+    function onScroll(e: Event) {
+      if (menuRef.current && e.target instanceof Node && menuRef.current.contains(e.target)) {
+        return;
+      }
+      setOpen(false);
+    }
+    function onResize() {
       setOpen(false);
     }
     document.addEventListener('mousedown', onDocClick);
     document.addEventListener('keydown', onKeyDown);
-    window.addEventListener('scroll', onScrollOrResize, true);
-    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
     return () => {
       document.removeEventListener('mousedown', onDocClick);
       document.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('scroll', onScrollOrResize, true);
-      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
   }, [open]);
 

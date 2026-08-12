@@ -60,7 +60,7 @@ const KEBAB_W = 44;
 const RIGHT_RANG = KEBAB_W;
 const RIGHT_MOYENNE = KEBAB_W + RANG_W;
 
-const STICKY_LEFT = 'sticky z-10 bg-card';
+const STICKY_LEFT = 'sticky z-10 border-r-2 border-border bg-card';
 const STICKY_KEBAB = 'sticky z-10 bg-card';
 const STICKY_RANG = 'sticky z-10 bg-card';
 const STICKY_MOYENNE = 'sticky z-10 border-l-2 border-border bg-card';

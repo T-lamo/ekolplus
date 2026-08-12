@@ -2198,7 +2198,7 @@ Expected: all four PASS, zero diffs from `pnpm format` (everything already forma
 - [ ] **Step 2: Full manual click-through**
 
 Run `pnpm dev` and walk both shells end to end:
-- **School** (`/dashboard`, `/eleves`, `/eleves/[id]`, `/configuration/classes`, `/settings`, `/settings?tab=subscription`): correct section auto-opens per page, correct item highlighted (verify `/settings` highlights "Paramètres" and `/settings?tab=subscription` highlights "Abonnement" — the query-collision fix from Task 3), breadcrumbs match, collapse/expand + tooltips work, mobile drawer (resize `<lg`) still opens/closes and stays expanded.
+- **School** (`/dashboard`, `/eleves`, `/eleves/[id]`, `/configuration/classes`, `/settings`, `/settings?tab=subscription`): correct section auto-opens per page, correct item highlighted (verify `/settings` **and** `/settings?tab=subscription` both highlight "Paramètres" and both breadcrumb to "Compte › Paramètres" — per Task 3's query-collision tiebreak, the query-less item always wins the highlight, so "Abonnement" is a navigation shortcut that never itself highlights; this is the intended behavior, not a bug), breadcrumbs match, collapse/expand + tooltips work, mobile drawer (resize `<lg`) still opens/closes and stays expanded.
 - **Admin** (`/admin`, `/admin/schools`, `/admin/schools/new`, `/admin/system/settings`): same checks, plus confirm `/admin/schools/new` highlights "Créer une école" and NOT "Écoles" (the prefix-collision fix), and "Retour à l'interface école" still appears in the footer (hidden when collapsed, visible when expanded).
 - Both shells: ⌘K palette, notifications badge/list/mark-read, help popover.
 

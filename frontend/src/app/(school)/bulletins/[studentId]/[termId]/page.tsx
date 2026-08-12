@@ -1,0 +1,319 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Printer,
+  Send,
+  Pencil,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  FileText,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { api, ApiError } from '@/lib/api';
+import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { Avatar } from '@/components/ui/Avatar';
+import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
+import type { StudentBulletinData } from '../../types';
+
+export default function BulletinViewerPage() {
+  const user = useUser();
+  const { toast } = useToast();
+  const params = useParams<{ studentId: string; termId: string }>();
+  const [data, setData] = useState<StudentBulletinData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(100);
+
+  useEffect(() => {
+    if (!user) return;
+    const qs = params.termId ? `?termId=${params.termId}` : '';
+    api<StudentBulletinData>(`/api/school/students/${params.studentId}/bulletin${qs}`)
+      .then(setData)
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 404) {
+          setError('Élève introuvable.');
+          return;
+        }
+        setError('Impossible de charger le bulletin.');
+      });
+  }, [user, params.studentId, params.termId]);
+
+  if (!user || (!data && !error)) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Chargement…</p>
+      </main>
+    );
+  }
+  if (error || !data) {
+    return (
+      <div className="flex flex-col gap-4">
+        <Link
+          href="/bulletins"
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
+        >
+          <ArrowLeft size={14} />
+          Retour aux bulletins
+        </Link>
+        <p role="alert" className="text-sm text-destructive-foreground">
+          {error}
+        </p>
+      </div>
+    );
+  }
+
+  const termLabel = data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? '';
+  const renderData: BulletinRenderData = {
+    schoolName: data.schoolName,
+    period: termLabel,
+    academicYear: data.academicYearLabel,
+    studentName: `${data.firstName} ${data.lastName}`,
+    className: data.className,
+    classSize: data.classSize,
+    studentNumber: `N° ${data.studentNumber}`,
+    subjects: data.subjects.map((s) => ({
+      name: s.subjectName,
+      coefficient: s.coefficient,
+      average: s.average,
+      classAverage: s.classAverage,
+      min: s.min,
+      max: s.max,
+      appreciation: s.appreciation,
+    })),
+    overallAverage: data.overallAverage,
+    classAverage: data.classAverage,
+    rank: data.rank,
+    rankedCount: data.rankedCount,
+    generalAppreciation: data.generalAppreciation,
+    absencesDays: null,
+    retards: null,
+  };
+
+  const navHref = (studentId: string) => `/bulletins/${studentId}/${data.resolvedTermId ?? ''}`;
+
+  return (
+    <div className="flex items-start gap-5">
+      {/* Action panel */}
+      <div className="flex w-[220px] shrink-0 flex-col gap-3">
+        <Link
+          href="/bulletins"
+          className="flex items-center gap-1.5 px-1 py-1.5 text-sm text-muted-foreground"
+        >
+          <ArrowLeft size={14} />
+          Retour aux bulletins
+        </Link>
+
+        <div className="rounded-lg bg-card p-3.5">
+          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            Élève
+          </div>
+          <div className="mb-2.5 flex items-center gap-2.5">
+            <Avatar name={`${data.firstName} ${data.lastName}`} size={38} />
+            <div>
+              <div className="text-[13px] font-bold text-foreground">
+                {data.firstName} {data.lastName}
+              </div>
+              <div className="text-[11px] text-muted-foreground">#{data.studentNumber}</div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5 text-xs">
+            <InfoItem label="Classe" value={data.className} />
+            <InfoItem label="Période" value={termLabel} />
+            <InfoItem label="Année" value={data.academicYearLabel} />
+            <div className="my-1 h-px bg-border" />
+            <InfoItem label="Modèle" value={data.template?.name ?? '—'} />
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-card p-3.5">
+          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            Actions
+          </div>
+          <ActionBtn
+            icon={Download}
+            label="Télécharger PDF"
+            primary
+            onClick={() => toast('Export PDF — bientôt disponible.', 'info')}
+          />
+          <ActionBtn icon={Printer} label="Imprimer" onClick={() => window.print()} />
+          <ActionBtn
+            icon={Send}
+            label="Envoyer aux parents"
+            onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
+          />
+          <Link
+            href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
+            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
+          >
+            <Pencil size={14} className="text-muted-foreground" />
+            Modifier l&apos;appréciation
+          </Link>
+          <div className="my-1.5 h-px bg-border" />
+          <ActionBtn
+            icon={Trash2}
+            label="Supprimer le bulletin"
+            danger
+            onClick={() => toast('Les bulletins ne sont pas stockés — rien à supprimer.', 'info')}
+          />
+        </div>
+
+        <div className="rounded-lg bg-card p-3.5">
+          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            Navigation
+          </div>
+          <div className="flex gap-2">
+            {data.prevStudentId ? (
+              <Link
+                href={navHref(data.prevStudentId)}
+                className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
+              >
+                <ChevronLeft size={13} />
+                Précédent
+              </Link>
+            ) : (
+              <span className="flex-1 rounded-md border border-border px-2 py-1.5 text-center text-xs font-medium text-muted-foreground opacity-40">
+                <ChevronLeft size={13} className="inline" /> Précédent
+              </span>
+            )}
+            {data.nextStudentId ? (
+              <Link
+                href={navHref(data.nextStudentId)}
+                className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
+              >
+                Suivant
+                <ChevronRight size={13} />
+              </Link>
+            ) : (
+              <span className="flex-1 rounded-md border border-border px-2 py-1.5 text-center text-xs font-medium text-muted-foreground opacity-40">
+                Suivant <ChevronRight size={13} className="inline" />
+              </span>
+            )}
+          </div>
+          <div className="mt-2 text-center text-[11px] text-muted-foreground">
+            Élève {data.studentIndex ?? '—'} sur {data.classSize}
+          </div>
+        </div>
+      </div>
+
+      {/* Bulletin area */}
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-card px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.max(50, z - 10))}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+            >
+              <ZoomOut size={14} />
+            </button>
+            <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+              {zoom}%
+            </span>
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.min(150, z + 10))}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+            >
+              <ZoomIn size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById('bulletin-page-wrap')?.requestFullscreen?.()}
+              className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground"
+            >
+              <Maximize2 size={13} />
+              Plein écran
+            </button>
+          </div>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <FileText size={13} />
+            Format :{' '}
+            {data.template
+              ? `${data.template.config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ${data.template.config.orientation === 'LANDSCAPE' ? 'paysage' : 'portrait'}`
+              : '—'}{' '}
+            — Modèle : {data.template?.name ?? '—'}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+            >
+              <Printer size={13} />
+              Imprimer
+            </button>
+            <button
+              type="button"
+              onClick={() => toast('Export PDF — bientôt disponible.', 'info')}
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+            >
+              <Download size={13} />
+              Exporter PDF
+            </button>
+          </div>
+        </div>
+
+        <div id="bulletin-page-wrap" className="flex justify-center py-2">
+          <div
+            style={{ width: 760, transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+          >
+            {data.template ? (
+              <BulletinCanvas config={data.template.config} data={renderData} />
+            ) : (
+              <div className="rounded-md bg-card p-10 text-center text-sm text-muted-foreground">
+                Aucun modèle de bulletin disponible.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function ActionBtn({
+  icon: Icon,
+  label,
+  onClick,
+  primary,
+  danger,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  label: string;
+  onClick: () => void;
+  primary?: boolean;
+  danger?: boolean;
+}) {
+  const cls = primary
+    ? 'bg-primary text-primary-foreground'
+    : danger
+      ? 'bg-destructive text-destructive-foreground'
+      : 'border border-border bg-card text-foreground';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`mb-1 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-medium ${cls}`}
+    >
+      <Icon size={14} />
+      {label}
+    </button>
+  );
+}

@@ -55,6 +55,35 @@ export function subjectAverageFor(evaluations: EvaluationLike[], studentId: stri
   return weightedAverage(rows);
 }
 
+interface ClassSubjectLike {
+  id: string;
+  coefficient: number | null;
+}
+
+// Every enrolled student's weighted general average, in one pass — the
+// subjectAverageFor→weightedAverage composition every general-average call
+// site already needed (appreciations list/detail, combined notebook), now
+// needed a 4th/5th time by the bulletins routes. Returns a Map so callers
+// can both rank (map to array) and average-of-averages (class mean) from
+// the same computation without re-deriving per-student.
+export function classGeneralAverages(
+  classSubjects: ClassSubjectLike[],
+  evalsByClassSubject: Map<string, EvaluationLike[]>,
+  studentIds: string[],
+): Map<string, number | null> {
+  const result = new Map<string, number | null>();
+  for (const studentId of studentIds) {
+    const rows = classSubjects
+      .map((cs) => {
+        const avg = subjectAverageFor(evalsByClassSubject.get(cs.id) ?? [], studentId);
+        return avg != null ? { value: avg, weight: cs.coefficient } : null;
+      })
+      .filter((r): r is { value: number; weight: number | null } => r != null);
+    result.set(studentId, weightedAverage(rows));
+  }
+  return result;
+}
+
 // Competition ("1224") ranking: entries tied on value share the same rank,
 // and the next distinct value skips ahead by the number of entries tied
 // above it — matches how French bulletins show "ex-aequo" instead of

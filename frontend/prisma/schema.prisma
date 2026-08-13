@@ -43,6 +43,7 @@ model User {
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
   appreciations     Appreciation[]
+  attendanceMarks   Attendance[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -135,6 +136,9 @@ model School {
   officialCode      String?
   officialEmail     String?
   website           String?
+  // Added for bulletin PDF generation (bulletin-pdf-and-editor-design.md).
+  logoUrl               String?
+  directorSignatureUrl  String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -333,6 +337,7 @@ model Student {
   grades        Grade[]
   goals         Goal[]
   appreciations Appreciation[]
+  attendance    Attendance[]
 
   @@index([schoolId])
 }
@@ -472,6 +477,34 @@ model Appreciation {
 
   @@unique([studentId, termId, subjectId])
   @@index([studentId, termId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Epic 8 — attendance. Daily granularity (one row per student per calendar
+// day, no subject dimension) — matches Attendance Tracking's weekly grid,
+// which has day columns, not subject columns. No `classId`/`schoolId`
+// stored directly: reached transitively via `studentId → Student.schoolId`
+// and the student's `Enrollment` for whichever class is being viewed, same
+// convention as `Goal`/`Appreciation` (neither stores `classId` either).
+// No `termId` either — the read side derives a date range from the
+// resolved `Term` via `resolveCurrentTerm()` instead of a stored FK.
+// "Not recorded" (—) is simply the absence of a row for that student+date,
+// mirroring `Grade.score: null`. See .planning/banani/attendance-tracking.md.
+// ───────────────────────────────────────────────────────────────────────
+model Attendance {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date          DateTime // calendar day, UTC-midnight normalized — no time component
+  status        String // PRESENT | ABSENT | LATE | EXCUSED
+  justification String? // free text, set via the edit/justify modal
+  markedById    String?
+  markedBy      User?    @relation(fields: [markedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([studentId, date])
+  @@index([studentId, date])
 }
 
 // Fork-on-write template library: `schoolId: null` rows are the global/

@@ -20,6 +20,8 @@ import {
   FileText,
   Monitor,
   Smartphone,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -39,6 +41,13 @@ const PAGE_SIZES_MM: Record<'A4' | 'LETTER', { w: number; h: number }> = {
   A4: { w: 210, h: 297 },
   LETTER: { w: 215.9, h: 279.4 },
 };
+
+// Preview is sized off its LONG edge, not a fixed width — that way
+// switching Portrait<->Paysage can never make the preview wider than this
+// constant (a portrait page's long edge is its height, a landscape page's
+// long edge is its width), so it can never force the 3-column editor
+// layout into horizontal scroll. Zoom scales on top of this baseline.
+const PAPER_LONG_EDGE = 560;
 
 const COLOR_SWATCHES = [
   '#6c2bd9',
@@ -147,6 +156,7 @@ export default function BulletinEditorPage() {
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragId, setDragId] = useState<BlockId | null>(null);
   const [nameInput, setNameInput] = useState('');
+  const [zoom, setZoom] = useState(100);
   const [school, setSchool] = useState<{
     logoUrl: string | null;
     directorSignatureUrl: string | null;
@@ -295,13 +305,15 @@ export default function BulletinEditorPage() {
     }),
     [school],
   );
-  const previewWidth = 760;
-  const previewHeight = useMemo(() => {
-    if (!config) return previewWidth;
+  const paperSize = useMemo(() => {
+    if (!config) return { width: PAPER_LONG_EDGE, height: PAPER_LONG_EDGE };
     const dims = PAGE_SIZES_MM[config.pageFormat];
-    const [pageW, pageH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
-    return Math.round(previewWidth * (pageH / pageW));
+    const [mmW, mmH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
+    const scale = PAPER_LONG_EDGE / Math.max(mmW, mmH);
+    return { width: Math.round(mmW * scale), height: Math.round(mmH * scale) };
   }, [config]);
+  const previewWidth = Math.round(paperSize.width * (zoom / 100));
+  const previewHeight = Math.round(paperSize.height * (zoom / 100));
 
   if (!user) {
     return (
@@ -535,24 +547,56 @@ export default function BulletinEditorPage() {
         )}
 
         {/* Canvas */}
-        <div className="flex flex-1 items-start justify-center overflow-y-auto bg-[#d8d8e8] p-7">
-          <div style={{ width: previewWidth }}>
-            <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
-              <FileText size={12} />
-              Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
-              {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
-            </div>
-            <div
-              className="overflow-hidden rounded-[2px] bg-white shadow-2xl"
-              style={{ width: previewWidth, height: previewHeight }}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex shrink-0 items-center justify-center gap-2 border-b border-border bg-card py-1.5">
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.max(50, z - 10))}
+              className="flex h-6.5 w-6.5 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+              aria-label="Zoom arrière"
             >
-              <BulletinCanvas
-                config={config}
-                data={previewData}
-                selected={selected}
-                onSelect={setSelected}
-                chrome={false}
-              />
+              <ZoomOut size={13} />
+            </button>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground">
+              {zoom}%
+            </span>
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.min(200, z + 10))}
+              className="flex h-6.5 w-6.5 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+              aria-label="Zoom avant"
+            >
+              <ZoomIn size={13} />
+            </button>
+            {zoom !== 100 && (
+              <button
+                type="button"
+                onClick={() => setZoom(100)}
+                className="text-[11px] font-medium text-primary"
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+          <div className="flex flex-1 items-start justify-center overflow-auto bg-[#d8d8e8] p-7">
+            <div style={{ width: previewWidth }}>
+              <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
+                <FileText size={12} />
+                Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
+                {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
+              </div>
+              <div
+                className="overflow-hidden rounded-[2px] bg-white shadow-2xl"
+                style={{ width: previewWidth, height: previewHeight }}
+              >
+                <BulletinCanvas
+                  config={config}
+                  data={previewData}
+                  selected={selected}
+                  onSelect={setSelected}
+                  chrome={false}
+                />
+              </div>
             </div>
           </div>
         </div>

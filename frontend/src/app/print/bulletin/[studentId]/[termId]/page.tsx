@@ -64,14 +64,17 @@ export default async function PrintBulletinPage({
   return (
     <>
       {/* Puppeteer prints with preferCSSPageSize -> this @page rule drives
-          the actual paper size + orientation + margin. chrome={false} on
-          BulletinCanvas strips the on-screen card look (shadow, rounded
-          corners) so the PDF renders as a real full-bleed page instead of a
-          floating card — that's what made downloaded PDFs look like a photo
-          pasted onto a blank sheet instead of the document itself. */}
+          the actual paper size + orientation. margin:0 is deliberate — the
+          PDF must be a literal 1:1 match of the on-screen Viewer, which
+          renders the bulletin edge-to-edge with no outer gutter. Any
+          spacing the school wants around the content is authored inside
+          the template itself (config.layout.pageMargin), not injected
+          here. chrome={false} on BulletinCanvas strips the on-screen card
+          look (shadow, rounded corners) so the PDF is the real page, not a
+          floating card. */}
       <style
         dangerouslySetInnerHTML={{
-          __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:12mm} body{margin:0}`,
+          __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:0} body{margin:0}`,
         }}
       />
       <BulletinCanvas config={config} data={renderData} chrome={false} />

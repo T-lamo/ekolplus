@@ -67,11 +67,18 @@ export function BulletinCanvas({
   data,
   selected,
   onSelect,
+  chrome = true,
 }: {
   config: BulletinTemplateConfig;
   data: BulletinRenderData;
   selected?: BlockId;
   onSelect?: (id: BlockId) => void;
+  /** Card shadow/rounded corners for on-screen display. Callers that print
+   * or embed the canvas in their own page frame (PDF generation, the
+   * editor's paper preview) pass `chrome={false}` for full-bleed output —
+   * a floating drop-shadowed card is what made downloaded PDFs look like a
+   * photo pasted on a page instead of the document itself. */
+  chrome?: boolean;
 }) {
   const interactive = onSelect != null;
   const visible = (id: BlockId) => config.blocks.find((b) => b.id === id)?.visible ?? true;
@@ -88,8 +95,8 @@ export function BulletinCanvas({
 
   return (
     <div
-      className="print-bulletin-canvas relative overflow-hidden rounded-[2px] bg-white shadow-2xl"
-      style={{ minHeight: 586 }}
+      className={`print-bulletin-canvas relative bg-white ${chrome ? 'overflow-hidden rounded-[2px] shadow-2xl' : ''}`}
+      style={chrome ? { minHeight: 586 } : undefined}
     >
       <div
         className="h-1.5"
@@ -222,8 +229,8 @@ export function BulletinCanvas({
               </tr>
             </thead>
             <tbody>
-              {data.subjects.map((s, i) => (
-                <tr key={s.name} style={i % 2 === 1 ? { background: '#faf9ff' } : undefined}>
+              {data.subjects.map((s) => (
+                <tr key={s.name}>
                   <td
                     className="p-1.5"
                     style={{ ...cellBorderStyle(config), fontSize: config.typography.tableBody }}
@@ -265,7 +272,13 @@ export function BulletinCanvas({
               ))}
             </tbody>
             <tfoot>
-              <tr style={{ background: `${config.primaryColor}14` }}>
+              <tr
+                style={{
+                  borderTopWidth: config.layout.borderWidth || 1,
+                  borderTopStyle: 'solid',
+                  borderTopColor: config.primaryColor,
+                }}
+              >
                 <td className="p-1.5 font-bold" colSpan={config.columns.coefficient ? 2 : 1}>
                   Moyenne générale
                 </td>

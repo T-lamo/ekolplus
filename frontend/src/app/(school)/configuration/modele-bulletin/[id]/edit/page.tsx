@@ -32,6 +32,14 @@ import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/B
 import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
+// Real paper dimensions (mm) so the editor preview's aspect ratio actually
+// changes when the format/orientation toggle changes — previously the
+// preview stayed a fixed 760px box no matter what was selected.
+const PAGE_SIZES_MM: Record<'A4' | 'LETTER', { w: number; h: number }> = {
+  A4: { w: 210, h: 297 },
+  LETTER: { w: 215.9, h: 279.4 },
+};
+
 const COLOR_SWATCHES = [
   '#6c2bd9',
   '#2563eb',
@@ -138,6 +146,7 @@ export default function BulletinEditorPage() {
   const [selected, setSelected] = useState<BlockId>('header');
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragId, setDragId] = useState<BlockId | null>(null);
+  const [nameInput, setNameInput] = useState('');
   const [school, setSchool] = useState<{
     logoUrl: string | null;
     directorSignatureUrl: string | null;
@@ -149,6 +158,7 @@ export default function BulletinEditorPage() {
       .then((d) => {
         setData(d);
         setConfig(d.config);
+        setNameInput(d.name);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
@@ -239,6 +249,25 @@ export default function BulletinEditorPage() {
     }
   }
 
+  async function renameTemplate(name: string) {
+    const trimmed = name.trim();
+    if (!data || !trimmed) {
+      setNameInput(data?.name ?? '');
+      return;
+    }
+    if (trimmed === data.name) return;
+    setData((d) => (d ? { ...d, name: trimmed } : d));
+    setNameInput(trimmed);
+    try {
+      await api(`/api/school/bulletin-templates/${params.id}`, {
+        method: 'PATCH',
+        body: { name: trimmed },
+      });
+    } catch {
+      toast('Erreur lors du renommage du modèle.', 'error');
+    }
+  }
+
   async function updateSchoolLogo(url: string | null) {
     setSchool((s) => (s ? { ...s, logoUrl: url } : s));
     try {
@@ -266,6 +295,13 @@ export default function BulletinEditorPage() {
     }),
     [school],
   );
+  const previewWidth = 760;
+  const previewHeight = useMemo(() => {
+    if (!config) return previewWidth;
+    const dims = PAGE_SIZES_MM[config.pageFormat];
+    const [pageW, pageH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
+    return Math.round(previewWidth * (pageH / pageW));
+  }, [config]);
 
   if (!user) {
     return (
@@ -333,10 +369,25 @@ export default function BulletinEditorPage() {
             Retour
           </button>
           <div className="h-5 w-px bg-border" />
-          <div className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
-            <LayoutTemplate size={14} className="text-primary" />
-            {data.name}
-          </div>
+          {data.isOwn ? (
+            <div className="flex items-center gap-1.5">
+              <LayoutTemplate size={14} className="shrink-0 text-primary" />
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onBlur={() => renameTemplate(nameInput)}
+                maxLength={120}
+                aria-label="Nom du modèle"
+                className="w-48 rounded border border-transparent bg-transparent px-1 py-0.5 text-[13px] font-semibold text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+              <LayoutTemplate size={14} className="text-primary" />
+              {data.name}
+            </div>
+          )}
           {data.isActive && (
             <span className="flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-[11px] font-semibold text-success-foreground">
               <CheckCircle2 size={10} />
@@ -485,18 +536,24 @@ export default function BulletinEditorPage() {
 
         {/* Canvas */}
         <div className="flex flex-1 items-start justify-center overflow-y-auto bg-[#d8d8e8] p-7">
-          <div style={{ width: 760 }}>
+          <div style={{ width: previewWidth }}>
             <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
               <FileText size={12} />
               Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
               {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
             </div>
-            <BulletinCanvas
-              config={config}
-              data={previewData}
-              selected={selected}
-              onSelect={setSelected}
-            />
+            <div
+              className="overflow-hidden rounded-[2px] bg-white shadow-2xl"
+              style={{ width: previewWidth, height: previewHeight }}
+            >
+              <BulletinCanvas
+                config={config}
+                data={previewData}
+                selected={selected}
+                onSelect={setSelected}
+                chrome={false}
+              />
+            </div>
           </div>
         </div>
 

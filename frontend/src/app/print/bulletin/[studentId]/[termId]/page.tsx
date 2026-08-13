@@ -64,15 +64,17 @@ export default async function PrintBulletinPage({
   return (
     <>
       {/* Puppeteer prints with preferCSSPageSize -> this @page rule drives
-          the actual paper size + orientation. */}
+          the actual paper size + orientation + margin. chrome={false} on
+          BulletinCanvas strips the on-screen card look (shadow, rounded
+          corners) so the PDF renders as a real full-bleed page instead of a
+          floating card — that's what made downloaded PDFs look like a photo
+          pasted onto a blank sheet instead of the document itself. */}
       <style
         dangerouslySetInnerHTML={{
-          __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:0}`,
+          __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:12mm} body{margin:0}`,
         }}
       />
-      <div style={{ padding: 24 }}>
-        <BulletinCanvas config={config} data={renderData} />
-      </div>
+      <BulletinCanvas config={config} data={renderData} chrome={false} />
     </>
   );
 }

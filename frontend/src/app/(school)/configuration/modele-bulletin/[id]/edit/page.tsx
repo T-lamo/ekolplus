@@ -16,7 +16,6 @@ import {
   MessageSquare,
   PenLine,
   CheckCircle2,
-  UploadCloud,
   Copy,
   FileText,
   Monitor,
@@ -27,6 +26,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
 import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
@@ -58,6 +59,8 @@ const BLOCK_ICON: Record<BlockId, ComponentType<{ size?: number; style?: object 
 // real grades/appreciations for whichever student is actually being viewed.
 const SAMPLE_BULLETIN_DATA: BulletinRenderData = {
   schoolName: 'École LesÉtoiles',
+  schoolLogoUrl: null,
+  directorSignatureUrl: null,
   period: 'Trimestre 2',
   academicYear: '2024–2025',
   studentName: 'Jean-Pierre M.',
@@ -135,6 +138,10 @@ export default function BulletinEditorPage() {
   const [selected, setSelected] = useState<BlockId>('header');
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragId, setDragId] = useState<BlockId | null>(null);
+  const [school, setSchool] = useState<{
+    logoUrl: string | null;
+    directorSignatureUrl: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -151,6 +158,15 @@ export default function BulletinEditorPage() {
         setError('Impossible de charger le modèle.');
       });
   }, [user, params.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    api<{ school: { logoUrl: string | null; directorSignatureUrl: string | null } }>('/api/school')
+      .then((d) => setSchool(d.school))
+      .catch(() => {
+        // Non-fatal — the logo/signature panels just show the empty state.
+      });
+  }, [user]);
 
   function patchConfig(patch: Partial<BulletinTemplateConfig>) {
     setConfig((c) => (c ? { ...c, ...patch } : c));
@@ -223,13 +239,66 @@ export default function BulletinEditorPage() {
     }
   }
 
-  const orderedBlocks = useMemo(() => config?.blocks ?? [], [config]);
+  async function updateSchoolLogo(url: string | null) {
+    setSchool((s) => (s ? { ...s, logoUrl: url } : s));
+    try {
+      await api('/api/school', { method: 'PUT', body: { logoUrl: url } });
+    } catch {
+      toast("Erreur lors de l'enregistrement du logo.", 'error');
+    }
+  }
 
-  if (!user || (!data && !error)) {
+  async function updateSchoolSignature(url: string | null) {
+    setSchool((s) => (s ? { ...s, directorSignatureUrl: url } : s));
+    try {
+      await api('/api/school', { method: 'PUT', body: { directorSignatureUrl: url } });
+    } catch {
+      toast("Erreur lors de l'enregistrement de la signature.", 'error');
+    }
+  }
+
+  const orderedBlocks = useMemo(() => config?.blocks ?? [], [config]);
+  const previewData: BulletinRenderData = useMemo(
+    () => ({
+      ...SAMPLE_BULLETIN_DATA,
+      schoolLogoUrl: school?.logoUrl ?? null,
+      directorSignatureUrl: school?.directorSignatureUrl ?? null,
+    }),
+    [school],
+  );
+
+  if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
+    );
+  }
+  if (!data && !error) {
+    return (
+      <div className="-m-6 flex h-screen flex-col overflow-hidden">
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-5">
+          <Skeleton className="h-7 w-20 rounded-md" />
+          <div className="h-5 w-px bg-border" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex w-60 shrink-0 flex-col gap-2.5 overflow-y-auto border-r border-border bg-card p-3.5">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-full" />
+            ))}
+          </div>
+          <div className="flex flex-1 items-start justify-center overflow-y-auto bg-[#d8d8e8] p-7">
+            <Skeleton className="h-[600px] w-[440px] max-w-full rounded-md" />
+          </div>
+          <div className="flex w-64 shrink-0 flex-col gap-2.5 overflow-y-auto border-l border-border bg-card p-3.5">
+            <Skeleton className="h-6 w-full" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
   if (error || !data || !config) {
@@ -424,7 +493,7 @@ export default function BulletinEditorPage() {
             </div>
             <BulletinCanvas
               config={config}
-              data={SAMPLE_BULLETIN_DATA}
+              data={previewData}
               selected={selected}
               onSelect={setSelected}
             />
@@ -454,9 +523,7 @@ export default function BulletinEditorPage() {
                   <button
                     key={t}
                     type="button"
-                    onClick={() =>
-                      t === 'style' ? setPropTab('style') : toast('Onglet à venir.', 'info')
-                    }
+                    onClick={() => setPropTab(t)}
                     className={`flex-1 rounded px-1 py-1 text-[11px] font-medium ${propTab === t ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
                   >
                     {t === 'style' ? 'Style' : t === 'content' ? 'Contenu' : 'Espacement'}
@@ -465,110 +532,215 @@ export default function BulletinEditorPage() {
               </div>
             </div>
 
-            <PropSection title="Logo de l'établissement">
-              <div className="flex h-16 flex-col items-center justify-center gap-1.5 rounded-md border-[1.5px] border-dashed border-border bg-background text-center">
-                <UploadCloud size={18} className="text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">
-                  Non câblé cette phase — PNG, SVG, JPG
-                </span>
-              </div>
-            </PropSection>
+            {propTab === 'style' && (
+              <>
+                <PropSection title="Couleurs du thème">
+                  <PropRow label="Couleur principale">
+                    <input
+                      type="color"
+                      value={config.primaryColor}
+                      onChange={(e) => patchConfig({ primaryColor: e.target.value })}
+                      className="h-5 w-8 cursor-pointer rounded border-none bg-transparent"
+                    />
+                  </PropRow>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {COLOR_SWATCHES.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => patchConfig({ primaryColor: c })}
+                        style={{ background: c }}
+                        className={`h-5 w-5 rounded ${config.primaryColor.toLowerCase() === c ? 'ring-2 ring-foreground ring-offset-1' : ''}`}
+                        aria-label={c}
+                      />
+                    ))}
+                  </div>
+                </PropSection>
 
-            <PropSection title="Couleurs du thème">
-              <PropRow label="Couleur principale">
-                <input
-                  type="color"
-                  value={config.primaryColor}
-                  onChange={(e) => patchConfig({ primaryColor: e.target.value })}
-                  className="h-5 w-8 cursor-pointer rounded border-none bg-transparent"
-                />
-              </PropRow>
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {COLOR_SWATCHES.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => patchConfig({ primaryColor: c })}
-                    style={{ background: c }}
-                    className={`h-5 w-5 rounded ${config.primaryColor.toLowerCase() === c ? 'ring-2 ring-foreground ring-offset-1' : ''}`}
-                    aria-label={c}
+                <PropSection title="Typographie" last>
+                  <PropNumberRow
+                    label="Nom établissement"
+                    value={config.typography.schoolName}
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, schoolName: v } })
+                    }
                   />
-                ))}
-              </div>
-            </PropSection>
+                  <PropNumberRow
+                    label="Titre bulletin"
+                    value={config.typography.title}
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, title: v } })
+                    }
+                  />
+                  <PropNumberRow
+                    label="Corps tableau"
+                    value={config.typography.tableBody}
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, tableBody: v } })
+                    }
+                  />
+                </PropSection>
+              </>
+            )}
 
-            <PropSection title="Typographie">
-              <PropNumberRow
-                label="Nom établissement"
-                value={config.typography.schoolName}
-                onChange={(v) =>
-                  patchConfig({ typography: { ...config.typography, schoolName: v } })
-                }
-              />
-              <PropNumberRow
-                label="Titre bulletin"
-                value={config.typography.title}
-                onChange={(v) => patchConfig({ typography: { ...config.typography, title: v } })}
-              />
-              <PropNumberRow
-                label="Corps tableau"
-                value={config.typography.tableBody}
-                onChange={(v) =>
-                  patchConfig({ typography: { ...config.typography, tableBody: v } })
-                }
-              />
-            </PropSection>
+            {propTab === 'content' && (
+              <>
+                <PropSection title="Logo de l'établissement">
+                  <ImageUploader
+                    label="Logo"
+                    hint="PNG, JPG ou WebP — 10 Mo max"
+                    value={school?.logoUrl ?? null}
+                    onChange={updateSchoolLogo}
+                  />
+                </PropSection>
 
-            <PropSection title="Signatures">
-              <SwitchRow
-                label="Directeur"
-                checked={config.signatures.director}
-                onChange={(v) => patchConfig({ signatures: { ...config.signatures, director: v } })}
-              />
-              <SwitchRow
-                label="Titulaire de classe"
-                checked={config.signatures.homeroom}
-                onChange={(v) => patchConfig({ signatures: { ...config.signatures, homeroom: v } })}
-              />
-              <SwitchRow
-                label="Parent / Tuteur"
-                checked={config.signatures.guardian}
-                onChange={(v) => patchConfig({ signatures: { ...config.signatures, guardian: v } })}
-              />
-            </PropSection>
+                <PropSection title="Signature du directeur">
+                  <ImageUploader
+                    label="Signature"
+                    hint="PNG, JPG ou WebP — 10 Mo max"
+                    value={school?.directorSignatureUrl ?? null}
+                    onChange={updateSchoolSignature}
+                  />
+                </PropSection>
 
-            <PropSection title="Colonnes du tableau" last>
-              <SwitchRow
-                label="Coeff."
-                checked={config.columns.coefficient}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, coefficient: v } })}
-              />
-              <SwitchRow
-                label="Moy. classe"
-                checked={config.columns.classAverage}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, classAverage: v } })}
-              />
-              <SwitchRow
-                label="Min. / Max."
-                checked={config.columns.minMax}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, minMax: v } })}
-              />
-              <SwitchRow
-                label="Appréciation"
-                checked={config.columns.appreciation}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, appreciation: v } })}
-              />
-              <SwitchRow
-                label="Absences (statistiques)"
-                checked={config.columns.absences}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, absences: v } })}
-              />
-              <SwitchRow
-                label="Rang (statistiques)"
-                checked={config.columns.rank}
-                onChange={(v) => patchConfig({ columns: { ...config.columns, rank: v } })}
-              />
-            </PropSection>
+                <PropSection title="Texte du bulletin">
+                  <label
+                    className="mb-1 block text-xs font-medium text-foreground"
+                    htmlFor="content-title"
+                  >
+                    Titre du bulletin
+                  </label>
+                  <input
+                    id="content-title"
+                    type="text"
+                    maxLength={60}
+                    value={config.content.title}
+                    onChange={(e) =>
+                      patchConfig({ content: { ...config.content, title: e.target.value } })
+                    }
+                    className="mb-3 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                  />
+                  <label
+                    className="mb-1 block text-xs font-medium text-foreground"
+                    htmlFor="content-footer"
+                  >
+                    Message de pied de page
+                  </label>
+                  <textarea
+                    id="content-footer"
+                    maxLength={200}
+                    rows={3}
+                    value={config.content.footerMessage ?? ''}
+                    onChange={(e) =>
+                      patchConfig({
+                        content: { ...config.content, footerMessage: e.target.value || null },
+                      })
+                    }
+                    className="w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                    placeholder="Optionnel — ex. « Ensemble vers la réussite »"
+                  />
+                </PropSection>
+
+                <PropSection title="Signatures">
+                  <SwitchRow
+                    label="Directeur"
+                    checked={config.signatures.director}
+                    onChange={(v) =>
+                      patchConfig({ signatures: { ...config.signatures, director: v } })
+                    }
+                  />
+                  <SwitchRow
+                    label="Titulaire de classe"
+                    checked={config.signatures.homeroom}
+                    onChange={(v) =>
+                      patchConfig({ signatures: { ...config.signatures, homeroom: v } })
+                    }
+                  />
+                  <SwitchRow
+                    label="Parent / Tuteur"
+                    checked={config.signatures.guardian}
+                    onChange={(v) =>
+                      patchConfig({ signatures: { ...config.signatures, guardian: v } })
+                    }
+                  />
+                </PropSection>
+
+                <PropSection title="Colonnes du tableau" last>
+                  <SwitchRow
+                    label="Coeff."
+                    checked={config.columns.coefficient}
+                    onChange={(v) =>
+                      patchConfig({ columns: { ...config.columns, coefficient: v } })
+                    }
+                  />
+                  <SwitchRow
+                    label="Moy. classe"
+                    checked={config.columns.classAverage}
+                    onChange={(v) =>
+                      patchConfig({ columns: { ...config.columns, classAverage: v } })
+                    }
+                  />
+                  <SwitchRow
+                    label="Min. / Max."
+                    checked={config.columns.minMax}
+                    onChange={(v) => patchConfig({ columns: { ...config.columns, minMax: v } })}
+                  />
+                  <SwitchRow
+                    label="Appréciation"
+                    checked={config.columns.appreciation}
+                    onChange={(v) =>
+                      patchConfig({ columns: { ...config.columns, appreciation: v } })
+                    }
+                  />
+                  <SwitchRow
+                    label="Absences (statistiques)"
+                    checked={config.columns.absences}
+                    onChange={(v) => patchConfig({ columns: { ...config.columns, absences: v } })}
+                  />
+                  <SwitchRow
+                    label="Rang (statistiques)"
+                    checked={config.columns.rank}
+                    onChange={(v) => patchConfig({ columns: { ...config.columns, rank: v } })}
+                  />
+                </PropSection>
+              </>
+            )}
+
+            {propTab === 'spacing' && (
+              <PropSection title="Espacement" last>
+                <PropNumberRow
+                  label="Marge de page (px)"
+                  value={config.layout.pageMargin}
+                  min={0}
+                  max={48}
+                  onChange={(v) => patchConfig({ layout: { ...config.layout, pageMargin: v } })}
+                />
+                <PropNumberRow
+                  label="Espacement entre les blocs (px)"
+                  value={config.layout.blockSpacing}
+                  min={0}
+                  max={32}
+                  onChange={(v) => patchConfig({ layout: { ...config.layout, blockSpacing: v } })}
+                />
+                <PropNumberRow
+                  label="Épaisseur de bordure (px)"
+                  value={config.layout.borderWidth}
+                  min={0}
+                  max={4}
+                  onChange={(v) => patchConfig({ layout: { ...config.layout, borderWidth: v } })}
+                />
+                <PropRow label="Couleur de bordure">
+                  <input
+                    type="color"
+                    value={config.layout.borderColor}
+                    onChange={(e) =>
+                      patchConfig({ layout: { ...config.layout, borderColor: e.target.value } })
+                    }
+                    className="h-5 w-8 cursor-pointer rounded border-none bg-transparent"
+                  />
+                </PropRow>
+              </PropSection>
+            )}
           </div>
         )}
       </div>
@@ -608,17 +780,21 @@ function PropNumberRow({
   label,
   value,
   onChange,
+  min = 8,
+  max = 32,
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  min?: number;
+  max?: number;
 }) {
   return (
     <PropRow label={label}>
       <input
         type="number"
-        min={8}
-        max={32}
+        min={min}
+        max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-14 rounded border-none bg-muted px-2 py-1 text-right text-xs text-foreground outline-none"

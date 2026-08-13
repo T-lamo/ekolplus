@@ -62,6 +62,8 @@ export interface StudentBulletinData {
   schoolAddress: string | null;
   schoolPhone: string | null;
   schoolEmail: string | null;
+  schoolLogoUrl: string | null;
+  directorSignatureUrl: string | null;
   academicYearLabel: string;
   terms: TermOption[];
   resolvedTermId: string | null;

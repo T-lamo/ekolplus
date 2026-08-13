@@ -17,6 +17,7 @@ import { useParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
 import type { StudentBulletinData } from '../../types';
 
@@ -43,9 +44,47 @@ export default function BulletinViewerPage() {
 
   if (!user || (!data && !error)) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
-      </main>
+      <div className="flex items-start gap-5">
+        <div className="flex w-[220px] shrink-0 flex-col gap-3">
+          <Skeleton className="h-4 w-32" />
+          <div className="rounded-lg bg-card p-3.5">
+            <Skeleton className="mb-2.5 h-3 w-16" />
+            <div className="mb-2.5 flex items-center gap-2.5">
+              <Skeleton className="h-9.5 w-9.5 shrink-0 rounded-full" />
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="h-2.5 w-16" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </div>
+          <div className="rounded-lg bg-card p-3.5">
+            <Skeleton className="mb-2.5 h-3 w-16" />
+            <Skeleton className="mb-1.5 h-9 w-full rounded-md" />
+            <Skeleton className="h-9 w-full rounded-md" />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <Skeleton className="h-11 w-full rounded-lg" />
+          <div className="flex justify-center py-2">
+            <div className="flex w-[760px] max-w-full flex-col gap-3 rounded-md bg-card p-8">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4 w-full" />
+                ))}
+              </div>
+              <Skeleton className="mt-4 h-24 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
   if (error || !data) {
@@ -68,6 +107,8 @@ export default function BulletinViewerPage() {
   const termLabel = data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? '';
   const renderData: BulletinRenderData = {
     schoolName: data.schoolName,
+    schoolLogoUrl: data.schoolLogoUrl,
+    directorSignatureUrl: data.directorSignatureUrl,
     period: termLabel,
     academicYear: data.academicYearLabel,
     studentName: `${data.firstName} ${data.lastName}`,

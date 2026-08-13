@@ -24,6 +24,8 @@ export interface BulletinSubjectRow {
 
 export interface BulletinRenderData {
   schoolName: string;
+  schoolLogoUrl: string | null;
+  directorSignatureUrl: string | null;
   period: string;
   academicYear: string;
   studentName: string;
@@ -52,6 +54,13 @@ function scoreColor(avg: number | null): string {
   if (avg < 12) return '#f59e0b';
   return '#1a9e5c';
 }
+function cellBorderStyle(config: BulletinTemplateConfig): React.CSSProperties {
+  return {
+    borderBottomWidth: config.layout.borderWidth,
+    borderBottomStyle: 'solid',
+    borderBottomColor: config.layout.borderColor,
+  };
+}
 
 export function BulletinCanvas({
   config,
@@ -70,7 +79,8 @@ export function BulletinCanvas({
     visible(id) ? (
       <div
         onClick={() => onSelect?.(id)}
-        className={`relative mb-2.5 rounded ${interactive ? 'cursor-pointer' : ''} ${selected === id ? 'outline outline-2 outline-primary' : ''}`}
+        style={{ marginBottom: config.layout.blockSpacing }}
+        className={`relative rounded ${interactive ? 'cursor-pointer' : ''} ${selected === id ? 'outline outline-2 outline-primary' : ''}`}
       >
         {content}
       </div>
@@ -78,7 +88,7 @@ export function BulletinCanvas({
 
   return (
     <div
-      className="relative overflow-hidden rounded-[2px] bg-white shadow-2xl"
+      className="print-bulletin-canvas relative overflow-hidden rounded-[2px] bg-white shadow-2xl"
       style={{ minHeight: 586 }}
     >
       <div
@@ -94,15 +104,23 @@ export function BulletinCanvas({
         >
           {visible('header') && (
             <>
-              <div
-                className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border-[1.5px] border-dashed"
-                style={{
-                  borderColor: `${config.primaryColor}80`,
-                  background: `${config.primaryColor}0d`,
-                }}
-              >
-                <LayoutTemplate size={18} style={{ color: `${config.primaryColor}80` }} />
-              </div>
+              {data.schoolLogoUrl ? (
+                <img
+                  src={data.schoolLogoUrl}
+                  alt={data.schoolName}
+                  className="h-13 w-13 shrink-0 rounded-md object-contain"
+                />
+              ) : (
+                <div
+                  className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border-[1.5px] border-dashed"
+                  style={{
+                    borderColor: `${config.primaryColor}80`,
+                    background: `${config.primaryColor}0d`,
+                  }}
+                >
+                  <LayoutTemplate size={18} style={{ color: `${config.primaryColor}80` }} />
+                </div>
+              )}
               <div className="flex flex-1 flex-col items-center gap-0.5">
                 <div
                   className="font-extrabold"
@@ -114,7 +132,7 @@ export function BulletinCanvas({
                   className="font-black tracking-widest text-[#1a1a2e] uppercase"
                   style={{ fontSize: config.typography.title }}
                 >
-                  BULLETIN SCOLAIRE
+                  {config.content.title}
                 </div>
                 <div className="text-[10px] text-[#8884a0]">
                   Année {data.academicYear} · {data.period}
@@ -142,7 +160,7 @@ export function BulletinCanvas({
         </div>
       )}
 
-      <div className="px-5 py-3.5">
+      <div style={{ padding: config.layout.pageMargin }}>
         {wrap(
           'stats',
           <div className="flex gap-2.5">
@@ -207,31 +225,39 @@ export function BulletinCanvas({
               {data.subjects.map((s, i) => (
                 <tr key={s.name} style={i % 2 === 1 ? { background: '#faf9ff' } : undefined}>
                   <td
-                    className="border-b border-[#f0eef8] p-1.5"
-                    style={{ fontSize: config.typography.tableBody }}
+                    className="p-1.5"
+                    style={{ ...cellBorderStyle(config), fontSize: config.typography.tableBody }}
                   >
                     <strong>{s.name}</strong>
                   </td>
                   {config.columns.coefficient && (
-                    <td className="border-b border-[#f0eef8] p-1.5">{s.coefficient ?? '—'}</td>
+                    <td className="p-1.5" style={cellBorderStyle(config)}>
+                      {s.coefficient ?? '—'}
+                    </td>
                   )}
                   <td
-                    className="border-b border-[#f0eef8] p-1.5 font-bold"
-                    style={{ color: scoreColor(s.average) }}
+                    className="p-1.5 font-bold"
+                    style={{ ...cellBorderStyle(config), color: scoreColor(s.average) }}
                   >
                     {fmt(s.average)}
                   </td>
                   {config.columns.classAverage && (
-                    <td className="border-b border-[#f0eef8] p-1.5">{fmt(s.classAverage)}</td>
+                    <td className="p-1.5" style={cellBorderStyle(config)}>
+                      {fmt(s.classAverage)}
+                    </td>
                   )}
                   {config.columns.minMax && (
                     <>
-                      <td className="border-b border-[#f0eef8] p-1.5">{fmt(s.min)}</td>
-                      <td className="border-b border-[#f0eef8] p-1.5">{fmt(s.max)}</td>
+                      <td className="p-1.5" style={cellBorderStyle(config)}>
+                        {fmt(s.min)}
+                      </td>
+                      <td className="p-1.5" style={cellBorderStyle(config)}>
+                        {fmt(s.max)}
+                      </td>
                     </>
                   )}
                   {config.columns.appreciation && (
-                    <td className="border-b border-[#f0eef8] p-1.5 text-[#6b6b8d] italic">
+                    <td className="p-1.5 text-[#6b6b8d] italic" style={cellBorderStyle(config)}>
                       {s.appreciation ?? '—'}
                     </td>
                   )}
@@ -311,7 +337,11 @@ export function BulletinCanvas({
             </div>
             <div className="flex gap-3.5">
               {config.signatures.director && (
-                <SigBox label="Signature du Directeur" color={config.primaryColor} />
+                <SigBox
+                  label="Signature du Directeur"
+                  color={config.primaryColor}
+                  imageUrl={data.directorSignatureUrl}
+                />
               )}
               {config.signatures.homeroom && (
                 <SigBox label="Signature du Titulaire de classe" color={config.primaryColor} />
@@ -321,6 +351,12 @@ export function BulletinCanvas({
               )}
             </div>
           </div>,
+        )}
+
+        {config.content.footerMessage && (
+          <div className="mt-1 text-center text-[9px] text-[#8884a0] italic">
+            {config.content.footerMessage}
+          </div>
         )}
       </div>
 
@@ -356,12 +392,21 @@ function StatBox({
   );
 }
 
-function SigBox({ label, color }: { label: string; color: string }) {
+function SigBox({
+  label,
+  color,
+  imageUrl,
+}: {
+  label: string;
+  color: string;
+  imageUrl?: string | null;
+}) {
   return (
     <div
       className="flex min-h-13.5 flex-1 flex-col items-center justify-end gap-1 rounded-md border-[1.5px] border-dashed p-2.5 pb-1.5"
       style={{ borderColor: `${color}80` }}
     >
+      {imageUrl && <img src={imageUrl} alt={label} className="mb-1 h-8 w-auto object-contain" />}
       <div className="text-center text-[9px] text-[#8884a0]">{label}</div>
     </div>
   );

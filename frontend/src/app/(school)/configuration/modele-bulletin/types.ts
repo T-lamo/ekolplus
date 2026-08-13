@@ -43,6 +43,8 @@ export interface BulletinTemplateConfig {
   };
   signatures: { director: boolean; homeroom: boolean; guardian: boolean };
   typography: { schoolName: number; title: number; tableBody: number };
+  content: { title: string; footerMessage: string | null };
+  layout: { pageMargin: number; blockSpacing: number; borderWidth: number; borderColor: string };
 }
 
 export interface TemplateRow {

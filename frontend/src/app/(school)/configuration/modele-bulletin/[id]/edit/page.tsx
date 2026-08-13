@@ -30,24 +30,24 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ImageUploader } from '@/components/ui/ImageUploader';
-import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
+import {
+  BulletinCanvas,
+  getPageHeightPx,
+  getPageWidthPx,
+  type BulletinRenderData,
+} from '@/components/bulletin/BulletinCanvas';
 import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
-// Real paper dimensions in CSS px at 96dpi (1in = 96px) — the exact same
-// convention the browser/Puppeteer use for `@page size: a4 | letter` when
-// generating the PDF (see lib/server/bulletin-pdf print page). The editor
-// preview renders BulletinCanvas at this TRUE natural size and only ever
-// visually scales it with CSS `transform: scale()` for zoom — it never
-// resizes the actual box the content is laid out in. That distinction is
-// what fixes the previous zoom bug: shrinking/growing the box itself while
-// BulletinCanvas kept its natural DOM size caused clipping (zoom out) or
-// dead whitespace (zoom in) instead of a faithful scaled reproduction.
-const PX_PER_IN = 96;
-const PAGE_SIZES_IN: Record<'A4' | 'LETTER', { w: number; h: number }> = {
-  A4: { w: 8.27, h: 11.69 },
-  LETTER: { w: 8.5, h: 11 },
-};
+// The editor preview renders BulletinCanvas at its TRUE natural page size
+// (getPageWidthPx/getPageHeightPx — same 96dpi convention the PDF export
+// uses, and the single source of truth BulletinCanvas itself relies on for
+// its own min-height) and only ever visually scales it with CSS
+// `transform: scale()` for zoom — it never resizes the actual box the
+// content is laid out in. That distinction is what fixes the previous zoom
+// bug: shrinking/growing the box itself while BulletinCanvas kept its
+// natural DOM size caused clipping (zoom out) or dead whitespace (zoom in)
+// instead of a faithful scaled reproduction.
 
 const COLOR_SWATCHES = [
   '#6c2bd9',
@@ -170,10 +170,8 @@ export default function BulletinEditorPage() {
   const computeFitZoom = useCallback((): number => {
     const el = canvasContainerRef.current;
     if (!el || !config) return 100;
-    const dims = PAGE_SIZES_IN[config.pageFormat];
-    const [inW, inH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
-    const natW = inW * PX_PER_IN;
-    const natH = inH * PX_PER_IN;
+    const natW = getPageWidthPx(config);
+    const natH = getPageHeightPx(config);
     const availW = el.clientWidth - 56;
     const availH = el.clientHeight - 96;
     if (availW <= 0 || availH <= 0) return 100;
@@ -336,14 +334,8 @@ export default function BulletinEditorPage() {
   );
   // Natural (unscaled) page size in px — identical rules to the PDF export.
   const naturalSize = useMemo(() => {
-    if (!config)
-      return {
-        width: PAGE_SIZES_IN.LETTER.w * PX_PER_IN,
-        height: PAGE_SIZES_IN.LETTER.h * PX_PER_IN,
-      };
-    const dims = PAGE_SIZES_IN[config.pageFormat];
-    const [inW, inH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
-    return { width: Math.round(inW * PX_PER_IN), height: Math.round(inH * PX_PER_IN) };
+    if (!config) return { width: 816, height: 1056 };
+    return { width: getPageWidthPx(config), height: getPageHeightPx(config) };
   }, [config]);
   const scaledSize = {
     width: Math.round(naturalSize.width * (zoom / 100)),

@@ -9,7 +9,8 @@
 import 'server-only';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
-import { signPrintToken } from './print-token';
+import { signPrintToken, signTemplatePreviewToken } from './print-token';
+import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
 
 export class PdfGenerationError extends Error {}
 
@@ -18,16 +19,11 @@ export interface GeneratePdfOptions {
   orientation: 'LANDSCAPE' | 'PORTRAIT';
 }
 
-export async function generateBulletinPdf(
-  schoolId: string,
-  studentId: string,
-  termId: string,
-  options: GeneratePdfOptions,
-): Promise<Buffer> {
-  const token = signPrintToken({ schoolId, studentId, termId });
-  const base = process.env.APP_URL ?? 'http://localhost:3000';
-  const url = `${base}/print/bulletin/${studentId}/${termId}?token=${encodeURIComponent(token)}`;
-
+// Shared by generateBulletinPdf and generateBulletinTemplatePreviewPdf —
+// both just point headless Chromium at a different print page URL and print
+// the same way. Keeping the puppeteer launch/print logic in one place means
+// a future tuning change (timeout, launch args) can't drift between them.
+async function renderPdfFromUrl(url: string, options: GeneratePdfOptions): Promise<Buffer> {
   const browser = await puppeteer.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath(),
@@ -59,4 +55,31 @@ export async function generateBulletinPdf(
   } finally {
     await browser.close();
   }
+}
+
+export async function generateBulletinPdf(
+  schoolId: string,
+  studentId: string,
+  termId: string,
+  options: GeneratePdfOptions,
+): Promise<Buffer> {
+  const token = signPrintToken({ schoolId, studentId, termId });
+  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const url = `${base}/print/bulletin/${studentId}/${termId}?token=${encodeURIComponent(token)}`;
+  return renderPdfFromUrl(url, options);
+}
+
+// Powers the template editor's "Exporter PDF" button. The config is signed
+// straight into the token (see print-token.ts) rather than looked up by
+// templateId, so the export reflects whatever is currently on screen —
+// including edits not yet saved.
+export async function generateBulletinTemplatePreviewPdf(
+  schoolId: string,
+  config: BulletinTemplateConfig,
+  options: GeneratePdfOptions,
+): Promise<Buffer> {
+  const token = signTemplatePreviewToken({ schoolId, config });
+  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const url = `${base}/print/bulletin-template-preview?token=${encodeURIComponent(token)}`;
+  return renderPdfFromUrl(url, options);
 }

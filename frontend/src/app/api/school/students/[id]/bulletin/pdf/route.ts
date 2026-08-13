@@ -71,11 +71,18 @@ export async function GET(
         .replace(/[̀-ͯ]/g, '')
         .replace(/[^\w-]+/g, '-') || studentId;
 
+    // disposition=inline lets the Viewer's "Imprimer" button open the real
+    // PDF in a new tab (browser-native PDF viewer, printable from there)
+    // instead of forcing a download — "Télécharger PDF" keeps the default
+    // attachment behavior.
+    const disposition =
+      req.nextUrl.searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment';
+
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="bulletin-${safeName}.pdf"`,
+        'Content-Disposition': `${disposition}; filename="bulletin-${safeName}.pdf"`,
         'x-request-id': ctx.requestId,
       },
     });

@@ -36,6 +36,8 @@ import {
   getPageWidthPx,
   type BulletinRenderData,
 } from '@/components/bulletin/BulletinCanvas';
+import { SAMPLE_BULLETIN_DATA } from '@/components/bulletin/sample-bulletin-data';
+import { API_URL, COOKIE_PREFIX } from '@/lib/constants';
 import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
@@ -70,77 +72,6 @@ const BLOCK_ICON: Record<BlockId, ComponentType<{ size?: number; style?: object 
   signatures: PenLine,
 };
 
-// Illustrative-only — the editor previews a fixed sample student so every
-// config change (color/typography/columns/order) is visible without needing
-// real class data. The Viewer builds the same BulletinRenderData shape from
-// real grades/appreciations for whichever student is actually being viewed.
-const SAMPLE_BULLETIN_DATA: BulletinRenderData = {
-  schoolName: 'École LesÉtoiles',
-  schoolLogoUrl: null,
-  directorSignatureUrl: null,
-  period: 'Trimestre 2',
-  academicYear: '2024–2025',
-  studentName: 'Jean-Pierre M.',
-  className: '3ème A',
-  classSize: 28,
-  studentNumber: 'N° 2024-0047',
-  subjects: [
-    {
-      name: 'Mathématiques',
-      coefficient: 4,
-      average: 15.67,
-      classAverage: 12.8,
-      min: 6.5,
-      max: 19.0,
-      appreciation: 'Très bon trimestre',
-    },
-    {
-      name: 'Français',
-      coefficient: 4,
-      average: 12.0,
-      classAverage: 11.4,
-      min: 5.0,
-      max: 17.5,
-      appreciation: 'Peut mieux faire',
-    },
-    {
-      name: 'Sciences',
-      coefficient: 3,
-      average: 18.0,
-      classAverage: 13.2,
-      min: 8.0,
-      max: 20.0,
-      appreciation: 'Excellent travail',
-    },
-    {
-      name: 'Anglais',
-      coefficient: 3,
-      average: 10.0,
-      classAverage: 12.1,
-      min: 4.5,
-      max: 18.0,
-      appreciation: 'Efforts nécessaires',
-    },
-    {
-      name: 'Histoire-Géo',
-      coefficient: 2,
-      average: 16.5,
-      classAverage: 11.9,
-      min: 7.0,
-      max: 19.5,
-      appreciation: 'Très bonne maîtrise',
-    },
-  ],
-  overallAverage: 14.38,
-  classAverage: 12.5,
-  rank: 4,
-  rankedCount: 28,
-  generalAppreciation:
-    "Élève sérieux et investi qui fait preuve d'une bonne volonté dans l'ensemble des matières. Les résultats en sciences sont excellents et encourageants. Des efforts supplémentaires sont attendus en anglais pour consolider les acquis. Continuez ainsi !",
-  absencesDays: 3,
-  retards: 1,
-};
-
 type Tab = 'style' | 'content' | 'spacing';
 
 export default function BulletinEditorPage() {
@@ -152,6 +83,7 @@ export default function BulletinEditorPage() {
   const [config, setConfig] = useState<BulletinTemplateConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [selected, setSelected] = useState<BlockId>('header');
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragId, setDragId] = useState<BlockId | null>(null);
@@ -255,6 +187,39 @@ export default function BulletinEditorPage() {
       toast("Erreur lors de l'enregistrement.", 'error');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function exportPdf() {
+    if (!config) return;
+    setExportingPdf(true);
+    try {
+      const escaped = COOKIE_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${escaped}-csrf=([^;]*)`));
+      const csrfToken = match?.[1] ? decodeURIComponent(match[1]) : null;
+      const res = await fetch(`${API_URL}/api/school/bulletin-templates/${params.id}/preview-pdf`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+        },
+        body: JSON.stringify({ config }),
+      });
+      if (!res.ok) throw new Error('export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `apercu-${(data?.name ?? 'modele-bulletin').replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast("Erreur lors de l'export PDF.", 'error');
+    } finally {
+      setExportingPdf(false);
     }
   }
 
@@ -488,11 +453,12 @@ export default function BulletinEditorPage() {
             )}
             <button
               type="button"
-              onClick={() => toast('Export PDF — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+              onClick={exportPdf}
+              disabled={exportingPdf}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-60"
             >
               <Download size={12} />
-              Exporter PDF
+              {exportingPdf ? 'Export…' : 'Exporter PDF'}
             </button>
             <button
               type="button"

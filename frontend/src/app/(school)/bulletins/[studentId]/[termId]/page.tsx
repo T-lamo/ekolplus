@@ -19,7 +19,12 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
+import {
+  BulletinCanvas,
+  getPageHeightPx,
+  getPageWidthPx,
+  type BulletinRenderData,
+} from '@/components/bulletin/BulletinCanvas';
 import type { StudentBulletinData } from '../../types';
 
 export default function BulletinViewerPage() {
@@ -136,6 +141,19 @@ export default function BulletinViewerPage() {
 
   const navHref = (studentId: string) => `/bulletins/${studentId}/${data.resolvedTermId ?? ''}`;
 
+  // "Imprimer" opens the real, server-generated PDF (inline, in a new tab)
+  // instead of window.print()-ing the on-screen editor view — the on-screen
+  // page has no print stylesheet of its own, so a raw window.print() would
+  // print the sidebars/toolbar along with a layout that doesn't match the
+  // official PDF's pagination. Opening the actual PDF guarantees what gets
+  // printed IS the official document.
+  const printBulletin = () => {
+    window.open(
+      `/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}&disposition=inline`,
+      '_blank',
+    );
+  };
+
   return (
     <div className="flex items-start gap-5">
       {/* Action panel */}
@@ -174,7 +192,7 @@ export default function BulletinViewerPage() {
           <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
             Actions
           </div>
-          <ActionBtn icon={Printer} label="Imprimer" primary onClick={() => window.print()} />
+          <ActionBtn icon={Printer} label="Imprimer" primary onClick={printBulletin} />
           <a
             href={`/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}`}
             className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
@@ -205,8 +223,9 @@ export default function BulletinViewerPage() {
                 Précédent
               </Link>
             ) : (
-              <span className="flex-1 rounded-md border border-border px-2 py-1.5 text-center text-xs font-medium text-muted-foreground opacity-40">
-                <ChevronLeft size={13} className="inline" /> Précédent
+              <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
+                <ChevronLeft size={13} />
+                Précédent
               </span>
             )}
             {data.nextStudentId ? (
@@ -218,8 +237,9 @@ export default function BulletinViewerPage() {
                 <ChevronRight size={13} />
               </Link>
             ) : (
-              <span className="flex-1 rounded-md border border-border px-2 py-1.5 text-center text-xs font-medium text-muted-foreground opacity-40">
-                Suivant <ChevronRight size={13} className="inline" />
+              <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
+                Suivant
+                <ChevronRight size={13} />
               </span>
             )}
           </div>
@@ -269,7 +289,7 @@ export default function BulletinViewerPage() {
           </span>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={printBulletin}
             className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
           >
             <Printer size={13} />
@@ -278,17 +298,41 @@ export default function BulletinViewerPage() {
         </div>
 
         <div id="bulletin-page-wrap" className="flex justify-center py-2">
-          <div
-            style={{ width: 760, transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-          >
-            {data.template ? (
-              <BulletinCanvas config={data.template.config} data={renderData} />
-            ) : (
-              <div className="rounded-md bg-card p-10 text-center text-sm text-muted-foreground">
-                Aucun modèle de bulletin disponible.
-              </div>
-            )}
-          </div>
+          {data.template ? (
+            (() => {
+              // Natural (unscaled) page size — same 96 CSS px/in convention
+              // the PDF export and template editor use. The old code
+              // hardcoded width:760 regardless of pageFormat/orientation,
+              // so a landscape template still rendered squeezed into a
+              // portrait-shaped box on screen even though the PDF (driven
+              // by @page CSS, not this box) was already correct. The outer
+              // div reserves the SCALED footprint and the inner div is the
+              // real page at its natural size with transform:scale only —
+              // same fix already applied to the template editor's preview.
+              const naturalWidth = getPageWidthPx(data.template.config);
+              const naturalHeight = getPageHeightPx(data.template.config);
+              const scaledWidth = Math.round(naturalWidth * (zoom / 100));
+              const scaledHeight = Math.round(naturalHeight * (zoom / 100));
+              return (
+                <div style={{ width: scaledWidth, height: scaledHeight }}>
+                  <div
+                    style={{
+                      width: naturalWidth,
+                      height: naturalHeight,
+                      transform: `scale(${zoom / 100})`,
+                      transformOrigin: 'top left',
+                    }}
+                  >
+                    <BulletinCanvas config={data.template.config} data={renderData} />
+                  </div>
+                </div>
+              );
+            })()
+          ) : (
+            <div className="rounded-md bg-card p-10 text-center text-sm text-muted-foreground">
+              Aucun modèle de bulletin disponible.
+            </div>
+          )}
         </div>
       </div>
     </div>

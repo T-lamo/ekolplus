@@ -105,6 +105,8 @@ const UpdateSchoolBody = z.object({
   officialCode: z.string().trim().max(60).nullable().optional(),
   officialEmail: zEmail.nullable().optional(),
   website: z.string().trim().max(200).nullable().optional(),
+  logoUrl: z.string().trim().url().max(500).nullable().optional(),
+  directorSignatureUrl: z.string().trim().url().max(500).nullable().optional(),
 });
 
 export async function PUT(req: NextRequest): Promise<NextResponse> {

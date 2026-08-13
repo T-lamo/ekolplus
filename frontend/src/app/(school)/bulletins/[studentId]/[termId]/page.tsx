@@ -11,6 +11,7 @@ import {
   ZoomOut,
   Maximize2,
   FileText,
+  Download,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -174,6 +175,13 @@ export default function BulletinViewerPage() {
             Actions
           </div>
           <ActionBtn icon={Printer} label="Imprimer" primary onClick={() => window.print()} />
+          <a
+            href={`/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}`}
+            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
+          >
+            <Download size={14} className="text-muted-foreground" />
+            Télécharger PDF
+          </a>
           <Link
             href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
             className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"

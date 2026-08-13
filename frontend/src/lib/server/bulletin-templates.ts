@@ -66,6 +66,9 @@ export const bulletinTemplateConfigSchema = z.object({
     schoolName: z.number().min(8).max(32),
     title: z.number().min(8).max(32),
     tableBody: z.number().min(8).max(24),
+    tableHeader: z.number().min(8).max(16),
+    noteValue: z.number().min(8).max(20),
+    footer: z.number().min(6).max(14),
   }),
   content: z.object({
     title: z.string().trim().min(1).max(60),
@@ -75,9 +78,14 @@ export const bulletinTemplateConfigSchema = z.object({
     pageMargin: z.number().min(0).max(48),
     blockSpacing: z.number().min(0).max(32),
     borderWidth: z.number().min(0).max(4),
+    borderStyle: z.enum(['solid', 'dashed', 'dotted']),
     borderColor: z
       .string()
       .regex(/^#[0-9a-fA-F]{6}$/, 'Couleur invalide (format hex #rrggbb attendu)'),
+    cellPaddingX: z.number().min(0).max(24),
+    cellPaddingY: z.number().min(0).max(16),
+    tableLineHeight: z.number().min(1).max(2.4),
+    showTableBackgrounds: z.boolean(),
   }),
 });
 
@@ -97,7 +105,24 @@ export const DEFAULT_BULLETIN_CONFIG: BulletinTemplateConfig = {
     rank: true,
   },
   signatures: { director: true, homeroom: true, guardian: true },
-  typography: { schoolName: 13, title: 17, tableBody: 11 },
+  typography: {
+    schoolName: 13,
+    title: 17,
+    tableBody: 11,
+    tableHeader: 10,
+    noteValue: 11,
+    footer: 9,
+  },
   content: { title: 'BULLETIN SCOLAIRE', footerMessage: null },
-  layout: { pageMargin: 20, blockSpacing: 10, borderWidth: 1, borderColor: '#f0eef8' },
+  layout: {
+    pageMargin: 20,
+    blockSpacing: 10,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#f0eef8',
+    cellPaddingX: 6,
+    cellPaddingY: 6,
+    tableLineHeight: 1.4,
+    showTableBackgrounds: false,
+  },
 };

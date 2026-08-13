@@ -42,9 +42,26 @@ export interface BulletinTemplateConfig {
     rank: boolean;
   };
   signatures: { director: boolean; homeroom: boolean; guardian: boolean };
-  typography: { schoolName: number; title: number; tableBody: number };
+  typography: {
+    schoolName: number;
+    title: number;
+    tableBody: number;
+    tableHeader: number;
+    noteValue: number;
+    footer: number;
+  };
   content: { title: string; footerMessage: string | null };
-  layout: { pageMargin: number; blockSpacing: number; borderWidth: number; borderColor: string };
+  layout: {
+    pageMargin: number;
+    blockSpacing: number;
+    borderWidth: number;
+    borderStyle: 'solid' | 'dashed' | 'dotted';
+    borderColor: string;
+    cellPaddingX: number;
+    cellPaddingY: number;
+    tableLineHeight: number;
+    showTableBackgrounds: boolean;
+  };
 }
 
 export interface TemplateRow {

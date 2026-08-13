@@ -37,9 +37,26 @@ const BASE_CONFIG = {
     rank: true,
   },
   signatures: { director: true, homeroom: true, guardian: true },
-  typography: { schoolName: 13, title: 17, tableBody: 11 },
+  typography: {
+    schoolName: 13,
+    title: 17,
+    tableBody: 11,
+    tableHeader: 10,
+    noteValue: 11,
+    footer: 9,
+  },
   content: { title: 'BULLETIN SCOLAIRE', footerMessage: null },
-  layout: { pageMargin: 20, blockSpacing: 10, borderWidth: 1, borderColor: '#f0eef8' },
+  layout: {
+    pageMargin: 20,
+    blockSpacing: 10,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#f0eef8',
+    cellPaddingX: 6,
+    cellPaddingY: 6,
+    tableLineHeight: 1.4,
+    showTableBackgrounds: false,
+  },
 } as const;
 
 const GLOBAL_TEMPLATES = [

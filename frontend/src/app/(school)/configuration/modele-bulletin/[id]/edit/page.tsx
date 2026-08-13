@@ -34,20 +34,20 @@ import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/B
 import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
-// Real paper dimensions (mm) so the editor preview's aspect ratio actually
-// changes when the format/orientation toggle changes — previously the
-// preview stayed a fixed 760px box no matter what was selected.
-const PAGE_SIZES_MM: Record<'A4' | 'LETTER', { w: number; h: number }> = {
-  A4: { w: 210, h: 297 },
-  LETTER: { w: 215.9, h: 279.4 },
+// Real paper dimensions in CSS px at 96dpi (1in = 96px) — the exact same
+// convention the browser/Puppeteer use for `@page size: a4 | letter` when
+// generating the PDF (see lib/server/bulletin-pdf print page). The editor
+// preview renders BulletinCanvas at this TRUE natural size and only ever
+// visually scales it with CSS `transform: scale()` for zoom — it never
+// resizes the actual box the content is laid out in. That distinction is
+// what fixes the previous zoom bug: shrinking/growing the box itself while
+// BulletinCanvas kept its natural DOM size caused clipping (zoom out) or
+// dead whitespace (zoom in) instead of a faithful scaled reproduction.
+const PX_PER_IN = 96;
+const PAGE_SIZES_IN: Record<'A4' | 'LETTER', { w: number; h: number }> = {
+  A4: { w: 8.27, h: 11.69 },
+  LETTER: { w: 8.5, h: 11 },
 };
-
-// Preview is sized off its LONG edge, not a fixed width — that way
-// switching Portrait<->Paysage can never make the preview wider than this
-// constant (a portrait page's long edge is its height, a landscape page's
-// long edge is its width), so it can never force the 3-column editor
-// layout into horizontal scroll. Zoom scales on top of this baseline.
-const PAPER_LONG_EDGE = 560;
 
 const COLOR_SWATCHES = [
   '#6c2bd9',
@@ -305,15 +305,21 @@ export default function BulletinEditorPage() {
     }),
     [school],
   );
-  const paperSize = useMemo(() => {
-    if (!config) return { width: PAPER_LONG_EDGE, height: PAPER_LONG_EDGE };
-    const dims = PAGE_SIZES_MM[config.pageFormat];
-    const [mmW, mmH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
-    const scale = PAPER_LONG_EDGE / Math.max(mmW, mmH);
-    return { width: Math.round(mmW * scale), height: Math.round(mmH * scale) };
+  // Natural (unscaled) page size in px — identical rules to the PDF export.
+  const naturalSize = useMemo(() => {
+    if (!config)
+      return {
+        width: PAGE_SIZES_IN.LETTER.w * PX_PER_IN,
+        height: PAGE_SIZES_IN.LETTER.h * PX_PER_IN,
+      };
+    const dims = PAGE_SIZES_IN[config.pageFormat];
+    const [inW, inH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
+    return { width: Math.round(inW * PX_PER_IN), height: Math.round(inH * PX_PER_IN) };
   }, [config]);
-  const previewWidth = Math.round(paperSize.width * (zoom / 100));
-  const previewHeight = Math.round(paperSize.height * (zoom / 100));
+  const scaledSize = {
+    width: Math.round(naturalSize.width * (zoom / 100)),
+    height: Math.round(naturalSize.height * (zoom / 100)),
+  };
 
   if (!user) {
     return (
@@ -579,23 +585,38 @@ export default function BulletinEditorPage() {
             )}
           </div>
           <div className="flex flex-1 items-start justify-center overflow-auto bg-[#d8d8e8] p-7">
-            <div style={{ width: previewWidth }}>
+            <div style={{ width: scaledSize.width }}>
               <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
                 <FileText size={12} />
                 Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
                 {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
               </div>
-              <div
-                className="overflow-hidden rounded-[2px] bg-white shadow-2xl"
-                style={{ width: previewWidth, height: previewHeight }}
-              >
-                <BulletinCanvas
-                  config={config}
-                  data={previewData}
-                  selected={selected}
-                  onSelect={setSelected}
-                  chrome={false}
-                />
+              {/* Outer div reserves the SCALED footprint so the scroll area
+                  sizes correctly; the inner div is the real page at its
+                  natural (unscaled) size — transform:scale only changes how
+                  it's painted, never its layout box, so nothing inside
+                  BulletinCanvas ever reflows, clips, or overlaps at any
+                  zoom level. overflow stays visible (no overflow-hidden) so
+                  content taller than one physical page is never silently
+                  cropped — it's visible below the page edge instead. */}
+              <div style={{ width: scaledSize.width, height: scaledSize.height }}>
+                <div
+                  className="rounded-[2px] bg-white shadow-2xl"
+                  style={{
+                    width: naturalSize.width,
+                    height: naturalSize.height,
+                    transform: `scale(${zoom / 100})`,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <BulletinCanvas
+                    config={config}
+                    data={previewData}
+                    selected={selected}
+                    onSelect={setSelected}
+                    chrome={false}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -659,25 +680,64 @@ export default function BulletinEditorPage() {
                 </PropSection>
 
                 <PropSection title="Typographie" last>
-                  <PropNumberRow
+                  <PropSliderRow
                     label="Nom établissement"
                     value={config.typography.schoolName}
+                    min={8}
+                    max={32}
+                    suffix="px"
                     onChange={(v) =>
                       patchConfig({ typography: { ...config.typography, schoolName: v } })
                     }
                   />
-                  <PropNumberRow
+                  <PropSliderRow
                     label="Titre bulletin"
                     value={config.typography.title}
+                    min={8}
+                    max={32}
+                    suffix="px"
                     onChange={(v) =>
                       patchConfig({ typography: { ...config.typography, title: v } })
                     }
                   />
-                  <PropNumberRow
-                    label="Corps tableau"
+                  <PropSliderRow
+                    label="Nom des matières"
                     value={config.typography.tableBody}
+                    min={8}
+                    max={24}
+                    suffix="px"
                     onChange={(v) =>
                       patchConfig({ typography: { ...config.typography, tableBody: v } })
+                    }
+                  />
+                  <PropSliderRow
+                    label="En-têtes de colonnes"
+                    value={config.typography.tableHeader}
+                    min={8}
+                    max={16}
+                    suffix="px"
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, tableHeader: v } })
+                    }
+                  />
+                  <PropSliderRow
+                    label="Notes / appréciations"
+                    value={config.typography.noteValue}
+                    min={8}
+                    max={20}
+                    suffix="px"
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, noteValue: v } })
+                    }
+                  />
+                  <PropSliderRow
+                    label="Pied de page"
+                    value={config.typography.footer}
+                    min={6}
+                    max={14}
+                    suffix="px"
+                    onChange={(v) =>
+                      patchConfig({ typography: { ...config.typography, footer: v } })
                     }
                   />
                 </PropSection>
@@ -808,39 +868,94 @@ export default function BulletinEditorPage() {
             )}
 
             {propTab === 'spacing' && (
-              <PropSection title="Espacement" last>
-                <PropNumberRow
-                  label="Marge de page (px)"
-                  value={config.layout.pageMargin}
-                  min={0}
-                  max={48}
-                  onChange={(v) => patchConfig({ layout: { ...config.layout, pageMargin: v } })}
-                />
-                <PropNumberRow
-                  label="Espacement entre les blocs (px)"
-                  value={config.layout.blockSpacing}
-                  min={0}
-                  max={32}
-                  onChange={(v) => patchConfig({ layout: { ...config.layout, blockSpacing: v } })}
-                />
-                <PropNumberRow
-                  label="Épaisseur de bordure (px)"
-                  value={config.layout.borderWidth}
-                  min={0}
-                  max={4}
-                  onChange={(v) => patchConfig({ layout: { ...config.layout, borderWidth: v } })}
-                />
-                <PropRow label="Couleur de bordure">
-                  <input
-                    type="color"
-                    value={config.layout.borderColor}
-                    onChange={(e) =>
-                      patchConfig({ layout: { ...config.layout, borderColor: e.target.value } })
-                    }
-                    className="h-5 w-8 cursor-pointer rounded border-none bg-transparent"
+              <>
+                <PropSection title="Mise en page">
+                  <PropNumberRow
+                    label="Marge de page (px)"
+                    value={config.layout.pageMargin}
+                    min={0}
+                    max={48}
+                    onChange={(v) => patchConfig({ layout: { ...config.layout, pageMargin: v } })}
                   />
-                </PropRow>
-              </PropSection>
+                  <PropNumberRow
+                    label="Espacement entre les blocs (px)"
+                    value={config.layout.blockSpacing}
+                    min={0}
+                    max={32}
+                    onChange={(v) => patchConfig({ layout: { ...config.layout, blockSpacing: v } })}
+                  />
+                </PropSection>
+
+                <PropSection title="Tableau des notes" last>
+                  <PropSliderRow
+                    label="Espacement horizontal des cellules"
+                    value={config.layout.cellPaddingX}
+                    min={0}
+                    max={24}
+                    suffix="px"
+                    onChange={(v) => patchConfig({ layout: { ...config.layout, cellPaddingX: v } })}
+                  />
+                  <PropSliderRow
+                    label="Espacement vertical des cellules"
+                    value={config.layout.cellPaddingY}
+                    min={0}
+                    max={16}
+                    suffix="px"
+                    onChange={(v) => patchConfig({ layout: { ...config.layout, cellPaddingY: v } })}
+                  />
+                  <PropSliderRow
+                    label="Hauteur de ligne"
+                    value={config.layout.tableLineHeight}
+                    min={1}
+                    max={2.4}
+                    step={0.1}
+                    onChange={(v) =>
+                      patchConfig({ layout: { ...config.layout, tableLineHeight: v } })
+                    }
+                  />
+                  <PropNumberRow
+                    label="Épaisseur de bordure (px)"
+                    value={config.layout.borderWidth}
+                    min={0}
+                    max={4}
+                    onChange={(v) => patchConfig({ layout: { ...config.layout, borderWidth: v } })}
+                  />
+                  <PropSelectRow
+                    label="Style de bordure"
+                    value={config.layout.borderStyle}
+                    options={[
+                      { value: 'solid', label: 'Plein' },
+                      { value: 'dashed', label: 'Tirets' },
+                      { value: 'dotted', label: 'Pointillés' },
+                    ]}
+                    onChange={(v) =>
+                      patchConfig({
+                        layout: {
+                          ...config.layout,
+                          borderStyle: v as BulletinTemplateConfig['layout']['borderStyle'],
+                        },
+                      })
+                    }
+                  />
+                  <PropRow label="Couleur de bordure">
+                    <input
+                      type="color"
+                      value={config.layout.borderColor}
+                      onChange={(e) =>
+                        patchConfig({ layout: { ...config.layout, borderColor: e.target.value } })
+                      }
+                      className="h-5 w-8 cursor-pointer rounded border-none bg-transparent"
+                    />
+                  </PropRow>
+                  <SwitchRow
+                    label="Fonds colorés du tableau"
+                    checked={config.layout.showTableBackgrounds}
+                    onChange={(v) =>
+                      patchConfig({ layout: { ...config.layout, showTableBackgrounds: v } })
+                    }
+                  />
+                </PropSection>
+              </>
             )}
           </div>
         )}
@@ -900,6 +1015,73 @@ function PropNumberRow({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-14 rounded border-none bg-muted px-2 py-1 text-right text-xs text-foreground outline-none"
       />
+    </PropRow>
+  );
+}
+
+function PropSliderRow({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  suffix = '',
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  suffix?: string;
+}) {
+  return (
+    <div className="mb-2.5">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-foreground">{label}</span>
+        <span className="text-[11px] text-muted-foreground">
+          {value}
+          {suffix}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-primary"
+      />
+    </div>
+  );
+}
+
+function PropSelectRow({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <PropRow label={label}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="rounded border-none bg-muted px-2 py-1 text-xs text-foreground outline-none"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     </PropRow>
   );
 }

@@ -54,11 +54,16 @@ function scoreColor(avg: number | null): string {
   if (avg < 12) return '#f59e0b';
   return '#1a9e5c';
 }
-function cellBorderStyle(config: BulletinTemplateConfig): React.CSSProperties {
+function cellStyle(
+  config: BulletinTemplateConfig,
+  extra?: React.CSSProperties,
+): React.CSSProperties {
   return {
+    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
     borderBottomWidth: config.layout.borderWidth,
-    borderBottomStyle: 'solid',
+    borderBottomStyle: config.layout.borderStyle,
     borderBottomColor: config.layout.borderColor,
+    ...extra,
   };
 }
 
@@ -206,65 +211,134 @@ export function BulletinCanvas({
 
         {wrap(
           'notes',
-          <table className="w-full border-collapse text-[11px]">
+          <table
+            className="w-full border-collapse"
+            style={{ lineHeight: config.layout.tableLineHeight }}
+          >
             <thead>
               <tr style={{ background: config.primaryColor }}>
-                <th className="p-1.5 text-left text-[10px] font-bold text-white">Matière</th>
+                <th
+                  className="text-left font-bold text-white"
+                  style={{
+                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    fontSize: config.typography.tableHeader,
+                  }}
+                >
+                  Matière
+                </th>
                 {config.columns.coefficient && (
-                  <th className="p-1.5 text-left text-[10px] font-bold text-white">Coeff.</th>
+                  <th
+                    className="text-left font-bold text-white"
+                    style={{
+                      padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                      fontSize: config.typography.tableHeader,
+                    }}
+                  >
+                    Coeff.
+                  </th>
                 )}
-                <th className="p-1.5 text-left text-[10px] font-bold text-white">Moy. élève</th>
+                <th
+                  className="text-left font-bold text-white"
+                  style={{
+                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    fontSize: config.typography.tableHeader,
+                  }}
+                >
+                  Moy. élève
+                </th>
                 {config.columns.classAverage && (
-                  <th className="p-1.5 text-left text-[10px] font-bold text-white">Moy. classe</th>
+                  <th
+                    className="text-left font-bold text-white"
+                    style={{
+                      padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                      fontSize: config.typography.tableHeader,
+                    }}
+                  >
+                    Moy. classe
+                  </th>
                 )}
                 {config.columns.minMax && (
                   <>
-                    <th className="p-1.5 text-left text-[10px] font-bold text-white">Min.</th>
-                    <th className="p-1.5 text-left text-[10px] font-bold text-white">Max.</th>
+                    <th
+                      className="text-left font-bold text-white"
+                      style={{
+                        padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                        fontSize: config.typography.tableHeader,
+                      }}
+                    >
+                      Min.
+                    </th>
+                    <th
+                      className="text-left font-bold text-white"
+                      style={{
+                        padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                        fontSize: config.typography.tableHeader,
+                      }}
+                    >
+                      Max.
+                    </th>
                   </>
                 )}
                 {config.columns.appreciation && (
-                  <th className="p-1.5 text-left text-[10px] font-bold text-white">Appréciation</th>
+                  <th
+                    className="text-left font-bold text-white"
+                    style={{
+                      padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                      fontSize: config.typography.tableHeader,
+                    }}
+                  >
+                    Appréciation
+                  </th>
                 )}
               </tr>
             </thead>
             <tbody>
-              {data.subjects.map((s) => (
-                <tr key={s.name}>
-                  <td
-                    className="p-1.5"
-                    style={{ ...cellBorderStyle(config), fontSize: config.typography.tableBody }}
-                  >
+              {data.subjects.map((s, i) => (
+                <tr
+                  key={s.name}
+                  style={
+                    config.layout.showTableBackgrounds && i % 2 === 1
+                      ? { background: '#faf9ff' }
+                      : undefined
+                  }
+                >
+                  <td style={cellStyle(config, { fontSize: config.typography.tableBody })}>
                     <strong>{s.name}</strong>
                   </td>
                   {config.columns.coefficient && (
-                    <td className="p-1.5" style={cellBorderStyle(config)}>
+                    <td style={cellStyle(config, { fontSize: config.typography.noteValue })}>
                       {s.coefficient ?? '—'}
                     </td>
                   )}
                   <td
-                    className="p-1.5 font-bold"
-                    style={{ ...cellBorderStyle(config), color: scoreColor(s.average) }}
+                    className="font-bold"
+                    style={cellStyle(config, {
+                      color: scoreColor(s.average),
+                      fontSize: config.typography.noteValue,
+                    })}
                   >
                     {fmt(s.average)}
                   </td>
                   {config.columns.classAverage && (
-                    <td className="p-1.5" style={cellBorderStyle(config)}>
+                    <td style={cellStyle(config, { fontSize: config.typography.noteValue })}>
                       {fmt(s.classAverage)}
                     </td>
                   )}
                   {config.columns.minMax && (
                     <>
-                      <td className="p-1.5" style={cellBorderStyle(config)}>
+                      <td style={cellStyle(config, { fontSize: config.typography.noteValue })}>
                         {fmt(s.min)}
                       </td>
-                      <td className="p-1.5" style={cellBorderStyle(config)}>
+                      <td style={cellStyle(config, { fontSize: config.typography.noteValue })}>
                         {fmt(s.max)}
                       </td>
                     </>
                   )}
                   {config.columns.appreciation && (
-                    <td className="p-1.5 text-[#6b6b8d] italic" style={cellBorderStyle(config)}>
+                    <td
+                      className="text-[#6b6b8d] italic"
+                      style={cellStyle(config, { fontSize: config.typography.noteValue })}
+                    >
                       {s.appreciation ?? '—'}
                     </td>
                   )}
@@ -275,14 +349,31 @@ export function BulletinCanvas({
               <tr
                 style={{
                   borderTopWidth: config.layout.borderWidth || 1,
-                  borderTopStyle: 'solid',
+                  borderTopStyle: config.layout.borderStyle,
                   borderTopColor: config.primaryColor,
+                  ...(config.layout.showTableBackgrounds
+                    ? { background: `${config.primaryColor}14` }
+                    : undefined),
                 }}
               >
-                <td className="p-1.5 font-bold" colSpan={config.columns.coefficient ? 2 : 1}>
+                <td
+                  className="font-bold"
+                  colSpan={config.columns.coefficient ? 2 : 1}
+                  style={{
+                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    fontSize: config.typography.tableBody,
+                  }}
+                >
                   Moyenne générale
                 </td>
-                <td className="p-1.5 text-[12px] font-bold" style={{ color: config.primaryColor }}>
+                <td
+                  className="font-bold"
+                  style={{
+                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    fontSize: 12,
+                    color: config.primaryColor,
+                  }}
+                >
                   {fmt(data.overallAverage)} / 20
                 </td>
                 <td
@@ -291,7 +382,11 @@ export function BulletinCanvas({
                     (config.columns.minMax ? 2 : 0) +
                     (config.columns.appreciation ? 1 : 0)
                   }
-                  className="p-1.5 text-[10px] text-[#8884a0]"
+                  className="text-[#8884a0]"
+                  style={{
+                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    fontSize: 10,
+                  }}
                 >
                   Rang : {ordinal(data.rank)} / {data.rankedCount} élèves
                 </td>
@@ -367,7 +462,10 @@ export function BulletinCanvas({
         )}
 
         {config.content.footerMessage && (
-          <div className="mt-1 text-center text-[9px] text-[#8884a0] italic">
+          <div
+            className="mt-1 text-center text-[#8884a0] italic"
+            style={{ fontSize: config.typography.footer }}
+          >
             {config.content.footerMessage}
           </div>
         )}

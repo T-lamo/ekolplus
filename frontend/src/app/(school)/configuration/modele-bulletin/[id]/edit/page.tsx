@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Save,
@@ -157,10 +157,39 @@ export default function BulletinEditorPage() {
   const [dragId, setDragId] = useState<BlockId | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [zoom, setZoom] = useState(100);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [school, setSchool] = useState<{
     logoUrl: string | null;
     directorSignatureUrl: string | null;
   } | null>(null);
+
+  // Zoom level that shows the whole page inside the visible canvas area —
+  // recomputed whenever the page format/orientation changes so the user
+  // never has to manually zoom out to see the full page after switching
+  // Portrait<->Paysage or A4<->Letter.
+  const computeFitZoom = useCallback((): number => {
+    const el = canvasContainerRef.current;
+    if (!el || !config) return 100;
+    const dims = PAGE_SIZES_IN[config.pageFormat];
+    const [inW, inH] = config.orientation === 'LANDSCAPE' ? [dims.h, dims.w] : [dims.w, dims.h];
+    const natW = inW * PX_PER_IN;
+    const natH = inH * PX_PER_IN;
+    const availW = el.clientWidth - 56;
+    const availH = el.clientHeight - 96;
+    if (availW <= 0 || availH <= 0) return 100;
+    const fit = Math.min(availW / natW, availH / natH) * 100;
+    return Math.max(20, Math.min(100, Math.floor(fit)));
+  }, [config?.pageFormat, config?.orientation]);
+
+  useEffect(() => {
+    if (!config) return;
+    setZoom(computeFitZoom());
+    function handleResize() {
+      setZoom(computeFitZoom());
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [config?.pageFormat, config?.orientation, computeFitZoom]);
 
   useEffect(() => {
     if (!user) return;
@@ -515,6 +544,7 @@ export default function BulletinEditorPage() {
                   onDragStart={() => draggable && setDragId(b.id)}
                   onDragOver={(e) => draggable && e.preventDefault()}
                   onDrop={() => draggable && reorder(b.id)}
+                  onDragEnd={() => setDragId(null)}
                   onClick={() => setSelected(b.id)}
                   className={`mb-1 flex cursor-pointer items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs font-medium ${
                     selected === b.id
@@ -574,17 +604,18 @@ export default function BulletinEditorPage() {
             >
               <ZoomIn size={13} />
             </button>
-            {zoom !== 100 && (
-              <button
-                type="button"
-                onClick={() => setZoom(100)}
-                className="text-[11px] font-medium text-primary"
-              >
-                Réinitialiser
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setZoom(computeFitZoom())}
+              className="text-[11px] font-medium text-primary"
+            >
+              Ajuster à la page
+            </button>
           </div>
-          <div className="flex flex-1 items-start justify-center overflow-auto bg-[#d8d8e8] p-7">
+          <div
+            ref={canvasContainerRef}
+            className="flex flex-1 items-start justify-center overflow-auto bg-[#d8d8e8] p-7"
+          >
             <div style={{ width: scaledSize.width }}>
               <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
                 <FileText size={12} />
@@ -615,6 +646,10 @@ export default function BulletinEditorPage() {
                     selected={selected}
                     onSelect={setSelected}
                     chrome={false}
+                    dragId={dragId}
+                    onDragStart={setDragId}
+                    onDrop={reorder}
+                    onDragEnd={() => setDragId(null)}
                   />
                 </div>
               </div>

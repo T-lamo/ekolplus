@@ -1,9 +1,10 @@
 'use client';
 
-import { CalendarX, LayoutTemplate } from 'lucide-react';
-import type {
-  BlockId,
-  BulletinTemplateConfig,
+import { CalendarX, GripVertical, LayoutTemplate } from 'lucide-react';
+import {
+  REORDERABLE_BLOCK_IDS,
+  type BlockId,
+  type BulletinTemplateConfig,
 } from '@/app/(school)/configuration/modele-bulletin/types';
 
 // Shared by the template editor (illustrative sample data, interactive block
@@ -73,6 +74,10 @@ export function BulletinCanvas({
   selected,
   onSelect,
   chrome = true,
+  dragId,
+  onDragStart,
+  onDrop,
+  onDragEnd,
 }: {
   config: BulletinTemplateConfig;
   data: BulletinRenderData;
@@ -84,19 +89,40 @@ export function BulletinCanvas({
    * a floating drop-shadowed card is what made downloaded PDFs look like a
    * photo pasted on a page instead of the document itself. */
   chrome?: boolean;
+  /** Editor-only drag-and-drop reordering, applied directly to the
+   * reorderable blocks on the canvas (not just the sidebar list). Omit all
+   * three on read-only callers (Viewer, print/PDF) to disable it there. */
+  dragId?: BlockId | null;
+  onDragStart?: (id: BlockId) => void;
+  onDrop?: (id: BlockId) => void;
+  onDragEnd?: () => void;
 }) {
   const interactive = onSelect != null;
+  const draggingEnabled = onDragStart != null && onDrop != null;
   const visible = (id: BlockId) => config.blocks.find((b) => b.id === id)?.visible ?? true;
-  const wrap = (id: BlockId, content: React.ReactNode) =>
-    visible(id) ? (
+  const wrap = (id: BlockId, content: React.ReactNode) => {
+    if (!visible(id)) return null;
+    const reorderable = draggingEnabled && REORDERABLE_BLOCK_IDS.includes(id);
+    return (
       <div
         onClick={() => onSelect?.(id)}
-        style={{ marginBottom: config.layout.blockSpacing }}
-        className={`relative rounded ${interactive ? 'cursor-pointer' : ''} ${selected === id ? 'outline outline-2 outline-primary' : ''}`}
+        draggable={reorderable}
+        onDragStart={reorderable ? () => onDragStart?.(id) : undefined}
+        onDragOver={reorderable ? (e) => e.preventDefault() : undefined}
+        onDrop={reorderable ? () => onDrop?.(id) : undefined}
+        onDragEnd={reorderable ? onDragEnd : undefined}
+        style={{ marginBottom: config.layout.blockSpacing, opacity: dragId === id ? 0.4 : 1 }}
+        className={`relative rounded ${interactive ? 'cursor-pointer' : ''} ${reorderable ? 'cursor-grab' : ''} ${selected === id ? 'outline outline-2 outline-primary' : ''}`}
       >
+        {reorderable && (
+          <span className="absolute top-1/2 -left-5 -translate-y-1/2 text-muted-foreground">
+            <GripVertical size={14} />
+          </span>
+        )}
         {content}
       </div>
-    ) : null;
+    );
+  };
 
   return (
     <div
@@ -358,7 +384,7 @@ export function BulletinCanvas({
               >
                 <td
                   className="font-bold"
-                  colSpan={config.columns.coefficient ? 2 : 1}
+                  colSpan={1 + (config.columns.coefficient ? 1 : 0)}
                   style={{
                     padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
                     fontSize: config.typography.tableBody,
@@ -367,28 +393,26 @@ export function BulletinCanvas({
                   Moyenne générale
                 </td>
                 <td
-                  className="font-bold"
-                  style={{
-                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
-                    fontSize: 12,
-                    color: config.primaryColor,
-                  }}
-                >
-                  {fmt(data.overallAverage)} / 20
-                </td>
-                <td
                   colSpan={
+                    // Always at least 1 (the "Moy. élève" column always
+                    // exists) — a naive sum of the optional columns alone
+                    // can hit 0 when they're all hidden, which is invalid
+                    // colSpan and was breaking the table's column widths.
+                    1 +
                     (config.columns.classAverage ? 1 : 0) +
                     (config.columns.minMax ? 2 : 0) +
                     (config.columns.appreciation ? 1 : 0)
                   }
-                  className="text-[#8884a0]"
                   style={{
                     padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
-                    fontSize: 10,
                   }}
                 >
-                  Rang : {ordinal(data.rank)} / {data.rankedCount} élèves
+                  <span className="font-bold" style={{ fontSize: 12, color: config.primaryColor }}>
+                    {fmt(data.overallAverage)} / 20
+                  </span>
+                  <span className="ml-2.5 text-[#8884a0]" style={{ fontSize: 10 }}>
+                    Rang : {ordinal(data.rank)} / {data.rankedCount} élèves
+                  </span>
                 </td>
               </tr>
             </tfoot>
@@ -463,7 +487,7 @@ export function BulletinCanvas({
 
         {config.content.footerMessage && (
           <div
-            className="mt-1 text-center text-[#8884a0] italic"
+            className="text-center text-[#8884a0] italic"
             style={{ fontSize: config.typography.footer }}
           >
             {config.content.footerMessage}

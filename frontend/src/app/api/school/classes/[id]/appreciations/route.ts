@@ -69,6 +69,7 @@ export async function GET(
         {
           ...shell,
           students: [],
+          subjects: [],
           totalCount: 0,
           saisieCount: 0,
           positiveCount: 0,
@@ -79,7 +80,10 @@ export async function GET(
     }
 
     const [classSubjects, enrollments] = await Promise.all([
-      prisma.classSubject.findMany({ where: { classId } }),
+      prisma.classSubject.findMany({
+        where: { classId },
+        include: { subject: true, teacher: { select: { id: true, name: true } } },
+      }),
       prisma.enrollment.findMany({
         where: { classId, academicYearId: cls.academicYearId },
         include: {
@@ -91,7 +95,7 @@ export async function GET(
     const classSubjectIds = classSubjects.map((cs) => cs.id);
     const studentIds = enrollments.map((en) => en.studentId);
 
-    const [evaluations, generalAppreciations] = await Promise.all([
+    const [evaluations, appreciations] = await Promise.all([
       classSubjectIds.length === 0
         ? Promise.resolve([])
         : prisma.evaluation.findMany({
@@ -101,7 +105,7 @@ export async function GET(
       studentIds.length === 0
         ? Promise.resolve([])
         : prisma.appreciation.findMany({
-            where: { studentId: { in: studentIds }, termId: term.id, subjectId: null },
+            where: { studentId: { in: studentIds }, termId: term.id },
             include: { author: { select: { name: true, email: true } } },
           }),
     ]);
@@ -112,7 +116,15 @@ export async function GET(
       list.push(ev);
       evalsByClassSubject.set(ev.classSubjectId, list);
     }
+    const generalAppreciations = appreciations.filter((a) => a.subjectId == null);
+    const subjectAppreciations = appreciations.filter((a) => a.subjectId != null);
     const appreciationByStudent = new Map(generalAppreciations.map((a) => [a.studentId, a]));
+    const subjectApprBySubjectId = new Map<string, typeof subjectAppreciations>();
+    for (const a of subjectAppreciations) {
+      const list = subjectApprBySubjectId.get(a.subjectId!) ?? [];
+      list.push(a);
+      subjectApprBySubjectId.set(a.subjectId!, list);
+    }
 
     function generalAverageFor(studentId: string): number | null {
       const rows = classSubjects
@@ -159,10 +171,30 @@ export async function GET(
     ).length;
     const alertCount = students.filter((s) => s.mention === 'INSUFFISANT').length;
 
+    const subjects = classSubjects.map((cs) => {
+      const apprList = subjectApprBySubjectId.get(cs.subjectId) ?? [];
+      const classAverages = enrollments
+        .map((en) => subjectAverageFor(evalsByClassSubject.get(cs.id) ?? [], en.studentId))
+        .filter((a): a is number => a != null);
+      return {
+        classSubjectId: cs.id,
+        subjectId: cs.subjectId,
+        subjectName: cs.subject.name,
+        teacherName: cs.teacher?.name ?? null,
+        coefficient: cs.coefficient,
+        classAverage: classAverages.length
+          ? Math.round((classAverages.reduce((a, b) => a + b, 0) / classAverages.length) * 10) / 10
+          : null,
+        saisieCount: apprList.filter((a) => a.status === 'PUBLISHED').length,
+        totalCount: enrollments.length,
+      };
+    });
+
     return NextResponse.json(
       {
         ...shell,
         students,
+        subjects,
         totalCount: students.length,
         saisieCount,
         positiveCount,

@@ -37,6 +37,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import type { ClassSubjectOption } from '../carnet-de-notes/types';
 import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
+import { ParMatiereTab } from './ParMatiereTab';
+import { StatistiquesTab } from './StatistiquesTab';
 
 const PAGE_SIZE = 8;
 
@@ -45,7 +47,7 @@ function mentionClass(m: Mention | null): string {
     case 'TRES_BIEN':
       return 'bg-success text-success-foreground';
     case 'BIEN':
-      return 'bg-[#e0f0ff] text-[#2563eb]';
+      return 'bg-info text-info-foreground';
     case 'ASSEZ_BIEN':
       return 'bg-warning text-warning-foreground';
     case 'PASSABLE':
@@ -62,7 +64,7 @@ function moyColor(avg: number | null): string {
   if (avg == null) return 'text-muted-foreground';
   if (avg < 8) return 'text-destructive-foreground';
   if (avg < 12) return 'text-warning-foreground';
-  if (avg < 16) return 'text-[#2563eb]';
+  if (avg < 16) return 'text-info-foreground';
   return 'text-success-foreground';
 }
 
@@ -82,7 +84,7 @@ export default function AppreciationsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [mentionFilter, setMentionFilter] = useState('');
-  const [tab, setTab] = useState<'eleve' | 'attente'>('eleve');
+  const [tab, setTab] = useState<'eleve' | 'matiere' | 'stats' | 'attente'>('eleve');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -378,7 +380,7 @@ export default function AppreciationsListPage() {
                 setTab('eleve');
                 setPage(1);
               }}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-[13px] font-semibold ${tab === 'eleve' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'eleve' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <Table2 size={13} />
               Par élève
@@ -391,8 +393,12 @@ export default function AppreciationsListPage() {
             <button
               type="button"
               role="tab"
-              onClick={() => toast('Vue par matière — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium text-muted-foreground"
+              aria-selected={tab === 'matiere'}
+              onClick={() => {
+                setTab('matiere');
+                setPage(1);
+              }}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'matiere' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <BookOpen size={13} />
               Par matière
@@ -400,8 +406,12 @@ export default function AppreciationsListPage() {
             <button
               type="button"
               role="tab"
-              onClick={() => toast('Statistiques — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium text-muted-foreground"
+              aria-selected={tab === 'stats'}
+              onClick={() => {
+                setTab('stats');
+                setPage(1);
+              }}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'stats' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <BarChart2 size={13} />
               Statistiques
@@ -414,7 +424,7 @@ export default function AppreciationsListPage() {
                 setTab('attente');
                 setPage(1);
               }}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-[13px] font-semibold ${tab === 'attente' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'attente' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <Clock size={13} />
               En attente
@@ -432,6 +442,10 @@ export default function AppreciationsListPage() {
                 ))}
               </div>
             </Card>
+          ) : tab === 'matiere' ? (
+            <ParMatiereTab data={data} />
+          ) : tab === 'stats' ? (
+            <StatistiquesTab data={data} />
           ) : data.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />
@@ -445,22 +459,22 @@ export default function AppreciationsListPage() {
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Élève
                       </th>
-                      <th className="px-3 py-2.5 text-center text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Moyenne
                       </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Mention
                       </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Appréciation générale
                       </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Enseignant principal
                       </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Statut
                       </th>
                       <th className="w-11" />
@@ -473,10 +487,10 @@ export default function AppreciationsListPage() {
                           <div className="flex items-center gap-2.5">
                             <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
                             <div>
-                              <div className="text-[13px] font-semibold text-foreground">
+                              <div className="text-caption font-semibold text-foreground">
                                 {s.firstName} {s.lastName}
                               </div>
-                              <div className="text-[11px] text-muted-foreground">
+                              <div className="text-2xs text-muted-foreground">
                                 #{s.studentNumber}
                               </div>
                             </div>
@@ -490,7 +504,7 @@ export default function AppreciationsListPage() {
                         <td className="px-3 py-2.5">
                           {s.mention ? (
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${mentionClass(s.mention)}`}
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-2xs font-bold ${mentionClass(s.mention)}`}
                             >
                               {MENTION_LABEL[s.mention]}
                             </span>
@@ -516,12 +530,12 @@ export default function AppreciationsListPage() {
                         </td>
                         <td className="px-3 py-2.5">
                           {s.status === 'PUBLISHED' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-[11px] font-semibold text-success-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
                               <CheckCircle2 size={10} />
                               Saisie
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[11px] font-semibold text-warning-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
                               <Clock size={10} />
                               En attente
                             </span>
@@ -596,9 +610,9 @@ function SummaryCard({
         <Icon size={18} />
       </div>
       <div className="min-w-0">
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className={`text-lg font-bold ${valueColor[t]}`}>{value}</div>
-        {sub && <div className="truncate text-[11px] text-muted-foreground">{sub}</div>}
+        {sub && <div className="truncate text-2xs text-muted-foreground">{sub}</div>}
       </div>
     </Card>
   );

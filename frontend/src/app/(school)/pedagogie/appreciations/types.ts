@@ -34,6 +34,17 @@ export interface ListStudentRow {
   authorName: string | null;
 }
 
+export interface SubjectSummaryRow {
+  classSubjectId: string;
+  subjectId: string;
+  subjectName: string;
+  teacherName: string | null;
+  coefficient: number | null;
+  classAverage: number | null;
+  saisieCount: number;
+  totalCount: number;
+}
+
 export interface AppreciationsListData {
   classId: string;
   className: string;
@@ -41,6 +52,7 @@ export interface AppreciationsListData {
   terms: TermOption[];
   resolvedTermId: string | null;
   students: ListStudentRow[];
+  subjects: SubjectSummaryRow[];
   totalCount: number;
   saisieCount: number;
   positiveCount: number;

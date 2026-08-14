@@ -1,9 +1,9 @@
 'use client';
 
-// Banani's `.steps-bar` — the Add Teacher/Add Student mockups render a
-// single scrollable page whose "steps" are really section anchors, so this
-// implements them as clickable anchors with the active section highlighted.
-// Shared by the two form pages (add-teacher.md / add-student.md).
+// Wizard stepper for the teacher/student form modals — rendered in the
+// Modal `header` slot so it stays fixed while the step content scrolls.
+// Desktop shows every step with connectors; small screens show only the
+// current step ("Étape 2 sur 4") + a progress bar to keep the UI light.
 
 import { Check } from 'lucide-react';
 
@@ -12,52 +12,85 @@ export interface FormStep {
   label: string;
 }
 
-export function FormStepsBar({ steps, activeId }: { steps: FormStep[]; activeId: string }) {
-  const activeIndex = Math.max(
-    0,
-    steps.findIndex((s) => s.id === activeId),
-  );
+export function FormStepsBar({
+  steps,
+  activeIndex,
+  maxReachedIndex,
+  onStepSelect,
+}: {
+  steps: FormStep[];
+  activeIndex: number;
+  /** Highest step the user has reached — earlier steps stay clickable. */
+  maxReachedIndex: number;
+  onStepSelect: (index: number) => void;
+}) {
+  const active = steps[activeIndex];
   return (
-    <div className="mb-5 flex items-center gap-0 overflow-x-auto rounded-lg border border-border bg-card px-4 py-3.5 sm:px-5">
-      {steps.map((step, i) => {
-        const done = i < activeIndex;
-        const active = i === activeIndex;
-        return (
-          <div key={step.id} className="flex shrink-0 items-center">
-            {i > 0 && (
-              <div
-                className={`mx-3 h-px w-8 shrink-0 sm:mx-4 sm:w-14 ${done || active ? 'bg-primary' : 'bg-border'}`}
-              />
-            )}
-            <a
-              href={`#${step.id}`}
-              className="flex shrink-0 items-center gap-2"
-              aria-current={active ? 'step' : undefined}
-            >
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${
-                  done || active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {done ? <Check size={12} /> : i + 1}
-              </span>
-              <span
-                className={`text-[13px] whitespace-nowrap ${
-                  active
-                    ? 'font-semibold text-primary'
-                    : done
-                      ? 'font-medium text-foreground'
-                      : 'font-medium text-muted-foreground'
-                }`}
-              >
-                {step.label}
-              </span>
-            </a>
+    <div>
+      {/* Compact variant — small screens: current step only */}
+      <div className="flex items-center gap-3 sm:hidden">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[12px] font-bold text-primary-foreground">
+          {activeIndex + 1}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-medium text-muted-foreground">
+            Étape {activeIndex + 1} sur {steps.length}
           </div>
-        );
-      })}
+          <div className="truncate text-[13px] font-semibold text-foreground">{active?.label}</div>
+        </div>
+        <div className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${((activeIndex + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Full variant — sm and up: every step */}
+      <div className="hidden items-center sm:flex">
+        {steps.map((step, i) => {
+          const done = i < activeIndex;
+          const isActive = i === activeIndex;
+          const reachable = i <= maxReachedIndex;
+          return (
+            <div key={step.id} className="flex shrink-0 items-center">
+              {i > 0 && (
+                <div
+                  className={`mx-3 h-px w-8 shrink-0 lg:mx-4 lg:w-12 ${done || isActive ? 'bg-primary' : 'bg-border'}`}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => reachable && onStepSelect(i)}
+                disabled={!reachable}
+                aria-current={isActive ? 'step' : undefined}
+                className={`flex shrink-0 items-center gap-2 ${reachable ? '' : 'cursor-default'}`}
+              >
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${
+                    done || isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {done ? <Check size={12} /> : i + 1}
+                </span>
+                <span
+                  className={`text-[13px] whitespace-nowrap ${
+                    isActive
+                      ? 'font-semibold text-primary'
+                      : done
+                        ? 'font-medium text-foreground'
+                        : 'font-medium text-muted-foreground'
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

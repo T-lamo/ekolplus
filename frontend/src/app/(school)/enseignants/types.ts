@@ -13,8 +13,18 @@ export interface TeacherListItem {
   weeklyHours: number;
 }
 
-/** Full profile served by GET /api/school/teachers/[id] — the Add/Edit
- * Teacher page's shape (add-teacher.md). */
+/** One ClassSubject row as returned by GET /api/school/teachers/[id] —
+ * feeds the teacher profile's Matières & Classes tab. */
+export interface TeacherAssignment {
+  id: string;
+  subject: { id: string; name: string };
+  class: { id: string; name: string };
+  weeklyHours: number | null;
+  coefficient: number | null;
+}
+
+/** Full profile served by GET /api/school/teachers/[id] — consumed by the
+ * teacher wizard modal and the profile page. */
 export interface TeacherDetail extends TeacherListItem {
   civility: string | null;
   firstName: string | null;
@@ -28,4 +38,5 @@ export interface TeacherDetail extends TeacherListItem {
   contractType: string | null;
   hiredAt: string | null;
   weeklyHoursTarget: number | null;
+  assignments: TeacherAssignment[];
 }

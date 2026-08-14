@@ -28,6 +28,7 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
 interface SubjectOption {
@@ -57,6 +58,8 @@ export default function TeachersPage() {
   const [subjectFilter, setSubjectFilter] = useState('');
   const [status, setStatus] = useState<'' | TeacherStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('list');
+  const [editing, setEditing] = useState<string | 'new' | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -75,7 +78,7 @@ export default function TeachersPage() {
         }
         setError('Impossible de charger les enseignants.');
       });
-  }, [user, router]);
+  }, [user, router, refreshKey]);
 
   const filtered = useMemo(() => {
     return (teachers ?? []).filter((t) => {
@@ -129,12 +132,12 @@ export default function TeachersPage() {
       {
         label: 'Voir le profil',
         icon: <Eye size={14} />,
-        onClick: () => toast('Fiche enseignant détaillée — bientôt disponible.', 'info'),
+        onClick: () => router.push(`/enseignants/${t.id}`),
       },
       {
         label: 'Modifier',
         icon: <Pencil size={14} />,
-        onClick: () => router.push(`/enseignants/${t.id}/modifier`),
+        onClick: () => setEditing(t.id),
       },
       {
         label: 'Gérer les affectations',
@@ -200,7 +203,7 @@ export default function TeachersPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => router.push('/enseignants/nouveau')}>
+          <Button className="w-fit" onClick={() => setEditing('new')}>
             <UserPlus size={14} />
             Ajouter un enseignant
           </Button>
@@ -369,10 +372,7 @@ export default function TeachersPage() {
                       <td className="px-3.5 py-2.5 text-muted-foreground">{t.email ?? '—'}</td>
                       <td className="px-3.5 py-2.5">
                         <div className="flex items-center gap-1">
-                          <IconButton
-                            onClick={() => router.push(`/enseignants/${t.id}/modifier`)}
-                            label="Modifier"
-                          >
+                          <IconButton onClick={() => setEditing(t.id)} label="Modifier">
                             <Pencil size={14} />
                           </IconButton>
                           <ActionMenu items={menuItemsFor(t)} />
@@ -385,6 +385,14 @@ export default function TeachersPage() {
             </Card>
           )}
         </>
+      )}
+
+      {editing !== null && (
+        <TeacherFormModal
+          teacherId={editing === 'new' ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => setRefreshKey((k) => k + 1)}
+        />
       )}
     </div>
   );

@@ -35,3 +35,15 @@
 - [ ] Page mobile-first, ancres/steps, résumé live
 - [ ] 375 / 768 / 1280 vérifiés
 - [ ] format/lint/typecheck/test
+
+## Révision 2026-08-14 — passage en modale wizard
+
+La page pleine largeur `/enseignants/nouveau` + `/[id]/modifier` est remplacée par
+`TeacherFormModal` (modale `xwide` 980px) : stepper fixe dans le header de la modale,
+une étape à la fois (Identité & Photo / Coordonnées / Poste & Matières), navigation
+Précédent/Suivant (`WizardNav`), affichage compact du stepper sous `sm`. L'aperçu de
+fiche et la checklist de la page d'origine sont retirés (remplacés par la validation
+par étape) ; le contenu des sections est porté tel quel. Nouvelle fiche
+`/enseignants/[id]` miroir de la fiche élève (héro + onglets Informations /
+Matières & Classes) — `GET /api/school/teachers/[id]` renvoie désormais aussi
+`assignments` (lignes ClassSubject).

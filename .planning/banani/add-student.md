@@ -33,3 +33,13 @@
 - [ ] Page mobile-first, colonne sticky, radios statut
 - [ ] 375 / 768 / 1280 vérifiés
 - [ ] format/lint/typecheck/test
+
+## Révision 2026-08-14 — passage en modale wizard
+
+La page pleine largeur `/eleves/nouveau` + `/[id]/modifier` est remplacée par
+`StudentFormModal` (modale `xwide` 980px) : stepper fixe dans le header, une étape à
+la fois (Identité / Scolarité / Parents & Tuteurs / Options), navigation
+Précédent/Suivant (`WizardNav`), stepper compact sous `sm`. La colonne gauche de la
+page d'origine est redistribuée dans les étapes : photo → Identité ; matricule +
+statut d'inscription (cartes radio) → Scolarité. Validation par étape (Identité :
+prénom+nom+date de naissance ; Scolarité : classe).

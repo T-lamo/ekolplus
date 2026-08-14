@@ -88,6 +88,14 @@ export async function GET(
           subjects: [...new Map(classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
           classes: [...new Map(classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
           weeklyHours: classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),
+          // Row-level assignments for the teacher profile's Matières & Classes tab.
+          assignments: classSubjects.map((cs) => ({
+            id: cs.id,
+            subject: cs.subject,
+            class: cs.class,
+            weeklyHours: cs.weeklyHours,
+            coefficient: cs.coefficient,
+          })),
         },
       },
       { headers: { 'x-request-id': ctx.requestId } },

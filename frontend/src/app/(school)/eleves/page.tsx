@@ -27,6 +27,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
+import { StudentFormModal } from './StudentFormModal';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
@@ -59,6 +60,8 @@ export default function StudentsPage() {
   const [classFilter, setClassFilter] = useState('');
   const [status, setStatus] = useState<'' | StudentStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('list');
+  const [editing, setEditing] = useState<string | 'new' | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -77,7 +80,7 @@ export default function StudentsPage() {
         }
         setError('Impossible de charger les élèves.');
       });
-  }, [user, router]);
+  }, [user, router, refreshKey]);
 
   const filtered = useMemo(() => {
     return (students ?? []).filter((s) => {
@@ -127,7 +130,7 @@ export default function StudentsPage() {
   }
 
   function openEdit(s: StudentListItem) {
-    router.push(`/eleves/${s.id}/modifier`);
+    setEditing(s.id);
   }
 
   function menuItemsFor(s: StudentListItem) {
@@ -197,7 +200,7 @@ export default function StudentsPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => router.push('/eleves/nouveau')}>
+          <Button className="w-fit" onClick={() => setEditing('new')}>
             <UserPlus size={14} />
             Ajouter un élève
           </Button>
@@ -354,6 +357,14 @@ export default function StudentsPage() {
             </Card>
           )}
         </>
+      )}
+
+      {editing !== null && (
+        <StudentFormModal
+          studentId={editing === 'new' ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => setRefreshKey((k) => k + 1)}
+        />
       )}
     </div>
   );

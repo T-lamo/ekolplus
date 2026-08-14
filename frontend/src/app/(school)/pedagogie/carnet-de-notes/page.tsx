@@ -33,6 +33,8 @@ import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { NewEvaluationModal } from './NewEvaluationModal';
+import { StatistiquesTab } from './StatistiquesTab';
+import { ParEvaluationTab } from './ParEvaluationTab';
 import type {
   ClassSubjectOption,
   CombinedNotebookData,
@@ -85,7 +87,7 @@ function tone(avg: number | null): 'excellent' | 'good' | 'average' | 'poor' | '
 
 const PILL_CLASS: Record<string, string> = {
   excellent: 'bg-success text-success-foreground',
-  good: 'bg-[#e0f0ff] text-[#2563eb]',
+  good: 'bg-info text-info-foreground',
   average: 'bg-warning text-warning-foreground',
   poor: 'bg-destructive text-destructive-foreground',
   neutral: 'bg-muted text-muted-foreground',
@@ -175,6 +177,7 @@ export default function GradeNotebookPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showNew, setShowNew] = useState(false);
+  const [view, setView] = useState<'table' | 'stats' | 'byEval'>('table');
 
   useEffect(() => {
     if (!user) return;
@@ -527,8 +530,13 @@ export default function GradeNotebookPage() {
             <button
               type="button"
               role="tab"
-              aria-selected
-              className="flex items-center gap-1.5 border-b-2 border-primary px-4 py-2.5 text-[13px] font-semibold text-primary"
+              aria-selected={view === 'table'}
+              onClick={() => setView('table')}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${
+                view === 'table'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent font-medium text-muted-foreground'
+              }`}
             >
               <Table2 size={13} />
               Vue tableau
@@ -536,8 +544,13 @@ export default function GradeNotebookPage() {
             <button
               type="button"
               role="tab"
-              onClick={() => toast('Statistiques — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium text-muted-foreground"
+              aria-selected={view === 'stats'}
+              onClick={() => setView('stats')}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${
+                view === 'stats'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent font-medium text-muted-foreground'
+              }`}
             >
               <BarChart2 size={13} />
               Statistiques
@@ -545,8 +558,13 @@ export default function GradeNotebookPage() {
             <button
               type="button"
               role="tab"
-              onClick={() => toast('Vue par évaluation — bientôt disponible.', 'info')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium text-muted-foreground"
+              aria-selected={view === 'byEval'}
+              onClick={() => setView('byEval')}
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${
+                view === 'byEval'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent font-medium text-muted-foreground'
+              }`}
             >
               <FileText size={13} />
               Par évaluation
@@ -573,6 +591,10 @@ export default function GradeNotebookPage() {
                 Aucun élève inscrit dans cette classe.
               </p>
             </Card>
+          ) : view === 'stats' ? (
+            <StatistiquesTab unified={unified} />
+          ) : view === 'byEval' ? (
+            <ParEvaluationTab unified={unified} />
           ) : (
             <Card className="gap-0 overflow-visible">
               <div className="overflow-x-auto">
@@ -609,7 +631,7 @@ export default function GradeNotebookPage() {
                         <th
                           rowSpan={2}
                           style={stickyLeftStyle}
-                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
                           Élève
                         </th>
@@ -617,7 +639,7 @@ export default function GradeNotebookPage() {
                           <th
                             key={sub.classSubjectId}
                             colSpan={sub.evaluations.length + 1}
-                            className="overflow-hidden border-l-2 border-border px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-ellipsis whitespace-nowrap text-foreground uppercase"
+                            className="overflow-hidden border-l-2 border-border px-3 py-1.5 text-center text-2xs font-bold tracking-wide text-ellipsis whitespace-nowrap text-foreground uppercase"
                           >
                             {sub.subjectName}
                           </th>
@@ -643,7 +665,7 @@ export default function GradeNotebookPage() {
                       {!unified.combined && (
                         <th
                           style={stickyLeftStyle}
-                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
+                          className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
                           Élève
                         </th>
@@ -704,10 +726,10 @@ export default function GradeNotebookPage() {
                           <div className="flex items-center gap-2.5">
                             <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
                             <div>
-                              <div className="text-[13px] font-semibold text-foreground">
+                              <div className="text-caption font-semibold text-foreground">
                                 {s.firstName} {s.lastName}
                               </div>
-                              <div className="text-[11px] text-muted-foreground">
+                              <div className="text-2xs text-muted-foreground">
                                 #{s.studentNumber}
                               </div>
                             </div>
@@ -727,7 +749,7 @@ export default function GradeNotebookPage() {
                                   >
                                     {g?.absent ? (
                                       <span
-                                        className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold ${PILL_CLASS.neutral}`}
+                                        className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-2xs font-semibold ${PILL_CLASS.neutral}`}
                                       >
                                         Abs.
                                       </span>
@@ -772,7 +794,7 @@ export default function GradeNotebookPage() {
                           className={`${STICKY_RANG} px-3 py-2.5 text-center`}
                         >
                           <span
-                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${s.rank && RANK_CLASS[s.rank] ? RANK_CLASS[s.rank] : 'bg-muted text-muted-foreground'}`}
+                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold ${s.rank && RANK_CLASS[s.rank] ? RANK_CLASS[s.rank] : 'bg-muted text-muted-foreground'}`}
                           >
                             {s.rank ?? '—'}
                           </span>
@@ -840,14 +862,14 @@ function SummaryCard({
 }) {
   const iconBg: Record<string, string> = {
     secondary: 'bg-secondary text-primary',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
     success: 'bg-success text-success-foreground',
     destructive: 'bg-destructive text-destructive-foreground',
     warning: 'bg-warning text-warning-foreground',
   };
   const valueColor: Record<string, string> = {
     secondary: 'text-foreground',
-    blue: 'text-[#2563eb]',
+    blue: 'text-info-foreground',
     success: 'text-success-foreground',
     destructive: 'text-destructive-foreground',
     warning: 'text-foreground',
@@ -858,9 +880,9 @@ function SummaryCard({
         <Icon size={18} />
       </div>
       <div className="min-w-0">
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className={`text-lg font-bold ${valueColor[t]}`}>{value}</div>
-        {sub && <div className="truncate text-[11px] text-muted-foreground">{sub}</div>}
+        {sub && <div className="truncate text-2xs text-muted-foreground">{sub}</div>}
       </div>
     </Card>
   );

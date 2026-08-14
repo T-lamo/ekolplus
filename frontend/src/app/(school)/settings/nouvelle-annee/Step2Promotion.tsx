@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -125,10 +125,16 @@ export function Step2Promotion({
   const handleProceed = async () => {
     setError('');
 
-    // Validate all classes have a destination
+    // Validate all classes have a destination. Mirrors executeRollover's
+    // real class-creation guard (see computeStats in
+    // academic-year-rollover.ts): an `isNew: true` mapping only counts as a
+    // valid destination when `newClass` is also present — otherwise it
+    // silently produces zero enrollments for that class server-side.
     for (const cls of classes) {
       const mapping = activeMapping[cls.id];
-      if (!mapping?.destClassId && !mapping?.isNew) {
+      const hasDestination =
+        Boolean(mapping?.destClassId) || Boolean(mapping?.isNew && mapping?.newClass);
+      if (!hasDestination) {
         setError(`${cls.name} n'a pas de classe de destination`);
         return;
       }
@@ -203,14 +209,25 @@ export function Step2Promotion({
                     )}
                   </td>
                   <td className="px-3 py-2 align-top">
-                    <button
-                      type="button"
-                      onClick={() => setCreatingForClassId(cls.id)}
-                      className="flex items-center gap-1.5 rounded-md border-2 border-dashed border-border px-3 py-1.5 text-xs font-semibold text-primary whitespace-nowrap transition-colors hover:border-primary hover:bg-secondary"
-                    >
-                      <Plus size={12} />
-                      {t.createNew}
-                    </button>
+                    {mapping.isNew ? (
+                      <button
+                        type="button"
+                        onClick={() => setCreatingForClassId(cls.id)}
+                        className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground whitespace-nowrap transition-colors hover:border-primary hover:bg-secondary"
+                      >
+                        <Pencil size={12} />
+                        {ACADEMIC_YEAR_ROLLOVER.actions.editDestination}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setCreatingForClassId(cls.id)}
+                        className="flex items-center gap-1.5 rounded-md border-2 border-dashed border-border px-3 py-1.5 text-xs font-semibold text-primary whitespace-nowrap transition-colors hover:border-primary hover:bg-secondary"
+                      >
+                        <Plus size={12} />
+                        {t.createNew}
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -222,6 +239,10 @@ export function Step2Promotion({
       {error && (
         <div className="rounded bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
       )}
+
+      <div className="rounded-md border border-border bg-muted px-4 py-3 text-xs text-muted-foreground">
+        {t.step3Preview}
+      </div>
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => onSave(activeMapping)} disabled={isLoading}>

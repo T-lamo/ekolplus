@@ -26,9 +26,20 @@ vi.mock('@/lib/server/school', async () => {
     resolveActiveAcademicYear: vi.fn(),
   };
 });
-vi.mock('@/lib/server/academic-year-rollover', () => ({
-  getPromotionData: vi.fn(),
-}));
+// `validateMappingOwnership` is left as the REAL implementation (via
+// importActual) so the cross-tenant ownership tests below exercise the
+// actual logic against `prismaMock.class.count` / `prismaMock.teacher.count`
+// — only `getPromotionData` (a DB read unrelated to what PATCH validates)
+// is stubbed.
+vi.mock('@/lib/server/academic-year-rollover', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/server/academic-year-rollover')>(
+    '@/lib/server/academic-year-rollover',
+  );
+  return {
+    ...actual,
+    getPromotionData: vi.fn(),
+  };
+});
 
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
@@ -77,6 +88,12 @@ beforeEach(() => {
   mockRequireAuth.mockResolvedValue(authUser);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(ownerSchool);
+  // Default: any destClassId/homeroomTeacherId referenced in a PATCH body
+  // belongs to the caller's school (real `validateMappingOwnership` calls
+  // through to these). Individual tests override with `.mockResolvedValueOnce(0)`
+  // to simulate a cross-tenant reference.
+  prismaMock.class.count.mockResolvedValue(1);
+  prismaMock.teacher.count.mockResolvedValue(1);
 });
 
 describe('GET /api/school/academic-year-rollover', () => {
@@ -347,6 +364,110 @@ describe('PATCH /api/school/academic-year-rollover', () => {
   it('invalid body (bad datetime) → 400 VALIDATION_FAILED', async () => {
     const res = await PATCH(makeReq('PATCH', URL, { newYearStartDate: 'not-a-date' }));
     expect(res.status).toBe(400);
+  });
+
+  // Fix 1 (CRITICAL) — cross-tenant ownership validation. A malicious OWNER
+  // of school A must not be able to point a destClassId/homeroomTeacherId
+  // at school B's rows via this autosave endpoint.
+  describe('cross-tenant ownership validation', () => {
+    it('destClassId belonging to another school is rejected → 400 VALIDATION_FAILED', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+      prismaMock.class.count.mockResolvedValueOnce(0); // not found under this school
+
+      const res = await PATCH(
+        makeReq('PATCH', URL, {
+          classMapping: { old_class_1: { destClassId: 'other_school_class' } },
+        }),
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('VALIDATION_FAILED');
+      expect(prismaMock.class.count).toHaveBeenCalledWith({
+        where: { id: { in: ['other_school_class'] }, schoolId: 'school_1' },
+      });
+      expect(prismaMock.academicYearRolloverDraft.update).not.toHaveBeenCalled();
+    });
+
+    it('destClassId in a studentExceptions entry belonging to another school is rejected', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+      prismaMock.class.count.mockResolvedValueOnce(0);
+
+      const res = await PATCH(
+        makeReq('PATCH', URL, {
+          studentExceptions: { student_1: { destClassId: 'other_school_class' } },
+        }),
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('VALIDATION_FAILED');
+      expect(prismaMock.academicYearRolloverDraft.update).not.toHaveBeenCalled();
+    });
+
+    it('homeroomTeacherId belonging to another school is rejected → 400 VALIDATION_FAILED', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+      prismaMock.teacher.count.mockResolvedValueOnce(0);
+
+      const res = await PATCH(
+        makeReq('PATCH', URL, {
+          classMapping: {
+            old_class_1: {
+              isNew: true,
+              newClass: {
+                name: '5ème A',
+                level: '5ème',
+                homeroomTeacherId: 'other_school_teacher',
+              },
+            },
+          },
+        }),
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('VALIDATION_FAILED');
+      expect(prismaMock.teacher.count).toHaveBeenCalledWith({
+        where: { id: { in: ['other_school_teacher'] }, schoolId: 'school_1' },
+      });
+      expect(prismaMock.academicYearRolloverDraft.update).not.toHaveBeenCalled();
+    });
+
+    it('valid same-school destClassId and homeroomTeacherId still pass → 200', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+      prismaMock.academicYearRolloverDraft.update.mockResolvedValueOnce(draftRow as never);
+
+      const res = await PATCH(
+        makeReq('PATCH', URL, {
+          classMapping: {
+            old_class_1: { destClassId: 'same_school_class' },
+            old_class_2: {
+              isNew: true,
+              newClass: {
+                name: '5ème B',
+                level: '5ème',
+                homeroomTeacherId: 'same_school_teacher',
+              },
+            },
+          },
+        }),
+      );
+      expect(res.status).toBe(200);
+      expect(prismaMock.class.count).toHaveBeenCalledWith({
+        where: { id: { in: ['same_school_class'] }, schoolId: 'school_1' },
+      });
+      expect(prismaMock.teacher.count).toHaveBeenCalledWith({
+        where: { id: { in: ['same_school_teacher'] }, schoolId: 'school_1' },
+      });
+      expect(prismaMock.academicYearRolloverDraft.update).toHaveBeenCalled();
+    });
+
+    it('no destClassId/homeroomTeacherId referenced → skips both count queries entirely', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+      prismaMock.academicYearRolloverDraft.update.mockResolvedValueOnce(draftRow as never);
+
+      const res = await PATCH(makeReq('PATCH', URL, { newYearLabel: '2027-2028' }));
+      expect(res.status).toBe(200);
+      expect(prismaMock.class.count).not.toHaveBeenCalled();
+      expect(prismaMock.teacher.count).not.toHaveBeenCalled();
+    });
   });
 });
 

@@ -1,16 +1,18 @@
-// Tests for the academic-year-rollover pure helper `computeStats`.
+// Tests for the academic-year-rollover pure helper `computeStats`, plus
+// `executeRollover` (the transactional commit itself).
 //
-// Critical invariant under test — precedence order:
+// Critical invariant under test for computeStats — precedence order:
 //   exception.skip > exception.destClassId > class mapping > unenrolled fallback
 //
-// `getPromotionData` and `executeRollover` talk to Prisma directly (reads /
-// writes inside a caller-supplied transaction) and are exercised indirectly
-// once the route handlers (Tasks 4-5) land route-level tests — no lightweight
-// lib-level Prisma-mocking convention exists yet in this repo outside of
-// route tests (see src/test-utils/prisma-mock.ts), so they are left
-// untested-by-design here per the task brief.
-import { describe, it, expect } from 'vitest';
-import { computeStats } from './academic-year-rollover';
+// `executeRollover` takes a `Prisma.TransactionClient` as its first param —
+// following the `mockDeep<PrismaClient>()` convention used elsewhere for
+// transaction-taking functions (see src/lib/server/outbox/dispatcher.test.ts,
+// which mocks the same way and passes the deep-mocked client straight into
+// the function under test).
+import { describe, it, expect, beforeEach } from 'vitest';
+import { mockDeep, mockReset, type DeepMockProxy } from 'vitest-mock-extended';
+import type { PrismaClient } from '@prisma/client';
+import { computeStats, executeRollover } from './academic-year-rollover';
 import type {
   ClassMappingEntry,
   StudentExceptionEntry,
@@ -153,5 +155,219 @@ describe('computeStats', () => {
 
   it('empty student list yields all-zero stats', () => {
     expect(computeStats({}, {}, [])).toEqual({ promoted: 0, exceptions: 0, unenrolled: 0 });
+  });
+});
+
+// Fix 2 (final-review) — executeRollover had zero direct test coverage;
+// confirm/route.test.ts only asserted against a *mocked* executeRollover.
+// These tests exercise the real transactional-commit logic against a
+// mockDeep<PrismaClient> passed in as `tx`.
+describe('executeRollover', () => {
+  const tx = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
+
+  function oldClass(id: string, name: string) {
+    return { id, name, level: '6ème', room: null, capacity: null, homeroomTeacherId: null };
+  }
+
+  beforeEach(() => {
+    mockReset(tx);
+    tx.academicYear.create.mockResolvedValue({ id: 'new_year_1' } as never);
+    tx.academicYear.update.mockResolvedValue({} as never);
+  });
+
+  const baseRolloverData = {
+    newYearLabel: '2026-2027',
+    newYearStartDate: new Date('2026-09-01'),
+    newYearEndDate: new Date('2027-06-30'),
+  };
+
+  it('archives the old year and activates the new one', async () => {
+    tx.class.findMany.mockResolvedValue([] as never);
+    tx.enrollment.findMany.mockResolvedValue([] as never);
+
+    const result = await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: {},
+      studentExceptions: {},
+    });
+
+    expect(result.newAcademicYearId).toBe('new_year_1');
+    expect(tx.academicYear.create).toHaveBeenCalledWith({
+      data: {
+        schoolId: 'school_1',
+        label: '2026-2027',
+        startDate: baseRolloverData.newYearStartDate,
+        endDate: baseRolloverData.newYearEndDate,
+        isActive: true,
+      },
+    });
+    expect(tx.academicYear.update).toHaveBeenCalledWith({
+      where: { id: 'ay_old' },
+      data: { isActive: false },
+    });
+  });
+
+  it('(a) destClassId reuse: an existing class as destination gets the enrollment', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'existing_c1' } },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).not.toHaveBeenCalled();
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: {
+        studentId: 's1',
+        classId: 'existing_c1',
+        academicYearId: 'new_year_1',
+        enrolledAt: expect.any(Date),
+      },
+    });
+  });
+
+  it('(b) isNew: true + newClass present creates a new class and enrolls into it', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.class.create.mockResolvedValue({ id: 'created_c1' } as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: {
+        old_c1: { isNew: true, newClass: { name: '5ème A', level: '5ème' } },
+      },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).toHaveBeenCalledWith({
+      data: {
+        schoolId: 'school_1',
+        academicYearId: 'new_year_1',
+        name: '5ème A',
+        level: '5ème',
+        room: null,
+        capacity: null,
+        homeroomTeacherId: null,
+      },
+    });
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: {
+        studentId: 's1',
+        classId: 'created_c1',
+        academicYearId: 'new_year_1',
+        enrolledAt: expect.any(Date),
+      },
+    });
+  });
+
+  it('(c) isNew: true with NO newClass → that class is not created and its students are not enrolled', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { isNew: true } }, // malformed/incomplete: no newClass
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).not.toHaveBeenCalled();
+    expect(tx.enrollment.create).not.toHaveBeenCalled();
+  });
+
+  it('(d) a studentExceptions destClassId overrides the class-level mapping', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'class-mapped-dest' } },
+      studentExceptions: { s1: { destClassId: 'exception-dest' } },
+    });
+
+    expect(tx.enrollment.create).toHaveBeenCalledTimes(1);
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: {
+        studentId: 's1',
+        classId: 'exception-dest',
+        academicYearId: 'new_year_1',
+        enrolledAt: expect.any(Date),
+      },
+    });
+  });
+
+  it('(e) a studentExceptions skip: true results in no enrollment regardless of class mapping', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'class-mapped-dest' } },
+      studentExceptions: { s1: { skip: true } },
+    });
+
+    expect(tx.enrollment.create).not.toHaveBeenCalled();
+  });
+
+  it('(f) an old class with no mapping entry at all → its students are not enrolled', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: {}, // no entry for old_c1 at all
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).not.toHaveBeenCalled();
+    expect(tx.enrollment.create).not.toHaveBeenCalled();
+  });
+
+  // Fix 3 (final-review) — two source classes both mapped to a "Créer
+  // nouvelle" with the same name (the only way to express a class merge in
+  // v1) must not hit @@unique([academicYearId, name]) and roll back the
+  // whole transaction.
+  it('dedups same-name "Créer nouvelle" mappings: only one class is created, both old classes reuse it', async () => {
+    tx.class.findMany.mockResolvedValue([
+      oldClass('old_c1', '6ème A'),
+      oldClass('old_c2', '6ème B'),
+    ] as never);
+    tx.enrollment.findMany.mockResolvedValue([
+      { studentId: 's1', classId: 'old_c1' },
+      { studentId: 's2', classId: 'old_c2' },
+    ] as never);
+    tx.class.create.mockResolvedValue({ id: 'merged_c1' } as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: {
+        old_c1: { isNew: true, newClass: { name: '6ème Fusion', level: '6ème' } },
+        old_c2: { isNew: true, newClass: { name: '6ème Fusion', level: '6ème' } },
+      },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).toHaveBeenCalledTimes(1);
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: {
+        studentId: 's1',
+        classId: 'merged_c1',
+        academicYearId: 'new_year_1',
+        enrolledAt: expect.any(Date),
+      },
+    });
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: {
+        studentId: 's2',
+        classId: 'merged_c1',
+        academicYearId: 'new_year_1',
+        enrolledAt: expect.any(Date),
+      },
+    });
   });
 });

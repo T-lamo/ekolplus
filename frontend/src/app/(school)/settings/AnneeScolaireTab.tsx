@@ -599,7 +599,7 @@ export function AnneeScolaireTab({
           </p>
         )}
 
-        {role === 'OWNER' && (
+        {role === 'OWNER' && academicYear && (
           <div className="flex justify-end border-t border-border pt-4">
             <Button
               type="button"

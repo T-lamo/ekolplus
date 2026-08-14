@@ -12,7 +12,7 @@
 // codebase's reference OWNER-only atomic-transaction pattern) so a partial
 // rollover never lands.
 import 'server-only';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/server/prisma';
 import type {
   ClassMappingEntry,
@@ -24,8 +24,13 @@ import type {
 export async function getPromotionData(
   schoolId: string,
   academicYearId: string,
+  // Defaults to the top-level singleton so existing read-side callers (the
+  // draft GET route) are unaffected; the confirm route passes its `tx` so
+  // the audit-log stats it feeds are computed from the same transactional
+  // snapshot that actually commits (see confirm/route.ts's implementer note).
+  client: Prisma.TransactionClient | PrismaClient = prisma,
 ): Promise<{ classes: ClassForPromotion[]; students: StudentForPromotion[] }> {
-  const classes = await prisma.class.findMany({
+  const classes = await client.class.findMany({
     where: { schoolId, academicYearId },
     select: {
       id: true,
@@ -36,7 +41,7 @@ export async function getPromotionData(
     orderBy: { name: 'asc' },
   });
 
-  const enrollments = await prisma.enrollment.findMany({
+  const enrollments = await client.enrollment.findMany({
     where: { academicYearId },
     select: {
       id: true,
@@ -98,6 +103,55 @@ export function computeStats(
   return { promoted, exceptions, unenrolled };
 }
 
+/**
+ * Cross-tenant ownership guard for the rollover mapping's foreign
+ * references (`destClassId` on a classMapping/studentExceptions entry,
+ * `newClass.homeroomTeacherId` on a classMapping entry). Both the draft
+ * PATCH route (reject at autosave time, before persisting) and the confirm
+ * route (defense in depth, right before the irreversible commit) call this
+ * with the same two args so an id belonging to another school can never be
+ * dereferenced into a real Enrollment/Class row. Mirrors the classId /
+ * homeroomTeacherId ownership checks in
+ * frontend/src/app/api/school/students/route.ts and
+ * frontend/src/app/api/school/classes/route.ts.
+ */
+export async function validateMappingOwnership(
+  client: Pick<PrismaClient, 'class' | 'teacher'>,
+  schoolId: string,
+  classMapping: Record<string, ClassMappingEntry> | undefined,
+  studentExceptions: Record<string, StudentExceptionEntry> | undefined,
+): Promise<boolean> {
+  const destClassIds = new Set<string>();
+  const homeroomTeacherIds = new Set<string>();
+
+  for (const entry of Object.values(classMapping ?? {})) {
+    if (entry.destClassId) destClassIds.add(entry.destClassId);
+    if (entry.newClass?.homeroomTeacherId) {
+      homeroomTeacherIds.add(entry.newClass.homeroomTeacherId);
+    }
+  }
+  for (const entry of Object.values(studentExceptions ?? {})) {
+    if (entry.destClassId) destClassIds.add(entry.destClassId);
+  }
+
+  // Skip the query entirely when there's nothing to check — the common case.
+  if (destClassIds.size > 0) {
+    const count = await client.class.count({
+      where: { id: { in: [...destClassIds] }, schoolId },
+    });
+    if (count !== destClassIds.size) return false;
+  }
+
+  if (homeroomTeacherIds.size > 0) {
+    const count = await client.teacher.count({
+      where: { id: { in: [...homeroomTeacherIds] }, schoolId },
+    });
+    if (count !== homeroomTeacherIds.size) return false;
+  }
+
+  return true;
+}
+
 export async function executeRollover(
   tx: Prisma.TransactionClient,
   schoolId: string,
@@ -147,6 +201,14 @@ export async function executeRollover(
 
   // 4. Create/reuse destination classes per the mapping (oldClassId -> newClassId).
   const newClassMap = new Map<string, string>();
+  // Dedup "Créer nouvelle" classes by name within this execution. Two old
+  // classes can legitimately map to the same new-class name (merging two
+  // classes into one — the only way to express a merge in v1, since
+  // `allClasses=[]` means there's no existing-class picker yet). Without
+  // this, the second `tx.class.create` would hit the
+  // `@@unique([academicYearId, name])` constraint and roll back the whole
+  // transaction with an unhandled 500.
+  const createdClassIdByName = new Map<string, string>();
 
   for (const oldClass of oldClasses) {
     const mapping = rolloverData.classMapping[oldClass.id];
@@ -156,19 +218,27 @@ export async function executeRollover(
       // Reuse an existing class.
       newClassMap.set(oldClass.id, mapping.destClassId);
     } else if (mapping.isNew && mapping.newClass) {
-      // Create a brand-new class in the new year.
-      const newClass = await tx.class.create({
-        data: {
-          schoolId,
-          academicYearId: newYear.id,
-          name: mapping.newClass.name,
-          level: mapping.newClass.level,
-          room: mapping.newClass.room ?? null,
-          capacity: mapping.newClass.capacity ?? null,
-          homeroomTeacherId: mapping.newClass.homeroomTeacherId ?? null,
-        },
-      });
-      newClassMap.set(oldClass.id, newClass.id);
+      const alreadyCreatedId = createdClassIdByName.get(mapping.newClass.name);
+      if (alreadyCreatedId) {
+        // Same name already created earlier in this loop — reuse it instead
+        // of creating a duplicate.
+        newClassMap.set(oldClass.id, alreadyCreatedId);
+      } else {
+        // Create a brand-new class in the new year.
+        const newClass = await tx.class.create({
+          data: {
+            schoolId,
+            academicYearId: newYear.id,
+            name: mapping.newClass.name,
+            level: mapping.newClass.level,
+            room: mapping.newClass.room ?? null,
+            capacity: mapping.newClass.capacity ?? null,
+            homeroomTeacherId: mapping.newClass.homeroomTeacherId ?? null,
+          },
+        });
+        createdClassIdByName.set(mapping.newClass.name, newClass.id);
+        newClassMap.set(oldClass.id, newClass.id);
+      }
     }
   }
 

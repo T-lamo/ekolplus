@@ -26,6 +26,7 @@ import {
   executeRollover,
   getPromotionData,
   computeStats,
+  validateMappingOwnership,
 } from '@/lib/server/academic-year-rollover';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -96,12 +97,51 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       StudentExceptionEntry
     >;
 
-    // Real promoted/exceptions/unenrolled counts for the audit trail —
-    // read-side, computed against the same pre-rollover enrollment snapshot
-    // executeRollover itself will act on (see computeStats's own comment:
-    // this must mirror executeRollover's class-creation guard exactly).
-    const { students } = await getPromotionData(mySchool.schoolId, activeYear.id);
-    const stats = computeStats(classMapping, studentExceptions, students);
+    // Defense in depth: the draft PATCH route already rejects cross-tenant
+    // destClassId/homeroomTeacherId references at autosave time, but a
+    // draft could theoretically have been written before that validation
+    // existed (or the check could have a gap) — re-check here, before any
+    // writes, since this is the last gate before an irreversible commit.
+    const mappingOwnershipOk = await validateMappingOwnership(
+      prisma,
+      mySchool.schoolId,
+      classMapping,
+      studentExceptions,
+    );
+    if (!mappingOwnershipOk) {
+      return NextResponse.json(
+        {
+          error: 'INVALID_MAPPING',
+          message: 'Le brouillon contient une référence de classe ou de professeur invalide.',
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    // Stale-mapping guard (TOCTOU): Step 2's client-side validation only
+    // sees the classes that existed when the draft was loaded/saved. If a
+    // class was created in the active year afterwards (another admin, or
+    // the same user in another tab), it has no mapping entry — without this
+    // check its students would be silently dropped with no error, while the
+    // UI showed a promoted count that never accounted for them.
+    const currentClasses = await prisma.class.findMany({
+      where: { schoolId: mySchool.schoolId, academicYearId: activeYear.id },
+      select: { id: true },
+    });
+    const hasDestination = (classId: string): boolean => {
+      const mapping = classMapping[classId];
+      return Boolean(mapping?.destClassId) || Boolean(mapping?.isNew && mapping?.newClass);
+    };
+    if (currentClasses.some((c) => !hasDestination(c.id))) {
+      return NextResponse.json(
+        {
+          error: 'MAPPING_STALE',
+          message:
+            "Une classe a été ajoutée depuis la dernière sauvegarde du brouillon. Merci de revenir à l'étape 2 pour la mapper.",
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       const rollover = await executeRollover(tx, mySchool.schoolId, activeYear.id, {
@@ -116,6 +156,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       // outside the tx, so a failed rollover never orphans (or a succeeded
       // one never leaves behind) a stale draft.
       await tx.academicYearRolloverDraft.delete({ where: { schoolId: mySchool.schoolId } });
+
+      // Real promoted/exceptions/unenrolled counts for the audit trail —
+      // computed INSIDE this same transaction (via `tx`, not the top-level
+      // `prisma`) so the audited numbers reflect the exact snapshot that
+      // commits, not a pre-tx read that could theoretically disagree with
+      // it. See computeStats's own comment: this must mirror
+      // executeRollover's class-creation guard exactly.
+      const { students } = await getPromotionData(mySchool.schoolId, activeYear.id, tx);
+      const stats = computeStats(classMapping, studentExceptions, students);
 
       await logAdminAction(tx, {
         actorId: auth.user.sub,

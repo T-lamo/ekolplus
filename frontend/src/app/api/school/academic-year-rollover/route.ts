@@ -24,14 +24,18 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, hasMinRole, resolveActiveAcademicYear } from '@/lib/server/school';
-import { getPromotionData } from '@/lib/server/academic-year-rollover';
+import { getPromotionData, validateMappingOwnership } from '@/lib/server/academic-year-rollover';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import type {
+  ClassMappingEntry,
+  StudentExceptionEntry,
+} from '@/app/(school)/settings/nouvelle-annee/types';
 
 const NewClassSchema = z.object({
-  name: z.string(),
-  level: z.string(),
+  name: z.string().trim().min(1),
+  level: z.string().trim().min(1),
   room: z.string().optional(),
-  capacity: z.number().optional(),
+  capacity: z.number().int().positive().optional(),
   homeroomTeacherId: z.string().optional(),
 });
 
@@ -196,6 +200,29 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'VALIDATION_FAILED', message: 'Invalid request body' },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    // Cross-tenant guard: every destClassId (classMapping/studentExceptions)
+    // and homeroomTeacherId (classMapping[*].newClass) must belong to this
+    // school. Reject before persisting — a malicious OWNER of school A could
+    // otherwise point a destClassId at school B's class and have it
+    // dereferenced (Enrollment creation) at confirm time.
+    const mappingOwnershipOk = await validateMappingOwnership(
+      prisma,
+      mySchool.schoolId,
+      // Zod's inferred type structurally matches ClassMappingEntry/
+      // StudentExceptionEntry but differs under `exactOptionalPropertyTypes`
+      // (zod's `.optional()` types each field as `T | undefined`, not
+      // "absent or T") — same cast confirm/route.ts already uses for the
+      // draft's stored JSON fields.
+      parsed.data.classMapping as unknown as Record<string, ClassMappingEntry> | undefined,
+      parsed.data.studentExceptions as unknown as Record<string, StudentExceptionEntry> | undefined,
+    );
+    if (!mappingOwnershipOk) {
+      return NextResponse.json(
+        { error: 'VALIDATION_FAILED', message: 'Invalid destClassId or homeroomTeacherId' },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }

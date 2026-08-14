@@ -33,11 +33,21 @@ vi.mock('@/lib/server/school-danger-zone', () => ({
   confirmNameMatches: vi.fn(),
   enforceDangerZoneRateLimit: vi.fn(),
 }));
-vi.mock('@/lib/server/academic-year-rollover', () => ({
-  executeRollover: vi.fn(),
-  getPromotionData: vi.fn(),
-  computeStats: vi.fn(),
-}));
+// `validateMappingOwnership` is left as the REAL implementation (via
+// importActual) so the cross-tenant ownership tests below (Fix 1, layer 2 —
+// defense in depth right before the irreversible commit) exercise the
+// actual logic against `prismaMock.class.count` / `prismaMock.teacher.count`.
+vi.mock('@/lib/server/academic-year-rollover', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/server/academic-year-rollover')>(
+    '@/lib/server/academic-year-rollover',
+  );
+  return {
+    ...actual,
+    executeRollover: vi.fn(),
+    getPromotionData: vi.fn(),
+    computeStats: vi.fn(),
+  };
+});
 vi.mock('@/lib/server/admin/audit', () => ({
   logAdminAction: vi.fn().mockResolvedValue(undefined),
 }));
@@ -113,6 +123,13 @@ beforeEach(() => {
   prismaMock.school.findUniqueOrThrow.mockResolvedValue(schoolRow as never);
   prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue(draftRow as never);
   mockResolveActiveAcademicYear.mockResolvedValue(activeYearRow);
+  // Fix 1 (layer 2) — ownership check defaults: draftRow's classMapping
+  // references belong to this school.
+  prismaMock.class.count.mockResolvedValue(1);
+  prismaMock.teacher.count.mockResolvedValue(1);
+  // Fix 6 — stale-mapping check default: the active year's only current
+  // class is the one draftRow.classMapping already maps (old_class_1).
+  prismaMock.class.findMany.mockResolvedValue([{ id: 'old_class_1' }] as never);
   mockGetPromotionData.mockResolvedValue({ classes: [], students: [] });
   mockComputeStats.mockReturnValue({ promoted: 3, exceptions: 1, unenrolled: 0 });
   mockExecuteRollover.mockResolvedValue({ newAcademicYearId: 'ay_new' });
@@ -221,6 +238,11 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
       where: { schoolId: 'school_1' },
     });
 
+    // Fix 9 — audit-log stats are computed INSIDE the transaction, using
+    // `tx` (== prismaMock here, per the $transaction passthrough mock
+    // above), not the top-level `prisma` client.
+    expect(mockGetPromotionData).toHaveBeenCalledWith('school_1', 'ay_old', prismaMock);
+
     expect(mockLogAdminAction).toHaveBeenCalledWith(prismaMock, {
       actorId: 'user_1',
       action: 'school.rollover_year',
@@ -234,6 +256,93 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
         exceptionsCount: 1,
         unenrolledCount: 0,
       },
+    });
+  });
+
+  // Fix 1 (CRITICAL, layer 2) — defense in depth: re-check ownership of the
+  // draft's *stored* classMapping/studentExceptions right before the
+  // irreversible commit, in case a draft was ever written before the PATCH
+  // route's own validation existed (or that check had a gap).
+  describe('cross-tenant ownership validation (defense in depth)', () => {
+    it('destClassId belonging to another school is rejected → 400 INVALID_MAPPING', async () => {
+      prismaMock.class.count.mockResolvedValueOnce(0); // not found under this school
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('INVALID_MAPPING');
+      expect(prismaMock.class.count).toHaveBeenCalledWith({
+        where: { id: { in: ['new_class_1'] }, schoolId: 'school_1' },
+      });
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('homeroomTeacherId belonging to another school is rejected → 400 INVALID_MAPPING', async () => {
+      const draftWithTeacher = {
+        ...draftRow,
+        classMapping: {
+          old_class_1: {
+            isNew: true,
+            newClass: {
+              name: '5ème A',
+              level: '5ème',
+              homeroomTeacherId: 'other_school_teacher',
+            },
+          },
+        },
+      };
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(
+        draftWithTeacher as never,
+      );
+      prismaMock.teacher.count.mockResolvedValueOnce(0);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('INVALID_MAPPING');
+      expect(prismaMock.teacher.count).toHaveBeenCalledWith({
+        where: { id: { in: ['other_school_teacher'] }, schoolId: 'school_1' },
+      });
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+    });
+
+    it('valid same-school destClassId still passes the ownership check', async () => {
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(201);
+      expect(prismaMock.class.count).toHaveBeenCalledWith({
+        where: { id: { in: ['new_class_1'] }, schoolId: 'school_1' },
+      });
+      expect(mockExecuteRollover).toHaveBeenCalled();
+    });
+  });
+
+  // Fix 6 (IMPORTANT) — TOCTOU guard: a class created in the active year
+  // after the draft was last saved has no mapping entry. Without this
+  // check, its students would be silently dropped with no error.
+  describe('stale-mapping validation (Fix 6)', () => {
+    it('a current class with no mapping entry → 400 MAPPING_STALE, no transaction entered', async () => {
+      // old_class_2 exists in the active year but has no entry in
+      // draftRow.classMapping (which only maps old_class_1).
+      prismaMock.class.findMany.mockResolvedValueOnce([
+        { id: 'old_class_1' },
+        { id: 'old_class_2' },
+      ] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('MAPPING_STALE');
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('every current class has a mapping entry → proceeds past the stale check', async () => {
+      prismaMock.class.findMany.mockResolvedValueOnce([{ id: 'old_class_1' }] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(201);
+      expect(mockExecuteRollover).toHaveBeenCalled();
     });
   });
 });

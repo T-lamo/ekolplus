@@ -29,10 +29,18 @@ interface Step2PromotionProps {
  * scope for this task (see task-10 report). */
 function CreateClassModal({
   initial,
+  existingNames,
   onCreate,
   onClose,
 }: {
   initial: NewClassPayload | undefined;
+  /** Every other row's `activeMapping[*].newClass?.name` — used to warn
+   * about a same-name collision client-side (case-sensitive exact match).
+   * Server-side, `executeRollover` now dedupes same-name creates by reusing
+   * the first one (see academic-year-rollover.ts's implementer note), so a
+   * collision no longer crashes the rollover — but a clear message here is
+   * better UX than silently merging behind the user's back. */
+  existingNames: string[];
   onCreate: (newClass: NewClassPayload) => void;
   onClose: () => void;
 }) {
@@ -47,8 +55,14 @@ function CreateClassModal({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim() || !level.trim()) {
+    const trimmedName = name.trim();
+    if (!trimmedName || !level.trim()) {
       setError('Le nom et le niveau sont requis.');
+      return;
+    }
+
+    if (existingNames.includes(trimmedName)) {
+      setError(`Une autre classe utilise déjà le nom « ${trimmedName} ».`);
       return;
     }
 
@@ -62,7 +76,7 @@ function CreateClassModal({
     }
 
     onCreate({
-      name: name.trim(),
+      name: trimmedName,
       level: level.trim(),
       ...(room.trim() ? { room: room.trim() } : {}),
       ...(parsedCapacity !== undefined ? { capacity: parsedCapacity } : {}),
@@ -148,6 +162,15 @@ export function Step2Promotion({
     }
   };
 
+  const handleSaveDraft = async () => {
+    setError('');
+    try {
+      await onSave(activeMapping);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+    }
+  };
+
   const creatingForClass = creatingForClassId
     ? (classes.find((c) => c.id === creatingForClassId) ?? null)
     : null;
@@ -188,6 +211,12 @@ export function Step2Promotion({
                           {mapping.newClass.level}
                         </span>
                       </div>
+                    ) : allClasses.length === 0 ? (
+                      // v1: the new year's classes don't exist yet at Step 2
+                      // (see page.tsx's `allClasses={[]}` comment) — an
+                      // empty dropdown whose only option is "--" would
+                      // falsely imply an existing-class pick is possible.
+                      <p className="text-xs text-muted-foreground">{t.noExistingClasses}</p>
                     ) : (
                       <Select
                         label={t.destClass}
@@ -245,7 +274,7 @@ export function Step2Promotion({
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" onClick={() => onSave(activeMapping)} disabled={isLoading}>
+        <Button variant="outline" onClick={handleSaveDraft} disabled={isLoading}>
           {ACADEMIC_YEAR_ROLLOVER.step1.saveAsDraft}
         </Button>
         <Button onClick={handleProceed} disabled={isLoading}>
@@ -256,6 +285,10 @@ export function Step2Promotion({
       {creatingForClass && (
         <CreateClassModal
           initial={activeMapping[creatingForClass.id]?.newClass}
+          existingNames={Object.entries(activeMapping)
+            .filter(([classId]) => classId !== creatingForClass.id)
+            .map(([, mapping]) => mapping.newClass?.name)
+            .filter((name): name is string => Boolean(name))}
           onClose={() => setCreatingForClassId(null)}
           onCreate={(newClass) => {
             onMappingChange(creatingForClass.id, { isNew: true, newClass });

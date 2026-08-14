@@ -9,7 +9,7 @@ import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool } from '@/lib/server/school';
+import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
 import { getFeeLedgerRows, rowProgress } from '@/lib/server/fees/rows';
 import { studentFeeStatus, type StudentFeeStatus } from '@/lib/server/fees';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -117,11 +117,20 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .slice()
       .sort((a, b) => a.trancheDueDate.getTime() - b.trancheDueDate.getTime())[0];
 
-    const classes = await prisma.class.findMany({
-      where: { feeStructure: { schoolId: mySchool.schoolId } },
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' },
-    });
+    // Every class in the active academic year, not just ones with a
+    // FeeStructure configured — the filter is navigational (pick a class to
+    // narrow the table), so a not-yet-configured class should still be
+    // selectable (it honestly renders "Aucun résultat" below) rather than
+    // silently vanishing from the dropdown. Same scoping as Configuration's
+    // classes list (fees/structures/route.ts).
+    const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
+    const classes = activeYear
+      ? await prisma.class.findMany({
+          where: { schoolId: mySchool.schoolId, academicYearId: activeYear.id },
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        })
+      : [];
 
     return NextResponse.json(
       {

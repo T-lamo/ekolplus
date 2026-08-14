@@ -38,19 +38,26 @@ model User {
   // refused with 403 ACCOUNT_SUSPENDED. Mutated via /api/admin/users/[id]/status
   // (ADMIN can suspend; only SUPERADMIN can restore).
   status            String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  // Stamped on every successful password login (login route step 8). NOT
+  // stamped by the Google OAuth callback (protected file) — OAuth-only
+  // users show "—" in the admin Users table until that gap is closed.
+  lastLoginAt       DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  verificationCodes VerificationCode[]
-  uploads           FileUpload[]
-  notifications     Notification[]
-  notifPrefs        NotificationPreferences?
-  orders            Order[]
-  withdrawals       Withdrawal[]
-  oauthAccounts     OAuthAccount[]
-  adminActions      AdminAction[]
-  appreciations     Appreciation[]
-  attendanceMarks   Attendance[]
+  verificationCodes   VerificationCode[]
+  uploads             FileUpload[]
+  notifications       Notification[]
+  notifPrefs          NotificationPreferences?
+  orders              Order[]
+  withdrawals         Withdrawal[]
+  oauthAccounts       OAuthAccount[]
+  adminActions        AdminAction[]
+  appreciations       Appreciation[]
+  attendanceMarks     Attendance[]
+  recordedFeePayments FeePayment[]
+  openedFeeDisputes   FeeDispute[]
+  loginEvents         LoginEvent[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -152,12 +159,18 @@ model School {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
-  academicYears     AcademicYear[]
-  subjects          Subject[]
-  teachers          Teacher[]
-  classes           Class[]
-  students          Student[]
-  bulletinTemplates BulletinTemplate[]
+  academicYears         AcademicYear[]
+  subjects              Subject[]
+  teachers              Teacher[]
+  classes               Class[]
+  students              Student[]
+  bulletinTemplates     BulletinTemplate[]
+  feeStructures         FeeStructure[]
+  feePayments           FeePayment[]
+  feeAutomationSettings FeeAutomationSettings?
+  subscription          Subscription?
+  billingTransactions   BillingTransaction[]
+  restrictedCoupons     Coupon[]
 
   @@index([organizationId])
 }
@@ -299,6 +312,7 @@ model Class {
 
   classSubjects ClassSubject[]
   enrollments   Enrollment[]
+  feeStructure  FeeStructure?
 
   @@unique([academicYearId, name])
   @@index([schoolId])
@@ -348,12 +362,15 @@ model Student {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  guardians     Guardian[]
-  enrollments   Enrollment[]
-  grades        Grade[]
-  goals         Goal[]
-  appreciations Appreciation[]
-  attendance    Attendance[]
+  guardians       Guardian[]
+  enrollments     Enrollment[]
+  grades          Grade[]
+  goals           Goal[]
+  appreciations   Appreciation[]
+  attendance      Attendance[]
+  feePayments     FeePayment[]
+  feeDisputes     FeeDispute[]
+  feeReminderLogs FeeReminderLog[]
 
   @@index([schoolId])
 }
@@ -546,6 +563,308 @@ model BulletinTemplate {
   updatedAt    DateTime           @updatedAt
 
   @@index([schoolId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Frais & Scolarité — tuition fee tracking. FeeStructure is per-Class (Class
+// is already year-scoped via @@unique([academicYearId, name]), so no
+// separate academicYearId is needed here). FeePayment is a ledger, not a
+// single row per tranche — a tranche can be paid across several partial
+// entries, which is how a fractional "tranches paid" count (e.g. 1.5/3) is
+// possible. Per-tranche/per-student payment status is always computed live
+// from the ledger (same precedent as Term.status), never stored.
+// See .planning/banani/frais-scolarite.md.
+// ───────────────────────────────────────────────────────────────────────
+model FeeStructure {
+  id              String   @id @default(cuid())
+  schoolId        String
+  school          School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId         String   @unique
+  class           Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  totalAmount     Int // annual total, HTG — integer, no decimals (same convention as FCFA elsewhere)
+  registrationFee Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tranches FeeTranche[]
+
+  @@index([schoolId])
+}
+
+model FeeTranche {
+  id                   String       @id @default(cuid())
+  feeStructureId       String
+  feeStructure         FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  order                Int // 1, 2, 3…
+  label                String // "1ère Tranche - Octobre"
+  amount               Int // HTG
+  dueDate              DateTime
+  latePenaltyPercent   Int? // e.g. 5 — null = no penalty configured
+  latePenaltyGraceDays Int? // grace period (days after dueDate) before the penalty applies
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  payments     FeePayment[]
+  disputes     FeeDispute[]
+  reminderLogs FeeReminderLog[]
+
+  @@unique([feeStructureId, order])
+}
+
+enum FeePaymentMethod {
+  ESPECES
+  MONCASH
+  NATCASH
+  CHEQUE
+  VIREMENT
+}
+
+model FeePayment {
+  id            String           @id @default(cuid())
+  schoolId      String
+  school        School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeTrancheId  String
+  feeTranche    FeeTranche       @relation(fields: [feeTrancheId], references: [id], onDelete: Cascade)
+  amount        Int // principal, HTG
+  penaltyAmount Int              @default(0)
+  method        FeePaymentMethod
+  reference     String?
+  notes         String?
+  paidAt        DateTime         @default(now())
+  recordedById  String
+  recordedBy    User             @relation(fields: [recordedById], references: [id])
+  createdAt     DateTime         @default(now())
+
+  @@index([studentId, feeTrancheId])
+  @@index([schoolId])
+}
+
+// "Marquer comme litigieux" — a real open/resolve workflow item, not a bare
+// boolean, since a dispute stays live until someone resolves it.
+model FeeDispute {
+  id           String     @id @default(cuid())
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeTrancheId String
+  feeTranche   FeeTranche @relation(fields: [feeTrancheId], references: [id], onDelete: Cascade)
+  reason       String?
+  openedById   String
+  openedBy     User       @relation(fields: [openedById], references: [id])
+  openedAt     DateTime   @default(now())
+  resolvedAt   DateTime?
+
+  @@index([studentId, feeTrancheId])
+}
+
+// One row per school. `autoRemindersEnabled` is the master switch (Payment
+// Configuration's "Rappels automatiques" toggle); the 4 reminder* booleans
+// are the granular rules (Relances' "Automatisation" card) that only fire
+// once the master switch is on.
+model FeeAutomationSettings {
+  id                      String  @id @default(cuid())
+  schoolId                String  @unique
+  school                  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  lateFeeEnabled          Boolean @default(true)
+  autoRemindersEnabled    Boolean @default(false)
+  reminderBefore5Days     Boolean @default(true)
+  reminderOnDueDate       Boolean @default(true)
+  reminderWeeklyOverdue   Boolean @default(false)
+  reminderCriticalOverdue Boolean @default(true)
+  currency                String  @default("HTG")
+}
+
+enum FeeReminderRule {
+  BEFORE_5_DAYS
+  DUE_DATE
+  WEEKLY_OVERDUE
+  CRITICAL_OVERDUE
+}
+
+// Cron dedup + source of the "Dernier rappel" column. `channel` is always
+// "stub" for now — no SMS/WhatsApp/email provider is wired for this feature
+// yet, so nothing is actually delivered; this only records that the system
+// *would* have reminded this student, for real dedup and a real column
+// value instead of an empty one. Kept as a real column so wiring an actual
+// provider later is additive, not a schema change.
+model FeeReminderLog {
+  id           String          @id @default(cuid())
+  studentId    String
+  student      Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeTrancheId String
+  feeTranche   FeeTranche      @relation(fields: [feeTrancheId], references: [id], onDelete: Cascade)
+  rule         FeeReminderRule
+  channel      String          @default("stub")
+  sentAt       DateTime        @default(now())
+
+  @@index([studentId, feeTrancheId, rule])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// EkolPlus SaaS billing — Epic 2 (.planning/banani/epic-2-admin-foundation.md).
+// V1 is managed manually by the platform SUPERADMIN; Stripe will attach to
+// these same models later (OVERVIEW decision: Stripe-only for SaaS billing).
+// All amounts are integer USD cents — never decimals.
+// ───────────────────────────────────────────────────────────────────────
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  CANCELED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_MONTH
+}
+
+enum BillingMethod {
+  STRIPE
+  MANUAL
+  BANK_TRANSFER
+}
+
+enum BillingStatus {
+  SUCCEEDED
+  PENDING
+  FAILED
+  REFUNDED
+}
+
+// Seeded catalog (STARTER / ESSENTIEL / PREMIUM). A school's monthly amount
+// is computed live: active enrollments × pricePerStudentCents − coupon.
+model SubscriptionPlan {
+  id                   String   @id @default(cuid())
+  key                  String   @unique // STARTER | ESSENTIEL | PREMIUM
+  name                 String
+  pricePerStudentCents Int
+  currency             String   @default("USD")
+  active               Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  subscriptions Subscription[]
+  coupons       Coupon[]
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  schoolId    String             @unique
+  school      School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  planId      String
+  plan        SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+  status      SubscriptionStatus @default(TRIAL)
+  startedAt   DateTime           @default(now())
+  renewsAt    DateTime
+  trialEndsAt DateTime?
+  couponId    String?
+  coupon      Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  transactions  BillingTransaction[]
+  statusChanges SubscriptionStatusChange[]
+
+  @@index([status])
+  @@index([renewsAt])
+}
+
+// Status-transition log — powers the churn/retention KPIs (Epic 2 decision
+// Q2: real event tracking). Written in the same tx as every status change.
+model SubscriptionStatusChange {
+  id             String              @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription        @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  fromStatus     SubscriptionStatus?
+  toStatus       SubscriptionStatus
+  createdAt      DateTime            @default(now())
+
+  @@index([createdAt])
+  @@index([subscriptionId, createdAt])
+}
+
+model Coupon {
+  id             String            @id @default(cuid())
+  code           String            @unique
+  type           CouponType
+  // PERCENT: percentage points (1-100). FIXED: USD cents. FREE_MONTH: free months.
+  value          Int
+  durationMonths Int? // null = permanent
+  planId         String? // null = applies to all plans
+  plan           SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  maxUses        Int? // null = unlimited
+  usedCount      Int               @default(0)
+  expiresAt      DateTime?
+  schoolId       String? // optional restriction to one school
+  school         School?           @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  description    String?
+  active         Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([expiresAt])
+}
+
+model BillingTransaction {
+  id             String              @id @default(cuid())
+  reference      String              @unique // TXN-YYYYMMDD-NNNN
+  schoolId       String
+  school         School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  amountCents    Int // negative = refund
+  method         BillingMethod
+  status         BillingStatus
+  paidAt         DateTime            @default(now())
+  periodStart    DateTime // first day of the covered month
+  // A REFUNDED row points at the transaction it reverses (1:1).
+  refundOfId     String?             @unique
+  refundOf       BillingTransaction? @relation("Refund", fields: [refundOfId], references: [id], onDelete: SetNull)
+  refund         BillingTransaction? @relation("Refund")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([schoolId, paidAt])
+  @@index([status, paidAt])
+  @@index([paidAt])
+}
+
+// Login analytics — powers the admin activity heatmap and retention KPIs
+// (Epic 2 decision Q2). Written by POST /api/auth/login only in V1 (the
+// OAuth callback is a protected file — Google sign-ins don't log here yet).
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+// Platform-wide settings singleton (id = "singleton") — System Settings
+// screen. Currency stays USD in V1 (screen shows it read-only).
+model PlatformSettings {
+  id                    String   @id @default("singleton")
+  platformName          String   @default("Schoolgesti")
+  domain                String?
+  supportEmail          String?
+  timezone              String   @default("America/Port-au-Prince")
+  locale                String   @default("fr")
+  logoUrl               String?
+  trialDays             Int      @default(14)
+  notifyNewSubscription Boolean  @default(true)
+  notifyFailedPayment   Boolean  @default(true)
+  weeklyReport          Boolean  @default(false)
+  expiryReminders       Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
 }
 
 // ───────────────────────────────────────────────────────────────────────

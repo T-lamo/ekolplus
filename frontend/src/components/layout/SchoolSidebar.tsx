@@ -17,6 +17,7 @@ import {
   Star,
   UserCheck,
   Users,
+  Wallet,
 } from 'lucide-react';
 import { Sidebar } from './sidebar/Sidebar';
 import type { NavSection } from './sidebar/types';
@@ -39,6 +40,10 @@ export const SCHOOL_SECTIONS: NavSection[] = [
       { label: 'Bulletins', href: '/bulletins', icon: FileText },
       { label: 'Appréciations', href: '/pedagogie/appreciations', icon: Star },
     ],
+  },
+  {
+    label: 'Scolarité',
+    items: [{ label: 'Frais & Scolarité', href: '/scolarite', icon: Wallet }],
   },
   {
     label: 'Configuration',

@@ -1,17 +1,13 @@
 'use client';
 
+// "Créer une école" — was a dedicated page (schools/new), now a Modal
+// opened from /admin and /admin/schools per the user's request (no more
+// full-page navigation for this flow). Same fields as the original page
+// plus a real logo upload (the page's dropzone was a static placeholder).
+// See .planning/banani/create-school.md for the original screen spec.
+
 import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  Check,
-  ImagePlus,
-  Mail,
-  MailCheck,
-  School,
-  UserCheck,
-  Users,
-} from 'lucide-react';
+import { Check, Mail, MailCheck, School, UserCheck, Users } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { ADMIN_CREATE_SCHOOL as T } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
@@ -19,6 +15,8 @@ import { Field } from '@/components/ui/Field';
 import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 interface CreateSchoolResponse {
   organization: { id: string; slug: string; name: string };
@@ -28,6 +26,7 @@ interface CreateSchoolResponse {
 }
 
 const initialForm = {
+  logoUrl: null as string | null,
   schoolName: '',
   shortName: '',
   country: '',
@@ -44,7 +43,13 @@ const initialForm = {
   ownerPhone: '',
 };
 
-export default function CreateSchoolPage() {
+export function CreateSchoolModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +90,7 @@ export default function CreateSchoolPage() {
           address: form.address || undefined,
           phone: form.phone || undefined,
           estimatedStudents: form.estimatedStudents ? Number(form.estimatedStudents) : undefined,
+          logoUrl: form.logoUrl ?? undefined,
           ownerFirstName: form.ownerFirstName,
           ownerLastName: form.ownerLastName,
           ownerEmail: form.ownerEmail,
@@ -102,16 +108,15 @@ export default function CreateSchoolPage() {
 
   if (result) {
     return (
-      <div className="mx-auto flex max-w-2xl flex-col gap-5">
-        <Card className="items-center gap-3 px-6 py-8 text-center">
+      <Modal title={T.successTitle} onClose={onCreated} wide>
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success">
             <Check size={22} className="text-success-foreground" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">{T.successTitle}</h1>
           <p className="text-sm text-muted-foreground">
             {result.verificationEmailSent ? T.newAccountCreated : T.existingAccountLinked}
           </p>
-        </Card>
+        </div>
 
         {result.verificationEmailSent && (
           <Card className="flex-row items-start gap-3 bg-[#0f0a1e] px-5 py-5">
@@ -125,28 +130,16 @@ export default function CreateSchoolPage() {
           </Card>
         )}
 
-        <Link href="/admin" className="text-center text-sm font-medium text-primary">
-          {T.backToDashboard}
-        </Link>
-      </div>
+        <Button className="mt-4" onClick={onCreated}>
+          {T.close}
+        </Button>
+      </Modal>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{T.title}</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">{T.subtitle}</p>
-        </div>
-        <Link
-          href="/admin"
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-md px-3.5 text-xs font-medium text-muted-foreground"
-        >
-          <ArrowLeft size={13} />
-          {T.backToSchools}
-        </Link>
-      </div>
+    <Modal title={T.title} onClose={onClose} wide>
+      <p className="-mt-1 mb-4 text-xs text-muted-foreground">{T.subtitle}</p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card>
@@ -160,33 +153,30 @@ export default function CreateSchoolPage() {
             </div>
           </div>
           <div className="flex flex-col gap-4 p-5">
-            <div className="flex flex-col items-start gap-4 sm:flex-row">
-              <div className="flex shrink-0 flex-col gap-1.5">
-                <span className="text-xs font-semibold text-foreground">Logo</span>
-                {/* Not wired this pass — see create-school.md */}
-                <div className="flex h-20 w-25 flex-col items-center justify-center gap-1 rounded-lg border-[1.5px] border-dashed border-border">
-                  <ImagePlus size={16} className="text-primary" />
-                  <span className="text-[10px] text-muted-foreground">PNG, JPG</span>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-3.5">
+            <ImageUploader
+              label={T.schoolSection.logo}
+              hint={T.schoolSection.logoHint}
+              value={form.logoUrl}
+              onChange={(url) => set('logoUrl', url)}
+            />
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <Field
+                label={T.schoolSection.schoolName}
+                required
+                value={form.schoolName}
+                onChange={(e) => set('schoolName', e.target.value)}
+              />
+              <div className="flex flex-col gap-1">
                 <Field
-                  label={T.schoolSection.schoolName}
-                  required
-                  value={form.schoolName}
-                  onChange={(e) => set('schoolName', e.target.value)}
+                  label={T.schoolSection.shortName}
+                  value={form.shortName}
+                  maxLength={10}
+                  onChange={(e) => set('shortName', e.target.value)}
                 />
-                <div className="flex flex-col gap-1">
-                  <Field
-                    label={T.schoolSection.shortName}
-                    value={form.shortName}
-                    maxLength={10}
-                    onChange={(e) => set('shortName', e.target.value)}
-                  />
-                  <span className="text-[10px] text-muted-foreground">
-                    {T.schoolSection.shortNameHint}
-                  </span>
-                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  {T.schoolSection.shortNameHint}
+                </span>
               </div>
             </div>
 
@@ -319,10 +309,15 @@ export default function CreateSchoolPage() {
           </p>
         )}
 
-        <Button type="submit" loading={submitting}>
-          {submitting ? T.submitting : T.submit}
-        </Button>
+        <div className="flex gap-2.5">
+          <Button type="button" variant="outline" onClick={onClose}>
+            {T.cancel}
+          </Button>
+          <Button type="submit" loading={submitting}>
+            {submitting ? T.submitting : T.submit}
+          </Button>
+        </div>
       </form>
-    </div>
+    </Modal>
   );
 }

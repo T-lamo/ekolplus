@@ -12,7 +12,6 @@ import {
   School,
   Settings,
   Tag,
-  UserPlus,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -32,7 +31,6 @@ export const ADMIN_SECTIONS: NavSection[] = [
     label: 'Clients',
     items: [
       { label: 'Écoles', href: '/admin/schools', icon: School },
-      { label: 'Créer une école', href: '/admin/schools/new', icon: UserPlus },
       { label: 'Utilisateurs', href: '/admin/users', icon: Users },
     ],
   },

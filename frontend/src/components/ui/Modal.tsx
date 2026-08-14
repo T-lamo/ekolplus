@@ -6,12 +6,14 @@ import { X } from 'lucide-react';
 interface ModalProps {
   title: string;
   onClose: () => void;
+  /** Two-column forms (school create/edit) get the wide variant. */
+  wide?: boolean;
   children: ReactNode;
 }
 
 /** Centered overlay modal — first real consumer is Epic 4's form modals
  * (Subject/Class/Assignment). Escape + backdrop close; no animation library. */
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, onClose, wide = false, children }: ModalProps) {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -31,7 +33,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-[480px] flex-col overflow-hidden rounded-xl bg-card"
+        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-card ${wide ? 'max-w-[760px]' : 'max-w-[520px]'}`}
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <h2 className="text-[13px] font-bold text-foreground">{title}</h2>

@@ -44,6 +44,7 @@ const Body = z.object({
   address: z.string().trim().max(200).optional(),
   phone: zPhone.optional(),
   estimatedStudents: z.number().int().positive().max(1_000_000).optional(),
+  logoUrl: z.string().trim().url().max(500).optional(),
   ownerFirstName: z.string().trim().min(1).max(60),
   ownerLastName: z.string().trim().min(1).max(60),
   ownerEmail: zEmail,
@@ -139,6 +140,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           address: data.address ?? null,
           phone: data.phone ?? null,
           estimatedStudents: data.estimatedStudents ?? null,
+          logoUrl: data.logoUrl ?? null,
         },
       });
 

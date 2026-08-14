@@ -31,6 +31,7 @@ const PatchBody = z.object({
   phone: zPhone.nullable().optional(),
   officialEmail: zEmail.nullable().optional(),
   officialCode: z.string().trim().max(40).nullable().optional(),
+  logoUrl: z.string().trim().url().max(500).nullable().optional(),
   // Suspendre / Réactiver — flips the school's Subscription, which is what
   // "suspended" means for a SaaS tenant (no separate School.status field).
   subscriptionStatus: z.enum(['SUSPENDED', 'ACTIVE']).optional(),
@@ -66,6 +67,7 @@ export async function GET(
         estimatedStudents: true,
         officialCode: true,
         officialEmail: true,
+        logoUrl: true,
       },
     });
     if (!school) {

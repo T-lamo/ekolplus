@@ -8,7 +8,6 @@
 // honnêtes (impersonation + flow email non câblés — décision OVERVIEW).
 
 import { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CreditCard,
@@ -39,12 +38,14 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { Pager } from '@/components/ui/Pager';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 import { PhoneInput } from '@/components/ui/PhoneInput';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Select, SelectItem as FormSelectItem } from '@/components/ui/Select';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { SkeletonFilters, SkeletonStatCards, SkeletonTable } from '@/components/ui/Skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { CreateSchoolModal } from '@/components/admin/CreateSchoolModal';
 import { StatCard } from '@/components/admin/StatCard';
 import { PlanBadge, SubscriptionStatusBadge } from '@/components/admin/badges';
 
@@ -89,6 +90,7 @@ const TD_CLASS = 'px-3 py-2.5 text-[13px] whitespace-nowrap';
 
 type ModalState =
   | { kind: 'none' }
+  | { kind: 'create' }
   | { kind: 'profile'; school: AdminSchoolRow }
   | { kind: 'edit'; school: AdminSchoolRow }
   | { kind: 'suspend'; school: AdminSchoolRow }
@@ -245,12 +247,10 @@ function SchoolsPage() {
               <Download size={14} />
               {T.exportCsv}
             </Button>
-            <Link href="/admin/schools/new" className="sm:w-auto">
-              <Button className="sm:w-auto">
-                <Plus size={14} />
-                {T.createSchool}
-              </Button>
-            </Link>
+            <Button className="sm:w-auto" onClick={() => setModal({ kind: 'create' })}>
+              <Plus size={14} />
+              {T.createSchool}
+            </Button>
           </>
         }
       />
@@ -437,6 +437,15 @@ function SchoolsPage() {
         </Card>
       </div>
 
+      {modal.kind === 'create' && (
+        <CreateSchoolModal
+          onClose={() => setModal({ kind: 'none' })}
+          onCreated={() => {
+            setModal({ kind: 'none' });
+            void load();
+          }}
+        />
+      )}
       {modal.kind === 'profile' && (
         <ProfileModal school={modal.school} onClose={() => setModal({ kind: 'none' })} />
       )}
@@ -529,7 +538,7 @@ function ProfileModal({ school, onClose }: { school: AdminSchoolRow; onClose: ()
 }
 
 // Full editable profile — same surface as the creation form's school
-// section (schools/new) plus the admin-only officialCode/officialEmail.
+// section (CreateSchoolModal) plus the admin-only officialCode/officialEmail.
 interface SchoolDetail {
   id: string;
   name: string;
@@ -543,6 +552,7 @@ interface SchoolDetail {
   estimatedStudents: number | null;
   officialCode: string | null;
   officialEmail: string | null;
+  logoUrl: string | null;
 }
 
 function EditModal({
@@ -556,6 +566,7 @@ function EditModal({
 }) {
   const { toast } = useToast();
   const [form, setForm] = useState<{
+    logoUrl: string | null;
     name: string;
     shortName: string;
     country: string;
@@ -577,6 +588,7 @@ function EditModal({
       .then(({ school: d }) => {
         if (cancelled) return;
         setForm({
+          logoUrl: d.logoUrl,
           name: d.name,
           shortName: d.shortName ?? '',
           country: d.country,
@@ -630,6 +642,7 @@ function EditModal({
           estimatedStudents,
           officialCode: form.officialCode.trim() || null,
           officialEmail: form.officialEmail.trim() || null,
+          logoUrl: form.logoUrl,
         },
       });
       onSaved();
@@ -647,7 +660,7 @@ function EditModal({
       : [...TC.schoolTypes];
 
   return (
-    <Modal title={T.editModal.title} onClose={onClose}>
+    <Modal title={T.editModal.title} onClose={onClose} wide>
       {loadFailed ? (
         <div className="flex flex-col items-center gap-3 py-6">
           <p className="text-sm text-muted-foreground">{T.loadError}</p>
@@ -663,6 +676,12 @@ function EditModal({
         </div>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+          <ImageUploader
+            label={TC.schoolSection.logo}
+            hint={TC.schoolSection.logoHint}
+            value={form.logoUrl}
+            onChange={(url) => patch({ logoUrl: url })}
+          />
           <Field
             label={T.editModal.name}
             name="name"

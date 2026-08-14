@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button';
 type Step = 'code' | 'password' | 'done';
 
 // Consumes an EMAIL_VERIFY code (from self-serve signup or a school owner
-// invited via /admin/schools/new — both use the same email.verification_code
+// invited via the admin's "Créer une école" flow — both use the same email.verification_code
 // outbox event). Verifying logs the user in (POST /verify-email sets the
 // auth cookies). Accounts created without a password (invited owners) then
 // get an inline "set your password" step via the existing /set-password

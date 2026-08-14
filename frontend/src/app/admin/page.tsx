@@ -25,6 +25,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Skeleton, SkeletonStatCards, SkeletonTable } from '@/components/ui/Skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { CreateSchoolModal } from '@/components/admin/CreateSchoolModal';
 import { StatCard } from '@/components/admin/StatCard';
 import { BarChart } from '@/components/admin/charts/BarChart';
 import {
@@ -75,6 +76,7 @@ export default function AdminDashboardPage() {
     '/api/admin/stats/overview',
   );
   const [schoolSearch, setSchoolSearch] = useState('');
+  const [showCreateSchool, setShowCreateSchool] = useState(false);
 
   function onSchoolSearch(e: FormEvent) {
     e.preventDefault();
@@ -121,12 +123,10 @@ export default function AdminDashboardPage() {
               <Download size={14} />
               {T.exportReport}
             </Button>
-            <Link href="/admin/schools/new" className="sm:w-auto">
-              <Button className="sm:w-auto">
-                <Plus size={14} />
-                {T.createSchool}
-              </Button>
-            </Link>
+            <Button className="sm:w-auto" onClick={() => setShowCreateSchool(true)}>
+              <Plus size={14} />
+              {T.createSchool}
+            </Button>
           </>
         }
       />
@@ -274,12 +274,10 @@ export default function AdminDashboardPage() {
                     className="h-9 w-44 text-xs"
                   />
                 </form>
-                <Link href="/admin/schools/new">
-                  <Button size="sm" className="w-auto">
-                    <Plus size={13} />
-                    {T.schools.newSchool}
-                  </Button>
-                </Link>
+                <Button size="sm" className="w-auto" onClick={() => setShowCreateSchool(true)}>
+                  <Plus size={13} />
+                  {T.schools.newSchool}
+                </Button>
               </div>
             }
           >
@@ -454,6 +452,16 @@ export default function AdminDashboardPage() {
             </SectionCard>
           </div>
         </div>
+      )}
+
+      {showCreateSchool && (
+        <CreateSchoolModal
+          onClose={() => setShowCreateSchool(false)}
+          onCreated={() => {
+            setShowCreateSchool(false);
+            void refresh();
+          }}
+        />
       )}
     </div>
   );

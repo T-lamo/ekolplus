@@ -93,15 +93,17 @@ export const AUTH_RESET_PASSWORD = {
   },
 } as const;
 
-// French copy for the "Créer une école" admin screen — see
-// .planning/banani/create-school.md.
+// French copy for the "Créer une école" admin modal — see
+// .planning/banani/create-school.md. Was a dedicated page, now a Modal
+// opened from /admin and /admin/schools (no more navigation away).
 export const ADMIN_CREATE_SCHOOL = {
-  backToSchools: 'Retour aux écoles',
   title: 'Créer une nouvelle école',
   subtitle: "Renseignez les informations de l'établissement",
   schoolSection: {
     title: "Informations de l'établissement",
     subtitle: "Nom, localisation et type d'école",
+    logo: "Logo de l'école",
+    logoHint: 'PNG, JPG ou WebP — affiché dans les entêtes et bulletins',
     schoolName: "Nom de l'école",
     shortName: 'Nom abrégé / Sigle',
     shortNameHint: 'Utilisé pour les avatars et badges de l’école',
@@ -133,6 +135,7 @@ export const ADMIN_CREATE_SCHOOL = {
     'Université',
     'Autre',
   ],
+  cancel: 'Annuler',
   submit: 'Créer l’école',
   submitting: 'Création…',
   requiredFieldsError: 'Merci de remplir tous les champs obligatoires.',
@@ -142,7 +145,7 @@ export const ADMIN_CREATE_SCHOOL = {
   verificationEmailSentLabel: 'Email de vérification envoyé',
   verificationEmailSentNote:
     'Le propriétaire doit saisir le code reçu par email sur la page de vérification pour activer son compte et définir son propre mot de passe.',
-  backToDashboard: 'Retour au tableau de bord',
+  close: 'Fermer',
 } as const;
 
 // Statut catalog for the Établissement settings tab's "Type d'établissement"
@@ -170,7 +173,7 @@ export const TERM_TYPES = [
 export const ORDINAL_LABELS = ['1er', '2e', '3e', '4e', '5e', '6e', '7e', '8e'] as const;
 
 // French copy for the /verify-email screen — consumes an EMAIL_VERIFY code
-// (signup, or a school owner invited via /admin/schools/new), logs the user
+// (signup, or a school owner invited via the admin's "Créer une école" flow), logs the user
 // in, then offers a one-time "set your password" step for accounts created
 // without one (owners invited by an admin).
 export const AUTH_VERIFY_EMAIL = {

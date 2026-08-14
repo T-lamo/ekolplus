@@ -409,6 +409,161 @@ export const FEES = {
   stub: 'Cette fonctionnalité arrive bientôt.',
 } as const;
 
+// ─── School Dashboard (Epic 3 — .planning/banani/school-dashboard.md) ───
+export const DASHBOARD = {
+  title: 'Tableau de bord',
+  subtitle: (name: string) => `Bienvenue, ${name} — voici l'aperçu de l'établissement`,
+  export: 'Export',
+  kpis: {
+    students: 'Élèves inscrits',
+    teachers: 'Enseignants',
+    classes: 'Classes actives',
+    subjects: 'Matières',
+    attendanceRate: 'Taux de présence',
+    attendanceRateSub: 'Cette semaine',
+    thisMonth: 'ce mois',
+  },
+  averagesTrend: {
+    title: 'Évolution des moyennes',
+    subtitle: (yearLabel: string) => `Année scolaire ${yearLabel}`,
+    seriesLabel: 'Moyenne générale',
+  },
+  levelDistribution: {
+    title: 'Répartition par niveau',
+    subtitle: 'Élèves inscrits',
+    centerLabel: 'élèves',
+  },
+  fees: {
+    title: 'Suivi des frais de scolarité',
+    seeDetails: 'Voir les détails →',
+    collected: 'Total Recouvré',
+    collectedLabel: 'collecté',
+    paid: 'Payé',
+    remaining: 'Restant',
+    overdueStudents: 'Élèves en Retard',
+    overdueLabel: 'en retard',
+    upToDate: 'À jour',
+    studentsConcerned: (n: number) => `${n} élève${n > 1 ? 's' : ''} concerné${n > 1 ? 's' : ''}`,
+    nextDue: 'Prochaine Échéance',
+    daysUntil: (n: number) => (n <= 0 ? "Aujourd'hui" : n === 1 ? 'Demain' : `Dans ${n} jours`),
+    trancheProgress: 'Avancement des tranches',
+    noFeeData: 'Aucune structure de frais configurée pour le moment.',
+  },
+  attendanceByClass: {
+    title: 'Taux de présence',
+    subtitle: 'Par classe — ce mois',
+    details: 'Détails →',
+  },
+  subjectPerformance: {
+    title: 'Performance par matière',
+    subtitle: 'Moyenne générale toutes classes',
+  },
+  todos: {
+    title: 'À traiter',
+    evaluationsToGrade: 'Évaluations à corriger',
+    evaluationsOverdueLabel: (n: number) => `${n} en retard`,
+    unjustifiedAbsences: 'Absences non justifiées',
+    unjustifiedAbsencesSub: 'Cette semaine',
+    teachersWithoutClass: 'Enseignants sans classe assignée',
+    teachersWithoutClassSub: 'À affecter',
+    overduePayments: 'Paiements en retard',
+    overduePaymentsSub: 'Relances à envoyer',
+  },
+  activity: {
+    title: 'Activité récente',
+    seeAll: 'Tout voir',
+    empty: 'Aucune activité récente.',
+    gradeUpdated: (subject: string, className: string) =>
+      `Notes de ${subject} (${className}) mises à jour`,
+    absenceMarked: (name: string, className: string) => `${name} marqué(e) absent — ${className}`,
+    paymentRecorded: (name: string, className: string) =>
+      `Paiement enregistré — ${name} (${className})`,
+    studentEnrolled: (name: string, className: string) => `${name} ajouté(e) en ${className}`,
+  },
+  emptyYear:
+    "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",
+} as const;
+
+// ─── Academic Year Rollover (Passage à l'année scolaire suivante) ───
+export const ACADEMIC_YEAR_ROLLOVER = {
+  title: "Passage à l'année scolaire suivante",
+  subtitle: (oldYear: string, newYear: string) => `Migration de ${oldYear} vers ${newYear}`,
+  warningBanner: 'Cette action ne peut pas être annulée',
+  irreversible: 'Impossible à annuler',
+
+  step1: {
+    title: 'Nouvelle année',
+    yearLabel: 'Année scolaire',
+    startDate: 'Date de début',
+    endDate: 'Date de fin',
+    saveAsDraft: 'Sauvegarder le brouillon',
+    nextStep: 'Étape suivante',
+    validation: {
+      yearRequired: "L'année scolaire est requise",
+      startDateRequired: 'La date de début est requise',
+      endDateRequired: 'La date de fin est requise',
+      endDateAfterStart: 'La date de fin doit être après la date de début',
+    },
+  },
+
+  step2: {
+    title: 'Promotion des élèves',
+    currentClass: 'Classe actuelle',
+    studentCount: 'Élèves',
+    currentLevel: 'Niveau actuel',
+    destClass: 'Classe de destination',
+    createNew: 'Créer nouvelle',
+    help: 'Sélectionnez la classe de destination pour chaque classe actuelle. Vous pouvez créer une nouvelle classe ou utiliser une classe existante.',
+    step3Preview: "Aperçu — Étape 3 (Disponible après validation de l'étape 2)",
+    previousStep: 'Étape précédente',
+    nextStep: 'Étape suivante — Récapitulatif',
+  },
+
+  step3: {
+    title: 'Récapitulatif',
+    promoted: 'Élèves promus',
+    exceptions: 'Exceptions',
+    unenrolled: 'Non réinscrits',
+    students: 'Élèves',
+    allStudents: (count: number) => `Voir tous les élèves (${count}) →`,
+    confirmTitle: "Confirmer le passage à l'année suivante",
+    confirmText: (oldYear: string, newYear: string, promotedCount: number) =>
+      `La confirmation créera l'année scolaire ${newYear}, promouvra ${promotedCount} élèves et archivera l'année ${oldYear}. Cette action ne peut pas être annulée.`,
+    typeToConfirm: 'Tapez le nom de votre école pour confirmer',
+    confirmButton: 'Confirmer',
+    previousStep: 'Étape précédente',
+  },
+
+  createNewClass: {
+    title: 'Créer une nouvelle classe',
+    name: 'Nom de la classe',
+    level: 'Niveau',
+    room: 'Salle (optionnel)',
+    capacity: 'Capacité (optionnel)',
+    homeroomTeacher: 'Professeur principal (optionnel)',
+    create: 'Créer',
+    cancel: 'Annuler',
+  },
+
+  studentStatus: {
+    promoted: 'Promu',
+    exception: 'Exception',
+    unenrolled: 'Non réinscrit',
+  },
+
+  actions: {
+    editDestination: 'Modifier destination',
+    dontEnroll: 'Ne pas réinscrire',
+    undo: 'Annuler',
+  },
+
+  emptyState: "Aucune classe dans l'année en cours — configure d'abord des classes.",
+  backToSettings: 'Retour aux paramètres',
+
+  success: (newYear: string) => `Année scolaire ${newYear} créée avec succès`,
+  error: 'Une erreur est survenue',
+} as const;
+
 // ─── SaaS admin (Epic 2 — .planning/banani/epic-2-admin-foundation.md) ───
 
 // Shared status/plan vocabulary — one label per status app-wide (the Banani

@@ -34,9 +34,21 @@ const USER_SELECT = {
   status: true,
   emailVerifiedAt: true,
   createdAt: true,
+  // Epic 2 (admin-users screen): "Dernière connexion" column + the user's
+  // school (first membership) for the École column/filter. Still no
+  // passwordHash / withdrawalPinHash / tokenVersion — whitelist unchanged.
+  lastLoginAt: true,
+  memberships: {
+    take: 1,
+    select: {
+      role: true,
+      organization: { select: { id: true, school: { select: { id: true, name: true } } } },
+    },
+  },
 } as const satisfies Prisma.UserSelect;
 
 const Q_MAX = 200;
+const ACTIVE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -52,9 +64,26 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const q = (url.searchParams.get('q') ?? '').slice(0, Q_MAX).trim();
     const status = url.searchParams.get('status');
     const role = url.searchParams.get('role');
+    // Epic 2 filters: ?org=<organizationId> (École select) and
+    // ?orgRole=<OWNER|ADMIN|MEMBER> (Rôle select — org role, the app-wide
+    // ?role filter stays for back-office use).
+    const org = url.searchParams.get('org');
+    const orgRole = url.searchParams.get('orgRole');
     const cursor = decodeCursor(url.searchParams.get('cursor'));
 
-    const where: Prisma.UserWhereInput = {
+    const membershipFilter =
+      org || orgRole
+        ? {
+            memberships: {
+              some: {
+                ...(org ? { organizationId: org } : {}),
+                ...(orgRole ? { role: orgRole } : {}),
+              },
+            },
+          }
+        : {};
+
+    const filterWhere: Prisma.UserWhereInput = {
       ...(q
         ? {
             OR: [
@@ -65,19 +94,68 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         : {}),
       ...(status ? { status } : {}),
       ...(role ? { role } : {}),
-      ...cursorWhere(cursor),
+      ...membershipFilter,
     };
+    const where: Prisma.UserWhereInput = { ...filterWhere, ...cursorWhere(cursor) };
 
-    const rows = await prisma.user.findMany({
-      where,
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      take: limit + 1,
-      select: USER_SELECT,
-    });
+    const now = Date.now();
+    const monthStart = new Date(new Date(now).getFullYear(), new Date(now).getMonth(), 1);
+
+    const [rows, total, totalUsers, usersThisMonth, activeUsers, suspendedUsers, schoolRows] =
+      await Promise.all([
+        prisma.user.findMany({
+          where,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          take: limit + 1,
+          select: USER_SELECT,
+        }),
+        prisma.user.count({ where: filterWhere }),
+        prisma.user.count(),
+        prisma.user.count({ where: { createdAt: { gte: monthStart } } }),
+        prisma.user.count({ where: { lastLoginAt: { gte: new Date(now - ACTIVE_WINDOW_MS) } } }),
+        prisma.user.count({ where: { status: 'SUSPENDED' } }),
+        prisma.school.findMany({
+          select: { name: true, organizationId: true },
+          orderBy: { name: 'asc' },
+        }),
+      ]);
+
+    // "Admins d'école" KPI: distinct users holding OWNER/ADMIN in any org.
+    const schoolAdminRows =
+      (await prisma.organizationMember.findMany({
+        where: { role: { in: ['OWNER', 'ADMIN'] } },
+        select: { userId: true },
+        distinct: ['userId'],
+      })) ?? [];
 
     const page = buildPage(rows, limit);
-    return NextResponse.json(page, {
-      headers: { 'x-request-id': ctx.requestId },
-    });
+    const items = page.items.map(({ memberships, ...rest }) => ({
+      ...rest,
+      orgRole: memberships?.[0]?.role ?? null,
+      school: memberships?.[0]?.organization.school ?? null,
+    }));
+
+    return NextResponse.json(
+      {
+        items,
+        nextCursor: page.nextCursor,
+        total: total ?? 0,
+        stats: {
+          totalUsers: totalUsers ?? 0,
+          usersDeltaMonth: usersThisMonth ?? 0,
+          activeUsers: activeUsers ?? 0,
+          activeUsersPct:
+            totalUsers && totalUsers > 0
+              ? Math.round(((activeUsers ?? 0) / totalUsers) * 1000) / 10
+              : 0,
+          schoolAdmins: schoolAdminRows.length,
+          suspendedUsers: suspendedUsers ?? 0,
+        },
+        schools: (schoolRows ?? []).map((s) => ({ orgId: s.organizationId, name: s.name })),
+      },
+      {
+        headers: { 'x-request-id': ctx.requestId },
+      },
+    );
   });
 }

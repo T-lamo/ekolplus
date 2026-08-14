@@ -162,7 +162,12 @@ Exports bruts : `fetches/epic2/` (gitignoré). Ce lot **remplace** l'ancien écr
   - `GET /api/admin/schools` (pagination par page + total — précédent fees, le Pager exige un total ; filtres serveur q/plan/statut/pays ; 4 KPI + liste pays dans la même réponse) ; `PATCH/DELETE /api/admin/schools/[id]` (édition + suspendre/réactiver l'abonnement avec `SubscriptionStatusChange` loggé dans la même tx ; suppression type-to-confirm SUPERADMIN only, `logAdminAction` avant le delete, cascade Organization — mécanique reprise de la zone dangereuse école).
   - Actions par ligne : Profil (modal), Modifier (modal), Gérer l'abonnement (→ /admin/billing/subscriptions?school=), Suspendre/Réactiver (modal, seulement si abonnement), Supprimer (SUPERADMIN, modal type-to-confirm) ; « Accéder à l'école » + « Réinitialiser mdp » = stubs honnêtes (impersonation/flow email non câblés).
   - Vérifié : typecheck/lint verts, Puppeteer 375/768/1280 zéro débordement, données réelles rendues. Mutations exercées en E2E final (aucun abonnement n'existe encore à ce stade).
-- [ ] `admin-users` (`Znvh5ZdXvT5j`) → `/admin/users` — plan : `admin-users.md`
+- [x] `admin-users` (`Znvh5ZdXvT5j`) → `/admin/users` — plan : `admin-users.md` — DONE 2026-08-14
+  - `GET /api/admin/users` étendu de façon additive (contrat items+nextCursor conservé, test d'égalité exacte assoupli en toMatchObject) : `lastLoginAt` + école (1re membership) dans le select, filtres `?org=`/`?orgRole=`, `total` + `stats` (totaux, actifs 30j via lastLoginAt, admins d'école distincts, suspendus) + liste écoles pour le filtre — un appel hydrate la page. 26/26 tests route verts.
+  - Pagination : cursor conservé côté API, piloté par le Pager partagé via une pile de curseurs côté client (le Pager ne bouge que de ±1).
+  - Rôles métier du mock (Directeur/Enseignant/Comptable) inexistants dans le modèle → rôle org réel affiché (Propriétaire/Admin/Membre) + badge Superadmin/Staff pour le staff plateforme ; « Ajouter un utilisateur » retiré (pas d'endpoint admin-create, les comptes naissent via création d'école/signup).
+  - Actions réelles : Voir le profil (modal), Suspendre (PATCH status existant), Réactiver (SUPERADMIN only, gate D-ADMIN-02 respecté côté UI aussi) ; Modifier / Réinitialiser mdp / Impersonation / Supprimer = stubs honnêtes.
+  - Vérifié : lastLoginAt réel rendu (« Aujourd'hui, 13:11 »), 375/768/1280 sans débordement.
 - [ ] `admin-statistics` (`nSYPhOOZgccA`) → `/admin/statistics` — plan : `admin-statistics.md`
 - [ ] `admin-subscriptions` (`M0FRcZpAIEZQ`) → `/admin/billing/subscriptions` — plan : `admin-subscriptions.md`
 - [ ] `admin-transactions` (`Csehe4Ndlnml`) → `/admin/billing/transactions` — plan : `admin-transactions.md`

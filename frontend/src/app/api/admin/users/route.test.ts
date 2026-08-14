@@ -143,7 +143,9 @@ describe('/api/admin/users [Wave 1] — list', () => {
     prismaMock.user.findMany.mockResolvedValueOnce([] as never);
     const res = await GET(makeGet('http://test/api/admin/users'));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ items: [], nextCursor: null });
+    // Epic 2 extended the response with total/stats/schools — the original
+    // contract (items + nextCursor) is unchanged.
+    expect(await res.json()).toMatchObject({ items: [], nextCursor: null });
   });
 
   it('GET applies q search case-insensitive on email + name', async () => {

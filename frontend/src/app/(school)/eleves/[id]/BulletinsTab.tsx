@@ -1,0 +1,130 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Download, Eye, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { api } from '@/lib/api';
+import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
+
+interface TermBulletinSummary {
+  termId: string;
+  label: string;
+  order: number;
+  overallAverage: number | null;
+  rank: number | null;
+  rankedCount: number;
+}
+
+function fmt(n: number | null): string {
+  return n == null ? '—' : n.toFixed(1);
+}
+
+export function BulletinsTab({ studentId }: { studentId: string }) {
+  const [rows, setRows] = useState<TermBulletinSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api<{ terms: TermBulletinSummary[] }>(`/api/school/students/${studentId}/bulletins`)
+      .then((res) => {
+        if (!cancelled) setRows([...res.terms].sort((a, b) => a.order - b.order));
+      })
+      .catch(() => !cancelled && setError('Impossible de charger les bulletins.'));
+    return () => {
+      cancelled = true;
+    };
+  }, [studentId]);
+
+  if (error) {
+    return (
+      <Card className="items-center gap-2 p-10 text-center">
+        <p className="text-sm text-destructive-foreground">{error}</p>
+      </Card>
+    );
+  }
+
+  if (!rows) {
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1].map((i) => (
+          <Card key={i} className="flex-row items-center gap-4 p-4.5">
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+            <Skeleton className="h-8 w-36 rounded-md" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (rows.length === 0) {
+    return (
+      <Card className="items-center gap-2 p-10 text-center">
+        <FileText size={28} className="text-muted-foreground" />
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Aucune période scolaire configurée — les bulletins apparaîtront une fois l&apos;année
+          scolaire mise en place.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {rows.map((r) => {
+        const generated = r.overallAverage != null;
+        return (
+          <Card key={r.termId} className="flex-row flex-wrap items-center gap-4 p-4.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+              <FileText size={17} />
+            </div>
+            <div className="flex min-w-[160px] flex-1 flex-col gap-0.5">
+              <div className="text-[13px] font-bold text-foreground">{r.label}</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                    generated
+                      ? 'bg-success text-success-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {generated ? 'Généré' : 'En attente'}
+                </span>
+                {generated && (
+                  <span>
+                    Moyenne {fmt(r.overallAverage)}/20 · Rang {r.rank ?? '—'}/{r.rankedCount}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/bulletins/${studentId}/${r.termId}`}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-[13px] font-semibold text-foreground"
+              >
+                <Eye size={13} />
+                Voir
+              </Link>
+              <a
+                href={`/api/school/students/${studentId}/bulletin/pdf?termId=${r.termId}`}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold ${
+                  generated
+                    ? 'bg-primary text-primary-foreground'
+                    : 'pointer-events-none bg-muted text-muted-foreground'
+                }`}
+                aria-disabled={!generated}
+              >
+                <Download size={13} />
+                PDF
+              </a>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Pencil,
@@ -23,10 +23,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { StudentFormModal } from '../StudentFormModal';
 import { NotesResultatsTab } from './NotesResultatsTab';
 import { AppreciationsTab } from './AppreciationsTab';
-import type { ClassOption, StudentDetail, StudentResults, StudentStatus } from '../types';
+import { PresencesTab } from './PresencesTab';
+import { BulletinsTab } from './BulletinsTab';
+import { StudentFormModal } from '../StudentFormModal';
+import type { StudentDetail, StudentResults, StudentStatus } from '../types';
+import type { StudentAttendanceResponse } from '../../pedagogie/presences/types';
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',
@@ -70,23 +73,24 @@ export default function StudentProfilePage() {
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
   const [student, setStudent] = useState<StudentDetail | null>(null);
-  const [classes, setClasses] = useState<ClassOption[]>([]);
   const [results, setResults] = useState<StudentResults | null>(null);
+  const [attendance, setAttendance] = useState<StudentAttendanceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
   const [editing, setEditing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     Promise.all([
       api<{ student: StudentDetail }>(`/api/school/students/${params.id}`),
-      api<{ classes: ClassOption[] }>('/api/school/classes'),
       api<StudentResults>(`/api/school/students/${params.id}/results`),
+      api<StudentAttendanceResponse>(`/api/school/students/${params.id}/attendance`),
     ])
-      .then(([s, c, r]) => {
+      .then(([s, r, a]) => {
         setStudent(s.student);
-        setClasses(c.classes);
         setResults(r);
+        setAttendance(a);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -99,7 +103,7 @@ export default function StudentProfilePage() {
         }
         setError('Impossible de charger le profil.');
       });
-  }, [user, router, params.id]);
+  }, [user, router, params.id, refreshKey]);
 
   if (!user || (student === null && !error)) {
     return (
@@ -181,14 +185,24 @@ export default function StudentProfilePage() {
             <Download size={14} />
             Exporter le dossier
           </Button>
-          <Button
-            variant="outline"
-            className="w-fit"
-            onClick={() => toast('Disponible avec Epic 7 (Bulletins).', 'info')}
-          >
-            <FileText size={14} />
-            Voir le bulletin
-          </Button>
+          {results?.resolvedTermId ? (
+            <Link
+              href={`/bulletins/${params.id}/${results.resolvedTermId}`}
+              className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
+            >
+              <FileText size={14} />
+              Voir le bulletin
+            </Link>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-fit"
+              onClick={() => toast('Aucune période scolaire disponible pour le moment.', 'info')}
+            >
+              <FileText size={14} />
+              Voir le bulletin
+            </Button>
+          )}
           <Button className="w-fit" onClick={() => setEditing(true)}>
             <Pencil size={14} />
             Modifier le profil
@@ -258,9 +272,15 @@ export default function StudentProfilePage() {
               value={results?.overallAverage != null ? `${results.overallAverage.toFixed(1)}` : '—'}
             />
             <div className="h-9 w-px bg-border" />
-            <Stat label="Taux de présence" value="—" />
+            <Stat
+              label="Taux de présence"
+              value={attendance?.ratePercent != null ? `${attendance.ratePercent}%` : '—'}
+            />
             <div className="h-9 w-px bg-border" />
-            <Stat label="Absences ce trimestre" value="—" />
+            <Stat
+              label="Absences ce trimestre"
+              value={attendance ? String(attendance.absences) : '—'}
+            />
             <div className="h-9 w-px bg-border" />
             <Stat label="Rang de classe" value={results?.rank ? `${results.rank}e` : '—'} />
           </div>
@@ -351,24 +371,15 @@ export default function StudentProfilePage() {
           initial={results}
         />
       )}
-      {tab === 'attendance' && (
-        <EmptyTab
-          icon={CalendarCheck}
-          text="Le suivi des présences apparaîtra ici une fois le module Présences en place."
-          epic="Epic 8"
-        />
-      )}
+      {tab === 'attendance' && <PresencesTab studentId={student.id} />}
       {tab === 'appreciations' && <AppreciationsTab studentId={student.id} />}
-      {tab === 'bulletins' && (
-        <EmptyTab icon={FileText} text="Les bulletins générés apparaîtront ici." epic="Epic 7" />
-      )}
+      {tab === 'bulletins' && <BulletinsTab studentId={student.id} />}
 
       {editing && (
         <StudentFormModal
-          student={student}
-          classes={classes}
+          studentId={student.id}
           onClose={() => setEditing(false)}
-          onSaved={(saved) => setStudent(saved)}
+          onSaved={() => setRefreshKey((k) => k + 1)}
         />
       )}
     </div>
@@ -390,25 +401,5 @@ function InfoRow({ label, value, last = false }: { label: string; value: string;
       <span className="min-w-[130px] shrink-0 text-xs text-muted-foreground">{label}</span>
       <span className="text-[13px] font-medium text-foreground">{value}</span>
     </div>
-  );
-}
-
-function EmptyTab({
-  icon: Icon,
-  text,
-  epic,
-}: {
-  icon: ComponentType<{ size?: number; className?: string }>;
-  text: string;
-  epic: string;
-}) {
-  return (
-    <Card className="items-center gap-2 p-10 text-center">
-      <Icon size={28} className="text-muted-foreground" />
-      <p className="max-w-sm text-sm text-muted-foreground">{text}</p>
-      <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-primary">
-        Disponible avec {epic}
-      </span>
-    </Card>
   );
 }

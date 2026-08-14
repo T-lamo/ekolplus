@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
+  AlertTriangle,
   Bell,
   Clock,
   Download,
@@ -37,9 +38,16 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { Tabs } from '@/components/ui/Tabs';
+import { BarChart } from '@/components/admin/charts/BarChart';
 import { exportToCsv } from '@/lib/csv-export';
 import { AttendanceEditModal } from './AttendanceEditModal';
-import type { AttendanceResponse, AttendanceStatus, AttendanceStudentRow, WeekDay } from './types';
+import type {
+  AttendanceDay,
+  AttendanceResponse,
+  AttendanceStatsResponse,
+  AttendanceStatus,
+  AttendanceStudentRow,
+} from './types';
 
 const PAGE_SIZE = 8;
 
@@ -108,10 +116,12 @@ export default function PresencesPage() {
   const [error, setError] = useState<string | null>(null);
   const [classId, setClassId] = useState('');
   const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'' | AttendanceStatus>('');
-  const [activeTab, setActiveTab] = useState('weekly');
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'stats' | 'alerts'>('weekly');
   const [page, setPage] = useState(1);
+  const [stats, setStats] = useState<AttendanceStatsResponse | null>(null);
   const [editing, setEditing] = useState<{
     student: AttendanceStudentRow;
     date: string;
@@ -129,10 +139,20 @@ export default function PresencesPage() {
     return monday.toISOString().slice(0, 10);
   }, [weekOffset]);
 
+  const monthParam = useMemo(() => {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + monthOffset, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+  }, [monthOffset]);
+
+  const gridView = activeTab === 'monthly' ? 'month' : 'week';
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    const qs = new URLSearchParams({ weekStart: weekStartParam });
+    const qs = new URLSearchParams({ view: gridView });
+    if (gridView === 'month') qs.set('month', monthParam);
+    else qs.set('weekStart', weekStartParam);
     if (classId) qs.set('classId', classId);
     api<AttendanceResponse>(`/api/school/attendance?${qs.toString()}`)
       .then((res) => {
@@ -151,17 +171,32 @@ export default function PresencesPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, router, weekStartParam, classId]);
+  }, [user, router, gridView, weekStartParam, monthParam, classId]);
+
+  useEffect(() => {
+    if (!user || activeTab !== 'stats') return;
+    let cancelled = false;
+    const qs = new URLSearchParams();
+    if (classId) qs.set('classId', classId);
+    api<AttendanceStatsResponse>(`/api/school/attendance/stats?${qs.toString()}`).then((res) => {
+      if (!cancelled) setStats(res);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, activeTab, classId]);
 
   function refresh() {
     if (!user) return;
-    const qs = new URLSearchParams({ weekStart: weekStartParam });
+    const qs = new URLSearchParams({ view: gridView });
+    if (gridView === 'month') qs.set('month', monthParam);
+    else qs.set('weekStart', weekStartParam);
     if (classId) qs.set('classId', classId);
     api<AttendanceResponse>(`/api/school/attendance?${qs.toString()}`).then(setData);
   }
 
-  const todayIso = data?.weekDays.find((d) => d.isToday)?.date;
-  const targetDate = todayIso ?? data?.weekDays[data.weekDays.length - 1]?.date ?? null;
+  const todayIso = data?.days.find((d) => d.isToday)?.date;
+  const targetDate = todayIso ?? data?.days[data.days.length - 1]?.date ?? null;
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -222,13 +257,11 @@ export default function PresencesPage() {
     if (!data) return;
     exportToCsv(
       'presences.csv',
-      ['Élève', 'Numéro', ...data.weekDays.map((d) => fmtDayHeader(d.date)), 'Taux', 'Absences'],
+      ['Élève', 'Numéro', ...data.days.map((d) => fmtDayHeader(d.date)), 'Taux', 'Absences'],
       filtered.map((s) => [
         `${s.firstName} ${s.lastName}`,
         s.studentNumber,
-        ...data.weekDays.map((d) =>
-          s.days[d.date] ? STATUS_META[s.days[d.date]!.status].glyph : '—',
-        ),
+        ...data.days.map((d) => (s.days[d.date] ? STATUS_META[s.days[d.date]!.status].glyph : '—')),
         s.rate != null ? `${s.rate}%` : '—',
         s.absences,
       ]),
@@ -419,17 +452,31 @@ export default function PresencesPage() {
                 </SelectItem>
               ))}
             </FilterSelect>
-            <FilterSelect
-              value={String(weekOffset)}
-              onValueChange={(v) => {
-                setWeekOffset(Number(v));
-                setPage(1);
-              }}
-            >
-              <SelectItem value="0">Cette semaine</SelectItem>
-              <SelectItem value="-1">Semaine dernière</SelectItem>
-              <SelectItem value="-2">Il y a 2 semaines</SelectItem>
-            </FilterSelect>
+            {activeTab === 'monthly' ? (
+              <FilterSelect
+                value={String(monthOffset)}
+                onValueChange={(v) => {
+                  setMonthOffset(Number(v));
+                  setPage(1);
+                }}
+              >
+                <SelectItem value="0">Ce mois-ci</SelectItem>
+                <SelectItem value="-1">Mois dernier</SelectItem>
+                <SelectItem value="-2">Il y a 2 mois</SelectItem>
+              </FilterSelect>
+            ) : (
+              <FilterSelect
+                value={String(weekOffset)}
+                onValueChange={(v) => {
+                  setWeekOffset(Number(v));
+                  setPage(1);
+                }}
+              >
+                <SelectItem value="0">Cette semaine</SelectItem>
+                <SelectItem value="-1">Semaine dernière</SelectItem>
+                <SelectItem value="-2">Il y a 2 semaines</SelectItem>
+              </FilterSelect>
+            )}
             <FilterSelect
               value={statusFilter}
               onValueChange={(v) => {
@@ -455,119 +502,138 @@ export default function PresencesPage() {
             ]}
             active={activeTab}
             onChange={(key) => {
-              if (key !== 'weekly') {
-                toast('Cette vue arrive avec une prochaine mise à jour.', 'info');
-                return;
-              }
-              setActiveTab(key);
+              setActiveTab(key as typeof activeTab);
+              setPage(1);
             }}
           />
 
-          <div className="flex flex-wrap items-center gap-4">
-            {(Object.keys(STATUS_META) as AttendanceStatus[]).map((k) => (
-              <div
-                key={k}
-                className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
-              >
-                <span className={`h-2.5 w-2.5 rounded-full ${STATUS_META[k].dot}`} />
-                {STATUS_META[k].label}
-              </div>
-            ))}
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <span className={`h-2.5 w-2.5 rounded-full ${NOT_RECORDED.dot}`} />
-              {NOT_RECORDED.label}
-            </div>
-          </div>
-
-          <Card id="presence-table" className="overflow-x-auto">
-            {filtered.length === 0 ? (
-              <p className="p-5 text-sm text-muted-foreground">
-                {data.students.length === 0 ? 'Aucun élève dans cette classe.' : 'Aucun résultat.'}
-              </p>
-            ) : (
-              <>
-                <table className="w-full min-w-[820px] border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <Th>Élève</Th>
-                      {data.weekDays.map((d) => (
-                        <Th key={d.date} className="text-center capitalize">
-                          {fmtDayHeader(d.date)}
-                        </Th>
-                      ))}
-                      <Th className="text-center">Taux</Th>
-                      <Th className="text-center">Absences</Th>
-                      <Th className="w-[50px]" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageStudents.map((row) => (
-                      <tr key={row.id} className="border-b border-border last:border-none">
-                        <td className="px-3.5 py-2.5">
-                          <div className="flex items-center gap-2.5">
-                            <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
-                            <div>
-                              <div className="font-semibold text-foreground">
-                                {row.firstName} {row.lastName}
-                              </div>
-                              <div className="text-[11px] text-muted-foreground">
-                                #{row.studentNumber}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        {data.weekDays.map((d) => (
-                          <td key={d.date} className="px-1.5 py-2.5 text-center">
-                            <PresenceDot
-                              day={d}
-                              record={row.days[d.date] ?? null}
-                              onClick={() =>
-                                markDay(
-                                  row.id,
-                                  d.date,
-                                  nextStatus(row.days[d.date]?.status ?? null),
-                                )
-                              }
-                            />
-                          </td>
-                        ))}
-                        <td className="px-3.5 py-2.5 text-center">
-                          <RateBar rate={row.rate} />
-                        </td>
-                        <td className="px-3.5 py-2.5 text-center text-muted-foreground">
-                          {row.absences}
-                        </td>
-                        <td className="px-1.5 py-2.5">
-                          <ActionMenu items={menuItemsFor(row)} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
-                  <span className="text-xs text-muted-foreground">
-                    Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}
-                    {Math.min(page * PAGE_SIZE, filtered.length)} sur {filtered.length} élèves —
-                    Taux moyen de présence :{' '}
-                    <strong className="text-foreground">
-                      {s.attendanceRatePercent != null ? `${s.attendanceRatePercent}%` : '—'}
-                    </strong>
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+          {(activeTab === 'weekly' || activeTab === 'monthly') && (
+            <>
+              <div className="flex flex-wrap items-center gap-4">
+                {(Object.keys(STATUS_META) as AttendanceStatus[]).map((k) => (
+                  <div
+                    key={k}
+                    className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+                  >
+                    <span className={`h-2.5 w-2.5 rounded-full ${STATUS_META[k].dot}`} />
+                    {STATUS_META[k].label}
                   </div>
+                ))}
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <span className={`h-2.5 w-2.5 rounded-full ${NOT_RECORDED.dot}`} />
+                  {NOT_RECORDED.label}
                 </div>
-              </>
-            )}
-          </Card>
+              </div>
+
+              <Card id="presence-table" className="overflow-x-auto">
+                {filtered.length === 0 ? (
+                  <p className="p-5 text-sm text-muted-foreground">
+                    {data.students.length === 0
+                      ? 'Aucun élève dans cette classe.'
+                      : 'Aucun résultat.'}
+                  </p>
+                ) : (
+                  <>
+                    <table
+                      className="w-full border-collapse text-sm"
+                      style={{ minWidth: `${280 + data.days.length * 44}px` }}
+                    >
+                      <thead>
+                        <tr className="border-b border-border">
+                          <Th className="sticky left-0 z-10 bg-card">Élève</Th>
+                          {data.days.map((d) => (
+                            <Th key={d.date} className="text-center capitalize">
+                              {fmtDayHeader(d.date)}
+                            </Th>
+                          ))}
+                          <Th className="text-center">Taux</Th>
+                          <Th className="text-center">Absences</Th>
+                          <Th className="w-[50px]" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pageStudents.map((row) => (
+                          <tr key={row.id} className="border-b border-border last:border-none">
+                            <td className="sticky left-0 z-10 bg-card px-3.5 py-2.5">
+                              <div className="flex items-center gap-2.5">
+                                <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
+                                <div>
+                                  <div className="font-semibold text-foreground">
+                                    {row.firstName} {row.lastName}
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground">
+                                    #{row.studentNumber}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {data.days.map((d) => (
+                              <td key={d.date} className="px-1.5 py-2.5 text-center">
+                                <PresenceDot
+                                  day={d}
+                                  record={row.days[d.date] ?? null}
+                                  onClick={() =>
+                                    markDay(
+                                      row.id,
+                                      d.date,
+                                      nextStatus(row.days[d.date]?.status ?? null),
+                                    )
+                                  }
+                                />
+                              </td>
+                            ))}
+                            <td className="px-3.5 py-2.5 text-center">
+                              <RateBar rate={row.rate} />
+                            </td>
+                            <td className="px-3.5 py-2.5 text-center text-muted-foreground">
+                              {row.absences}
+                            </td>
+                            <td className="px-1.5 py-2.5">
+                              <ActionMenu items={menuItemsFor(row)} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
+                      <span className="text-xs text-muted-foreground">
+                        Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}
+                        {Math.min(page * PAGE_SIZE, filtered.length)} sur {filtered.length} élèves —
+                        Taux moyen de présence :{' '}
+                        <strong className="text-foreground">
+                          {s.attendanceRatePercent != null ? `${s.attendanceRatePercent}%` : '—'}
+                        </strong>
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Card>
+            </>
+          )}
+
+          {activeTab === 'stats' && <StatsSection stats={stats} />}
+
+          {activeTab === 'alerts' && (
+            <AlertsSection
+              students={filtered}
+              onView={(id) => router.push(`/eleves/${id}`)}
+              onJustify={(row) =>
+                targetDate &&
+                setEditing({ student: row, date: targetDate, focusJustification: true })
+              }
+            />
+          )}
         </>
       )}
 
@@ -608,7 +674,7 @@ function PresenceDot({
   record,
   onClick,
 }: {
-  day: WeekDay;
+  day: AttendanceDay;
   record: { status: AttendanceStatus; justification: string | null } | null;
   onClick: () => void;
 }) {
@@ -695,6 +761,196 @@ function SummaryCard({
         <div className="text-xl font-bold text-foreground">{value}</div>
         <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
       </div>
+    </Card>
+  );
+}
+
+const DISTRIBUTION_META: {
+  key: keyof AttendanceStatsResponse['distribution'];
+  label: string;
+  icon: typeof UserCheck;
+  tone: 'success' | 'destructive' | 'warning' | 'blue';
+}[] = [
+  { key: 'present', label: 'Présences', icon: UserCheck, tone: 'success' },
+  { key: 'absent', label: 'Absences', icon: UserX, tone: 'destructive' },
+  { key: 'late', label: 'Retards', icon: Clock, tone: 'warning' },
+  { key: 'excused', label: 'Justifiées', icon: ShieldCheck, tone: 'blue' },
+];
+
+function StatsSection({ stats }: { stats: AttendanceStatsResponse | null }) {
+  if (!stats) {
+    return (
+      <div className="flex flex-col gap-3.5">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Card key={i} className="p-3.5">
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="mt-2 h-3 w-20" />
+            </Card>
+          ))}
+        </div>
+        <Card className="p-5">
+          <Skeleton className="h-[180px] w-full" />
+        </Card>
+      </div>
+    );
+  }
+
+  const { distribution, weeklyTrend, overallRatePercent } = stats;
+
+  return (
+    <div className="flex flex-col gap-3.5">
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        {DISTRIBUTION_META.map((m) => {
+          const count = distribution[m.key];
+          const pct =
+            distribution.recorded > 0 ? Math.round((count / distribution.recorded) * 100) : 0;
+          return (
+            <SummaryCard
+              key={m.key}
+              icon={m.icon}
+              tone={m.tone}
+              label={m.label}
+              value={String(count)}
+              sub={distribution.recorded > 0 ? `${pct}% des présences saisies` : 'Aucune donnée'}
+            />
+          );
+        })}
+      </div>
+
+      <Card className="gap-4 p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <TrendingUp size={14} className="text-primary" />
+            Taux de présence par semaine
+          </div>
+          <span className="text-sm font-bold text-foreground">
+            {overallRatePercent != null ? `${overallRatePercent}%` : '—'}{' '}
+            <span className="text-xs font-normal text-muted-foreground">sur le trimestre</span>
+          </span>
+        </div>
+        <BarChart
+          data={weeklyTrend}
+          formatValue={(v) => `${v}%`}
+          ariaLabel="Taux de présence par semaine sur le trimestre"
+        />
+      </Card>
+    </div>
+  );
+}
+
+const ALERT_RATE_THRESHOLD = 80;
+const ALERT_ABSENCE_THRESHOLD = 3;
+
+function AlertsSection({
+  students,
+  onView,
+  onJustify,
+}: {
+  students: AttendanceStudentRow[];
+  onView: (studentId: string) => void;
+  onJustify: (row: AttendanceStudentRow) => void;
+}) {
+  const atRisk = students
+    .filter(
+      (s) =>
+        (s.rate != null && s.rate < ALERT_RATE_THRESHOLD) || s.absences >= ALERT_ABSENCE_THRESHOLD,
+    )
+    .sort((a, b) => (a.rate ?? 0) - (b.rate ?? 0) || b.absences - a.absences);
+
+  if (atRisk.length === 0) {
+    return (
+      <Card className="items-center gap-2 p-10 text-center">
+        <ShieldCheck size={28} className="text-success-foreground" />
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Aucun élève ne dépasse les seuils d&apos;alerte actuellement (taux &lt;{' '}
+          {ALERT_RATE_THRESHOLD}% ou {ALERT_ABSENCE_THRESHOLD}+ absences ce trimestre).
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-border px-3.5 py-3">
+        <AlertTriangle size={15} className="text-warning-foreground" />
+        <span className="text-[13px] font-semibold text-foreground">
+          {atRisk.length} élève{atRisk.length > 1 ? 's' : ''} à surveiller
+        </span>
+        <span className="text-xs text-muted-foreground">
+          — taux &lt; {ALERT_RATE_THRESHOLD}% ou {ALERT_ABSENCE_THRESHOLD}+ absences ce trimestre
+        </span>
+      </div>
+      <table className="w-full min-w-[560px] border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-border">
+            <Th>Élève</Th>
+            <Th>Motif</Th>
+            <Th className="text-center">Taux</Th>
+            <Th className="text-center">Absences</Th>
+            <Th className="w-[180px]" />
+          </tr>
+        </thead>
+        <tbody>
+          {atRisk.map((row) => {
+            const lowRate = row.rate != null && row.rate < ALERT_RATE_THRESHOLD;
+            const highAbsences = row.absences >= ALERT_ABSENCE_THRESHOLD;
+            return (
+              <tr key={row.id} className="border-b border-border last:border-none">
+                <td className="px-3.5 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {row.firstName} {row.lastName}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">#{row.studentNumber}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-3.5 py-2.5">
+                  <div className="flex flex-wrap gap-1">
+                    {lowRate && (
+                      <span className="rounded-full bg-destructive px-2 py-0.5 text-[11px] font-bold text-destructive-foreground">
+                        Taux faible
+                      </span>
+                    )}
+                    {highAbsences && (
+                      <span className="rounded-full bg-warning px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
+                        Absences répétées
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-3.5 py-2.5 text-center">
+                  <RateBar rate={row.rate} />
+                </td>
+                <td className="px-3.5 py-2.5 text-center font-semibold text-foreground">
+                  {row.absences}
+                </td>
+                <td className="px-3.5 py-2.5">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onView(row.id)}
+                      className="rounded-md border border-border px-2.5 py-1.5 text-[11px] font-semibold text-foreground"
+                    >
+                      Voir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onJustify(row)}
+                      className="rounded-md border border-border px-2.5 py-1.5 text-[11px] font-semibold text-foreground"
+                    >
+                      Justifier
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </Card>
   );
 }

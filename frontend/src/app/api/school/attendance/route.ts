@@ -1,8 +1,10 @@
-// GET /api/school/attendance?classId=&weekStart= — Attendance Tracking's
-// weekly-grid read model: the school's classes (for the Classe filter),
-// the requested class's roster (via Enrollment, active AcademicYear), the
-// Mon–Fri days of the requested week left-joined against Attendance rows,
-// and per-student/aggregate rate+absence numbers over the current Term.
+// GET /api/school/attendance?classId=&view=week|month&weekStart=&month= —
+// Attendance Tracking's grid read model: the school's classes (for the
+// Classe filter), the requested class's roster (via Enrollment, active
+// AcademicYear), the Mon–Fri days of the requested week (default) or whole
+// calendar month left-joined against Attendance rows, and per-student/
+// aggregate rate+absence numbers over the current Term (independent of
+// which range is being viewed — always term-wide).
 //
 // PATCH — upserts one student's one-day record (dot-click cycling, the
 // edit modal, and the justify modal all call this same endpoint). Rejects
@@ -27,6 +29,7 @@ import {
   isFutureDate,
   isoDate,
   mondayOf,
+  weekdaysInMonth,
 } from '@/lib/server/attendance';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -65,18 +68,32 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         })
       : [];
 
-    const weekStartParam = req.nextUrl.searchParams.get('weekStart');
-    const weekStart = mondayOf(weekStartParam ? new Date(weekStartParam) : new Date());
-    const weekDays = Array.from({ length: SCHOOL_WEEK_DAYS }, (_, i) => addDays(weekStart, i));
+    const view = req.nextUrl.searchParams.get('view') === 'month' ? 'month' : 'week';
     const today = dateOnlyUTC(new Date());
+
+    let rangeStart: Date;
+    let rangeDays: Date[];
+    if (view === 'month') {
+      const monthParam = req.nextUrl.searchParams.get('month'); // "YYYY-MM"
+      const [y, m] = monthParam?.match(/^\d{4}-\d{2}$/)
+        ? monthParam.split('-').map(Number)
+        : [today.getUTCFullYear(), today.getUTCMonth() + 1];
+      rangeStart = new Date(Date.UTC(y!, m! - 1, 1));
+      rangeDays = weekdaysInMonth(rangeStart);
+    } else {
+      const weekStartParam = req.nextUrl.searchParams.get('weekStart');
+      rangeStart = mondayOf(weekStartParam ? new Date(weekStartParam) : new Date());
+      rangeDays = Array.from({ length: SCHOOL_WEEK_DAYS }, (_, i) => addDays(rangeStart, i));
+    }
 
     if (!year || classes.length === 0) {
       return NextResponse.json(
         {
           classes: [],
           resolvedClassId: null,
-          weekStart: isoDate(weekStart),
-          weekDays: weekDays.map((d) => ({
+          view,
+          rangeStart: isoDate(rangeStart),
+          days: rangeDays.map((d) => ({
             date: isoDate(d),
             isToday: d.getTime() === today.getTime(),
             isFuture: isFutureDate(d),
@@ -106,13 +123,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const terms = await prisma.term.findMany({ where: { academicYearId: year.id } });
     const term = resolveCurrentTerm(terms);
 
-    const [weekRows, termRows] = await Promise.all([
+    const [rangeRows, termRows] = await Promise.all([
       studentIds.length === 0
         ? []
         : prisma.attendance.findMany({
             where: {
               studentId: { in: studentIds },
-              date: { gte: weekDays[0]!, lte: weekDays[weekDays.length - 1]! },
+              date: { gte: rangeDays[0]!, lte: rangeDays[rangeDays.length - 1]! },
             },
           }),
       studentIds.length === 0 || !term
@@ -125,11 +142,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           }),
     ]);
 
-    const weekByStudent = new Map<string, typeof weekRows>();
-    for (const row of weekRows) {
-      const list = weekByStudent.get(row.studentId) ?? [];
+    const rangeByStudent = new Map<string, typeof rangeRows>();
+    for (const row of rangeRows) {
+      const list = rangeByStudent.get(row.studentId) ?? [];
       list.push(row);
-      weekByStudent.set(row.studentId, list);
+      rangeByStudent.set(row.studentId, list);
     }
     const termByStudent = new Map<string, typeof termRows>();
     for (const row of termRows) {
@@ -139,11 +156,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     const studentRows = students.map((s) => {
-      const weekForStudent = weekByStudent.get(s.id) ?? [];
+      const rangeForStudent = rangeByStudent.get(s.id) ?? [];
       const days: Record<string, { status: string; justification: string | null } | null> = {};
-      for (const d of weekDays) {
+      for (const d of rangeDays) {
         const iso = isoDate(d);
-        const row = weekForStudent.find((r) => isoDate(r.date) === iso);
+        const row = rangeForStudent.find((r) => isoDate(r.date) === iso);
         days[iso] = row ? { status: row.status, justification: row.justification } : null;
       }
       const termForStudent = termByStudent.get(s.id) ?? [];
@@ -159,7 +176,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
 
     const todayIso = isoDate(today);
-    const todayRows = weekRows.filter((r) => isoDate(r.date) === todayIso);
+    const todayRows = rangeRows.filter((r) => isoDate(r.date) === todayIso);
     const presentToday = todayRows.filter((r) => r.status === 'PRESENT').length;
     const absentToday = todayRows.filter(
       (r) => r.status === 'ABSENT' || r.status === 'EXCUSED',
@@ -194,8 +211,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       {
         classes,
         resolvedClassId: targetClass.id,
-        weekStart: isoDate(weekStart),
-        weekDays: weekDays.map((d) => ({
+        view,
+        rangeStart: isoDate(rangeStart),
+        days: rangeDays.map((d) => ({
           date: isoDate(d),
           isToday: d.getTime() === today.getTime(),
           isFuture: isFutureDate(d),

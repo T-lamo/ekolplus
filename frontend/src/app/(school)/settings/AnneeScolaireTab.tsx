@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Plus,
   Pencil,
@@ -14,6 +15,7 @@ import {
   CheckCircle,
   Info,
   PlusCircle,
+  ArrowRight,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
@@ -23,7 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Switch } from '@/components/ui/Switch';
 import { cn } from '@/lib/utils';
-import { TERM_TYPES, ORDINAL_LABELS } from '@/lib/constants';
+import { TERM_TYPES, ORDINAL_LABELS, ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { AcademicYearData, TermData } from './types';
 
 const STATUS_LABEL: Record<TermData['status'], string> = {
@@ -529,15 +531,18 @@ function NouvellePeriodeModal({
 
 export function AnneeScolaireTab({
   academicYear,
+  role,
   onTermAdded,
   onTermUpdated,
   onGradingScaleUpdated,
 }: {
   academicYear: AcademicYearData | null;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | null;
   onTermAdded: (term: TermData) => void;
   onTermUpdated: (term: TermData) => void;
   onGradingScaleUpdated: (gradingScale: string | null) => void;
 }) {
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -592,6 +597,20 @@ export function AnneeScolaireTab({
           <p className="text-sm text-muted-foreground">
             Aucune année scolaire configurée — crée la première période avec « Nouvelle période ».
           </p>
+        )}
+
+        {role === 'OWNER' && (
+          <div className="flex justify-end border-t border-border pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full gap-1.5 sm:w-fit"
+              onClick={() => router.push('/settings/nouvelle-annee')}
+            >
+              {ACADEMIC_YEAR_ROLLOVER.title}
+              <ArrowRight size={14} />
+            </Button>
+          </div>
         )}
       </div>
 

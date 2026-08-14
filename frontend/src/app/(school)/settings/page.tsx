@@ -72,6 +72,8 @@ function SettingsForm() {
     );
   }
 
+  const myRole = data?.members.find((m) => m.userId === user.id)?.role ?? null;
+
   return (
     <div className="flex max-w-4xl flex-col gap-5">
       <div>
@@ -101,12 +103,7 @@ function SettingsForm() {
 
       {!loading && !error && (
         <>
-          {tab === 'profil' && (
-            <ProfilTab
-              user={user}
-              myRole={data?.members.find((m) => m.userId === user.id)?.role ?? null}
-            />
-          )}
+          {tab === 'profil' && <ProfilTab user={user} myRole={myRole} />}
           {tab === 'etablissement' && data && (
             <div className="flex flex-col gap-5">
               <EtablissementTab
@@ -114,14 +111,13 @@ function SettingsForm() {
                 members={data.members}
                 onUpdated={(school) => setData((d) => (d ? { ...d, school } : d))}
               />
-              {data.members.find((m) => m.userId === user.id)?.role === 'OWNER' && (
-                <ZoneDangereuseSection schoolName={data.school.name} />
-              )}
+              {myRole === 'OWNER' && <ZoneDangereuseSection schoolName={data.school.name} />}
             </div>
           )}
           {tab === 'annee' && (
             <AnneeScolaireTab
               academicYear={data?.academicYear ?? null}
+              role={myRole}
               onTermAdded={(term: TermData) =>
                 setData((d) => {
                   if (!d) return d;

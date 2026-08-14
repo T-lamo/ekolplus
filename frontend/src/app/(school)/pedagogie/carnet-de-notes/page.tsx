@@ -10,7 +10,6 @@ import {
   Calendar,
   Plus,
   Download,
-  Printer,
   Eye,
   Star,
   History,
@@ -412,17 +411,13 @@ export default function GradeNotebookPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button variant="outline" className="w-fit" onClick={() => window.print()}>
-            <Printer size={14} />
-            Imprimer
-          </Button>
           <Button
             className="w-fit"
             onClick={() => setShowNew(true)}
             disabled={combined || !subjectValue}
           >
             <Plus size={14} />
-            Saisir des notes
+            Saisir évaluation
           </Button>
         </div>
       </div>

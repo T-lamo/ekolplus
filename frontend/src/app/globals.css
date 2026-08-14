@@ -31,6 +31,18 @@
   --color-card: #ffffff;
   --color-card-foreground: #1a1a2e;
 
+  /* 5th status pair ("info"/blue — attendance's Justifié, etc.), promoted
+     from a hex literal (#e0f0ff/#2563eb) copy-pasted across 16+ files.
+     Foreground darkened from #2563eb (4.45:1 on --info, just under WCAG AA's
+     4.5:1) to #1d4ed8 (6.7:1 on white, 5.77:1 on --info) — same treatment as
+     success/destructive/warning above. */
+  --color-info: #e0f0ff;
+  --color-info-foreground: #1d4ed8;
+
+  /* Second stop of the primary→purple brand gradient, previously hand-typed
+     as a literal (#a855f7) alongside --color-primary in 2+ components. */
+  --color-primary-gradient-end: #a855f7;
+
   /* Two sidebar variants: school shell is light, SaaS admin shell + login's
      branding panel are dark. Not a single reusable token (see epic-0-shell.md). */
   --color-sidebar-light: #ffffff;
@@ -51,6 +63,12 @@
   --color-chart-1: #6c2bd9;
   --color-chart-2: #0d9488;
   --color-chart-3: #e65100;
+
+  /* Two dominant off-scale sizes (274 / 147 uses of text-[11px] / text-[13px]
+     app-wide) promoted to named tokens — same rendered size, no longer a
+     repeated magic number. */
+  --text-2xs: 0.6875rem; /* 11px — dense table cells, badges, column labels */
+  --text-caption: 0.8125rem; /* 13px — card secondary text, list metadata */
 }
 
 /* Radix Accordion — content height driven by --radix-accordion-content-height,
@@ -75,6 +93,16 @@
   }
   to {
     height: 0;
+  }
+}
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 

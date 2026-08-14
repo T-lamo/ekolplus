@@ -26,6 +26,7 @@ import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
+import { OverflowTags } from '@/components/ui/OverflowTags';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { TeacherFormModal } from './TeacherFormModal';
@@ -288,31 +289,37 @@ export default function TeachersPage() {
                       <Avatar name={t.name} size={36} src={t.photoUrl} />
                       <div>
                         <div className="font-bold text-foreground">{t.name}</div>
-                        {t.email && (
-                          <div className="text-[11px] text-muted-foreground">{t.email}</div>
-                        )}
+                        {t.email && <div className="text-2xs text-muted-foreground">{t.email}</div>}
                       </div>
                     </div>
                     <ActionMenu items={menuItemsFor(t)} />
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {t.subjects.map((s) => {
-                      const v = getSubjectVisual(s.name);
-                      return (
-                        <span
-                          key={s.id}
-                          className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                          style={{ background: v.badgeBg, color: v.badgeFg }}
-                        >
-                          {s.name}
-                        </span>
-                      );
-                    })}
+                    <OverflowTags
+                      items={t.subjects}
+                      keyOf={(s) => s.id}
+                      renderItem={(s) => {
+                        const v = getSubjectVisual(s.name);
+                        return (
+                          <span
+                            className="inline-flex rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
+                            style={{ background: v.badgeBg, color: v.badgeFg }}
+                          >
+                            {s.name}
+                          </span>
+                        );
+                      }}
+                      emptyLabel="Aucune matière"
+                    />
                     <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
                   </div>
-                  <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
-                    <span>{t.classes.map((c) => c.name).join(', ') || 'Aucune classe'}</span>
-                    <span className="font-semibold text-foreground">{t.weeklyHours}h/sem.</span>
+                  <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+                    <span className="truncate">
+                      {t.classes.map((c) => c.name).join(', ') || 'Aucune classe'}
+                    </span>
+                    <span className="shrink-0 font-semibold text-foreground">
+                      {t.weeklyHours}h/sem.
+                    </span>
                   </div>
                 </Card>
               ))}
@@ -341,27 +348,34 @@ export default function TeachersPage() {
                         </div>
                       </td>
                       <td className="px-3.5 py-2.5">
-                        <div className="flex flex-wrap gap-1">
-                          {t.subjects.length > 0 ? (
-                            t.subjects.map((s) => {
-                              const v = getSubjectVisual(s.name);
-                              return (
-                                <span
-                                  key={s.id}
-                                  className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                                  style={{ background: v.badgeBg, color: v.badgeFg }}
-                                >
-                                  {s.name}
-                                </span>
-                              );
-                            })
-                          ) : (
-                            <span className="italic text-muted-foreground">Aucune</span>
-                          )}
-                        </div>
+                        <OverflowTags
+                          items={t.subjects}
+                          keyOf={(s) => s.id}
+                          renderItem={(s) => {
+                            const v = getSubjectVisual(s.name);
+                            return (
+                              <span
+                                className="inline-flex rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
+                                style={{ background: v.badgeBg, color: v.badgeFg }}
+                              >
+                                {s.name}
+                              </span>
+                            );
+                          }}
+                          emptyLabel="Aucune"
+                        />
                       </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">
-                        {t.classes.map((c) => c.name).join(', ') || '—'}
+                      <td className="px-3.5 py-2.5">
+                        <OverflowTags
+                          items={t.classes}
+                          keyOf={(c) => c.id}
+                          renderItem={(c) => (
+                            <span className="inline-flex rounded-full bg-info px-2 py-0.5 text-2xs font-semibold whitespace-nowrap text-info-foreground">
+                              {c.name}
+                            </span>
+                          )}
+                          emptyLabel="—"
+                        />
                       </td>
                       <td className="px-3.5 py-2.5">
                         <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
@@ -401,7 +415,7 @@ export default function TeachersPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -422,7 +436,7 @@ function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${toneClasses[tone]}`}
     >
       {children}
     </span>

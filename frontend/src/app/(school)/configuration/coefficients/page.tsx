@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
+import { OverflowTags } from '@/components/ui/OverflowTags';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { CoefficientStepper } from './CoefficientStepper';
 import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
@@ -188,19 +189,19 @@ function CoefficientsPageInner() {
               <table className="w-full min-w-[760px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Matière
                     </th>
-                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Domaine
                     </th>
-                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Coefficient
                     </th>
-                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Poids relatif
                     </th>
-                    <th className="px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Coefficient autres classes
                     </th>
                   </tr>
@@ -226,9 +227,7 @@ function CoefficientsPageInner() {
                             <div>
                               <div className="font-semibold text-foreground">{subject.name}</div>
                               {subject.code && (
-                                <div className="text-[11px] text-muted-foreground">
-                                  {subject.code}
-                                </div>
+                                <div className="text-2xs text-muted-foreground">{subject.code}</div>
                               )}
                             </div>
                           </div>
@@ -236,7 +235,7 @@ function CoefficientsPageInner() {
                         <td className="px-3.5 py-2.5">
                           {subject.domain ? (
                             <span
-                              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                              className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold"
                               style={{ background: visual.badgeBg, color: visual.badgeFg }}
                             >
                               {subject.domain}
@@ -274,22 +273,15 @@ function CoefficientsPageInner() {
                           )}
                         </td>
                         <td className="px-3.5 py-2.5">
-                          <div className="flex flex-wrap gap-1">
-                            {otherClasses.length > 0 ? (
-                              otherClasses.map((oc) => (
-                                <span
-                                  key={oc.id}
-                                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground"
-                                >
-                                  {oc.class.name}: {oc.coefficient}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs text-muted-foreground italic">
-                                Non configuré
+                          <OverflowTags
+                            items={otherClasses}
+                            keyOf={(oc) => oc.id}
+                            renderItem={(oc) => (
+                              <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-muted-foreground">
+                                {oc.class.name}: {oc.coefficient}
                               </span>
                             )}
-                          </div>
+                          />
                         </td>
                       </tr>
                     );

@@ -34,6 +34,7 @@ import {
   SkeletonStatCards,
   SkeletonTable,
 } from '@/components/ui/Skeleton';
+import { OverflowTags } from '@/components/ui/OverflowTags';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import { SubjectFormModal } from './SubjectFormModal';
@@ -312,7 +313,7 @@ export default function MatieresPage() {
                             <div>
                               <div className="font-semibold text-foreground">{s.name}</div>
                               {s.code && (
-                                <div className="text-[11px] text-muted-foreground">{s.code}</div>
+                                <div className="text-2xs text-muted-foreground">{s.code}</div>
                               )}
                             </div>
                           </div>
@@ -320,7 +321,7 @@ export default function MatieresPage() {
                         <td className="px-3.5 py-2.5">
                           {s.domain ? (
                             <span
-                              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
+                              className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
                               style={{ background: visual.badgeBg, color: visual.badgeFg }}
                             >
                               {s.domain}
@@ -346,13 +347,12 @@ export default function MatieresPage() {
                           )}
                         </td>
                         <td className="px-3.5 py-2.5">
-                          <div className="flex flex-wrap gap-1">
-                            {s.classes.length > 0 ? (
-                              s.classes.map((c) => <Badge key={c.id}>{c.name}</Badge>)
-                            ) : (
-                              <span className="italic text-muted-foreground">Aucune classe</span>
-                            )}
-                          </div>
+                          <OverflowTags
+                            items={s.classes}
+                            keyOf={(c) => c.id}
+                            renderItem={(c) => <Badge>{c.name}</Badge>}
+                            emptyLabel="Aucune classe"
+                          />
                         </td>
                         <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                         <td className="px-3.5 py-2.5">
@@ -402,7 +402,7 @@ export default function MatieresPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -423,7 +423,7 @@ function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${toneClasses[tone]}`}
     >
       {children}
     </span>
@@ -445,7 +445,7 @@ function SummaryCard({
     secondary: 'bg-secondary text-primary',
     success: 'bg-success text-success-foreground',
     warning: 'bg-warning text-warning-foreground',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
   } as const;
   return (
     <Card className="flex-row items-center gap-3 p-3.5">
@@ -455,7 +455,7 @@ function SummaryCard({
         <Icon size={17} />
       </div>
       <div>
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className="text-lg font-bold text-foreground">{value}</div>
       </div>
     </Card>

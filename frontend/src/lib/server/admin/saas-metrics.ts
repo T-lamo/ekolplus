@@ -125,3 +125,87 @@ export function subscriptionMonthlyCents({
   if (coupon.type === 'PERCENT') return Math.round(gross * (1 - coupon.value / 100));
   return Math.max(0, gross - coupon.value);
 }
+
+// ── Statistics screen (admin-statistics.md) ─────────────────────────────
+
+export interface DayBucket {
+  /** Local midnight of the day. */
+  start: Date;
+  /** "12/08" — day/month, the x-axis label for 7j/30j series. */
+  label: string;
+}
+
+/** The N calendar days ending today, oldest first. */
+export function lastNDays(now: Date, n: number): DayBucket[] {
+  const out: DayBucket[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    out.push({
+      start: d,
+      label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`,
+    });
+  }
+  return out;
+}
+
+/** Sum `amountCents` rows into day buckets (zero-filled). */
+export function bucketByDay(
+  rows: { paidAt: Date; amountCents: number }[],
+  days: DayBucket[],
+): { label: string; cents: number }[] {
+  const sums = days.map(() => 0);
+  const index = new Map(days.map((d, i) => [d.start.toDateString(), i]));
+  for (const row of rows) {
+    const i = index.get(
+      new Date(
+        row.paidAt.getFullYear(),
+        row.paidAt.getMonth(),
+        row.paidAt.getDate(),
+      ).toDateString(),
+    );
+    if (i !== undefined) sums[i] = sums[i]! + row.amountCents;
+  }
+  return days.map((d, i) => ({ label: d.label, cents: sums[i]! }));
+}
+
+export const HEATMAP_ROWS = ['Matin', 'Après-midi', 'Soir'] as const;
+export const HEATMAP_COLS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] as const;
+
+/** LoginEvents → 3×7 grid (Matin <12h / Après-midi 12–18h / Soir ≥18h ×
+ * Lun..Dim, local time). */
+export function loginHeatmap(events: { createdAt: Date }[]): number[][] {
+  const grid = HEATMAP_ROWS.map(() => HEATMAP_COLS.map(() => 0));
+  for (const e of events) {
+    const hour = e.createdAt.getHours();
+    const row = hour < 12 ? 0 : hour < 18 ? 1 : 2;
+    // JS getDay(): 0 = Sunday — shift so Monday is column 0.
+    const col = (e.createdAt.getDay() + 6) % 7;
+    grid[row]![col] = grid[row]![col]! + 1;
+  }
+  return grid;
+}
+
+/** Monthly churn from the SubscriptionStatusChange log. `activations` /
+ * `churns` are this month's transitions into (ACTIVE|TRIAL) / into
+ * (EXPIRED|CANCELED); active-at-month-start is reconstructed from the
+ * current count. Returns null when there was nothing to churn from. */
+export function monthlyChurnPct({
+  currentActive,
+  activationsThisMonth,
+  churnsThisMonth,
+}: {
+  currentActive: number;
+  activationsThisMonth: number;
+  churnsThisMonth: number;
+}): number | null {
+  const activeAtStart = currentActive - activationsThisMonth + churnsThisMonth;
+  if (activeAtStart <= 0) return null;
+  return Math.round((churnsThisMonth / activeAtStart) * 1000) / 10;
+}
+
+/** LTV estimate = ARPU ÷ monthly churn rate. Null until churn is observed —
+ * the UI shows "—" instead of a fabricated infinity. */
+export function ltvCents(arpuCents: number, churnPct: number | null): number | null {
+  if (churnPct === null || churnPct <= 0) return null;
+  return Math.round(arpuCents / (churnPct / 100));
+}

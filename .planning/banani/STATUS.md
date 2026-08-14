@@ -168,7 +168,10 @@ Exports bruts : `fetches/epic2/` (gitignoré). Ce lot **remplace** l'ancien écr
   - Rôles métier du mock (Directeur/Enseignant/Comptable) inexistants dans le modèle → rôle org réel affiché (Propriétaire/Admin/Membre) + badge Superadmin/Staff pour le staff plateforme ; « Ajouter un utilisateur » retiré (pas d'endpoint admin-create, les comptes naissent via création d'école/signup).
   - Actions réelles : Voir le profil (modal), Suspendre (PATCH status existant), Réactiver (SUPERADMIN only, gate D-ADMIN-02 respecté côté UI aussi) ; Modifier / Réinitialiser mdp / Impersonation / Supprimer = stubs honnêtes.
   - Vérifié : lastLoginAt réel rendu (« Aujourd'hui, 13:11 »), 375/768/1280 sans débordement.
-- [ ] `admin-statistics` (`nSYPhOOZgccA`) → `/admin/statistics` — plan : `admin-statistics.md`
+- [x] `admin-statistics` (`nSYPhOOZgccA`) → `/admin/statistics` — plan : `admin-statistics.md` — DONE 2026-08-14
+  - `GET /api/admin/stats/detailed?period=7d|30d|6m|12m` — séries jour/mois selon la période ; analytics Q2 réels : rétention (lastLoginAt, comptes >30j), churn mensuel + LTV (log SubscriptionStatusChange, null tant que rien à churner), heatmap connexions (LoginEvent 30j, grille Lun-Dim × Matin/Après-midi/Soir) ; répartition plans (donut), géo (toutes écoles + revenus des abonnées), « Bulletins générés » du mock remplacé par « Notes saisies » + « Appréciations » (réels — 268 notes rendues au premier chargement).
+  - Helpers purs ajoutés à saas-metrics (lastNDays/bucketByDay/loginHeatmap/monthlyChurnPct/ltvCents) — 20/20 tests.
+  - Vérifié : 375/768/1280 sans débordement, états « — / Données insuffisantes » honnêtes sur base sans abonnements.
 - [ ] `admin-subscriptions` (`M0FRcZpAIEZQ`) → `/admin/billing/subscriptions` — plan : `admin-subscriptions.md`
 - [ ] `admin-transactions` (`Csehe4Ndlnml`) → `/admin/billing/transactions` — plan : `admin-transactions.md`
 - [ ] `admin-coupons` (`zNn8It52QEEh`) → `/admin/billing/coupons` — plan : `admin-coupons.md`

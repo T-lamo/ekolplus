@@ -6,6 +6,11 @@ import {
   couponStatus,
   subscriptionMonthlyCents,
   monthsSince,
+  lastNDays,
+  bucketByDay,
+  loginHeatmap,
+  monthlyChurnPct,
+  ltvCents,
 } from './saas-metrics';
 
 const NOW = new Date('2026-08-14T12:00:00Z');
@@ -123,5 +128,52 @@ describe('subscriptionMonthlyCents', () => {
     expect(
       subscriptionMonthlyCents({ students: 100, priceCents: 50, coupon, monthsSinceStart: 1 }),
     ).toBe(5000);
+  });
+});
+
+describe('lastNDays / bucketByDay', () => {
+  it('builds N days ending today and buckets amounts per day', () => {
+    const days = lastNDays(NOW, 3);
+    expect(days.map((d) => d.label)).toEqual(['12/08', '13/08', '14/08']);
+    const rows = [
+      { paidAt: new Date('2026-08-12T10:00:00'), amountCents: 100 },
+      { paidAt: new Date('2026-08-14T23:00:00'), amountCents: 50 },
+      { paidAt: new Date('2026-08-01T00:00:00'), amountCents: 999 },
+    ];
+    expect(bucketByDay(rows, days).map((b) => b.cents)).toEqual([100, 0, 50]);
+  });
+});
+
+describe('loginHeatmap', () => {
+  it('buckets by weekday (Mon first) and time slot', () => {
+    // 2026-08-14 is a Friday (col 4); 2026-08-16 a Sunday (col 6).
+    const grid = loginHeatmap([
+      { createdAt: new Date('2026-08-14T08:00:00') }, // Matin
+      { createdAt: new Date('2026-08-14T13:00:00') }, // Après-midi
+      { createdAt: new Date('2026-08-14T19:00:00') }, // Soir
+      { createdAt: new Date('2026-08-16T09:00:00') }, // Sunday Matin
+    ]);
+    expect(grid[0]![4]).toBe(1);
+    expect(grid[1]![4]).toBe(1);
+    expect(grid[2]![4]).toBe(1);
+    expect(grid[0]![6]).toBe(1);
+  });
+});
+
+describe('monthlyChurnPct / ltvCents', () => {
+  it('reconstructs active-at-start and computes churn', () => {
+    expect(
+      monthlyChurnPct({ currentActive: 38, activationsThisMonth: 4, churnsThisMonth: 1 }),
+    ).toBe(2.9);
+  });
+  it('is null with nothing to churn from', () => {
+    expect(
+      monthlyChurnPct({ currentActive: 2, activationsThisMonth: 2, churnsThisMonth: 0 }),
+    ).toBeNull();
+  });
+  it('LTV = ARPU / churn, null without churn', () => {
+    expect(ltvCents(10000, 2.5)).toBe(400000);
+    expect(ltvCents(10000, null)).toBeNull();
+    expect(ltvCents(10000, 0)).toBeNull();
   });
 });

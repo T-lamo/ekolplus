@@ -94,31 +94,28 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       where: { schoolId: mySchool.schoolId },
     });
 
-    if (!draft) {
-      // No draft yet; fresh-start payload built from the active AcademicYear.
-      const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
-      if (!activeYear) {
-        return NextResponse.json(
-          { error: 'NO_ACTIVE_YEAR', message: 'Aucune année scolaire active.' },
-          { status: 424, headers: { 'x-request-id': ctx.requestId } },
-        );
-      }
-
-      const { classes, students } = await getPromotionData(mySchool.schoolId, activeYear.id);
-
+    // Resolve the active year + fresh class/student promotion data
+    // unconditionally, regardless of whether a draft already exists. A
+    // resumed draft (Step 2/3 of the wizard) still needs `classes`/
+    // `students` to render — without this, the existing-draft branch used
+    // to omit them entirely, leaving Step 2/3 with empty lists.
+    const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
+    if (!activeYear) {
       return NextResponse.json(
-        {
-          draft: null,
-          activeYear: { id: activeYear.id, label: activeYear.label },
-          classes,
-          students,
-        },
-        { headers: { 'x-request-id': ctx.requestId } },
+        { error: 'NO_ACTIVE_YEAR', message: 'Aucune année scolaire active.' },
+        { status: 424, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 
+    const { classes, students } = await getPromotionData(mySchool.schoolId, activeYear.id);
+
     return NextResponse.json(
-      { draft: serializeDraft(draft) },
+      {
+        draft: draft ? serializeDraft(draft) : null,
+        activeYear: { id: activeYear.id, label: activeYear.label },
+        classes,
+        students,
+      },
       { headers: { 'x-request-id': ctx.requestId } },
     );
   });

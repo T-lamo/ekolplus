@@ -154,15 +154,50 @@ describe('GET /api/school/academic-year-rollover', () => {
     expect(mockGetPromotionData).toHaveBeenCalledWith('school_1', 'ay_1');
   });
 
-  it('existing draft → returns draft fields (no getPromotionData call)', async () => {
+  it('existing draft → returns draft fields alongside activeYear/classes/students', async () => {
     prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+    mockResolveActiveAcademicYear.mockResolvedValueOnce({
+      id: 'ay_1',
+      label: '2025-2026',
+      startDate: new Date('2025-09-01T00:00:00Z'),
+    });
+    const classes = [{ id: 'c1', name: '6ème A', level: '6ème', studentCount: 2 }];
+    const students = [
+      {
+        id: 's1',
+        firstName: 'Awa',
+        lastName: 'Diop',
+        classId: 'c1',
+        enrolledAt: new Date('2025-09-05T00:00:00Z'),
+      },
+    ];
+    mockGetPromotionData.mockResolvedValueOnce({ classes, students });
+
     const res = await GET(makeReq('GET', URL));
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { draft: { id: string; newYearLabel: string } };
+    const body = (await res.json()) as {
+      draft: { id: string; newYearLabel: string };
+      activeYear: { id: string; label: string };
+      classes: unknown[];
+      students: unknown[];
+    };
     expect(body.draft.id).toBe('draft_1');
     expect(body.draft.newYearLabel).toBe('2026-2027');
+    expect(body.activeYear).toEqual({ id: 'ay_1', label: '2025-2026' });
+    expect(body.classes).toHaveLength(1);
+    expect(body.students).toHaveLength(1);
+    expect(mockGetPromotionData).toHaveBeenCalledWith('school_1', 'ay_1');
+    expect(mockResolveActiveAcademicYear).toHaveBeenCalledWith('school_1');
+  });
+
+  it('existing draft + no active year → 424 NO_ACTIVE_YEAR (activeYear check still applies)', async () => {
+    prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+    mockResolveActiveAcademicYear.mockResolvedValueOnce(null);
+    const res = await GET(makeReq('GET', URL));
+    expect(res.status).toBe(424);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe('NO_ACTIVE_YEAR');
     expect(mockGetPromotionData).not.toHaveBeenCalled();
-    expect(mockResolveActiveAcademicYear).not.toHaveBeenCalled();
   });
 });
 

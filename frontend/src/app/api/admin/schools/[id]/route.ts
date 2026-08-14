@@ -24,6 +24,10 @@ const PatchBody = z.object({
   shortName: z.string().trim().max(10).nullable().optional(),
   country: z.string().trim().min(1).max(80).optional(),
   city: z.string().trim().min(1).max(80).optional(),
+  schoolType: z.string().trim().min(1).max(80).optional(),
+  primaryLanguage: z.string().trim().max(60).nullable().optional(),
+  address: z.string().trim().max(200).nullable().optional(),
+  estimatedStudents: z.number().int().min(0).max(100000).nullable().optional(),
   phone: zPhone.nullable().optional(),
   officialEmail: zEmail.nullable().optional(),
   officialCode: z.string().trim().max(40).nullable().optional(),
@@ -31,6 +35,49 @@ const PatchBody = z.object({
   // "suspended" means for a SaaS tenant (no separate School.status field).
   subscriptionStatus: z.enum(['SUSPENDED', 'ACTIVE']).optional(),
 });
+
+// GET — full editable profile for the edit modal (the list rows stay slim;
+// the modal fetches fresh data when it opens).
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const auth = await requireAdmin('ADMIN');
+    if (auth instanceof NextResponse) return auth;
+
+    const limited = await enforceAdminRateLimit(auth.admin.id);
+    if (limited) return limited;
+
+    const { id } = await params;
+    const school = await prisma.school.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        shortName: true,
+        country: true,
+        city: true,
+        schoolType: true,
+        primaryLanguage: true,
+        address: true,
+        phone: true,
+        estimatedStudents: true,
+        officialCode: true,
+        officialEmail: true,
+      },
+    });
+    if (!school) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'School not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    return NextResponse.json({ school }, { headers: { 'x-request-id': ctx.requestId } });
+  });
+}
 
 export async function PATCH(
   req: NextRequest,

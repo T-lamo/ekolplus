@@ -29,7 +29,7 @@ import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { AdminSchoolRow } from '@/lib/admin-types';
-import { ADMIN_SAAS, ADMIN_SCHOOLS as T } from '@/lib/constants';
+import { ADMIN_CREATE_SCHOOL as TC, ADMIN_SAAS, ADMIN_SCHOOLS as T } from '@/lib/constants';
 import { fmtDateMed, fmtRelativeDay, fmtUsd, fmtUsdRound } from '@/lib/admin-format';
 import { exportToCsv } from '@/lib/csv-export';
 import { Card } from '@/components/ui/Card';
@@ -39,7 +39,9 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { Pager } from '@/components/ui/Pager';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { SearchInput } from '@/components/ui/SearchInput';
+import { Select, SelectItem as FormSelectItem } from '@/components/ui/Select';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { SkeletonFilters, SkeletonStatCards, SkeletonTable } from '@/components/ui/Skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -526,6 +528,23 @@ function ProfileModal({ school, onClose }: { school: AdminSchoolRow; onClose: ()
   );
 }
 
+// Full editable profile — same surface as the creation form's school
+// section (schools/new) plus the admin-only officialCode/officialEmail.
+interface SchoolDetail {
+  id: string;
+  name: string;
+  shortName: string | null;
+  country: string;
+  city: string;
+  schoolType: string;
+  primaryLanguage: string | null;
+  address: string | null;
+  phone: string | null;
+  estimatedStudents: number | null;
+  officialCode: string | null;
+  officialEmail: string | null;
+}
+
 function EditModal({
   school,
   onClose,
@@ -536,23 +555,81 @@ function EditModal({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
-  const [name, setName] = useState(school.name);
-  const [country, setCountry] = useState(school.country);
-  const [city, setCity] = useState(school.city);
-  const [officialCode, setOfficialCode] = useState(school.officialCode ?? '');
+  const [form, setForm] = useState<{
+    name: string;
+    shortName: string;
+    country: string;
+    city: string;
+    schoolType: string;
+    primaryLanguage: string;
+    address: string;
+    phone: string;
+    estimatedStudents: string;
+    officialCode: string;
+    officialEmail: string;
+  } | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api<{ school: SchoolDetail }>(`/api/admin/schools/${school.id}`)
+      .then(({ school: d }) => {
+        if (cancelled) return;
+        setForm({
+          name: d.name,
+          shortName: d.shortName ?? '',
+          country: d.country,
+          city: d.city,
+          schoolType: d.schoolType,
+          primaryLanguage: d.primaryLanguage ?? '',
+          address: d.address ?? '',
+          phone: d.phone ?? '',
+          estimatedStudents: d.estimatedStudents !== null ? String(d.estimatedStudents) : '',
+          officialCode: d.officialCode ?? '',
+          officialEmail: d.officialEmail ?? '',
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [school.id]);
+
+  function patch(p: Partial<NonNullable<typeof form>>) {
+    setForm((f) => (f ? { ...f, ...p } : f));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form) return;
+    const students = form.estimatedStudents.trim();
+    const estimatedStudents = students === '' ? null : Number.parseInt(students, 10);
+    if (
+      estimatedStudents !== null &&
+      (!Number.isInteger(estimatedStudents) || estimatedStudents < 0)
+    ) {
+      toast(TC.schoolSection.estimatedStudents, 'error');
+      return;
+    }
     setSaving(true);
     try {
       await api(`/api/admin/schools/${school.id}`, {
         method: 'PATCH',
         body: {
-          name: name.trim(),
-          country: country.trim(),
-          city: city.trim(),
-          officialCode: officialCode.trim() || null,
+          name: form.name.trim(),
+          shortName: form.shortName.trim() || null,
+          country: form.country.trim(),
+          city: form.city.trim(),
+          schoolType: form.schoolType,
+          primaryLanguage: form.primaryLanguage.trim() || null,
+          address: form.address.trim() || null,
+          phone: form.phone.trim() || null,
+          estimatedStudents,
+          officialCode: form.officialCode.trim() || null,
+          officialEmail: form.officialEmail.trim() || null,
         },
       });
       onSaved();
@@ -562,47 +639,135 @@ function EditModal({
     }
   }
 
+  // The catalog is free-form in DB — keep the stored value selectable even
+  // if it's not in the current creation catalog.
+  const schoolTypes =
+    form && !TC.schoolTypes.includes(form.schoolType as (typeof TC.schoolTypes)[number])
+      ? [form.schoolType, ...TC.schoolTypes]
+      : [...TC.schoolTypes];
+
   return (
     <Modal title={T.editModal.title} onClose={onClose}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
-        <Field
-          label={T.editModal.name}
-          name="name"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            label={T.editModal.country}
-            name="country"
-            required
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-          />
-          <Field
-            label={T.editModal.city}
-            name="city"
-            required
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-        </div>
-        <Field
-          label={T.editModal.officialCode}
-          name="officialCode"
-          value={officialCode}
-          onChange={(e) => setOfficialCode(e.target.value)}
-        />
-        <div className="mt-1 flex gap-2.5">
-          <Button type="button" variant="outline" onClick={onClose}>
+      {loadFailed ? (
+        <div className="flex flex-col items-center gap-3 py-6">
+          <p className="text-sm text-muted-foreground">{T.loadError}</p>
+          <Button variant="outline" className="w-auto" onClick={onClose}>
             {T.editModal.cancel}
           </Button>
-          <Button type="submit" loading={saving}>
-            {saving ? T.editModal.saving : T.editModal.save}
-          </Button>
         </div>
-      </form>
+      ) : !form ? (
+        <div className="flex flex-col gap-3.5 py-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-10 animate-pulse rounded-md bg-muted" />
+          ))}
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+          <Field
+            label={T.editModal.name}
+            name="name"
+            required
+            value={form.name}
+            onChange={(e) => patch({ name: e.target.value })}
+          />
+          <div>
+            <Field
+              label={T.editModal.shortName}
+              name="shortName"
+              maxLength={10}
+              value={form.shortName}
+              onChange={(e) => patch({ shortName: e.target.value })}
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {TC.schoolSection.shortNameHint}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label={T.editModal.country}
+              name="country"
+              required
+              value={form.country}
+              onChange={(e) => patch({ country: e.target.value })}
+            />
+            <Field
+              label={T.editModal.city}
+              name="city"
+              required
+              value={form.city}
+              onChange={(e) => patch({ city: e.target.value })}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Select
+              label={TC.schoolSection.schoolType}
+              value={form.schoolType}
+              onValueChange={(v) => patch({ schoolType: v })}
+            >
+              {schoolTypes.map((t) => (
+                <FormSelectItem key={t} value={t}>
+                  {t}
+                </FormSelectItem>
+              ))}
+            </Select>
+            <Field
+              label={TC.schoolSection.primaryLanguage}
+              name="primaryLanguage"
+              value={form.primaryLanguage}
+              onChange={(e) => patch({ primaryLanguage: e.target.value })}
+            />
+          </div>
+          <Field
+            label={TC.schoolSection.address}
+            name="address"
+            placeholder={TC.schoolSection.addressPlaceholder}
+            value={form.address}
+            onChange={(e) => patch({ address: e.target.value })}
+          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <PhoneInput
+              label={T.editModal.phone}
+              value={form.phone}
+              onChange={(v) => patch({ phone: v })}
+            />
+            <div>
+              <Field
+                label={TC.schoolSection.estimatedStudents}
+                name="estimatedStudents"
+                inputMode="numeric"
+                value={form.estimatedStudents}
+                onChange={(e) => patch({ estimatedStudents: e.target.value })}
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {TC.schoolSection.estimatedStudentsHint}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field
+              label={T.editModal.officialEmail}
+              name="officialEmail"
+              type="email"
+              value={form.officialEmail}
+              onChange={(e) => patch({ officialEmail: e.target.value })}
+            />
+            <Field
+              label={T.editModal.officialCode}
+              name="officialCode"
+              value={form.officialCode}
+              onChange={(e) => patch({ officialCode: e.target.value })}
+            />
+          </div>
+          <div className="mt-1 flex gap-2.5">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {T.editModal.cancel}
+            </Button>
+            <Button type="submit" loading={saving}>
+              {saving ? T.editModal.saving : T.editModal.save}
+            </Button>
+          </div>
+        </form>
+      )}
     </Modal>
   );
 }

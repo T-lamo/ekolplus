@@ -1041,6 +1041,7 @@ export const ADMIN_COUPONS = {
     done: 'Coupon supprimé.',
   },
   toggled: { disabled: 'Coupon désactivé.', enabled: 'Coupon réactivé.' },
+  copied: 'Code copié.',
   pagerLabel: 'coupons',
   empty: 'Aucun coupon — créez votre premier code promo.',
   loadError: 'Impossible de charger les coupons.',

@@ -42,6 +42,15 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
+
+  /* Chart categorical palette (SaaS admin, Epic 2) — fixed assignment order:
+     chart-1 = Premium, chart-2 = Essentiel, chart-3 = Starter. Validated with
+     the dataviz skill's palette validator (CVD ΔE ≥ 14.6, contrast ≥ 3:1 on
+     white). Never cycle or reassign; "Expirés" is a neutral legend line, not
+     a 4th hue. */
+  --color-chart-1: #6c2bd9;
+  --color-chart-2: #0d9488;
+  --color-chart-3: #e65100;
 }
 
 /* Radix Accordion — content height driven by --radix-accordion-content-height,

@@ -18,6 +18,7 @@
     "db:studio": "prisma studio",
     "db:make-superadmin": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/make-superadmin.ts",
     "db:seed-bulletin-templates": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-bulletin-templates.ts",
+    "db:seed-plans": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-subscription-plans.ts",
     "db:backfill-bulletin-content-layout": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-content-layout.ts",
     "db:backfill-bulletin-density-typography": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-density-typography.ts",
     "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",

@@ -56,13 +56,12 @@ export default function LoginPage() {
         body: { email, password },
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
-      await refresh();
-      // TODO(epic-2/3): once /admin exists, branch on the logged-in user's
-      // role/org membership instead of always landing on the same page.
-      // Needs `role: true` added to /api/auth/me's select too. `/` is the
-      // public marketing landing now, so a logged-in user must never land
-      // there post-login.
-      router.push('/configuration/classes');
+      const me = await refresh();
+      // Platform staff (ADMIN/SUPERADMIN) land on the SaaS back-office;
+      // school users land on their configuration home. `/` stays the public
+      // marketing landing — a logged-in user must never land there.
+      const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
+      router.push(isPlatformStaff ? '/admin' : '/configuration/classes');
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

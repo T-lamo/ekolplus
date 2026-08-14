@@ -22,7 +22,7 @@ const PILLARS: Pillar[] = [
     id: 'finance-section',
     icon: CreditCard,
     title: 'Paiements & Échéanciers',
-    desc: 'Suivi des balances en temps réel et rappels SMS automatiques pour les frais de scolarité.',
+    desc: 'Suivi des balances en temps réel et rappels WhatsApp automatiques pour les frais de scolarité.',
     features: ['Rappels automatisés', 'Échéanciers flexibles'],
     featured: true,
     soon: true,

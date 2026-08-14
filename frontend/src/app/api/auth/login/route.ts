@@ -165,6 +165,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 8. Reset failure count and issue cookies.
     await recordSuccess(email);
 
+    // 8b. Login analytics (Epic 2): lastLoginAt powers the admin Users /
+    // Schools "Dernière connexion / Dernier accès" columns; LoginEvent
+    // powers the activity heatmap + retention KPIs. Best-effort — a
+    // failure here must never block a valid login.
+    try {
+      await prisma.$transaction([
+        prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }),
+        prisma.loginEvent.create({ data: { userId: user.id } }),
+      ]);
+    } catch (err) {
+      log.warn('login analytics write failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+
     const accessToken = await createAccessToken({
       sub: user.id,
       email: user.email,

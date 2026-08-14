@@ -30,7 +30,10 @@ interface AuthContextValue {
   loading: boolean;
   loggingOut: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
+  /** Re-fetches /api/auth/me and returns the fresh user (null when logged
+   * out) so callers like the login page can branch on role without a second
+   * request racing the context update. */
+  refresh: () => Promise<User | null>;
   logout: () => Promise<void>;
 }
 
@@ -42,12 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = useCallback(async () => {
+  const fetchUser = useCallback(async (): Promise<User | null> => {
     setError(null);
     try {
       const res = await api<{ user: User; csrfToken?: string }>('/api/auth/me');
       setUser(res.user);
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
+      return res.user;
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setUser(null);
@@ -60,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : 'Cannot reach the server. Check your network and try again.';
         setError(msg);
       }
+      return null;
     } finally {
       setLoading(false);
     }
@@ -105,7 +110,7 @@ const SSR_STUB: AuthContextValue = {
   loading: true,
   loggingOut: false,
   error: null,
-  refresh: async () => {},
+  refresh: async () => null,
   logout: async () => {},
 };
 

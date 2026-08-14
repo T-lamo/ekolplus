@@ -3,18 +3,11 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
-  Bell,
   Clock,
   Download,
   Eye,
-  FileText,
-  History,
-  Mail,
   Pencil,
-  Plus,
-  Printer,
   ShieldCheck,
-  SlidersHorizontal,
   Trash2,
   TrendingUp,
   UserCheck,
@@ -79,8 +72,8 @@ const STATUS_META: Record<
   EXCUSED: {
     label: 'Justifié',
     glyph: 'J',
-    bg: 'bg-[#e0f0ff]',
-    fg: 'text-[#2563eb]',
+    bg: 'bg-info',
+    fg: 'text-info-foreground',
     dot: 'bg-[#2563eb]',
   },
 };
@@ -287,26 +280,11 @@ export default function PresencesPage() {
         divider: true,
       },
       {
-        label: 'Historique complet',
-        icon: <History size={14} />,
-        onClick: () => toast('Historique — bientôt disponible.', 'info'),
-      },
-      {
-        label: 'Notifier le tuteur',
-        icon: <Mail size={14} />,
-        onClick: () => toast('Messagerie — bientôt disponible.', 'info'),
-      },
-      {
-        label: 'Générer un rapport',
-        icon: <FileText size={14} />,
-        onClick: () => toast('Génération de rapport — bientôt disponible.', 'info'),
-        divider: true,
-      },
-      {
         label: "Supprimer l'entrée",
         icon: <Trash2 size={14} />,
         onClick: () => deleteToday(s),
         tone: 'danger' as const,
+        divider: true,
       },
     ];
   }
@@ -332,37 +310,9 @@ export default function PresencesPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            className="w-fit"
-            onClick={() => toast('Configuration des colonnes — bientôt disponible.', 'info')}
-          >
-            <SlidersHorizontal size={14} />
-            Affichage
-          </Button>
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter
-          </Button>
-          <Button variant="outline" className="w-fit" onClick={() => window.print()}>
-            <Printer size={14} />
-            Imprimer
-          </Button>
-          <Button
-            className="w-fit border border-warning bg-warning text-warning-foreground hover:bg-warning/90"
-            onClick={() => toast('Notifications aux tuteurs — bientôt disponible.', 'info')}
-          >
-            <Bell size={14} />
-            Notifier les tuteurs
-          </Button>
-          <Button
-            className="w-fit"
-            onClick={() =>
-              document.getElementById('presence-table')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          >
-            <Plus size={14} />
-            Saisir présences
           </Button>
         </div>
       </div>
@@ -525,7 +475,7 @@ export default function PresencesPage() {
                 </div>
               </div>
 
-              <Card id="presence-table" className="overflow-x-auto">
+              <Card className="overflow-x-auto">
                 {filtered.length === 0 ? (
                   <p className="p-5 text-sm text-muted-foreground">
                     {data.students.length === 0
@@ -561,7 +511,7 @@ export default function PresencesPage() {
                                   <div className="font-semibold text-foreground">
                                     {row.firstName} {row.lastName}
                                   </div>
-                                  <div className="text-[11px] text-muted-foreground">
+                                  <div className="text-2xs text-muted-foreground">
                                     #{row.studentNumber}
                                   </div>
                                 </div>
@@ -683,7 +633,7 @@ function PresenceDot({
     return (
       <span
         title="Jour à venir — non modifiable"
-        className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold opacity-40 ${NOT_RECORDED.bg} ${NOT_RECORDED.fg}`}
+        className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-2xs font-bold opacity-40 ${NOT_RECORDED.bg} ${NOT_RECORDED.fg}`}
       >
         {NOT_RECORDED.glyph}
       </span>
@@ -694,7 +644,7 @@ function PresenceDot({
       type="button"
       onClick={onClick}
       title={`${meta.label} — cliquer pour changer`}
-      className={`mx-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-[11px] font-bold ${meta.bg} ${meta.fg}`}
+      className={`mx-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-2xs font-bold ${meta.bg} ${meta.fg}`}
     >
       {meta.glyph}
     </button>
@@ -722,7 +672,7 @@ function RateBar({ rate }: { rate: number | null }) {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -744,7 +694,7 @@ function SummaryCard({
 }) {
   const iconBg: Record<string, string> = {
     secondary: 'bg-secondary text-primary',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
     success: 'bg-success text-success-foreground',
     destructive: 'bg-destructive text-destructive-foreground',
     warning: 'bg-warning text-warning-foreground',
@@ -757,9 +707,9 @@ function SummaryCard({
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className="text-xl font-bold text-foreground">{value}</div>
-        <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
+        <div className="truncate text-2xs text-muted-foreground">{sub}</div>
       </div>
     </Card>
   );
@@ -820,7 +770,7 @@ function StatsSection({ stats }: { stats: AttendanceStatsResponse | null }) {
 
       <Card className="gap-4 p-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+          <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
             <TrendingUp size={14} className="text-primary" />
             Taux de présence par semaine
           </div>
@@ -874,7 +824,7 @@ function AlertsSection({
     <Card className="overflow-x-auto">
       <div className="flex items-center gap-2 border-b border-border px-3.5 py-3">
         <AlertTriangle size={15} className="text-warning-foreground" />
-        <span className="text-[13px] font-semibold text-foreground">
+        <span className="text-caption font-semibold text-foreground">
           {atRisk.length} élève{atRisk.length > 1 ? 's' : ''} à surveiller
         </span>
         <span className="text-xs text-muted-foreground">
@@ -904,19 +854,19 @@ function AlertsSection({
                       <div className="font-semibold text-foreground">
                         {row.firstName} {row.lastName}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">#{row.studentNumber}</div>
+                      <div className="text-2xs text-muted-foreground">#{row.studentNumber}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-3.5 py-2.5">
                   <div className="flex flex-wrap gap-1">
                     {lowRate && (
-                      <span className="rounded-full bg-destructive px-2 py-0.5 text-[11px] font-bold text-destructive-foreground">
+                      <span className="rounded-full bg-destructive px-2 py-0.5 text-2xs font-bold text-destructive-foreground">
                         Taux faible
                       </span>
                     )}
                     {highAbsences && (
-                      <span className="rounded-full bg-warning px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
+                      <span className="rounded-full bg-warning px-2 py-0.5 text-2xs font-bold text-warning-foreground">
                         Absences répétées
                       </span>
                     )}
@@ -933,14 +883,14 @@ function AlertsSection({
                     <button
                       type="button"
                       onClick={() => onView(row.id)}
-                      className="rounded-md border border-border px-2.5 py-1.5 text-[11px] font-semibold text-foreground"
+                      className="rounded-md border border-border px-2.5 py-1.5 text-2xs font-semibold text-foreground"
                     >
                       Voir
                     </button>
                     <button
                       type="button"
                       onClick={() => onJustify(row)}
-                      className="rounded-md border border-border px-2.5 py-1.5 text-[11px] font-semibold text-foreground"
+                      className="rounded-md border border-border px-2.5 py-1.5 text-2xs font-semibold text-foreground"
                     >
                       Justifier
                     </button>

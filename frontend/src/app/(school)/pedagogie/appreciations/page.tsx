@@ -10,13 +10,8 @@ import {
   AlertTriangle,
   Plus,
   Download,
-  Printer,
   Eye,
   Pencil,
-  Copy,
-  History,
-  FileText,
-  Mail,
   Trash2,
   Table2,
   BookOpen,
@@ -173,26 +168,6 @@ export default function AppreciationsListPage() {
           router.push(`/pedagogie/appreciations/${s.studentId}/saisie?termId=${termId}`),
       },
       {
-        label: 'Dupliquer',
-        icon: <Copy size={14} />,
-        onClick: () => toast('Duplication — bientôt disponible.', 'info'),
-      },
-      {
-        label: 'Historique',
-        icon: <History size={14} />,
-        onClick: () => toast('Historique — bientôt disponible.', 'info'),
-      },
-      {
-        label: 'Générer le bulletin',
-        icon: <FileText size={14} />,
-        onClick: () => toast('Disponible avec les Bulletins (Epic 7).', 'info'),
-      },
-      {
-        label: 'Notifier le tuteur',
-        icon: <Mail size={14} />,
-        onClick: () => toast('Messagerie — bientôt disponible.', 'info'),
-      },
-      {
         label: "Supprimer l'appréciation",
         icon: <Trash2 size={14} />,
         tone: 'danger',
@@ -248,14 +223,6 @@ export default function AppreciationsListPage() {
           <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
             <Download size={14} />
             Exporter
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-fit border border-border"
-            onClick={() => window.print()}
-          >
-            <Printer size={14} />
-            Imprimer
           </Button>
           <Button
             className="w-fit"

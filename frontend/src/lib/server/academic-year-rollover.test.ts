@@ -58,6 +58,19 @@ describe('computeStats', () => {
     });
   });
 
+  it('class mapping with isNew: true but no newClass => unenrolled (matches executeRollover, which cannot create the class)', () => {
+    const classMapping: Record<string, ClassMappingEntry> = {
+      'class-old-1': { isNew: true }, // malformed/incomplete: isNew without newClass
+    };
+    const students = [student('s1', 'class-old-1')];
+
+    expect(computeStats(classMapping, {}, students)).toEqual({
+      promoted: 0,
+      exceptions: 0,
+      unenrolled: 1,
+    });
+  });
+
   it('student exception with destClassId overrides the class mapping => exceptions', () => {
     const classMapping: Record<string, ClassMappingEntry> = {
       'class-old-1': { destClassId: 'class-new-1' },

@@ -81,8 +81,13 @@ export function computeStats(
       exceptions++;
     } else {
       // Fall back to the class-level mapping for the student's current class.
+      // Mirrors executeRollover's actual class-creation guard below: an
+      // `isNew: true` mapping only produces a real destination class (and
+      // therefore a real enrollment) when `newClass` is also present — so
+      // the promoted/unenrolled split here MUST match that condition
+      // exactly, or the preview stats lie about what executeRollover does.
       const mapping = classMapping[student.classId];
-      if (mapping?.destClassId || mapping?.isNew) {
+      if (mapping?.destClassId || (mapping?.isNew && mapping?.newClass)) {
         promoted++;
       } else {
         unenrolled++;

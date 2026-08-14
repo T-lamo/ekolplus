@@ -53,6 +53,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           studentNumber: s.studentNumber,
           firstName: s.firstName,
           lastName: s.lastName,
+          photoUrl: s.photoUrl,
           dateOfBirth: s.dateOfBirth,
           status: s.status,
           class: s.enrollments[0]?.class ?? null,
@@ -76,6 +77,7 @@ const GuardianInput = z.object({
 const CreateStudentBody = z.object({
   firstName: z.string().trim().min(1).max(60),
   lastName: z.string().trim().min(1).max(60),
+  photoUrl: z.string().trim().url().max(500).nullable().optional(),
   dateOfBirth: z.coerce.date(),
   placeOfBirth: z.string().trim().max(120).nullable().optional(),
   gender: z.string().trim().max(30).nullable().optional(),
@@ -147,6 +149,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           studentNumber,
           firstName: parsed.data.firstName,
           lastName: parsed.data.lastName,
+          photoUrl: parsed.data.photoUrl ?? null,
           dateOfBirth: parsed.data.dateOfBirth,
           placeOfBirth: parsed.data.placeOfBirth ?? null,
           gender: parsed.data.gender ?? null,

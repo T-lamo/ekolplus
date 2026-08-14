@@ -69,6 +69,7 @@ export async function GET(
           studentNumber: student.studentNumber,
           firstName: student.firstName,
           lastName: student.lastName,
+          photoUrl: student.photoUrl,
           dateOfBirth: student.dateOfBirth,
           placeOfBirth: student.placeOfBirth,
           gender: student.gender,
@@ -98,6 +99,7 @@ const GuardianInput = z.object({
 const UpdateStudentBody = z.object({
   firstName: z.string().trim().min(1).max(60).optional(),
   lastName: z.string().trim().min(1).max(60).optional(),
+  photoUrl: z.string().trim().url().max(500).nullable().optional(),
   dateOfBirth: z.coerce.date().optional(),
   placeOfBirth: z.string().trim().max(120).nullable().optional(),
   gender: z.string().trim().max(30).nullable().optional(),
@@ -147,6 +149,13 @@ export async function PATCH(
     const { classId, guardians, ...rest } = parsed.data;
     const data = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
 
+    // Resolved BEFORE the transaction opens — neither depends on anything
+    // computed inside it. Running them mid-transaction (as this route used
+    // to) makes Prisma hold the transaction open across an extra sequential
+    // round-trip on a separate connection, which blew past the 5s
+    // interactive-transaction timeout on this environment's DB latency
+    // (P2028 "Transaction already closed").
+    let activeYear: { id: string } | null = null;
     if (classId) {
       const cls = await prisma.class.findUnique({ where: { id: classId } });
       if (!cls || cls.schoolId !== mySchool.schoolId) {
@@ -155,39 +164,40 @@ export async function PATCH(
           { status: 400, headers: { 'x-request-id': ctx.requestId } },
         );
       }
+      activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
     }
 
-    await prisma.$transaction(async (tx) => {
-      if (Object.keys(data).length > 0) {
-        await tx.student.update({ where: { id }, data });
-      }
-      if (classId) {
-        const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
-        if (activeYear) {
+    await prisma.$transaction(
+      async (tx) => {
+        if (Object.keys(data).length > 0) {
+          await tx.student.update({ where: { id }, data });
+        }
+        if (classId && activeYear) {
           await tx.enrollment.upsert({
             where: { studentId_academicYearId: { studentId: id, academicYearId: activeYear.id } },
             create: { studentId: id, classId, academicYearId: activeYear.id },
             update: { classId },
           });
         }
-      }
-      if (guardians) {
-        await tx.guardian.deleteMany({ where: { studentId: id } });
-        if (guardians.length > 0) {
-          await tx.guardian.createMany({
-            data: guardians.map((g) => ({
-              studentId: id,
-              name: g.name,
-              relationship: g.relationship,
-              phone: g.phone ?? null,
-              email: g.email ?? null,
-              profession: g.profession ?? null,
-              isPrimary: g.isPrimary ?? false,
-            })),
-          });
+        if (guardians) {
+          await tx.guardian.deleteMany({ where: { studentId: id } });
+          if (guardians.length > 0) {
+            await tx.guardian.createMany({
+              data: guardians.map((g) => ({
+                studentId: id,
+                name: g.name,
+                relationship: g.relationship,
+                phone: g.phone ?? null,
+                email: g.email ?? null,
+                profession: g.profession ?? null,
+                isPrimary: g.isPrimary ?? false,
+              })),
+            });
+          }
         }
-      }
-    });
+      },
+      { timeout: 15_000 },
+    ); // headroom for this Neon instance's observed multi-second query latency
 
     const updated = await prisma.student.findUnique({
       where: { id },

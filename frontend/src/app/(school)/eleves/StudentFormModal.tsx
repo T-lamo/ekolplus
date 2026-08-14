@@ -8,6 +8,7 @@ import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 import type { ClassOption, GuardianData, StudentDetail } from './types';
 
 const EMPTY_GUARDIAN: GuardianData = {
@@ -33,6 +34,7 @@ export function StudentFormModal({
   const { toast } = useToast();
   const [firstName, setFirstName] = useState(student?.firstName ?? '');
   const [lastName, setLastName] = useState(student?.lastName ?? '');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(student?.photoUrl ?? null);
   const [dateOfBirth, setDateOfBirth] = useState(student?.dateOfBirth?.slice(0, 10) ?? '');
   const [placeOfBirth, setPlaceOfBirth] = useState(student?.placeOfBirth ?? '');
   const [gender, setGender] = useState(student?.gender ?? '');
@@ -48,6 +50,26 @@ export function StudentFormModal({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // For an existing student, persist the photo the moment it's uploaded —
+  // don't make it depend on the user remembering to click "Enregistrer" at
+  // the bottom of an unrelated form (that's what caused photos to silently
+  // vanish before this fix). A brand-new student has no id yet, so its
+  // photo can only be saved as part of the initial create submit below.
+  async function handlePhotoChange(url: string | null) {
+    setPhotoUrl(url);
+    if (!student) return;
+    try {
+      await api(`/api/school/students/${student.id}`, { method: 'PATCH', body: { photoUrl: url } });
+      // Spread the server-confirmed `student` snapshot, not any in-progress
+      // edits still sitting in this form's other fields — those aren't
+      // saved yet and shouldn't leak into the list until the real submit.
+      onSaved({ ...student, photoUrl: url });
+      toast('Photo mise à jour.', 'success');
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -68,6 +90,7 @@ export function StudentFormModal({
       const body = {
         firstName,
         lastName,
+        photoUrl,
         dateOfBirth,
         placeOfBirth: placeOfBirth || null,
         gender: gender || null,
@@ -103,6 +126,14 @@ export function StudentFormModal({
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-3.5">
           <div className="text-xs font-bold text-muted-foreground uppercase">Identité</div>
+          <div className="w-32">
+            <ImageUploader
+              label="Photo"
+              hint="PNG, JPG ou WebP"
+              value={photoUrl}
+              onChange={(url) => void handlePhotoChange(url)}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3.5">
             <Field
               label="Prénom"

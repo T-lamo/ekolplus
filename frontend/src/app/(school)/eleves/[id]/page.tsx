@@ -205,7 +205,11 @@ export default function StudentProfilePage() {
           <div className="flex items-end gap-4">
             <div className="relative shrink-0">
               <div className="rounded-full border-[3px] border-card shadow-lg">
-                <Avatar name={`${student.firstName} ${student.lastName}`} size={80} />
+                <Avatar
+                  name={`${student.firstName} ${student.lastName}`}
+                  size={80}
+                  src={student.photoUrl}
+                />
               </div>
               <div
                 className="absolute right-1 bottom-1 h-3.5 w-3.5 rounded-full border-2 border-card"

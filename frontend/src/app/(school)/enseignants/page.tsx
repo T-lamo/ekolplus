@@ -280,7 +280,7 @@ export default function TeachersPage() {
                 <Card key={t.id} className="gap-3 p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <Avatar name={t.name} size={36} />
+                      <Avatar name={t.name} size={36} src={t.photoUrl} />
                       <div>
                         <div className="font-bold text-foreground">{t.name}</div>
                         {t.email && (
@@ -331,7 +331,7 @@ export default function TeachersPage() {
                     <tr key={t.id} className="border-b border-border last:border-none">
                       <td className="px-3.5 py-2.5">
                         <div className="flex items-center gap-2.5">
-                          <Avatar name={t.name} size={32} />
+                          <Avatar name={t.name} size={32} src={t.photoUrl} />
                           <div className="font-semibold text-foreground">{t.name}</div>
                         </div>
                       </td>

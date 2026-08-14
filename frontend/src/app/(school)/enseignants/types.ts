@@ -5,6 +5,7 @@ export interface TeacherListItem {
   name: string;
   email: string | null;
   phone: string | null;
+  photoUrl: string | null;
   status: TeacherStatus;
   isActive: boolean;
   subjects: { id: string; name: string }[];

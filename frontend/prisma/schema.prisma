@@ -282,6 +282,7 @@ model Teacher {
   name      String
   email     String?
   phone     String?
+  photoUrl  String? // Cloudinary secure_url — public, see /api/upload docs
   isActive  Boolean  @default(true)
   // Employment status shown on the Teachers List — separate from `isActive`
   // (which only gates visibility in assignment pickers, see epic-5-data-model.md).
@@ -352,6 +353,7 @@ model Student {
   studentNumber String // "EL-2024-001" — generated at creation, sequential per school
   firstName     String
   lastName      String
+  photoUrl      String? // Cloudinary secure_url — public, see /api/upload docs
   dateOfBirth   DateTime
   placeOfBirth  String?
   gender        String? // free text, no fixed catalog yet

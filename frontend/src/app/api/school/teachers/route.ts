@@ -38,7 +38,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const teachers = await prisma.teacher.findMany({
         where: { schoolId: mySchool.schoolId, isActive: true },
         orderBy: { name: 'asc' },
-        select: { id: true, name: true, email: true, phone: true },
+        select: { id: true, name: true, email: true, phone: true, photoUrl: true },
       });
       return NextResponse.json({ teachers }, { headers: { 'x-request-id': ctx.requestId } });
     }
@@ -63,6 +63,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           name: t.name,
           email: t.email,
           phone: t.phone,
+          photoUrl: t.photoUrl,
           status: t.status,
           isActive: t.isActive,
           subjects: [...new Map(t.classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
@@ -79,6 +80,7 @@ const CreateTeacherBody = z.object({
   name: z.string().trim().min(2).max(120),
   email: zEmail.nullable().optional(),
   phone: zPhone.nullable().optional(),
+  photoUrl: z.string().trim().url().max(500).nullable().optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -118,6 +120,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         name: parsed.data.name,
         email: parsed.data.email ?? null,
         phone: parsed.data.phone ?? null,
+        photoUrl: parsed.data.photoUrl ?? null,
       },
     });
 

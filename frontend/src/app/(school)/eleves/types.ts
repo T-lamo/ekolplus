@@ -5,6 +5,7 @@ export interface StudentListItem {
   studentNumber: string;
   firstName: string;
   lastName: string;
+  photoUrl: string | null;
   dateOfBirth: string;
   status: StudentStatus;
   class: { id: string; name: string } | null;
@@ -26,6 +27,7 @@ export interface StudentDetail {
   studentNumber: string;
   firstName: string;
   lastName: string;
+  photoUrl: string | null;
   dateOfBirth: string;
   placeOfBirth: string | null;
   gender: string | null;

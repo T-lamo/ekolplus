@@ -284,7 +284,7 @@ export default function StudentsPage() {
                 <Card key={s.id} className="gap-3 p-4">
                   <div className="flex items-start justify-between">
                     <Link href={`/eleves/${s.id}`} className="flex items-center gap-2.5">
-                      <Avatar name={`${s.firstName} ${s.lastName}`} size={36} />
+                      <Avatar name={`${s.firstName} ${s.lastName}`} size={36} src={s.photoUrl} />
                       <div>
                         <div className="font-bold text-foreground">
                           {s.firstName} {s.lastName}
@@ -321,7 +321,11 @@ export default function StudentsPage() {
                     <tr key={s.id} className="border-b border-border last:border-none">
                       <td className="px-3.5 py-2.5">
                         <Link href={`/eleves/${s.id}`} className="flex items-center gap-2.5">
-                          <Avatar name={`${s.firstName} ${s.lastName}`} size={32} />
+                          <Avatar
+                            name={`${s.firstName} ${s.lastName}`}
+                            size={32}
+                            src={s.photoUrl}
+                          />
                           <div>
                             <div className="font-semibold text-foreground">
                               {s.firstName} {s.lastName}
@@ -372,6 +376,7 @@ export default function StudentsPage() {
                 studentNumber: saved.studentNumber,
                 firstName: saved.firstName,
                 lastName: saved.lastName,
+                photoUrl: saved.photoUrl,
                 dateOfBirth: saved.dateOfBirth,
                 status: saved.status,
                 class: saved.class,

@@ -17,6 +17,7 @@ const UpdateTeacherBody = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   email: zEmail.nullable().optional(),
   phone: zPhone.nullable().optional(),
+  photoUrl: z.string().trim().url().max(500).nullable().optional(),
   status: z.enum(['ACTIVE', 'ON_LEAVE', 'INACTIVE']).optional(),
   isActive: z.boolean().optional(),
 });

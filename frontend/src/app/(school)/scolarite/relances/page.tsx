@@ -6,7 +6,6 @@ import {
   CircleAlert,
   Download,
   Eye,
-  FileDown,
   FileSpreadsheet,
   Flag,
   Send,
@@ -242,7 +241,7 @@ export default function OverdueFeesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
@@ -335,79 +334,81 @@ export default function OverdueFeesPage() {
                   <p className="p-5 text-sm text-muted-foreground">Aucun retard de paiement.</p>
                 </Card>
               ) : (
-                <Card className="overflow-x-auto">
-                  <table className="w-full min-w-[920px] border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <Th className="w-10">
-                          <input
-                            type="checkbox"
-                            aria-label="Tout sélectionner"
-                            checked={selected.size === data.rows.length}
-                            onChange={toggleAll}
-                          />
-                        </Th>
-                        <Th>{t.columns.student}</Th>
-                        <Th>{t.columns.class}</Th>
-                        <Th>{t.columns.tranche}</Th>
-                        <Th>{t.columns.amountDue}</Th>
-                        <Th>{t.columns.overdue}</Th>
-                        <Th>{t.columns.status}</Th>
-                        <Th>{t.columns.lastReminder}</Th>
-                        <Th className="w-[70px]" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.rows.map((r) => {
-                        const key = `${r.studentId}:${r.trancheId}`;
-                        return (
-                          <tr key={key} className="border-b border-border last:border-none">
-                            <td className="px-3.5 py-2.5">
-                              <input
-                                type="checkbox"
-                                aria-label={`Sélectionner ${r.firstName} ${r.lastName}`}
-                                checked={selected.has(key)}
-                                onChange={() => toggleRow(key)}
-                              />
-                            </td>
-                            <td className="px-3.5 py-2.5">
-                              <div className="flex items-center gap-2.5">
-                                <Avatar name={`${r.firstName} ${r.lastName}`} size={32} />
-                                <div>
-                                  <div className="font-semibold text-foreground">
-                                    {r.firstName} {r.lastName}
-                                  </div>
-                                  <div className="text-[11px] text-muted-foreground">
-                                    #{r.studentNumber}
-                                    {r.disputed && ' · Litigieux'}
+                <Card className="flex-1">
+                  <div className="flex-1 overflow-x-auto">
+                    <table className="w-full min-w-[920px] border-collapse text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <Th className="w-10">
+                            <input
+                              type="checkbox"
+                              aria-label="Tout sélectionner"
+                              checked={selected.size === data.rows.length}
+                              onChange={toggleAll}
+                            />
+                          </Th>
+                          <Th>{t.columns.student}</Th>
+                          <Th>{t.columns.class}</Th>
+                          <Th>{t.columns.tranche}</Th>
+                          <Th>{t.columns.amountDue}</Th>
+                          <Th>{t.columns.overdue}</Th>
+                          <Th>{t.columns.status}</Th>
+                          <Th>{t.columns.lastReminder}</Th>
+                          <Th className="w-[70px]" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.rows.map((r) => {
+                          const key = `${r.studentId}:${r.trancheId}`;
+                          return (
+                            <tr key={key} className="border-b border-border last:border-none">
+                              <td className="px-3.5 py-2.5">
+                                <input
+                                  type="checkbox"
+                                  aria-label={`Sélectionner ${r.firstName} ${r.lastName}`}
+                                  checked={selected.has(key)}
+                                  onChange={() => toggleRow(key)}
+                                />
+                              </td>
+                              <td className="px-3.5 py-2.5">
+                                <div className="flex items-center gap-2.5">
+                                  <Avatar name={`${r.firstName} ${r.lastName}`} size={32} />
+                                  <div>
+                                    <div className="font-semibold text-foreground">
+                                      {r.firstName} {r.lastName}
+                                    </div>
+                                    <div className="text-2xs text-muted-foreground">
+                                      #{r.studentNumber}
+                                      {r.disputed && ' · Litigieux'}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-3.5 py-2.5 text-muted-foreground">{r.className}</td>
-                            <td className="px-3.5 py-2.5 text-muted-foreground">
-                              {r.trancheLabel}
-                            </td>
-                            <td className="px-3.5 py-2.5 font-semibold text-foreground">
-                              {fmtMoney(r.amountDue, automation?.currency)}
-                            </td>
-                            <td className="px-3.5 py-2.5 text-muted-foreground">
-                              {t.daysOverdue(r.daysOverdue)}
-                            </td>
-                            <td className="px-3.5 py-2.5">
-                              <SeverityBadge severity={r.severity} />
-                            </td>
-                            <td className="px-3.5 py-2.5 text-muted-foreground">
-                              {r.lastReminderAt ? fmtDate(r.lastReminderAt) : '—'}
-                            </td>
-                            <td className="px-3.5 py-2.5">
-                              <ActionMenu items={menuItemsFor(r)} />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                              </td>
+                              <td className="px-3.5 py-2.5 text-muted-foreground">{r.className}</td>
+                              <td className="px-3.5 py-2.5 text-muted-foreground">
+                                {r.trancheLabel}
+                              </td>
+                              <td className="px-3.5 py-2.5 font-semibold text-foreground">
+                                {fmtMoney(r.amountDue, automation?.currency)}
+                              </td>
+                              <td className="px-3.5 py-2.5 text-muted-foreground">
+                                {t.daysOverdue(r.daysOverdue)}
+                              </td>
+                              <td className="px-3.5 py-2.5">
+                                <SeverityBadge severity={r.severity} />
+                              </td>
+                              <td className="px-3.5 py-2.5 text-muted-foreground">
+                                {r.lastReminderAt ? fmtDate(r.lastReminderAt) : '—'}
+                              </td>
+                              <td className="px-3.5 py-2.5">
+                                <ActionMenu items={menuItemsFor(r)} />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                   <Pager
                     page={data.page}
                     pageSize={data.pageSize}
@@ -478,10 +479,6 @@ export default function OverdueFeesPage() {
                   <FileSpreadsheet size={14} />
                   {t.exportExcel}
                 </Button>
-                <Button variant="outline" className="w-full" onClick={() => window.print()}>
-                  <FileDown size={14} />
-                  {t.exportPdf}
-                </Button>
               </Card>
             </div>
           </div>
@@ -512,7 +509,7 @@ export default function OverdueFeesPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -534,7 +531,7 @@ function ToggleRow({
     <div className="flex items-center justify-between gap-3">
       <div>
         <div className="text-sm font-semibold text-foreground">{label}</div>
-        <div className="text-[11px] text-muted-foreground">{desc}</div>
+        <div className="text-2xs text-muted-foreground">{desc}</div>
       </div>
       <Switch checked={checked} onChange={onChange} label={label} />
     </div>

@@ -211,7 +211,7 @@ export default function AppreciationsListPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-foreground">Appréciations</h1>
@@ -421,8 +421,8 @@ export default function AppreciationsListPage() {
               </p>
             </Card>
           ) : (
-            <Card className="gap-0 overflow-visible">
-              <div className="overflow-x-auto">
+            <Card className="flex-1 gap-0 overflow-visible">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-border">

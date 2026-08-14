@@ -300,7 +300,7 @@ export default function PresencesPage() {
   const s = data?.summary;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Présences</h1>
@@ -475,7 +475,7 @@ export default function PresencesPage() {
                 </div>
               </div>
 
-              <Card className="overflow-x-auto">
+              <Card className="flex-1">
                 {filtered.length === 0 ? (
                   <p className="p-5 text-sm text-muted-foreground">
                     {data.students.length === 0
@@ -484,67 +484,69 @@ export default function PresencesPage() {
                   </p>
                 ) : (
                   <>
-                    <table
-                      className="w-full border-collapse text-sm"
-                      style={{ minWidth: `${280 + data.days.length * 44}px` }}
-                    >
-                      <thead>
-                        <tr className="border-b border-border">
-                          <Th className="sticky left-0 z-10 bg-card">Élève</Th>
-                          {data.days.map((d) => (
-                            <Th key={d.date} className="text-center capitalize">
-                              {fmtDayHeader(d.date)}
-                            </Th>
-                          ))}
-                          <Th className="text-center">Taux</Th>
-                          <Th className="text-center">Absences</Th>
-                          <Th className="w-[50px]" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pageStudents.map((row) => (
-                          <tr key={row.id} className="border-b border-border last:border-none">
-                            <td className="sticky left-0 z-10 bg-card px-3.5 py-2.5">
-                              <div className="flex items-center gap-2.5">
-                                <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
-                                <div>
-                                  <div className="font-semibold text-foreground">
-                                    {row.firstName} {row.lastName}
-                                  </div>
-                                  <div className="text-2xs text-muted-foreground">
-                                    #{row.studentNumber}
+                    <div className="flex-1 overflow-x-auto">
+                      <table
+                        className="w-full border-collapse text-sm"
+                        style={{ minWidth: `${280 + data.days.length * 44}px` }}
+                      >
+                        <thead>
+                          <tr className="border-b border-border">
+                            <Th className="sticky left-0 z-10 bg-card">Élève</Th>
+                            {data.days.map((d) => (
+                              <Th key={d.date} className="text-center capitalize">
+                                {fmtDayHeader(d.date)}
+                              </Th>
+                            ))}
+                            <Th className="text-center">Taux</Th>
+                            <Th className="text-center">Absences</Th>
+                            <Th className="w-[50px]" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pageStudents.map((row) => (
+                            <tr key={row.id} className="border-b border-border last:border-none">
+                              <td className="sticky left-0 z-10 bg-card px-3.5 py-2.5">
+                                <div className="flex items-center gap-2.5">
+                                  <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
+                                  <div>
+                                    <div className="font-semibold text-foreground">
+                                      {row.firstName} {row.lastName}
+                                    </div>
+                                    <div className="text-2xs text-muted-foreground">
+                                      #{row.studentNumber}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </td>
-                            {data.days.map((d) => (
-                              <td key={d.date} className="px-1.5 py-2.5 text-center">
-                                <PresenceDot
-                                  day={d}
-                                  record={row.days[d.date] ?? null}
-                                  onClick={() =>
-                                    markDay(
-                                      row.id,
-                                      d.date,
-                                      nextStatus(row.days[d.date]?.status ?? null),
-                                    )
-                                  }
-                                />
                               </td>
-                            ))}
-                            <td className="px-3.5 py-2.5 text-center">
-                              <RateBar rate={row.rate} />
-                            </td>
-                            <td className="px-3.5 py-2.5 text-center text-muted-foreground">
-                              {row.absences}
-                            </td>
-                            <td className="px-1.5 py-2.5">
-                              <ActionMenu items={menuItemsFor(row)} />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                              {data.days.map((d) => (
+                                <td key={d.date} className="px-1.5 py-2.5 text-center">
+                                  <PresenceDot
+                                    day={d}
+                                    record={row.days[d.date] ?? null}
+                                    onClick={() =>
+                                      markDay(
+                                        row.id,
+                                        d.date,
+                                        nextStatus(row.days[d.date]?.status ?? null),
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ))}
+                              <td className="px-3.5 py-2.5 text-center">
+                                <RateBar rate={row.rate} />
+                              </td>
+                              <td className="px-3.5 py-2.5 text-center text-muted-foreground">
+                                {row.absences}
+                              </td>
+                              <td className="px-1.5 py-2.5">
+                                <ActionMenu items={menuItemsFor(row)} />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
                       <span className="text-xs text-muted-foreground">
                         Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}

@@ -85,8 +85,8 @@ function countryFlag(country: string): string | null {
 }
 
 const TH_CLASS =
-  'px-3 py-2 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
-const TD_CLASS = 'px-3 py-2.5 text-[13px] whitespace-nowrap';
+  'px-3 py-2 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
+const TD_CLASS = 'px-3 py-2.5 text-caption whitespace-nowrap';
 
 type ModalState =
   | { kind: 'none' }
@@ -255,7 +255,7 @@ function SchoolsPage() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {stats ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
@@ -342,7 +342,7 @@ function SchoolsPage() {
         )}
 
         {/* Table */}
-        <Card>
+        <Card className="flex-1">
           {error ? (
             <div className="flex flex-col items-center gap-3 py-12">
               <p className="text-sm text-muted-foreground">{error}</p>
@@ -360,7 +360,7 @@ function SchoolsPage() {
             </p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[980px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -385,7 +385,7 @@ function SchoolsPage() {
                               <div className="max-w-[240px] truncate font-semibold text-foreground">
                                 {s.name}
                               </div>
-                              <div className="text-[11px] text-muted-foreground">
+                              <div className="text-2xs text-muted-foreground">
                                 {countryFlag(s.country) ? `${countryFlag(s.country)} ` : ''}
                                 {s.city}, {s.country}
                               </div>
@@ -493,7 +493,7 @@ function ProfileRow({ label, children }: { label: string; children: ReactNode })
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-right text-[13px] font-semibold text-foreground">{children}</span>
+      <span className="text-right text-caption font-semibold text-foreground">{children}</span>
     </div>
   );
 }
@@ -697,9 +697,7 @@ function EditModal({
               value={form.shortName}
               onChange={(e) => patch({ shortName: e.target.value })}
             />
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {TC.schoolSection.shortNameHint}
-            </p>
+            <p className="mt-1 text-2xs text-muted-foreground">{TC.schoolSection.shortNameHint}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field
@@ -757,7 +755,7 @@ function EditModal({
                 value={form.estimatedStudents}
                 onChange={(e) => patch({ estimatedStudents: e.target.value })}
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 text-2xs text-muted-foreground">
                 {TC.schoolSection.estimatedStudentsHint}
               </p>
             </div>

@@ -25,6 +25,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Avatar } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { Pager } from '@/components/ui/Pager';
@@ -184,7 +185,7 @@ function SubscriptionsPage() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {stats ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
@@ -318,7 +319,7 @@ function SubscriptionsPage() {
           <SkeletonFilters />
         )}
 
-        <Card>
+        <Card className="flex-1">
           {data && (
             <div className="border-b border-border px-4 py-3.5">
               <h2 className="text-sm font-bold text-foreground">{T.list.title}</h2>
@@ -340,7 +341,7 @@ function SubscriptionsPage() {
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">{T.empty}</p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -559,13 +560,12 @@ function CreateModal({
             <FormSelectItem value="TRIAL">{T.createModal.trial}</FormSelectItem>
             <FormSelectItem value="ACTIVE">{T.createModal.activeNow}</FormSelectItem>
           </Select>
-          <Field
+          <DateField
             label={T.createModal.renewsAt}
             name="renewsAt"
-            type="date"
             required
             value={renewsAt}
-            onChange={(e) => setRenewsAt(e.target.value)}
+            onChange={setRenewsAt}
           />
           <Field
             label={T.createModal.couponCode}
@@ -645,13 +645,12 @@ function ManageModal({
             </FormSelectItem>
           ))}
         </Select>
-        <Field
+        <DateField
           label={T.manageModal.renewsAt}
           name="renewsAt"
-          type="date"
           required
           value={renewsAt}
-          onChange={(e) => setRenewsAt(e.target.value)}
+          onChange={setRenewsAt}
         />
         <div>
           <Field

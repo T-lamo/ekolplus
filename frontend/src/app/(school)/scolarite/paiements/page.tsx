@@ -248,7 +248,7 @@ export default function FeeManagementPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
@@ -376,59 +376,61 @@ export default function FeeManagementPage() {
               <p className="p-5 text-sm text-muted-foreground">Aucun résultat.</p>
             </Card>
           ) : (
-            <Card className="overflow-x-auto">
-              <table className="w-full min-w-[900px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>{t.columns.student}</Th>
-                    <Th>{t.columns.class}</Th>
-                    <Th>{t.columns.totalDue}</Th>
-                    <Th>{t.columns.paid}</Th>
-                    <Th>{t.columns.remaining}</Th>
-                    <Th>{t.columns.status}</Th>
-                    <Th>{t.columns.tranches}</Th>
-                    <Th className="w-[70px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.students.map((s) => (
-                    <tr key={s.studentId} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar name={`${s.firstName} ${s.lastName}`} size={32} />
-                          <div>
-                            <div className="font-semibold text-foreground">
-                              {s.firstName} {s.lastName}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground">
-                              #{s.studentNumber}
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[900px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>{t.columns.student}</Th>
+                      <Th>{t.columns.class}</Th>
+                      <Th>{t.columns.totalDue}</Th>
+                      <Th>{t.columns.paid}</Th>
+                      <Th>{t.columns.remaining}</Th>
+                      <Th>{t.columns.status}</Th>
+                      <Th>{t.columns.tranches}</Th>
+                      <Th className="w-[70px]" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.students.map((s) => (
+                      <tr key={s.studentId} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar name={`${s.firstName} ${s.lastName}`} size={32} />
+                            <div>
+                              <div className="font-semibold text-foreground">
+                                {s.firstName} {s.lastName}
+                              </div>
+                              <div className="text-2xs text-muted-foreground">
+                                #{s.studentNumber}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">{s.className}</td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">
-                        {fmtMoney(s.totalDue, currency)}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">
-                        {fmtMoney(s.totalPaid, currency)}
-                      </td>
-                      <td className="px-3.5 py-2.5 font-semibold text-foreground">
-                        {fmtMoney(s.remaining, currency)}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <StudentStatusBadge status={s.status} />
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">
-                        {fmtFraction(s.tranchesPaid, s.tranchesTotal)}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <ActionMenu items={menuItemsFor(s)} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">{s.className}</td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">
+                          {fmtMoney(s.totalDue, currency)}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">
+                          {fmtMoney(s.totalPaid, currency)}
+                        </td>
+                        <td className="px-3.5 py-2.5 font-semibold text-foreground">
+                          {fmtMoney(s.remaining, currency)}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <StudentStatusBadge status={s.status} />
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">
+                          {fmtFraction(s.tranchesPaid, s.tranchesTotal)}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <ActionMenu items={menuItemsFor(s)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <Pager
                 page={data.page}
                 pageSize={data.pageSize}
@@ -455,7 +457,7 @@ export default function FeeManagementPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>

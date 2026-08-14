@@ -78,8 +78,8 @@ interface UsersResponse {
 const PAGE_SIZE = 20;
 
 const TH_CLASS =
-  'px-3 py-2 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
-const TD_CLASS = 'px-3 py-2.5 text-[13px] whitespace-nowrap';
+  'px-3 py-2 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
+const TD_CLASS = 'px-3 py-2.5 text-caption whitespace-nowrap';
 
 type ModalState =
   | { kind: 'none' }
@@ -236,7 +236,7 @@ export default function AdminUsersPage() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {stats ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
@@ -323,7 +323,7 @@ export default function AdminUsersPage() {
           <SkeletonFilters />
         )}
 
-        <Card>
+        <Card className="flex-1">
           <div className="border-b border-border px-4 pt-3.5">
             <h2 className="text-sm font-bold text-foreground">{T.list.title}</h2>
             <p className="mt-0.5 mb-2 text-xs text-muted-foreground">{T.list.subtitle}</p>
@@ -353,7 +353,7 @@ export default function AdminUsersPage() {
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">{T.empty}</p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -376,7 +376,7 @@ export default function AdminUsersPage() {
                               <div className="max-w-[220px] truncate font-semibold text-foreground">
                                 {u.name ?? u.email}
                               </div>
-                              <div className="max-w-[220px] truncate text-[11px] text-muted-foreground">
+                              <div className="max-w-[220px] truncate text-2xs text-muted-foreground">
                                 {u.email}
                               </div>
                             </div>
@@ -386,7 +386,7 @@ export default function AdminUsersPage() {
                           {u.school ? (
                             <div className="flex items-center gap-2">
                               <Avatar name={u.school.name} size={22} />
-                              <span className="max-w-[180px] truncate text-[13px] text-foreground">
+                              <span className="max-w-[180px] truncate text-caption text-foreground">
                                 {u.school.name}
                               </span>
                             </div>
@@ -400,7 +400,7 @@ export default function AdminUsersPage() {
                               {u.role === 'SUPERADMIN' ? 'Superadmin' : 'Staff'}
                             </Badge>
                           ) : u.orgRole ? (
-                            <span className="text-[13px] text-foreground">
+                            <span className="text-caption text-foreground">
                               {ADMIN_SAAS.orgRole[u.orgRole]}
                             </span>
                           ) : (
@@ -464,7 +464,7 @@ function ProfileRow({ label, children }: { label: string; children: ReactNode })
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-right text-[13px] font-semibold text-foreground">{children}</span>
+      <span className="text-right text-caption font-semibold text-foreground">{children}</span>
     </div>
   );
 }

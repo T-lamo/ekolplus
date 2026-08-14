@@ -73,7 +73,7 @@ function tone(avg: number | null): 'excellent' | 'good' | 'average' | 'poor' | '
 }
 const PILL_CLASS: Record<string, string> = {
   excellent: 'bg-success text-success-foreground',
-  good: 'bg-[#e0f0ff] text-[#2563eb]',
+  good: 'bg-info text-info-foreground',
   average: 'bg-warning text-warning-foreground',
   poor: 'bg-destructive text-destructive-foreground',
   neutral: 'bg-muted text-muted-foreground',
@@ -263,7 +263,7 @@ export default function GradeEntryPage() {
   const pageStudents = notebook.students.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Link
@@ -304,7 +304,7 @@ export default function GradeEntryPage() {
         {evaluation.status === 'DRAFT' && <Badge warning>Brouillon</Badge>}
       </Card>
 
-      <Card className="gap-0 overflow-visible">
+      <Card className="flex-1 gap-0 overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-foreground">
@@ -342,26 +342,26 @@ export default function GradeEntryPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="flex-1 overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="w-9 py-2.5 pl-4 text-left text-[11px] font-semibold text-muted-foreground">
+                <th className="w-9 py-2.5 pl-4 text-left text-2xs font-semibold text-muted-foreground">
                   #
                 </th>
-                <th className="py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                <th className="py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Élève
                 </th>
-                <th className="px-3 py-2.5 text-center text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Note (sur {evaluation.maxScore})
                 </th>
-                <th className="px-3 py-2.5 text-center text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Absent
                 </th>
-                <th className="px-3 py-2.5 text-center text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Aperçu moy.
                 </th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Commentaire
                 </th>
               </tr>
@@ -383,13 +383,11 @@ export default function GradeEntryPage() {
                         <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
                         <div>
                           <div
-                            className={`text-[13px] font-semibold ${row.absent ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+                            className={`text-caption font-semibold ${row.absent ? 'text-muted-foreground line-through' : 'text-foreground'}`}
                           >
                             {s.firstName} {s.lastName}
                           </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            #{s.studentNumber}
-                          </div>
+                          <div className="text-2xs text-muted-foreground">#{s.studentNumber}</div>
                         </div>
                       </div>
                     </td>
@@ -507,7 +505,7 @@ export default function GradeEntryPage() {
           <span
             className={`h-2 w-2 rounded-full ${hasInvalidScore ? 'bg-destructive-foreground' : 'bg-warning-foreground'}`}
           />
-          <span className="text-[13px] text-muted-foreground">
+          <span className="text-caption text-muted-foreground">
             {hasInvalidScore ? (
               <strong className="text-destructive-foreground">
                 Corrige les notes au-dessus de {evaluation.maxScore} avant d&apos;enregistrer.
@@ -579,7 +577,7 @@ function Badge({
         : 'bg-secondary text-primary';
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${small ? 'text-[11px]' : 'text-xs'} ${cls}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${small ? 'text-2xs' : 'text-xs'} ${cls}`}
     >
       {children}
     </span>

@@ -16,6 +16,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { Pager } from '@/components/ui/Pager';
 import { Select, SelectItem as FormSelectItem } from '@/components/ui/Select';
@@ -183,7 +184,7 @@ export default function AdminCouponsPage() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {stats ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
@@ -246,7 +247,7 @@ export default function AdminCouponsPage() {
           <SkeletonFilters />
         )}
 
-        <Card>
+        <Card className="flex-1">
           {data && (
             <div className="border-b border-border px-4 py-3.5">
               <h2 className="text-sm font-bold text-foreground">{T.list.title}</h2>
@@ -268,7 +269,7 @@ export default function AdminCouponsPage() {
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">{T.empty}</p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[980px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -622,12 +623,11 @@ function FormModal({
           </div>
         </div>
 
-        <Field
+        <DateField
           label={T.formModal.expiresAt}
           name="expiresAt"
-          type="date"
           value={expiresAt}
-          onChange={(e) => setExpiresAt(e.target.value)}
+          onChange={setExpiresAt}
         />
         <Field
           label={T.formModal.description}

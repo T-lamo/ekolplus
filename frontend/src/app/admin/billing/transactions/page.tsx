@@ -69,8 +69,8 @@ interface TxResponse {
 }
 
 const TH_CLASS =
-  'px-3 py-2 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
-const TD_CLASS = 'px-3 py-2.5 text-[13px] whitespace-nowrap';
+  'px-3 py-2 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
+const TD_CLASS = 'px-3 py-2.5 text-caption whitespace-nowrap';
 
 type ModalState = { kind: 'none' } | { kind: 'detail'; tx: TxRow } | { kind: 'record' };
 
@@ -183,7 +183,7 @@ export default function AdminTransactionsPage() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {stats ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
@@ -249,7 +249,7 @@ export default function AdminTransactionsPage() {
               />
               <div className="mt-3 flex gap-6 border-t border-border pt-3">
                 <div>
-                  <div className="text-[11px] text-muted-foreground">{T.chart.best}</div>
+                  <div className="text-2xs text-muted-foreground">{T.chart.best}</div>
                   <div className="text-sm font-extrabold text-foreground">
                     {data.peak.cents > 0
                       ? `${data.peak.label} — ${fmtUsdRound(data.peak.cents)}`
@@ -257,7 +257,7 @@ export default function AdminTransactionsPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-muted-foreground">{T.chart.ytd}</div>
+                  <div className="text-2xs text-muted-foreground">{T.chart.ytd}</div>
                   <div className="text-sm font-extrabold text-foreground">
                     {fmtUsdRound(data.series.reduce((s, b) => s + b.cents, 0))}
                   </div>
@@ -270,7 +270,7 @@ export default function AdminTransactionsPage() {
                 <p className="py-4 text-center text-xs text-muted-foreground">—</p>
               ) : (
                 data.methods.map((m) => (
-                  <div key={m.method} className="flex items-center gap-2 text-[13px]">
+                  <div key={m.method} className="flex items-center gap-2 text-caption">
                     <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                       {T.methods.labels[m.method] ?? m.method}
                     </span>
@@ -280,7 +280,7 @@ export default function AdminTransactionsPage() {
                   </div>
                 ))
               )}
-              <div className="mt-auto grid grid-cols-2 gap-2 border-t border-border pt-3 text-[11px]">
+              <div className="mt-auto grid grid-cols-2 gap-2 border-t border-border pt-3 text-2xs">
                 <div>
                   <div className="text-muted-foreground">{T.methods.succeeded}</div>
                   <div className="font-bold text-foreground">
@@ -349,7 +349,7 @@ export default function AdminTransactionsPage() {
           <SkeletonFilters />
         )}
 
-        <Card>
+        <Card className="flex-1">
           {data && (
             <div className="border-b border-border px-4 py-3.5">
               <h2 className="text-sm font-bold text-foreground">{T.list.title}</h2>
@@ -369,7 +369,7 @@ export default function AdminTransactionsPage() {
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">{T.empty}</p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <table className="w-full min-w-[1000px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -476,7 +476,7 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-right text-[13px] font-semibold text-foreground">{children}</span>
+      <span className="text-right text-caption font-semibold text-foreground">{children}</span>
     </div>
   );
 }
@@ -615,7 +615,7 @@ function RecordModal({
             onChange={(e) => setAmount(e.target.value)}
             placeholder="156.00"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">{T.recordModal.amountHint}</p>
+          <p className="mt-1 text-2xs text-muted-foreground">{T.recordModal.amountHint}</p>
         </div>
         <Select label={T.recordModal.method} value={method} onValueChange={setMethod}>
           <FormSelectItem value="MANUAL">{T.methods.labels['MANUAL']}</FormSelectItem>

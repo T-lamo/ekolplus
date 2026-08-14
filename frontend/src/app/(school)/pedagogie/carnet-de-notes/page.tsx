@@ -398,7 +398,7 @@ export default function GradeNotebookPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-foreground">Carnet de notes</h1>
@@ -591,8 +591,8 @@ export default function GradeNotebookPage() {
           ) : view === 'byEval' ? (
             <ParEvaluationTab unified={unified} />
           ) : (
-            <Card className="gap-0 overflow-visible">
-              <div className="overflow-x-auto">
+            <Card className="flex-1 gap-0 overflow-visible">
+              <div className="flex-1 overflow-x-auto">
                 <table
                   style={{ width: '100%', minWidth: tableWidth, tableLayout: 'fixed' }}
                   className="border-collapse text-sm"

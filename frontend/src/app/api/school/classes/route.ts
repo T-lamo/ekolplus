@@ -27,17 +27,24 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const classes = await prisma.class.findMany({
-      where: { schoolId: mySchool.schoolId },
-      orderBy: { name: 'asc' },
-      include: {
-        homeroomTeacher: { select: { id: true, name: true } },
-        _count: { select: { classSubjects: true } },
-      },
-    });
+    const [classes, activeYear] = await Promise.all([
+      prisma.class.findMany({
+        where: { schoolId: mySchool.schoolId },
+        orderBy: { name: 'asc' },
+        include: {
+          homeroomTeacher: { select: { id: true, name: true } },
+          _count: { select: { classSubjects: true } },
+        },
+      }),
+      prisma.academicYear.findFirst({
+        where: { schoolId: mySchool.schoolId, isActive: true },
+        select: { label: true },
+      }),
+    ]);
 
     return NextResponse.json(
       {
+        activeYearLabel: activeYear?.label ?? null,
         classes: classes.map((c) => ({
           id: c.id,
           name: c.name,

@@ -85,6 +85,17 @@ const CreateStudentBody = z.object({
   address: z.string().trim().max(200).nullable().optional(),
   classId: z.string().min(1),
   guardians: z.array(GuardianInput).max(2).optional(),
+  // Profile fields from the Banani Add Student form (add-student.md).
+  motherTongue: z.string().trim().max(60).nullable().optional(),
+  phone: zPhone.nullable().optional(),
+  email: zEmail.nullable().optional(),
+  enrollmentType: z.string().trim().max(40).nullable().optional(),
+  enrolledAt: z.coerce.date().optional(),
+  previousSchool: z.string().trim().max(120).nullable().optional(),
+  transferNumber: z.string().trim().max(60).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+  scholarship: z.boolean().optional(),
+  status: z.enum(['ENROLLED', 'REPEATED_ABSENCES', 'SUSPENDED']).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -155,6 +166,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           gender: parsed.data.gender ?? null,
           nationality: parsed.data.nationality ?? null,
           address: parsed.data.address ?? null,
+          motherTongue: parsed.data.motherTongue ?? null,
+          phone: parsed.data.phone ?? null,
+          email: parsed.data.email ?? null,
+          enrollmentType: parsed.data.enrollmentType ?? null,
+          ...(parsed.data.enrolledAt ? { enrolledAt: parsed.data.enrolledAt } : {}),
+          previousSchool: parsed.data.previousSchool ?? null,
+          transferNumber: parsed.data.transferNumber ?? null,
+          notes: parsed.data.notes ?? null,
+          scholarship: parsed.data.scholarship ?? false,
+          ...(parsed.data.status ? { status: parsed.data.status } : {}),
         },
       });
       await tx.enrollment.create({

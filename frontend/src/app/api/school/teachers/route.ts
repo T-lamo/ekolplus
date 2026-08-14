@@ -76,11 +76,26 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   });
 }
 
+// Profile fields from the Banani Add Teacher form (add-teacher.md) —
+// mirrored in the [id] PATCH schema.
 const CreateTeacherBody = z.object({
   name: z.string().trim().min(2).max(120),
   email: zEmail.nullable().optional(),
   phone: zPhone.nullable().optional(),
   photoUrl: z.string().trim().url().max(500).nullable().optional(),
+  civility: z.string().trim().max(10).nullable().optional(),
+  firstName: z.string().trim().max(60).nullable().optional(),
+  lastName: z.string().trim().max(60).nullable().optional(),
+  dateOfBirth: z.coerce.date().nullable().optional(),
+  gender: z.string().trim().max(30).nullable().optional(),
+  nationality: z.string().trim().max(60).nullable().optional(),
+  idNumber: z.string().trim().max(60).nullable().optional(),
+  secondaryPhone: zPhone.nullable().optional(),
+  address: z.string().trim().max(200).nullable().optional(),
+  contractType: z.string().trim().max(40).nullable().optional(),
+  hiredAt: z.coerce.date().nullable().optional(),
+  weeklyHoursTarget: z.number().int().min(0).max(80).nullable().optional(),
+  status: z.enum(['ACTIVE', 'ON_LEAVE', 'INACTIVE']).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -114,13 +129,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const { name, status, ...profile } = parsed.data;
     const teacher = await prisma.teacher.create({
       data: {
         schoolId: mySchool.schoolId,
-        name: parsed.data.name,
-        email: parsed.data.email ?? null,
-        phone: parsed.data.phone ?? null,
-        photoUrl: parsed.data.photoUrl ?? null,
+        name,
+        ...(status ? { status } : {}),
+        // Optional profile columns — absent keys stay at their defaults.
+        ...Object.fromEntries(Object.entries(profile).filter(([, v]) => v !== undefined)),
       },
     });
 

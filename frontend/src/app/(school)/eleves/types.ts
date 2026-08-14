@@ -33,6 +33,15 @@ export interface StudentDetail {
   gender: string | null;
   nationality: string | null;
   address: string | null;
+  // Profile fields from the Banani Add Student form (add-student.md).
+  motherTongue: string | null;
+  phone: string | null;
+  email: string | null;
+  enrollmentType: string | null;
+  previousSchool: string | null;
+  transferNumber: string | null;
+  notes: string | null;
+  scholarship: boolean;
   enrolledAt: string;
   status: StudentStatus;
   guardians: GuardianData[];

@@ -287,6 +287,23 @@ model Teacher {
   // Employment status shown on the Teachers List — separate from `isActive`
   // (which only gates visibility in assignment pickers, see epic-5-data-model.md).
   status    String   @default("ACTIVE") // ACTIVE | ON_LEAVE | INACTIVE
+  // Profile fields from the Banani Add Teacher form (add-teacher.md).
+  // `name` stays canonical (lists/bulletins/assignments consume it); the
+  // form composes it from civility/firstName/lastName when they are set.
+  civility          String? // "M." | "Mme" — free text
+  firstName         String?
+  lastName          String?
+  dateOfBirth       DateTime?
+  gender            String?
+  nationality       String?
+  idNumber          String? // ex "NIF-2024-0042"
+  secondaryPhone    String?
+  address           String?
+  contractType      String? // Temps plein | Temps partiel | Vacataire — free text
+  hiredAt           DateTime?
+  // Contractual hours target — distinct from the hours computed from real
+  // ClassSubject assignments shown on the Teachers list.
+  weeklyHoursTarget Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -361,6 +378,15 @@ model Student {
   address       String?
   enrolledAt    DateTime @default(now())
   status        String   @default("ENROLLED") // ENROLLED | REPEATED_ABSENCES | SUSPENDED
+  // Profile fields from the Banani Add Student form (add-student.md).
+  motherTongue   String?
+  phone          String? // the student's own phone — guardians have theirs
+  email          String?
+  enrollmentType String? // Nouvelle inscription | Réinscription | Transfert — free text
+  previousSchool String?
+  transferNumber String?
+  notes          String? // internal observations, staff-only
+  scholarship    Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

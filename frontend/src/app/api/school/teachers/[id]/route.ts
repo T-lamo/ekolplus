@@ -1,4 +1,7 @@
-// PATCH /api/school/teachers/[id] — update name/email/phone/status/isActive.
+// GET /api/school/teachers/[id] — full profile for the Add/Edit Teacher
+// page (add-teacher.md), incl. real subjects/classes/hours aggregates
+// derived from ClassSubject assignments.
+// PATCH /api/school/teachers/[id] — update profile/status/isActive.
 // DELETE /api/school/teachers/[id] — blocked (409) if still referenced by a
 // ClassSubject row or as a Class homeroom teacher. See .planning/banani/teachers-list.md.
 export const runtime = 'nodejs';
@@ -20,12 +23,76 @@ const UpdateTeacherBody = z.object({
   photoUrl: z.string().trim().url().max(500).nullable().optional(),
   status: z.enum(['ACTIVE', 'ON_LEAVE', 'INACTIVE']).optional(),
   isActive: z.boolean().optional(),
+  // Profile fields from the Banani Add Teacher form (add-teacher.md).
+  civility: z.string().trim().max(10).nullable().optional(),
+  firstName: z.string().trim().max(60).nullable().optional(),
+  lastName: z.string().trim().max(60).nullable().optional(),
+  dateOfBirth: z.coerce.date().nullable().optional(),
+  gender: z.string().trim().max(30).nullable().optional(),
+  nationality: z.string().trim().max(60).nullable().optional(),
+  idNumber: z.string().trim().max(60).nullable().optional(),
+  secondaryPhone: zPhone.nullable().optional(),
+  address: z.string().trim().max(200).nullable().optional(),
+  contractType: z.string().trim().max(40).nullable().optional(),
+  hiredAt: z.coerce.date().nullable().optional(),
+  weeklyHoursTarget: z.number().int().min(0).max(80).nullable().optional(),
 });
 
 async function assertOwnedTeacher(id: string, schoolId: string) {
   const teacher = await prisma.teacher.findUnique({ where: { id } });
   if (!teacher || teacher.schoolId !== schoolId) return null;
   return teacher;
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
+    const mySchool = await resolveMySchool(auth.user.sub);
+    if (!mySchool) {
+      return NextResponse.json(
+        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const { id } = await params;
+    const teacher = await prisma.teacher.findUnique({
+      where: { id },
+      include: {
+        classSubjects: {
+          include: {
+            subject: { select: { id: true, name: true } },
+            class: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+    if (!teacher || teacher.schoolId !== mySchool.schoolId) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'Teacher not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const { classSubjects, ...fields } = teacher;
+    return NextResponse.json(
+      {
+        teacher: {
+          ...fields,
+          subjects: [...new Map(classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
+          classes: [...new Map(classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
+          weeklyHours: classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),
+        },
+      },
+      { headers: { 'x-request-id': ctx.requestId } },
+    );
+  });
 }
 
 export async function PATCH(

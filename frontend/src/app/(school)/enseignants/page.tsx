@@ -28,7 +28,6 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
-import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
 interface SubjectOption {
@@ -58,7 +57,6 @@ export default function TeachersPage() {
   const [subjectFilter, setSubjectFilter] = useState('');
   const [status, setStatus] = useState<'' | TeacherStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('list');
-  const [editing, setEditing] = useState<TeacherListItem | 'new' | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -133,7 +131,11 @@ export default function TeachersPage() {
         icon: <Eye size={14} />,
         onClick: () => toast('Fiche enseignant détaillée — bientôt disponible.', 'info'),
       },
-      { label: 'Modifier', icon: <Pencil size={14} />, onClick: () => setEditing(t) },
+      {
+        label: 'Modifier',
+        icon: <Pencil size={14} />,
+        onClick: () => router.push(`/enseignants/${t.id}/modifier`),
+      },
       {
         label: 'Gérer les affectations',
         icon: <LinkIcon size={14} />,
@@ -198,7 +200,7 @@ export default function TeachersPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
+          <Button className="w-fit" onClick={() => router.push('/enseignants/nouveau')}>
             <UserPlus size={14} />
             Ajouter un enseignant
           </Button>
@@ -367,7 +369,10 @@ export default function TeachersPage() {
                       <td className="px-3.5 py-2.5 text-muted-foreground">{t.email ?? '—'}</td>
                       <td className="px-3.5 py-2.5">
                         <div className="flex items-center gap-1">
-                          <IconButton onClick={() => setEditing(t)} label="Modifier">
+                          <IconButton
+                            onClick={() => router.push(`/enseignants/${t.id}/modifier`)}
+                            label="Modifier"
+                          >
                             <Pencil size={14} />
                           </IconButton>
                           <ActionMenu items={menuItemsFor(t)} />
@@ -380,20 +385,6 @@ export default function TeachersPage() {
             </Card>
           )}
         </>
-      )}
-
-      {editing && (
-        <TeacherFormModal
-          teacher={editing === 'new' ? null : editing}
-          onClose={() => setEditing(null)}
-          onSaved={(saved) =>
-            setTeachers((prev) => {
-              if (!prev) return prev;
-              const exists = prev.some((t) => t.id === saved.id);
-              return exists ? prev.map((t) => (t.id === saved.id ? saved : t)) : [...prev, saved];
-            })
-          }
-        />
       )}
     </div>
   );

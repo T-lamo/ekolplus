@@ -75,6 +75,14 @@ export async function GET(
           gender: student.gender,
           nationality: student.nationality,
           address: student.address,
+          motherTongue: student.motherTongue,
+          phone: student.phone,
+          email: student.email,
+          enrollmentType: student.enrollmentType,
+          previousSchool: student.previousSchool,
+          transferNumber: student.transferNumber,
+          notes: student.notes,
+          scholarship: student.scholarship,
           enrolledAt: student.enrolledAt,
           status: student.status,
           guardians: student.guardians,
@@ -108,6 +116,16 @@ const UpdateStudentBody = z.object({
   status: z.enum(['ENROLLED', 'REPEATED_ABSENCES', 'SUSPENDED']).optional(),
   classId: z.string().min(1).optional(),
   guardians: z.array(GuardianInput).max(2).optional(),
+  // Profile fields from the Banani Add Student form (add-student.md).
+  motherTongue: z.string().trim().max(60).nullable().optional(),
+  phone: zPhone.nullable().optional(),
+  email: zEmail.nullable().optional(),
+  enrollmentType: z.string().trim().max(40).nullable().optional(),
+  enrolledAt: z.coerce.date().optional(),
+  previousSchool: z.string().trim().max(120).nullable().optional(),
+  transferNumber: z.string().trim().max(60).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+  scholarship: z.boolean().optional(),
 });
 
 export async function PATCH(

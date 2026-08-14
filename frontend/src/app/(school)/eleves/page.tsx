@@ -27,8 +27,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
-import { StudentFormModal } from './StudentFormModal';
-import type { ClassOption, StudentDetail, StudentListItem, StudentStatus } from './types';
+import type { ClassOption, StudentListItem, StudentStatus } from './types';
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',
@@ -60,7 +59,6 @@ export default function StudentsPage() {
   const [classFilter, setClassFilter] = useState('');
   const [status, setStatus] = useState<'' | StudentStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('list');
-  const [editing, setEditing] = useState<StudentDetail | 'new' | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -128,13 +126,8 @@ export default function StudentsPage() {
     );
   }
 
-  async function openEdit(s: StudentListItem) {
-    try {
-      const res = await api<{ student: StudentDetail }>(`/api/school/students/${s.id}`);
-      setEditing(res.student);
-    } catch {
-      toast('Impossible de charger le profil.', 'error');
-    }
+  function openEdit(s: StudentListItem) {
+    router.push(`/eleves/${s.id}/modifier`);
   }
 
   function menuItemsFor(s: StudentListItem) {
@@ -204,7 +197,7 @@ export default function StudentsPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
+          <Button className="w-fit" onClick={() => router.push('/eleves/nouveau')}>
             <UserPlus size={14} />
             Ajouter un élève
           </Button>
@@ -361,32 +354,6 @@ export default function StudentsPage() {
             </Card>
           )}
         </>
-      )}
-
-      {editing && (
-        <StudentFormModal
-          student={editing === 'new' ? null : editing}
-          classes={classes}
-          onClose={() => setEditing(null)}
-          onSaved={(saved) =>
-            setStudents((prev) => {
-              if (!prev) return prev;
-              const item: StudentListItem = {
-                id: saved.id,
-                studentNumber: saved.studentNumber,
-                firstName: saved.firstName,
-                lastName: saved.lastName,
-                photoUrl: saved.photoUrl,
-                dateOfBirth: saved.dateOfBirth,
-                status: saved.status,
-                class: saved.class,
-                guardianCount: saved.guardians.length,
-              };
-              const exists = prev.some((s) => s.id === saved.id);
-              return exists ? prev.map((s) => (s.id === saved.id ? item : s)) : [...prev, item];
-            })
-          }
-        />
       )}
     </div>
   );

@@ -158,7 +158,10 @@ Exports bruts : `fetches/epic2/` (gitignoré). Ce lot **remplace** l'ancien écr
   - **Redirect post-login par rôle** : `AuthContext.refresh()` retourne désormais l'utilisateur ; login → SUPERADMIN/ADMIN vont sur `/admin`, les autres `/configuration/classes` — ferme le bug « je n'arrive pas à me connecter » diagnostiqué en début de session (vérifié en vrai : Puppeteer atterrit sur /admin).
   - Écart mockup assumé : vocabulaire statut transaction unifié (« Réussie/En attente/Échouée/Remboursée » partout — le mock dashboard disait « Payé »), pas de données de démo.
   - Vérifié : lint/typecheck/test verts (662/662) ; Puppeteer + Chrome système à 375/768/1280 — zéro débordement horizontal, données réelles rendues (2 écoles, 5 users).
-- [ ] `schools-management` (`72UpLW9LHCiI`) → `/admin/schools` — plan : `schools-management.md`
+- [x] `schools-management` (`72UpLW9LHCiI`) → `/admin/schools` — plan : `schools-management.md` — DONE 2026-08-14
+  - `GET /api/admin/schools` (pagination par page + total — précédent fees, le Pager exige un total ; filtres serveur q/plan/statut/pays ; 4 KPI + liste pays dans la même réponse) ; `PATCH/DELETE /api/admin/schools/[id]` (édition + suspendre/réactiver l'abonnement avec `SubscriptionStatusChange` loggé dans la même tx ; suppression type-to-confirm SUPERADMIN only, `logAdminAction` avant le delete, cascade Organization — mécanique reprise de la zone dangereuse école).
+  - Actions par ligne : Profil (modal), Modifier (modal), Gérer l'abonnement (→ /admin/billing/subscriptions?school=), Suspendre/Réactiver (modal, seulement si abonnement), Supprimer (SUPERADMIN, modal type-to-confirm) ; « Accéder à l'école » + « Réinitialiser mdp » = stubs honnêtes (impersonation/flow email non câblés).
+  - Vérifié : typecheck/lint verts, Puppeteer 375/768/1280 zéro débordement, données réelles rendues. Mutations exercées en E2E final (aucun abonnement n'existe encore à ce stade).
 - [ ] `admin-users` (`Znvh5ZdXvT5j`) → `/admin/users` — plan : `admin-users.md`
 - [ ] `admin-statistics` (`nSYPhOOZgccA`) → `/admin/statistics` — plan : `admin-statistics.md`
 - [ ] `admin-subscriptions` (`M0FRcZpAIEZQ`) → `/admin/billing/subscriptions` — plan : `admin-subscriptions.md`

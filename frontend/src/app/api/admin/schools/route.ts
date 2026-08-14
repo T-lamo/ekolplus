@@ -29,6 +29,8 @@ import { slugify, ensureUniqueSlug } from '@/lib/server/slug';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { enqueueOutbox } from '@/lib/server/outbox';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { SCHOOL_INCLUDE, loadSchoolRows, schoolWhere } from '@/lib/server/admin/school-overview';
+import { pctDelta } from '@/lib/server/admin/saas-metrics';
 
 const VERIFICATION_TTL_MS = Number(process.env.AUTH_VERIFICATION_TTL_MIN ?? 15) * 60 * 1000;
 
@@ -170,6 +172,108 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         verificationEmailSent: !existingOwner,
       },
       { status: 201, headers: { 'x-request-id': ctx.requestId } },
+    );
+  });
+}
+
+// GET /api/admin/schools — Écoles clientes list (Banani 72UpLW9LHCiI).
+// Page-based pagination (the fees-module precedent — the Pager needs a
+// total, which cursor pagination can't give) + server-side q/plan/status/
+// country filters + the screen's 4 KPI aggregates in the same response so
+// one call hydrates the page. Empty list → 200 { items: [] }, never 404.
+const PAGE_SIZE = 20;
+const REVENUE_STATUSES = ['SUCCEEDED', 'REFUNDED'] as const;
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const auth = await requireAdmin('ADMIN');
+    if (auth instanceof NextResponse) return auth;
+
+    const limited = await enforceAdminRateLimit(auth.admin.id);
+    if (limited) return limited;
+
+    const url = req.nextUrl;
+    const page = Math.max(1, Number.parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
+    const q = (url.searchParams.get('q') ?? '').slice(0, 200).trim();
+    const filters = {
+      q: q || undefined,
+      plan: url.searchParams.get('plan') ?? undefined,
+      status: url.searchParams.get('status') ?? undefined,
+      country: url.searchParams.get('country') ?? undefined,
+    };
+    const where = schoolWhere(filters);
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const [
+      total,
+      schools,
+      totalSchools,
+      schoolsThisMonth,
+      activeSubscriptions,
+      pendingOrSuspended,
+      totalStudents,
+      studentsThisMonth,
+      curRevenue,
+      prevRevenue,
+      countryRows,
+    ] = await Promise.all([
+      prisma.school.count({ where }),
+      prisma.school.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+        include: SCHOOL_INCLUDE,
+      }),
+      prisma.school.count(),
+      prisma.school.count({ where: { createdAt: { gte: monthStart } } }),
+      prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      prisma.subscription.count({ where: { status: { in: ['TRIAL', 'SUSPENDED'] } } }),
+      prisma.student.count(),
+      prisma.student.count({ where: { createdAt: { gte: monthStart } } }),
+      prisma.billingTransaction.aggregate({
+        _sum: { amountCents: true },
+        where: { status: { in: [...REVENUE_STATUSES] }, paidAt: { gte: monthStart } },
+      }),
+      prisma.billingTransaction.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: { in: [...REVENUE_STATUSES] },
+          paidAt: { gte: prevMonthStart, lt: monthStart },
+        },
+      }),
+      prisma.school.findMany({
+        distinct: ['country'],
+        select: { country: true },
+        orderBy: { country: 'asc' },
+      }),
+    ]);
+
+    const monthRevenueCents = curRevenue._sum.amountCents ?? 0;
+
+    return NextResponse.json(
+      {
+        items: await loadSchoolRows(prisma, schools, now),
+        total,
+        page,
+        pageSize: PAGE_SIZE,
+        stats: {
+          totalSchools,
+          schoolsDeltaMonth: schoolsThisMonth,
+          activeSubscriptions,
+          pendingOrSuspended,
+          totalStudents,
+          studentsDeltaMonth: studentsThisMonth,
+          monthRevenueCents,
+          revenueDeltaPct: pctDelta(monthRevenueCents, prevRevenue._sum.amountCents ?? 0),
+        },
+        countries: countryRows.map((c) => c.country),
+      },
+      { headers: { 'x-request-id': ctx.requestId } },
     );
   });
 }

@@ -302,8 +302,8 @@ export function PaymentRegistrationModal({
             </p>
           )}
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="ghost" onClick={onClose} className="sm:w-fit">
+          <div className="flex flex-col gap-2">
+            <Button variant="ghost" onClick={onClose}>
               {t.cancel}
             </Button>
             <Button

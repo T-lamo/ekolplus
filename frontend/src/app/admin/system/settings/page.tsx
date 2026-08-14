@@ -205,7 +205,7 @@ export default function SystemSettingsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-[1200px]">
+      <div className="w-full">
         <AdminPageHeader title={T.title} subtitle={T.subtitle} />
         <div className="flex flex-col items-center gap-3 py-12">
           <p className="text-sm text-muted-foreground">{error}</p>
@@ -219,7 +219,7 @@ export default function SystemSettingsPage() {
 
   if (loading || !form || !data) {
     return (
-      <div className="mx-auto max-w-[1200px]">
+      <div className="w-full">
         <AdminPageHeader title={T.title} subtitle={T.subtitle} />
         <SkeletonStatCards count={4} />
       </div>
@@ -236,7 +236,7 @@ export default function SystemSettingsPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1200px]">
+    <div className="w-full">
       <AdminPageHeader
         title={T.title}
         subtitle={T.subtitle}

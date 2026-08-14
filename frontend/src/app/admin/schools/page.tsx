@@ -233,7 +233,7 @@ function SchoolsPage() {
   const stats = data?.stats;
 
   return (
-    <div className="mx-auto max-w-[1200px]">
+    <div className="w-full">
       <AdminPageHeader
         title={T.title}
         subtitle={T.subtitle}

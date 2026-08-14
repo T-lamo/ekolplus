@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutTemplate,
-  Plus,
-  Upload,
   CheckCircle2,
   Globe,
   User,
@@ -20,7 +18,6 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import type { TemplateListData, TemplateRow } from './types';
@@ -163,37 +160,18 @@ export default function BulletinTemplatesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Modèles de bulletin</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            className="w-fit"
-            onClick={() => toast('Import de modèle — bientôt disponible.', 'info')}
-          >
-            <Upload size={14} />
-            Importer un modèle
-          </Button>
-          <Button
-            className="w-fit"
-            onClick={() => toast('Création de modèle vierge — bientôt disponible.', 'info')}
-          >
-            <Plus size={14} />
-            Nouveau modèle
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-xl font-bold text-foreground">Modèles de bulletin</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires
+        </p>
       </div>
 
       {active && (
         <Card className="flex-row items-center gap-3 bg-secondary p-4">
           <CheckCircle2 size={20} className="shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-primary">
+            <div className="text-caption font-semibold text-primary">
               Modèle actif : {active.name}
             </div>
             <div className="mt-0.5 text-xs text-secondary-foreground opacity-85">
@@ -222,11 +200,11 @@ export default function BulletinTemplatesPage() {
           role="tab"
           aria-selected={tab === 'personal'}
           onClick={() => setTab('personal')}
-          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           <User size={13} />
           Mes modèles
-          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-[11px] font-bold text-primary">
+          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
             {data.personal.length}
           </span>
         </button>
@@ -235,11 +213,11 @@ export default function BulletinTemplatesPage() {
           role="tab"
           aria-selected={tab === 'global'}
           onClick={() => setTab('global')}
-          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           <Globe size={13} />
           Modèles globaux
-          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-[11px] font-bold text-primary">
+          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
             {data.global.length}
           </span>
         </button>
@@ -440,7 +418,7 @@ function MiniBulletin({ color }: { color: string }) {
         </tbody>
       </table>
       <div className="flex items-center gap-1.5 border-t border-[#eee] px-1.5 py-1">
-        <div className="text-[11px] font-extrabold" style={{ color }}>
+        <div className="text-2xs font-extrabold" style={{ color }}>
           14.38
         </div>
         <div className="text-[4px] text-[#999]">Moyenne / Rang 4ème</div>

@@ -339,9 +339,18 @@ export default function PaymentConfigurationPage() {
                       label={t.autoRemindersToggle}
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-                    <span className="text-sm font-semibold text-foreground">{t.currencyLabel}</span>
-                    <span className="text-sm text-muted-foreground">{automation.currency}</span>
+                  <div className="border-t border-border pt-3">
+                    <Select
+                      label={t.currencyLabel}
+                      value={automation.currency}
+                      onValueChange={(v) => patchAutomation({ currency: v })}
+                    >
+                      {t.currencyOptions.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
                   </div>
                 </div>
               )}

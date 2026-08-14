@@ -76,7 +76,7 @@ export function AdminSidebar({
       brandIcon={<GraduationCap size={15} className="text-white" />}
       brandText={
         <div className="flex flex-col gap-px">
-          <div className="text-[13px] font-extrabold text-white">EkolSuite</div>
+          <div className="text-[13px] font-extrabold text-white">Schoolgesti</div>
           <div className="w-fit rounded-full bg-primary/22 px-1.5 py-px text-[9px] font-bold tracking-wide text-primary uppercase">
             Administration
           </div>

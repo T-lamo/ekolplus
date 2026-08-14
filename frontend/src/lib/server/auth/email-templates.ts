@@ -79,22 +79,44 @@ function ttlWording(expiresAtIso: string | undefined): string {
   return `in ${hours} hour${hours === 1 ? '' : 's'}`;
 }
 
+// Links go to /verify-email?email=...&code=... so a click prefills both
+// fields — but the page never auto-submits on load. Corporate email
+// scanners (e.g. Microsoft Defender ATP) pre-fetch links in inbound mail to
+// check for malware, which would silently burn a single-use code before the
+// recipient ever opens the message if the link itself completed the action.
+// Requiring an explicit click on the page keeps the link scanner-safe.
+function verifyEmailUrl(email: string, code: string): string {
+  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const qs = new URLSearchParams({ email, code }).toString();
+  return `${base}/verify-email?${qs}`;
+}
+
+function resetPasswordUrl(email: string, code: string): string {
+  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const qs = new URLSearchParams({ email, code }).toString();
+  return `${base}/reset-password?${qs}`;
+}
+
 export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {
   const code = htmlEscape(args.code);
   const ttl = ttlWording(args.expiresAt);
+  const url = verifyEmailUrl(args.email, args.code);
+  const urlEscaped = htmlEscape(url);
   return {
     subject: 'Verify your email',
-    html: `<p>Hi,</p><p>Your verification code is <strong>${code}</strong>.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
-    text: `Your verification code is ${args.code}. It expires ${ttl}. If you did not request this, ignore this email.`,
+    html: `<p>Hi,</p><p>Your verification code is <strong>${code}</strong>.</p><p><a href="${urlEscaped}">Click here to verify your email</a> — this takes you to the verification page with your code already filled in, you just need to confirm.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
+    text: `Your verification code is ${args.code}. Go to ${url} to enter it (already pre-filled — just confirm), or open the app and enter the code manually. It expires ${ttl}. If you did not request this, ignore this email.`,
   };
 }
 
 export function resetPasswordEmail(args: ResetPasswordEmailArgs): EmailTemplate {
   const code = htmlEscape(args.code);
   const ttl = ttlWording(args.expiresAt);
+  const url = resetPasswordUrl(args.email, args.code);
+  const urlEscaped = htmlEscape(url);
   return {
     subject: 'Reset your password',
-    html: `<p>Hi,</p><p>Your password reset code is <strong>${code}</strong>.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
-    text: `Your password reset code is ${args.code}. It expires ${ttl}. If you did not request this, ignore this email.`,
+    html: `<p>Hi,</p><p>Your password reset code is <strong>${code}</strong>.</p><p><a href="${urlEscaped}">Click here to reset your password</a> — this takes you to the reset page with your code already filled in, you just need to enter a new password.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
+    text: `Your password reset code is ${args.code}. Go to ${url} to enter it (already pre-filled — just set a new password), or open the app and enter the code manually. It expires ${ttl}. If you did not request this, ignore this email.`,
   };
 }

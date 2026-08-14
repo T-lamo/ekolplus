@@ -5,10 +5,9 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   Check,
-  Copy,
   ImagePlus,
   Mail,
-  Phone,
+  MailCheck,
   School,
   UserCheck,
   Users,
@@ -17,6 +16,7 @@ import { api, ApiError } from '@/lib/api';
 import { ADMIN_CREATE_SCHOOL as T } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 
@@ -24,7 +24,7 @@ interface CreateSchoolResponse {
   organization: { id: string; slug: string; name: string };
   school: { id: string };
   owner: { id: string; email: string; name: string | null };
-  tempPassword: string | null;
+  verificationEmailSent: boolean;
 }
 
 const initialForm = {
@@ -49,7 +49,6 @@ export default function CreateSchoolPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CreateSchoolResponse | null>(null);
-  const [copied, setCopied] = useState(false);
 
   function set<K extends keyof typeof initialForm>(key: K, value: (typeof initialForm)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -110,31 +109,19 @@ export default function CreateSchoolPage() {
           </div>
           <h1 className="text-xl font-bold text-foreground">{T.successTitle}</h1>
           <p className="text-sm text-muted-foreground">
-            {result.tempPassword ? T.newAccountCreated : T.existingAccountLinked}
+            {result.verificationEmailSent ? T.newAccountCreated : T.existingAccountLinked}
           </p>
         </Card>
 
-        {result.tempPassword && (
-          <Card className="gap-3 bg-[#0f0a1e] px-5 py-5">
-            <span className="text-[10px] font-semibold tracking-wide text-white/40 uppercase">
-              {T.tempPasswordLabel}
-            </span>
-            <div className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2.5">
-              <code className="text-sm font-semibold text-white">{result.tempPassword}</code>
-              <button
-                type="button"
-                onClick={() => {
-                  void navigator.clipboard.writeText(result.tempPassword ?? '');
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="flex min-h-8 items-center gap-1 rounded-sm bg-primary/35 px-2 text-xs font-semibold text-violet-300"
-              >
-                <Copy size={12} />
-                {copied ? T.copied : T.copy}
-              </button>
+        {result.verificationEmailSent && (
+          <Card className="flex-row items-start gap-3 bg-[#0f0a1e] px-5 py-5">
+            <MailCheck size={18} className="mt-0.5 shrink-0 text-violet-300" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] font-semibold text-white">
+                {T.verificationEmailSentLabel}
+              </span>
+              <p className="text-xs text-white/40">{T.verificationEmailSentNote}</p>
             </div>
-            <p className="text-xs text-white/40">{T.tempPasswordNote}</p>
           </Card>
         )}
 
@@ -246,12 +233,10 @@ export default function CreateSchoolPage() {
             />
 
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <Field
+              <PhoneInput
                 label={T.schoolSection.phone}
-                icon={<Phone size={13} />}
-                placeholder={T.schoolSection.phonePlaceholder}
                 value={form.phone}
-                onChange={(e) => set('phone', e.target.value)}
+                onChange={(v) => set('phone', v)}
               />
               <div className="flex flex-col gap-1">
                 <Field
@@ -319,12 +304,10 @@ export default function CreateSchoolPage() {
                   Administrateur / Administratrice
                 </SelectItem>
               </Select>
-              <Field
+              <PhoneInput
                 label={T.adminSection.phone}
-                icon={<Phone size={13} />}
-                placeholder={T.schoolSection.phonePlaceholder}
                 value={form.ownerPhone}
-                onChange={(e) => set('ownerPhone', e.target.value)}
+                onChange={(v) => set('ownerPhone', v)}
               />
             </div>
           </div>

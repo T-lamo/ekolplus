@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import type { MemberData } from './types';
 
-const ROLE_LABEL: Record<MemberData['role'], string> = {
+export const ROLE_LABEL: Record<MemberData['role'], string> = {
   OWNER: 'Directeur / Directrice',
   ADMIN: 'Administrateur / Administratrice',
   MEMBER: 'Membre',

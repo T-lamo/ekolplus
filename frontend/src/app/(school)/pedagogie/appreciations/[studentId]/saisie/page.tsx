@@ -25,6 +25,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Select, SelectItem } from '@/components/ui/Select';
+import { Skeleton } from '@/components/ui/Skeleton';
 import type { AppreciationsListData, Mention, StudentAppreciationData } from '../../types';
 import { MENTION_LABEL } from '../../types';
 
@@ -185,7 +186,7 @@ export default function SaisirAppreciationPage() {
   if (!user || (!data && !error)) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }

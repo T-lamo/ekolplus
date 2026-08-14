@@ -2,14 +2,40 @@ import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 
 // Static security headers applied to every response.
-// Set via next.config.ts (not middleware.ts) so Vercel's edge can serve them
+// Set via next.config.ts (not src/proxy.ts) so Vercel's edge can serve them
 // from the CDN cache without invoking a function — zero per-request latency.
 //
-// CSP is intentionally NOT included here. App Router pages need a per-request
-// nonce (server-rendered) for inline scripts; ship CSP via middleware.ts when
-// the first frontend page lands. For now, the API-only surface doesn't render
-// HTML and doesn't need CSP.
+// CSP used to live in src/proxy.ts as a per-request nonce + 'strict-dynamic'
+// policy. Reverted (2026-08-14, caught via a production-build Lighthouse
+// audit): nonce-based CSP only works on dynamically-rendered pages — Next.js
+// injects the nonce into script tags during server-side rendering, but this
+// app's pages are statically prerendered at build time (no request/response
+// cycle exists then, so no nonce can be injected — see Next's own
+// content-security-policy.md, "Dynamic Rendering Requirement"). In
+// production this silently shipped zero `nonce="..."` attributes while the
+// header still demanded one, so 'strict-dynamic' blocked every static chunk
+// — the app never hydrated. Dev mode never caught it because dev always
+// renders dynamically. A static script-src needs 'unsafe-inline' instead of
+// a nonce, because the App Router's own RSC hydration payload
+// (`self.__next_f.push(...)`) ships as inline <script> tags with no src.
 const securityHeaders = [
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      // Radix UI (@radix-ui/react-*, dropdowns/popovers/selects/tooltips)
+      // positions its portals via inline style="" attributes.
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join('; '),
+  },
   {
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',

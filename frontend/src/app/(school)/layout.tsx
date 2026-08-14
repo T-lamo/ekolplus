@@ -6,6 +6,7 @@ import { useUser } from '@/contexts/AuthContext';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
 import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 // Basic auth gate here (any logged-in user) — school-membership itself is
 // checked by individual pages that need it (e.g. /settings via GET
@@ -19,7 +20,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }

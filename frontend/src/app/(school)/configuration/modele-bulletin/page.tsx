@@ -22,7 +22,25 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { Skeleton } from '@/components/ui/Skeleton';
 import type { TemplateListData, TemplateRow } from './types';
+
+function TemplateCardSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <Skeleton className="h-[170px] w-full rounded-none" />
+      <div className="flex flex-col gap-2 p-4">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+        <div className="mt-3.5 flex items-center justify-between">
+          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-md" />
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 const SAMPLE_ROWS = [
   { subject: 'Mathématiques', avg: 15.67, tone: 'good' as const },
@@ -100,11 +118,36 @@ export default function BulletinTemplatesPage() {
     }
   }
 
-  if (!user || (!data && !error)) {
+  if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
+    );
+  }
+  if (!data && !error) {
+    return (
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-6 w-56" />
+            <Skeleton className="h-3.5 w-80 max-w-full" />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-9 w-36" />
+          </div>
+        </div>
+        <div className="flex w-fit gap-1 rounded-lg bg-muted p-1">
+          <Skeleton className="h-7 w-28 rounded-md" />
+          <Skeleton className="h-7 w-32 rounded-md" />
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TemplateCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
     );
   }
   if (error || !data) {

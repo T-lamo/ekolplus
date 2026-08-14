@@ -24,7 +24,7 @@ export function HelpMenu() {
           <p className="font-semibold text-foreground">Besoin d&apos;aide ?</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Contactez l&apos;administrateur de votre établissement pour toute question sur
-            EkolSuite.
+            Schoolgesti.
           </p>
         </Popover.Content>
       </Popover.Portal>

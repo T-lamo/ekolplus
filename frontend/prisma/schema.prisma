@@ -15,6 +15,11 @@ model User {
   // password. Email/password signup still requires it; the auth route
   // enforces presence at runtime.
   passwordHash      String?
+  // Set on every successful change-password/set-password — "Dernière
+  // modification" on the Profil tab's password card. Not touched by any
+  // other write, so it stays honest even though `updatedAt` changes on any
+  // User update.
+  passwordChangedAt DateTime?
   emailVerifiedAt   DateTime?
   tokenVersion      Int       @default(0)
   withdrawalPinHash String? // bcrypt hash of withdrawal PIN; null = no PIN set
@@ -23,6 +28,8 @@ model User {
   name              String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
   avatarUrl         String?
+  // Optional contact phone — self-service via /api/auth/me PATCH.
+  phone             String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).
@@ -120,27 +127,30 @@ model Organization {
 // See .planning/banani/create-school.md for the screen this backs.
 // ───────────────────────────────────────────────────────────────────────
 model School {
-  id                String       @id @default(cuid())
-  organizationId    String       @unique
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name              String
-  shortName         String?
-  country           String
-  city              String
-  schoolType        String // free-form for now (e.g. "École primaire & secondaire") — no fixed catalog yet
-  primaryLanguage   String?
-  address           String?
-  phone             String?
-  estimatedStudents Int?
+  id                   String       @id @default(cuid())
+  organizationId       String       @unique
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                 String
+  shortName            String?
+  country              String
+  city                 String
+  schoolType           String // free-form for now (e.g. "École primaire & secondaire") — no fixed catalog yet
+  primaryLanguage      String?
+  address              String?
+  phone                String?
+  estimatedStudents    Int?
   // Added for the Établissement settings tab (school-settings.md).
-  officialCode      String?
-  officialEmail     String?
-  website           String?
+  officialCode         String?
+  officialEmail        String?
+  website              String?
+  // Statut (public/privé laïque/privé confessionnel…) — distinct from
+  // schoolType, which actually models teaching *levels* (see school-settings-v2.md).
+  statute              String?
   // Added for bulletin PDF generation (bulletin-pdf-and-editor-design.md).
-  logoUrl               String?
-  directorSignatureUrl  String?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  logoUrl              String?
+  directorSignatureUrl String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   academicYears     AcademicYear[]
   subjects          Subject[]
@@ -186,14 +196,20 @@ model AcademicYear {
 // computed from startDate/endDate vs. now() at read time, so it can't drift
 // out of sync with the dates themselves.
 model Term {
-  id             String       @id @default(cuid())
-  academicYearId String
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
-  label          String // e.g. "1er Trimestre"
-  order          Int
-  startDate      DateTime
-  endDate        DateTime
-  createdAt      DateTime     @default(now())
+  id                String       @id @default(cuid())
+  academicYearId    String
+  academicYear      AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  label             String // e.g. "1er Trimestre"
+  order             Int
+  startDate         DateTime
+  endDate           DateTime
+  // TRIMESTRE | SEMESTRE | LIBRE — free text like Evaluation.type, no catalog table.
+  type              String       @default("TRIMESTRE")
+  // Gates POST/PUT grade-writing routes — "Saisie des notes activée" on the
+  // Nouvelle période modal. Evaluation *creation* stays allowed either way
+  // (configuring what will be graded is separate from entering scores).
+  gradeEntryEnabled Boolean      @default(true)
+  createdAt         DateTime     @default(now())
 
   evaluations   Evaluation[]
   goals         Goal[]

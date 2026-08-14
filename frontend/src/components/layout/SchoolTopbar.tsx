@@ -29,7 +29,7 @@ export function SchoolTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Menu size={20} />
         </button>
-        <Breadcrumbs root={<span>EkolSuite</span>} trail={trail} />
+        <Breadcrumbs root={<span>Schoolgesti</span>} trail={trail} />
       </div>
 
       <div className="flex items-center gap-1.5">

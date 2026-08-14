@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -222,10 +223,10 @@ function GuardianFields({
         </Select>
       </div>
       <div className="grid grid-cols-2 gap-3.5">
-        <Field
+        <PhoneInput
           label="Téléphone"
           value={value.phone ?? ''}
-          onChange={(e) => onChange({ ...value, phone: e.target.value })}
+          onChange={(v) => onChange({ ...value, phone: v })}
         />
         <Field
           label="Email"

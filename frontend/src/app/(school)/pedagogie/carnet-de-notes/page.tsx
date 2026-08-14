@@ -30,6 +30,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { NewEvaluationModal } from './NewEvaluationModal';
 import type {
@@ -389,7 +390,7 @@ export default function GradeNotebookPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -558,7 +559,13 @@ export default function GradeNotebookPage() {
           </div>
 
           {!unified ? (
-            <p className="text-sm text-muted-foreground">Chargement…</p>
+            <Card className="gap-0 overflow-visible p-4">
+              <div className="flex flex-col gap-2.5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-full" />
+                ))}
+              </div>
+            </Card>
           ) : unified.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />
@@ -771,7 +778,7 @@ export default function GradeNotebookPage() {
                           </span>
                         </td>
                         <td style={stickyKebabStyle} className={`${STICKY_KEBAB} px-1.5 py-2.5`}>
-                          <ActionMenu items={menuItemsFor(s)} />
+                          <ActionMenu items={menuItemsFor(s)} searchable />
                         </td>
                       </tr>
                     ))}

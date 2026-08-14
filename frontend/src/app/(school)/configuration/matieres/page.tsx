@@ -28,6 +28,12 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import {
+  Skeleton,
+  SkeletonFilters,
+  SkeletonStatCards,
+  SkeletonTable,
+} from '@/components/ui/Skeleton';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import { SubjectFormModal } from './SubjectFormModal';
@@ -181,7 +187,7 @@ export default function MatieresPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -211,7 +217,15 @@ export default function MatieresPage() {
         </p>
       )}
 
-      {subjects === null && !error && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {subjects === null && !error && (
+        <div className="flex flex-col gap-3.5">
+          <SkeletonStatCards count={4} />
+          <SkeletonFilters />
+          <Card className="overflow-hidden">
+            <SkeletonTable rows={8} cols={6} />
+          </Card>
+        </div>
+      )}
 
       {subjects !== null && (
         <>

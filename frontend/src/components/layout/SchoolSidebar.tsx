@@ -76,7 +76,7 @@ export function SchoolSidebar({
       variant="light"
       width={195}
       brandIcon={<GraduationCap size={15} className="text-white" />}
-      brandText={<span className="text-[15px] font-bold text-foreground">EkolSuite</span>}
+      brandText={<span className="text-[15px] font-bold text-foreground">Schoolgesti</span>}
       roleLabel="Administratrice"
       profileHref="/settings"
       collapsed={collapsed}

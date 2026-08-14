@@ -28,6 +28,12 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import {
+  Skeleton,
+  SkeletonFilters,
+  SkeletonStatCards,
+  SkeletonTable,
+} from '@/components/ui/Skeleton';
 import { getClassDotColor } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
@@ -159,7 +165,7 @@ export default function ClassesPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -191,7 +197,15 @@ export default function ClassesPage() {
         </p>
       )}
 
-      {classes === null && !error && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {classes === null && !error && (
+        <div className="flex flex-col gap-3.5">
+          <SkeletonStatCards count={4} />
+          <SkeletonFilters />
+          <Card className="overflow-hidden">
+            <SkeletonTable rows={8} cols={6} />
+          </Card>
+        </div>
+      )}
 
       {classes !== null && (
         <>

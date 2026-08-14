@@ -26,7 +26,27 @@ function initials(name: string): string {
   return (parts[0]?.[0] ?? '').toUpperCase() + (parts[1]?.[0] ?? '').toUpperCase();
 }
 
-export function Avatar({ name, size = 24 }: { name: string; size?: number }) {
+export function Avatar({
+  name,
+  size = 24,
+  src,
+}: {
+  name: string;
+  size?: number;
+  /** Real uploaded photo (e.g. User.avatarUrl) — falls back to initials when absent. */
+  src?: string | null | undefined;
+}) {
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        className="shrink-0 rounded-full object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
   const color = PALETTE[hashString(name) % PALETTE.length]!;
   return (
     <div

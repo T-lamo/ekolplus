@@ -21,6 +21,12 @@ import { FilterSelect } from '@/components/ui/FilterSelect';
 import { SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import {
+  Skeleton,
+  SkeletonFilters,
+  SkeletonStatCards,
+  SkeletonTable,
+} from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import type { ClassSubjectOption } from '../pedagogie/carnet-de-notes/types';
 import type { BulletinsListData, ListStudentRow } from './types';
@@ -109,9 +115,25 @@ export default function BulletinsListPage() {
 
   if (!user || (!data && !error)) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
-      </main>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="mt-1.5 h-3 w-56" />
+          </div>
+          <Skeleton className="h-9 w-32 rounded-md" />
+        </div>
+
+        <SkeletonStatCards count={5} />
+
+        <Card className="p-3.5">
+          <SkeletonFilters />
+        </Card>
+
+        <Card className="overflow-hidden">
+          <SkeletonTable rows={8} cols={5} />
+        </Card>
+      </div>
     );
   }
   if (error || !data) {

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import { Skeleton, SkeletonTable } from '@/components/ui/Skeleton';
 import { MENTION_LABEL, type Mention, type StudentAppreciationData } from '../types';
 
 function mentionClass(m: Mention | null): string {
@@ -61,7 +62,24 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
   }, [studentId, termId]);
 
   if (!data) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">Chargement…</p>;
+    return (
+      <div className="flex flex-col gap-4">
+        <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="ml-auto h-8 w-48 rounded-md" />
+        </Card>
+        <Card className="gap-3 p-4.5">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-16 w-full rounded-md" />
+          <Skeleton className="h-3 w-64" />
+        </Card>
+        <Card className="gap-3 p-4.5">
+          <Skeleton className="h-4 w-56" />
+          <SkeletonTable rows={5} cols={4} />
+        </Card>
+      </div>
+    );
   }
 
   const hasContent =
@@ -229,7 +247,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
         </>
       )}
 
-      {loading && <p className="text-center text-xs text-muted-foreground">Chargement…</p>}
+      {loading && <Skeleton className="mx-auto h-3 w-24" />}
     </div>
   );
 }

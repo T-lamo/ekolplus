@@ -28,6 +28,7 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { MENTION_LABEL, type Mention, type StudentAppreciationData } from '../types';
 
 function mentionClass(m: Mention | null): string {
@@ -105,7 +106,7 @@ export default function AppreciationDetailPage() {
   if (!user || (!data && !error)) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }

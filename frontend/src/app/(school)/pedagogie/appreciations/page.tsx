@@ -33,6 +33,7 @@ import { FilterSelect } from '@/components/ui/FilterSelect';
 import { SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import type { ClassSubjectOption } from '../carnet-de-notes/types';
 import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
@@ -227,7 +228,7 @@ export default function AppreciationsListPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -424,7 +425,13 @@ export default function AppreciationsListPage() {
           </div>
 
           {!data ? (
-            <p className="text-sm text-muted-foreground">Chargement…</p>
+            <Card className="gap-0 overflow-visible p-4">
+              <div className="flex flex-col gap-2.5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-full" />
+                ))}
+              </div>
+            </Card>
           ) : data.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />

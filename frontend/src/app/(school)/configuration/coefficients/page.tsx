@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { CoefficientStepper } from './CoefficientStepper';
 import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
@@ -111,7 +112,7 @@ function CoefficientsPageInner() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -131,7 +132,20 @@ function CoefficientsPageInner() {
         </p>
       )}
 
-      {classes === null && !error && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {classes === null && !error && (
+        <div className="flex flex-col gap-3.5">
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-8 w-24 rounded-md" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
+          <SkeletonFilters />
+          <Card className="overflow-hidden">
+            <SkeletonTable rows={6} cols={5} />
+          </Card>
+        </div>
+      )}
 
       {classes !== null && classes.length === 0 && (
         <p className="text-sm text-muted-foreground">
@@ -317,7 +331,13 @@ function CoefficientsPageInner() {
 
 export default function CoefficientsPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-muted-foreground">Chargement…</p>}>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <Skeleton className="h-10 w-10 rounded-full" />
+        </main>
+      }
+    >
       <CoefficientsPageInner />
     </Suspense>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BarChart2,
@@ -56,10 +57,12 @@ export default function LoginPage() {
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       await refresh();
-      // TODO(epic-2/3): once /admin and /dashboard exist, branch on the
-      // logged-in user's role/org membership instead of always landing on
-      // the homepage. Needs `role: true` added to /api/auth/me's select too.
-      router.push('/');
+      // TODO(epic-2/3): once /admin exists, branch on the logged-in user's
+      // role/org membership instead of always landing on the same page.
+      // Needs `role: true` added to /api/auth/me's select too. `/` is the
+      // public marketing landing now, so a logged-in user must never land
+      // there post-login.
+      router.push('/configuration/classes');
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
@@ -78,7 +81,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col lg:flex-row">
       {/* Branding panel — full feature showcase on lg+, compact header band on mobile */}
-      <div className="relative flex shrink-0 flex-col items-start justify-center overflow-hidden bg-sidebar-dark px-6 py-8 text-white lg:w-[480px] lg:px-10 lg:py-12">
+      <div className="relative flex shrink-0 flex-col items-start justify-center overflow-hidden bg-sidebar-dark px-6 py-8 text-white lg:w-[60%] lg:items-center lg:px-10 lg:py-12">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-20 -right-24 hidden h-85 w-85 rounded-full border border-primary/20 lg:block"
@@ -92,7 +95,7 @@ export default function LoginPage() {
           className="pointer-events-none absolute top-16 -right-20 hidden h-70 w-70 rounded-full bg-[radial-gradient(circle,rgba(108,43,217,0.25)_0%,transparent_70%)] lg:block"
         />
 
-        <div className="relative z-10 flex w-full flex-col items-start">
+        <div className="relative z-10 flex w-full max-w-md flex-col items-start">
           <div className="mb-4 flex items-center gap-3 lg:mb-12">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary">
               <GraduationCap size={22} />
@@ -106,7 +109,7 @@ export default function LoginPage() {
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
             {AUTH_LOGIN.headline}
           </h1>
-          <p className="mb-10 hidden max-w-85 text-sm leading-relaxed text-white/50 lg:block">
+          <p className="mb-10 hidden text-sm leading-relaxed text-white/50 lg:block">
             {AUTH_LOGIN.subline}
           </p>
 
@@ -204,9 +207,12 @@ export default function LoginPage() {
                 }
               />
               <div className="flex justify-end">
-                <button type="button" className="text-[11px] font-semibold text-primary">
+                <Link
+                  href="/forgot-password"
+                  className="inline-flex items-center py-1.5 text-[11px] font-semibold text-primary"
+                >
                   {AUTH_LOGIN.forgotPassword}
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -242,9 +248,9 @@ export default function LoginPage() {
 
           <p className="mb-3.5 text-center text-xs leading-relaxed text-muted-foreground">
             {AUTH_LOGIN.noAccount}{' '}
-            <button type="button" className="font-semibold text-primary">
+            <Link href="/#contact-demo" className="font-semibold text-primary">
               {AUTH_LOGIN.contactAdmin}
-            </button>
+            </Link>
           </p>
 
           <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2.5 text-[11px] text-muted-foreground">

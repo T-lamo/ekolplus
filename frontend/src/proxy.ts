@@ -5,17 +5,29 @@ import { NextResponse, type NextRequest } from 'next/server';
 // The (15-min) access cookie can expire while a (7-day) refresh cookie is
 // still valid — typically when a tab sat unfocused or the laptop slept. The
 // (authed) layout calling /api/auth/me would 401 and the user would be kicked
-// to /login. This middleware catches that case BEFORE the page renders and
+// to /login. This proxy catches that case BEFORE the page renders and
 // bounces the request through /api/auth/refresh-and-return, which mints fresh
 // cookies and 302s back to the original URL — invisible to the user.
 //
 // Protected paths are configured via AUTH_PROTECTED_PREFIXES (comma-separated,
 // e.g. "/dashboard,/account"). Empty by default — the API surface is the only
-// thing shipped, so out-of-the-box this middleware is a no-op.
+// thing shipped, so out-of-the-box this proxy is a no-op.
 //
-// Edge runtime: no DB, no bcrypt, no Prisma. We only inspect cookies and
-// build redirects — the heavy lifting happens in /api/auth/refresh-and-return
-// (runtime=nodejs).
+// CSP and other security headers live in next.config.ts's static headers()
+// instead of here — a per-request CSP nonce was tried and reverted (see
+// next.config.ts for why: it's incompatible with this app's statically
+// prerendered pages).
+//
+// NOTE (Next.js 16): this file MUST be named proxy.ts exporting `proxy` —
+// `middleware.ts` / `export function middleware` is deprecated and, as of
+// this Next.js version, silently never invoked (confirmed empirically: zero
+// console output, zero response headers, no warning). See
+// node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md
+// ("middleware to proxy"). The `proxy` runtime is always nodejs (cannot be
+// configured to edge) — fine here, we don't need edge.
+//
+// We only inspect cookies and build redirects — the heavy lifting happens in
+// /api/auth/refresh-and-return (runtime=nodejs).
 
 const COOKIE_PREFIX = process.env.COOKIE_PREFIX || 'app';
 const ACCESS_COOKIE = `${COOKIE_PREFIX}-token`;
@@ -31,7 +43,7 @@ function isAuthedPath(pathname: string): boolean {
   return AUTHED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-export function middleware(req: NextRequest): NextResponse {
+export function proxy(req: NextRequest): NextResponse {
   if (AUTHED_PREFIXES.length === 0) return NextResponse.next();
 
   const { pathname, search } = req.nextUrl;

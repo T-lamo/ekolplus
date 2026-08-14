@@ -16,6 +16,7 @@ import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { GoalModal } from './GoalModal';
 import type { GoalRow, RankingRow, StudentResults } from '../types';
@@ -551,7 +552,7 @@ export function NotesResultatsTab({
         />
       )}
 
-      {loading && <p className="text-center text-xs text-muted-foreground">Chargement…</p>}
+      {loading && <Skeleton className="mx-auto h-3 w-24" />}
     </div>
   );
 }

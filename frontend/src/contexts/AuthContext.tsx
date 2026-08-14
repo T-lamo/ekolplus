@@ -9,13 +9,18 @@ import { COOKIE_PREFIX } from '@/lib/constants';
 export interface User {
   id: string;
   email: string;
-  /** App-wide role — USER for everyone except EkolPlus platform staff. */
+  /** App-wide role — USER for everyone except Schoolgesti platform staff. */
   role: 'USER' | 'ADMIN' | 'SUPERADMIN';
+  name: string | null;
+  avatarUrl: string | null;
+  phone: string | null;
   emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
   /** false when the account was created via OAuth and never set a password. */
   hasPassword: boolean;
+  /** Set on every successful change-password/set-password; null if never changed. */
+  passwordChangedAt: string | null;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */
   linkedProviders: string[];
 }
@@ -144,7 +149,7 @@ export function useUser(redirectTo: string = '/login'): User | null {
 }
 
 /**
- * Auth-required + role-gated helper for the `/admin/*` back-office (EkolPlus
+ * Auth-required + role-gated helper for the `/admin/*` back-office (Schoolgesti
  * platform staff). Redirects to `/login` when logged out, and to `/` when
  * logged in but role is plain USER — mirrors `useUser()`.
  */

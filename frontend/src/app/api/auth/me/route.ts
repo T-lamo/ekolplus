@@ -15,13 +15,20 @@
 // "Change password". `linkedProviders` is a string[] of provider names
 // already wired (e.g. ['google']).
 //
+// PATCH /api/auth/me — self-service profile edit (name/phone/avatarUrl).
+// Email is not editable here (it's the login identifier — changing it belongs
+// to a dedicated, verification-gated flow that doesn't exist yet).
+//
 // No CSRF: GET is a safe method; verifyCsrf is a no-op for GET anyway.
 export const runtime = 'nodejs';
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
+import { z } from 'zod';
+import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+import { zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -42,10 +49,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         id: true,
         email: true,
         role: true,
+        name: true,
+        avatarUrl: true,
+        phone: true,
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
+        passwordChangedAt: true,
         oauthAccounts: { select: { provider: true } },
       },
     });
@@ -57,6 +68,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       id: dbUser?.id ?? auth.user.sub,
       email: dbUser?.email ?? auth.user.email,
       role: dbUser?.role ?? 'USER',
+      name: dbUser?.name ?? null,
+      avatarUrl: dbUser?.avatarUrl ?? null,
+      phone: dbUser?.phone ?? null,
       emailVerifiedAt: dbUser?.emailVerifiedAt
         ? dbUser.emailVerifiedAt instanceof Date
           ? dbUser.emailVerifiedAt.toISOString()
@@ -73,9 +87,55 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           : dbUser.updatedAt
         : null,
       hasPassword: !!dbUser?.passwordHash,
+      passwordChangedAt: dbUser?.passwordChangedAt
+        ? dbUser.passwordChangedAt instanceof Date
+          ? dbUser.passwordChangedAt.toISOString()
+          : dbUser.passwordChangedAt
+        : null,
       linkedProviders: (dbUser?.oauthAccounts ?? []).map((a) => a.provider),
     };
 
     return NextResponse.json({ user }, { status: 200, headers: { 'x-request-id': ctx.requestId } });
+  });
+}
+
+const UpdateMeBody = z.object({
+  name: z.string().trim().min(1).max(120).nullable().optional(),
+  phone: zPhone.nullable().optional(),
+  avatarUrl: z.string().trim().url().max(500).nullable().optional(),
+});
+
+export async function PATCH(req: NextRequest): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const csrfFail = verifyCsrf(req);
+    if (csrfFail) return csrfFail;
+
+    const auth = await requireAuth(req.headers.get('authorization'));
+    if (auth instanceof NextResponse) {
+      auth.headers.set('x-request-id', ctx.requestId);
+      return auth;
+    }
+
+    const parsed = UpdateMeBody.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_FAILED', message: 'Invalid request body' },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const data = Object.fromEntries(Object.entries(parsed.data).filter(([, v]) => v !== undefined));
+
+    const updated = await prisma.user.update({
+      where: { id: auth.user.sub },
+      data,
+      select: { id: true, email: true, name: true, avatarUrl: true, phone: true },
+    });
+
+    return NextResponse.json(
+      { user: updated },
+      { status: 200, headers: { 'x-request-id': ctx.requestId } },
+    );
   });
 }

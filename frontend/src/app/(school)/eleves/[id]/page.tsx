@@ -22,6 +22,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { StudentFormModal } from '../StudentFormModal';
 import { NotesResultatsTab } from './NotesResultatsTab';
 import { AppreciationsTab } from './AppreciationsTab';
@@ -102,9 +103,45 @@ export default function StudentProfilePage() {
 
   if (!user || (student === null && !error)) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
-      </main>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Skeleton className="h-8 w-40 rounded-md" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-36 rounded-md" />
+            <Skeleton className="h-9 w-36 rounded-md" />
+            <Skeleton className="h-9 w-40 rounded-md" />
+          </div>
+        </div>
+
+        <Card className="gap-4 p-6">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-20 w-20 shrink-0 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-3 w-64" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+        </Card>
+
+        <Skeleton className="h-10 w-72 rounded-lg" />
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {[0, 1].map((i) => (
+            <Card key={i} className="p-5">
+              <Skeleton className="mb-3.5 h-4 w-48" />
+              <div className="flex flex-col gap-3">
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <div key={j} className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-28 shrink-0" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 

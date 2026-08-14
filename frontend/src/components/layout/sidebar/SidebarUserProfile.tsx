@@ -36,7 +36,7 @@ export function SidebarUserProfile({
             collapsed ? 'justify-center px-0' : 'px-2'
           }`}
         >
-          <Avatar name={email} size={28} />
+          <Avatar name={email} size={28} src={user?.avatarUrl} />
           {!collapsed && (
             <div className="min-w-0 flex-1 text-left">
               <div className={`truncate text-xs font-semibold ${nameClasses}`}>{email}</div>

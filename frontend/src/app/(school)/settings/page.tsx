@@ -1,14 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Tabs } from '@/components/ui/Tabs';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { ProfilTab } from './ProfilTab';
 import { EtablissementTab } from './EtablissementTab';
 import { AnneeScolaireTab } from './AnneeScolaireTab';
 import { AdministrateursTab } from './AdministrateursTab';
+import { NotificationsTab } from './NotificationsTab';
+import { AbonnementTab } from './AbonnementTab';
+import { ZoneDangereuseSection } from './ZoneDangereuseSection';
 import type { SchoolResponse, TermData } from './types';
 
 const TABS = [
@@ -16,12 +20,32 @@ const TABS = [
   { key: 'etablissement', label: 'Établissement' },
   { key: 'annee', label: 'Année scolaire' },
   { key: 'admins', label: 'Administrateurs' },
+  { key: 'notifications', label: 'Notifications' },
+  { key: 'subscription', label: 'Abonnement' },
 ];
+const TAB_KEYS = TABS.map((t) => t.key);
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SettingsForm />
+    </Suspense>
+  );
+}
+
+function SettingsForm() {
   const user = useUser();
   const router = useRouter();
-  const [tab, setTab] = useState('profil');
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab');
+  const [tab, setTab] = useState(
+    initialTab && TAB_KEYS.includes(initialTab) ? initialTab : 'profil',
+  );
+
+  function changeTab(next: string) {
+    setTab(next);
+    router.replace(next === 'profil' ? '/settings' : `/settings?tab=${next}`, { scroll: false });
+  }
   const [data, setData] = useState<SchoolResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +67,13 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-2 px-4">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5">
+    <div className="flex max-w-4xl flex-col gap-5">
       <div>
         <h1 className="text-xl font-extrabold tracking-tight text-foreground">Paramètres</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
@@ -57,9 +81,18 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs tabs={TABS} active={tab} onChange={changeTab} />
 
-      {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-1.5">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ))}
+        </div>
+      )}
       {error && (
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -68,12 +101,23 @@ export default function SettingsPage() {
 
       {!loading && !error && (
         <>
-          {tab === 'profil' && <ProfilTab user={user} />}
-          {tab === 'etablissement' && data && (
-            <EtablissementTab
-              school={data.school}
-              onUpdated={(school) => setData((d) => (d ? { ...d, school } : d))}
+          {tab === 'profil' && (
+            <ProfilTab
+              user={user}
+              myRole={data?.members.find((m) => m.userId === user.id)?.role ?? null}
             />
+          )}
+          {tab === 'etablissement' && data && (
+            <div className="flex flex-col gap-5">
+              <EtablissementTab
+                school={data.school}
+                members={data.members}
+                onUpdated={(school) => setData((d) => (d ? { ...d, school } : d))}
+              />
+              {data.members.find((m) => m.userId === user.id)?.role === 'OWNER' && (
+                <ZoneDangereuseSection schoolName={data.school.name} />
+              )}
+            </div>
           )}
           {tab === 'annee' && (
             <AnneeScolaireTab
@@ -93,9 +137,29 @@ export default function SettingsPage() {
                   return d;
                 })
               }
+              onTermUpdated={(term: TermData) =>
+                setData((d) => {
+                  if (!d?.academicYear) return d;
+                  return {
+                    ...d,
+                    academicYear: {
+                      ...d.academicYear,
+                      terms: d.academicYear.terms.map((t) => (t.id === term.id ? term : t)),
+                    },
+                  };
+                })
+              }
+              onGradingScaleUpdated={(gradingScale: string | null) =>
+                setData((d) => {
+                  if (!d?.academicYear) return d;
+                  return { ...d, academicYear: { ...d.academicYear, gradingScale } };
+                })
+              }
             />
           )}
           {tab === 'admins' && data && <AdministrateursTab members={data.members} />}
+          {tab === 'notifications' && <NotificationsTab />}
+          {tab === 'subscription' && <AbonnementTab />}
         </>
       )}
     </div>

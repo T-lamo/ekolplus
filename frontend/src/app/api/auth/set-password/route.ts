@@ -124,6 +124,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       data: {
         passwordHash: newHash,
         tokenVersion: { increment: 1 },
+        passwordChangedAt: new Date(),
       },
       select: { id: true, email: true, tokenVersion: true },
     });

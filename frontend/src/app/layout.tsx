@@ -10,10 +10,9 @@ const inter = Inter({
   display: 'swap',
 });
 
-// Replace these with your app name + description per fork.
 export const metadata: Metadata = {
-  title: 'izi kit',
-  description: 'Headless Next.js 16 starter — auth, payments, admin, webhooks, cron.',
+  title: 'Schoolgesti',
+  description: 'La plateforme tout-en-un de gestion scolaire.',
 };
 
 export default function RootLayout({

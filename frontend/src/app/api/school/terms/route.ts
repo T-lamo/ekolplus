@@ -19,6 +19,8 @@ const Body = z
     label: z.string().trim().min(1).max(60),
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
+    type: z.enum(['TRIMESTRE', 'SEMESTRE', 'LIBRE']).optional(),
+    gradeEntryEnabled: z.boolean().optional(),
   })
   .refine((d) => d.endDate > d.startDate, {
     message: 'endDate must be after startDate',
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { label, startDate, endDate } = parsed.data;
+    const { label, startDate, endDate, type, gradeEntryEnabled } = parsed.data;
 
     const term = await prisma.$transaction(async (tx) => {
       let year = await tx.academicYear.findFirst({
@@ -98,6 +100,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           order: termCount + 1,
           startDate,
           endDate,
+          ...(type !== undefined ? { type } : {}),
+          ...(gradeEntryEnabled !== undefined ? { gradeEntryEnabled } : {}),
         },
       });
     });

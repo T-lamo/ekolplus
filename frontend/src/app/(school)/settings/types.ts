@@ -5,6 +5,7 @@ export interface SchoolData {
   country: string;
   city: string;
   schoolType: string;
+  statute: string | null;
   primaryLanguage: string | null;
   address: string | null;
   phone: string | null;
@@ -12,6 +13,7 @@ export interface SchoolData {
   officialCode: string | null;
   officialEmail: string | null;
   website: string | null;
+  logoUrl: string | null;
 }
 
 export interface TermData {
@@ -21,6 +23,8 @@ export interface TermData {
   startDate: string;
   endDate: string;
   status: 'DONE' | 'CURRENT' | 'UPCOMING';
+  type: 'TRIMESTRE' | 'SEMESTRE' | 'LIBRE';
+  gradeEntryEnabled: boolean;
 }
 
 export interface AcademicYearData {

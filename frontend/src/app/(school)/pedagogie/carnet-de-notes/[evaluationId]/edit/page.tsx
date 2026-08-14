@@ -9,6 +9,7 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { EvaluationConfigForm } from '../../EvaluationConfigForm';
 import type { ClassSubjectOption, EvaluationConfig, TermOption } from '../../types';
 
@@ -119,7 +120,7 @@ export default function EditEvaluationPage() {
   if (!user || (!value && !error)) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }

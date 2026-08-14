@@ -8,9 +8,11 @@ coverage/
 .env
 .env.local
 .env.*.local
+CREDENTIALS.local.md
 *.tsbuildinfo
 .prisma/
 next-env.d.ts
+.lighthouse/
 
 # Claude Code — keep .claude/skills/ + settings.json shared, ignore per-machine state
 .claude/settings.local.json

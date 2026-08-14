@@ -4,15 +4,27 @@
 //
 // PUT /api/school — update the Établissement tab's fields. Requires ADMIN+
 // within the school (OWNER or ADMIN org role).
+//
+// DELETE /api/school — Zone dangereuse: permanently deletes the
+// Organization (cascades School → every school-scoped model, per
+// schema.prisma's onDelete: Cascade chain — the exact mechanism used to
+// clean up test accounts during this session's own security audit).
+// Organization.ownerId is onDelete: Restrict, so this deletes the org, NOT
+// the owner's User row — the caller keeps their account, just loses school
+// access. OWNER-only, type-to-confirm (server re-checked), rate-limited,
+// audited, clears the caller's session cookies since there's nothing left
+// to manage. See .planning/banani/school-settings-v2.md.
 export const runtime = 'nodejs';
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
-import { verifyCsrf } from '@/lib/server/auth';
+import { verifyCsrf, clearAuthCookies, clearCsrfCookie } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { confirmNameMatches, enforceDangerZoneRateLimit } from '@/lib/server/school-danger-zone';
+import { logAdminAction } from '@/lib/server/admin/audit';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -76,6 +88,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
                 startDate: t.startDate,
                 endDate: t.endDate,
                 status: termStatus(t.startDate, t.endDate),
+                type: t.type,
+                gradeEntryEnabled: t.gradeEntryEnabled,
               })),
             }
           : null,
@@ -98,6 +112,7 @@ const UpdateSchoolBody = z.object({
   country: z.string().trim().min(1).max(80).optional(),
   city: z.string().trim().min(1).max(80).optional(),
   schoolType: z.string().trim().min(1).max(80).optional(),
+  statute: z.string().trim().max(80).nullable().optional(),
   primaryLanguage: z.string().trim().max(40).nullable().optional(),
   address: z.string().trim().max(200).nullable().optional(),
   phone: zPhone.nullable().optional(),
@@ -151,5 +166,64 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     });
 
     return NextResponse.json({ school }, { headers: { 'x-request-id': ctx.requestId } });
+  });
+}
+
+const DeleteSchoolBody = z.object({ confirmName: z.string().trim().min(1) });
+
+export async function DELETE(req: NextRequest): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const csrfFail = verifyCsrf(req);
+    if (csrfFail) return csrfFail;
+
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
+    const limited = await enforceDangerZoneRateLimit(auth.user.sub, 'delete-school');
+    if (limited) return limited;
+
+    const mySchool = await resolveMySchool(auth.user.sub);
+    if (!mySchool || !hasMinRole(mySchool.role, 'OWNER')) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'Not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const parsed = DeleteSchoolBody.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_FAILED', message: 'Invalid request body' },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const school = await prisma.school.findUniqueOrThrow({ where: { id: mySchool.schoolId } });
+    if (!confirmNameMatches(school.name, parsed.data.confirmName)) {
+      return NextResponse.json(
+        { error: 'CONFIRM_NAME_MISMATCH', message: "Le nom saisi ne correspond pas à l'école." },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Log BEFORE deleting — nothing left to reference targetId against
+      // afterward, and AdminAction.actorId is unaffected (we delete the
+      // Organization, never the User).
+      await logAdminAction(tx, {
+        actorId: auth.user.sub,
+        action: 'school.delete',
+        targetType: 'Organization',
+        targetId: mySchool.organizationId,
+        metadata: { schoolId: mySchool.schoolId, schoolName: school.name },
+      });
+      await tx.organization.delete({ where: { id: mySchool.organizationId } });
+    });
+
+    await clearAuthCookies();
+    await clearCsrfCookie();
+
+    return NextResponse.json({ ok: true }, { headers: { 'x-request-id': ctx.requestId } });
   });
 }

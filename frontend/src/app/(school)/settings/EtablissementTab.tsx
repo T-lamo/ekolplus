@@ -1,26 +1,34 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { ImagePlus, Mail, Phone } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
+import { Select, SelectItem } from '@/components/ui/Select';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Button } from '@/components/ui/Button';
-import type { SchoolData } from './types';
+import { ImageUploader } from '@/components/ui/ImageUploader';
+import { ADMIN_CREATE_SCHOOL, SCHOOL_STATUTES } from '@/lib/constants';
+import { ROLE_LABEL } from './AdministrateursTab';
+import type { SchoolData, MemberData } from './types';
 
 export function EtablissementTab({
   school,
+  members,
   onUpdated,
 }: {
   school: SchoolData;
+  members: MemberData[];
   onUpdated: (school: SchoolData) => void;
 }) {
   const { toast } = useToast();
+  const [logoUrl, setLogoUrl] = useState(school.logoUrl);
   const [form, setForm] = useState({
     name: school.name,
-    shortName: school.shortName ?? '',
     officialCode: school.officialCode ?? '',
+    statute: school.statute ?? '',
     schoolType: school.schoolType,
     address: school.address ?? '',
     phone: school.phone ?? '',
@@ -30,8 +38,26 @@ export function EtablissementTab({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const director = members.find((m) => m.role === 'OWNER');
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function saveLogo(url: string | null) {
+    const previous = logoUrl;
+    setLogoUrl(url);
+    try {
+      const res = await api<{ school: SchoolData }>('/api/school', {
+        method: 'PUT',
+        body: { logoUrl: url },
+      });
+      onUpdated(res.school);
+      toast('Logo mis à jour.', 'success');
+    } catch (err) {
+      setLogoUrl(previous);
+      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+    }
   }
 
   async function onSubmit(e: FormEvent) {
@@ -43,8 +69,8 @@ export function EtablissementTab({
         method: 'PUT',
         body: {
           name: form.name,
-          shortName: form.shortName || null,
           officialCode: form.officialCode || null,
+          statute: form.statute || null,
           schoolType: form.schoolType,
           address: form.address || null,
           phone: form.phone || null,
@@ -73,13 +99,13 @@ export function EtablissementTab({
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4 p-5">
         <div className="flex flex-col items-start gap-4 sm:flex-row">
-          <div className="flex shrink-0 flex-col gap-1.5">
-            <span className="text-xs font-semibold text-foreground">Logo</span>
-            {/* Not wired this pass — same as Create School */}
-            <div className="flex h-20 w-25 flex-col items-center justify-center gap-1 rounded-lg border-[1.5px] border-dashed border-border">
-              <ImagePlus size={16} className="text-primary" />
-              <span className="text-[10px] text-muted-foreground">PNG, JPG</span>
-            </div>
+          <div className="w-full shrink-0 sm:w-40">
+            <ImageUploader
+              label="Logo"
+              hint="PNG, JPG ou WebP"
+              value={logoUrl}
+              onChange={saveLogo}
+            />
           </div>
           <div className="flex flex-1 flex-col gap-3.5">
             <Field
@@ -88,28 +114,39 @@ export function EtablissementTab({
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
             />
-            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <Field
-                label="Nom abrégé / Sigle"
-                maxLength={10}
-                value={form.shortName}
-                onChange={(e) => set('shortName', e.target.value)}
-              />
-              <Field
-                label="Code ou matricule officiel"
-                value={form.officialCode}
-                onChange={(e) => set('officialCode', e.target.value)}
-              />
-            </div>
+            <Field
+              label="Code ou matricule officiel"
+              value={form.officialCode}
+              onChange={(e) => set('officialCode', e.target.value)}
+            />
           </div>
         </div>
 
-        <Field
-          label="Type d'établissement"
-          required
-          value={form.schoolType}
-          onChange={(e) => set('schoolType', e.target.value)}
-        />
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+          <Select
+            label="Type d'établissement"
+            value={form.statute}
+            onValueChange={(v) => set('statute', v)}
+          >
+            {SCHOOL_STATUTES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </Select>
+          <Select
+            label="Niveaux d'enseignement"
+            required
+            value={form.schoolType}
+            onValueChange={(v) => set('schoolType', v)}
+          >
+            {ADMIN_CREATE_SCHOOL.schoolTypes.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
 
         <Field
           label="Adresse"
@@ -118,13 +155,7 @@ export function EtablissementTab({
         />
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <Field
-            label="Téléphone"
-            icon={<Phone size={13} />}
-            placeholder="+509 ..."
-            value={form.phone}
-            onChange={(e) => set('phone', e.target.value)}
-          />
+          <PhoneInput label="Téléphone" value={form.phone} onChange={(v) => set('phone', v)} />
           <Field
             label="Courriel officiel"
             type="email"
@@ -134,11 +165,21 @@ export function EtablissementTab({
           />
         </div>
 
-        <Field
-          label="Site web (optionnel)"
-          value={form.website}
-          onChange={(e) => set('website', e.target.value)}
-        />
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+          {director && (
+            <div className="flex flex-col gap-1.5 text-sm">
+              <span className="text-xs font-semibold text-foreground">{ROLE_LABEL.OWNER}</span>
+              <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-muted px-3 text-foreground">
+                {director.name ?? director.email}
+              </span>
+            </div>
+          )}
+          <Field
+            label="Site web (optionnel)"
+            value={form.website}
+            onChange={(e) => set('website', e.target.value)}
+          />
+        </div>
 
         {error && (
           <p role="alert" className="text-sm text-destructive-foreground">

@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* EkolPlus design tokens — from Banani "Lavender SaaS" theme, shared across
+/* Schoolgesti design tokens — from Banani "Lavender SaaS" theme, shared across
    every screen export (Login, School Dashboard, SaaS Admin Dashboard). See
    .planning/banani/epic-0-shell.md for the full token mapping table. */
 @theme {
@@ -78,4 +78,77 @@
   inset: 0;
   z-index: 40;
   background: rgb(0 0 0 / 0.4);
+}
+
+/* Decorative entrance/hover animations must never block someone who has
+   asked the OS for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Landing scroll-reveal + micro-animations (frontend/src/app/page.tsx,
+   components/landing/*). Content is VISIBLE by default; the hidden/animated
+   state only applies once JS adds `.reveal-ready` on <html> (RevealObserver)
+   — so no-JS users and crawlers still see everything, and there's no risk of
+   a permanently-invisible page. Reduced-motion users get the instant variant
+   via the prefers-reduced-motion rule above. */
+.reveal-ready .reveal-up {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.5, 0, 0, 1),
+    transform 0.7s cubic-bezier(0.5, 0, 0, 1);
+}
+.reveal-ready .reveal-up.active {
+  opacity: 1;
+  transform: none;
+}
+.reveal-up.stagger-1 {
+  transition-delay: 80ms;
+}
+.reveal-up.stagger-2 {
+  transition-delay: 160ms;
+}
+.reveal-up.stagger-3 {
+  transition-delay: 240ms;
+}
+.reveal-up.stagger-4 {
+  transition-delay: 320ms;
+}
+.reveal-up.stagger-5 {
+  transition-delay: 400ms;
+}
+
+/* Gentle vertical float (hero product mockup). */
+@keyframes ekol-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.animate-float {
+  animation: ekol-float 6s ease-in-out infinite;
+}
+
+/* Slow drifting glow behind the hero. */
+@keyframes ekol-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.5);
+  }
+  50% {
+    transform: translate(5%, -5%) scale(1.7);
+  }
+}
+.animate-drift {
+  animation: ekol-drift 14s ease-in-out infinite;
 }

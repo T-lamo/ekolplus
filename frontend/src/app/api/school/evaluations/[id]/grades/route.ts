@@ -60,12 +60,22 @@ export async function PUT(
       where: { id },
       include: {
         classSubject: { select: { classId: true, class: { select: { schoolId: true } } } },
+        term: { select: { gradeEntryEnabled: true } },
       },
     });
     if (!evaluation || evaluation.classSubject.class.schoolId !== mySchool.schoolId) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Evaluation not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+    if (!evaluation.term.gradeEntryEnabled) {
+      return NextResponse.json(
+        {
+          error: 'GRADE_ENTRY_DISABLED',
+          message: 'La saisie des notes est désactivée pour cette période.',
+        },
+        { status: 403, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 

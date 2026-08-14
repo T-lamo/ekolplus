@@ -25,6 +25,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { TeacherFormModal } from './TeacherFormModal';
@@ -166,7 +167,7 @@ export default function TeachersPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <Skeleton className="h-10 w-10 rounded-full" />
       </main>
     );
   }
@@ -176,9 +177,13 @@ export default function TeachersPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Enseignants</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {teachers ? `${teachers.length} enseignants enregistrés` : 'Chargement…'}
-          </p>
+          {teachers ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {teachers.length} enseignants enregistrés
+            </p>
+          ) : (
+            <Skeleton className="mt-1.5 h-3 w-32" />
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -206,7 +211,14 @@ export default function TeachersPage() {
         </p>
       )}
 
-      {teachers === null && !error && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {teachers === null && !error && (
+        <div className="flex flex-col gap-3.5">
+          <SkeletonFilters />
+          <Card className="overflow-hidden">
+            <SkeletonTable rows={8} cols={5} />
+          </Card>
+        </div>
+      )}
 
       {teachers !== null && (
         <>

@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Field } from '@/components/ui/Field';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -69,7 +70,7 @@ export function TeacherFormModal({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Field label="Téléphone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <PhoneInput label="Téléphone" value={phone} onChange={setPhone} />
         </div>
         {teacher && (
           <Select

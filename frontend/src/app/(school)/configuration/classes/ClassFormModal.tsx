@@ -12,13 +12,11 @@ import type { ClassData } from './types';
 export function ClassFormModal({
   cls,
   teachers,
-  onTeacherCreated,
   onClose,
   onSaved,
 }: {
   cls: ClassData | null;
   teachers: TeacherOption[];
-  onTeacherCreated: (teacher: TeacherOption) => void;
   onClose: () => void;
   onSaved: (cls: ClassData) => void;
 }) {
@@ -104,7 +102,7 @@ export function ClassFormModal({
           teachers={teachers}
           value={homeroomTeacherId}
           onChange={setHomeroomTeacherId}
-          onTeacherCreated={onTeacherCreated}
+          allowCreate={false}
         />
         {error && (
           <p role="alert" className="text-sm text-destructive-foreground">

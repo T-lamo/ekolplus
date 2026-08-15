@@ -11,8 +11,6 @@ import {
   FileText,
   CalendarCheck,
   UserX,
-  LayoutGrid,
-  List as ListIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,9 +24,13 @@ import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { StudentFormModal } from './StudentFormModal';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
+
+const PAGE_SIZE = 10;
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',
@@ -59,7 +61,8 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [status, setStatus] = useState<'' | StudentStatus>('');
-  const [view, setView] = useState<'list' | 'grid'>('list');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -91,6 +94,12 @@ export default function StudentsPage() {
       return true;
     });
   }, [students, search, classFilter, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, classFilter, status]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function onDelete(s: StudentListItem) {
     if (!window.confirm(`Supprimer « ${s.firstName} ${s.lastName} » ?`)) return;
@@ -175,7 +184,7 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Élèves</h1>
@@ -246,26 +255,7 @@ export default function StudentsPage() {
               <SelectItem value="SUSPENDED">Suspendu(e)</SelectItem>
             </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} résultats</span>
-            <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
-              <button
-                type="button"
-                onClick={() => setView('list')}
-                aria-label="Vue liste"
-                aria-pressed={view === 'list'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'list' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <ListIcon size={15} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('grid')}
-                aria-label="Vue grille"
-                aria-pressed={view === 'grid'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'grid' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <LayoutGrid size={15} />
-              </button>
-            </div>
+            <ViewToggle view={view} onChange={setView} className="ml-auto" />
           </div>
 
           {filtered.length === 0 ? (
@@ -275,17 +265,17 @@ export default function StudentsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((s) => (
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((s) => (
                 <Card key={s.id} className="gap-3 p-4">
                   <div className="flex items-start justify-between">
-                    <Link href={`/eleves/${s.id}`} className="flex items-center gap-2.5">
+                    <Link href={`/eleves/${s.id}`} className="flex min-w-0 items-center gap-2.5">
                       <Avatar name={`${s.firstName} ${s.lastName}`} size={36} src={s.photoUrl} />
-                      <div>
-                        <div className="font-bold text-foreground">
+                      <div className="min-w-0">
+                        <div className="truncate font-bold text-foreground">
                           {s.firstName} {s.lastName}
                         </div>
-                        <div className="text-[11px] text-muted-foreground">#{s.studentNumber}</div>
+                        <div className="text-2xs text-muted-foreground">#{s.studentNumber}</div>
                       </div>
                     </Link>
                     <ActionMenu items={menuItemsFor(s)} />
@@ -299,62 +289,80 @@ export default function StudentsPage() {
               ))}
             </div>
           ) : (
-            <Card className="overflow-x-auto">
-              <table className="w-full min-w-[820px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>Élève</Th>
-                    <Th>Classe</Th>
-                    <Th>Date de naissance</Th>
-                    <Th>Statut</Th>
-                    <Th>Moyenne</Th>
-                    <Th>Présence</Th>
-                    <Th className="w-[70px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((s) => (
-                    <tr key={s.id} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <Link href={`/eleves/${s.id}`} className="flex items-center gap-2.5">
-                          <Avatar
-                            name={`${s.firstName} ${s.lastName}`}
-                            size={32}
-                            src={s.photoUrl}
-                          />
-                          <div>
-                            <div className="font-semibold text-foreground">
-                              {s.firstName} {s.lastName}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground">
-                              #{s.studentNumber}
-                            </div>
-                          </div>
-                        </Link>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        {s.class ? (
-                          <Badge>{s.class.name}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">
-                        {fmtDate(s.dateOfBirth)}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
-                      <td className="px-3.5 py-2.5">
-                        <ActionMenu items={menuItemsFor(s)} />
-                      </td>
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[820px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>Élève</Th>
+                      <Th>Classe</Th>
+                      <Th>Date de naissance</Th>
+                      <Th>Statut</Th>
+                      <Th>Moyenne</Th>
+                      <Th>Présence</Th>
+                      <Th className="w-[70px]" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paged.map((s) => (
+                      <tr key={s.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <Link href={`/eleves/${s.id}`} className="flex items-center gap-2.5">
+                            <Avatar
+                              name={`${s.firstName} ${s.lastName}`}
+                              size={32}
+                              src={s.photoUrl}
+                            />
+                            <div>
+                              <div className="font-semibold text-foreground">
+                                {s.firstName} {s.lastName}
+                              </div>
+                              <div className="text-2xs text-muted-foreground">
+                                #{s.studentNumber}
+                              </div>
+                            </div>
+                          </Link>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          {s.class ? (
+                            <Badge>{s.class.name}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">
+                          {fmtDate(s.dateOfBirth)}
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
+                        <td className="px-3.5 py-2.5">
+                          <ActionMenu items={menuItemsFor(s)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pager
+                centered
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={filtered.length}
+                onChange={setPage}
+              />
             </Card>
+          )}
+          {view === 'grid' && filtered.length > 0 && (
+            <Pager
+              centered
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={filtered.length}
+              onChange={setPage}
+            />
           )}
         </>
       )}
@@ -373,7 +381,7 @@ export default function StudentsPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -394,7 +402,7 @@ function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${toneClasses[tone]}`}
     >
       {children}
     </span>

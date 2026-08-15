@@ -23,12 +23,16 @@ export function TeacherPicker({
   value,
   onChange,
   onTeacherCreated,
+  allowCreate = true,
 }: {
   label: string;
   teachers: TeacherOption[];
   value: string | null;
   onChange: (id: string | null) => void;
-  onTeacherCreated: (teacher: TeacherOption) => void;
+  onTeacherCreated?: (teacher: TeacherOption) => void;
+  /** Set false to hide the inline "+ Nouvel enseignant" shortcut — teacher
+   * creation then only happens through the dedicated Teachers screen. */
+  allowCreate?: boolean;
 }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
@@ -44,7 +48,7 @@ export function TeacherPicker({
         method: 'POST',
         body: { name },
       });
-      onTeacherCreated(res.teacher);
+      onTeacherCreated?.(res.teacher);
       onChange(res.teacher.id);
       setCreating(false);
       setName('');
@@ -55,7 +59,7 @@ export function TeacherPicker({
     }
   }
 
-  if (creating) {
+  if (allowCreate && creating) {
     return (
       <form onSubmit={onCreate} className="flex flex-col gap-2 rounded-md border border-border p-3">
         <Field
@@ -91,13 +95,15 @@ export function TeacherPicker({
           </SelectItem>
         ))}
       </Select>
-      <button
-        type="button"
-        onClick={() => setCreating(true)}
-        className="w-fit text-xs font-semibold text-primary"
-      >
-        + Nouvel enseignant
-      </button>
+      {allowCreate && (
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="w-fit text-xs font-semibold text-primary"
+        >
+          + Nouvel enseignant
+        </button>
+      )}
     </div>
   );
 }

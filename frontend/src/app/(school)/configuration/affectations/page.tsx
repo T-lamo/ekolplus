@@ -30,11 +30,15 @@ import {
   SkeletonStatCards,
   SkeletonTable,
 } from '@/components/ui/Skeleton';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
+
+const PAGE_SIZE = 10;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 
@@ -70,6 +74,8 @@ export default function AffectationsPage() {
   const [classFilter, setClassFilter] = useState('');
   const [teacherFilter, setTeacherFilter] = useState('');
   const [status, setStatus] = useState<StatusFilter>('');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<AssignmentRow | 'new' | null>(null);
 
   useEffect(() => {
@@ -108,6 +114,12 @@ export default function AffectationsPage() {
       return true;
     });
   }, [rows, search, classFilter, teacherFilter, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, classFilter, teacherFilter, status]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const stats = useMemo(() => {
     const all = rows ?? [];
@@ -178,7 +190,7 @@ export default function AffectationsPage() {
   const canCreate = classes.length > 0 && subjects.length > 0;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Affectations</h1>
@@ -275,101 +287,169 @@ export default function AffectationsPage() {
               <SelectItem value="unassigned">Sans enseignant</SelectItem>
               <SelectItem value="archived">Archivée</SelectItem>
             </FilterSelect>
-            <span className="ml-auto text-sm text-muted-foreground">
-              {filtered.length} affectations
-            </span>
+            <span className="text-sm text-muted-foreground">{filtered.length} affectations</span>
+            <ViewToggle view={view} onChange={setView} className="ml-auto" />
           </div>
 
-          <Card className="overflow-x-auto">
-            {filtered.length === 0 ? (
+          {filtered.length === 0 ? (
+            <Card>
               <p className="p-5 text-sm text-muted-foreground">
                 {rows.length === 0 ? 'Aucune affectation — crée la première.' : 'Aucun résultat.'}
               </p>
-            ) : (
-              <table className="w-full min-w-[960px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>Matière</Th>
-                    <Th>Enseignant</Th>
-                    <Th>Classe</Th>
-                    <Th>Volume horaire</Th>
-                    <Th>Coefficient</Th>
-                    <Th>Période</Th>
-                    <Th>Statut</Th>
-                    <Th className="w-[80px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((r) => {
-                    const visual = getSubjectVisual(r.subject.name);
-                    return (
-                      <tr key={r.id} className="border-b border-border last:border-none">
-                        <td className="px-3.5 py-2.5">
-                          <div className="flex items-center gap-2.5">
-                            <div
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-                              style={{ background: visual.iconBg, color: visual.iconFg }}
-                            >
-                              <visual.Icon size={15} />
-                            </div>
-                            <div>
-                              <div className="font-semibold text-foreground">{r.subject.name}</div>
-                              {r.subject.code && (
-                                <div className="text-[11px] text-muted-foreground">
-                                  {r.subject.code}
+            </Card>
+          ) : view === 'grid' ? (
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((r) => {
+                const visual = getSubjectVisual(r.subject.name);
+                return (
+                  <Card key={r.id} className="gap-3 p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+                          style={{ background: visual.iconBg, color: visual.iconFg }}
+                        >
+                          <visual.Icon size={17} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate font-bold text-foreground">{r.subject.name}</div>
+                          {r.subject.code && (
+                            <div className="text-2xs text-muted-foreground">{r.subject.code}</div>
+                          )}
+                        </div>
+                      </div>
+                      <ActionMenu items={menuItemsFor(r)} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge>{r.class.name}</Badge>
+                      {r.teacher ? (
+                        <Badge tone="success">Active</Badge>
+                      ) : (
+                        <Badge tone="warning">Sans enseignant</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      {r.teacher ? (
+                        <>
+                          <Avatar name={r.teacher.name} size={20} />
+                          <span className="truncate">{r.teacher.name}</span>
+                        </>
+                      ) : (
+                        <span className="italic text-muted-foreground">Non assigné</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+                      <span>{r.weeklyHours ? `${r.weeklyHours}h / semaine` : '—'}</span>
+                      <span>
+                        Coef.{' '}
+                        <span className="font-bold text-foreground">{r.coefficient ?? '—'}</span>
+                      </span>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[960px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>Matière</Th>
+                      <Th>Enseignant</Th>
+                      <Th>Classe</Th>
+                      <Th>Volume horaire</Th>
+                      <Th>Coefficient</Th>
+                      <Th>Période</Th>
+                      <Th>Statut</Th>
+                      <Th className="w-[80px]" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paged.map((r) => {
+                      const visual = getSubjectVisual(r.subject.name);
+                      return (
+                        <tr key={r.id} className="border-b border-border last:border-none">
+                          <td className="px-3.5 py-2.5">
+                            <div className="flex items-center gap-2.5">
+                              <div
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                                style={{ background: visual.iconBg, color: visual.iconFg }}
+                              >
+                                <visual.Icon size={15} />
+                              </div>
+                              <div>
+                                <div className="font-semibold text-foreground">
+                                  {r.subject.name}
                                 </div>
-                              )}
+                                {r.subject.code && (
+                                  <div className="text-2xs text-muted-foreground">
+                                    {r.subject.code}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-3.5 py-2.5 text-foreground">
-                          {r.teacher ? (
-                            <div className="flex items-center gap-1.5">
-                              <Avatar name={r.teacher.name} size={22} />
-                              <span>{r.teacher.name}</span>
-                            </div>
-                          ) : (
-                            <span className="italic text-muted-foreground">Non assigné</span>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          <Badge>{r.class.name}</Badge>
-                        </td>
-                        <td className="px-3.5 py-2.5 text-foreground">
-                          {r.weeklyHours ? (
-                            `${r.weeklyHours}h / semaine`
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5 font-bold text-foreground">
-                          {r.coefficient ?? '—'}
-                        </td>
-                        <td className="px-3.5 py-2.5 text-xs text-muted-foreground">
-                          {periodLabel(school?.academicYear ?? null)}
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          {r.teacher ? (
-                            <Badge tone="success">Active</Badge>
-                          ) : (
-                            <Badge tone="warning">Sans enseignant</Badge>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          <div className="flex items-center gap-1">
-                            <IconButton onClick={() => setEditing(r)} label="Modifier">
-                              <Pencil size={14} />
-                            </IconButton>
+                          </td>
+                          <td className="px-3.5 py-2.5 text-foreground">
+                            {r.teacher ? (
+                              <div className="flex items-center gap-1.5">
+                                <Avatar name={r.teacher.name} size={22} />
+                                <span>{r.teacher.name}</span>
+                              </div>
+                            ) : (
+                              <span className="italic text-muted-foreground">Non assigné</span>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5">
+                            <Badge>{r.class.name}</Badge>
+                          </td>
+                          <td className="px-3.5 py-2.5 text-foreground">
+                            {r.weeklyHours ? (
+                              `${r.weeklyHours}h / semaine`
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5 font-bold text-foreground">
+                            {r.coefficient ?? '—'}
+                          </td>
+                          <td className="px-3.5 py-2.5 text-xs text-muted-foreground">
+                            {periodLabel(school?.academicYear ?? null)}
+                          </td>
+                          <td className="px-3.5 py-2.5">
+                            {r.teacher ? (
+                              <Badge tone="success">Active</Badge>
+                            ) : (
+                              <Badge tone="warning">Sans enseignant</Badge>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5">
                             <ActionMenu items={menuItemsFor(r)} />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </Card>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <Pager
+                centered
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={filtered.length}
+                onChange={setPage}
+              />
+            </Card>
+          )}
+          {view === 'grid' && filtered.length > 0 && (
+            <Pager
+              centered
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={filtered.length}
+              onChange={setPage}
+            />
+          )}
         </>
       )}
 
@@ -398,7 +478,7 @@ export default function AffectationsPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -419,7 +499,7 @@ function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${toneClasses[tone]}`}
     >
       {children}
     </span>
@@ -441,7 +521,7 @@ function SummaryCard({
     secondary: 'bg-secondary text-primary',
     success: 'bg-success text-success-foreground',
     warning: 'bg-warning text-warning-foreground',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
   } as const;
   return (
     <Card className="flex-row items-center gap-3 p-3.5">
@@ -451,30 +531,9 @@ function SummaryCard({
         <Icon size={17} />
       </div>
       <div>
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className="text-lg font-bold text-foreground">{value}</div>
       </div>
     </Card>
-  );
-}
-
-function IconButton({
-  children,
-  onClick,
-  label,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-    >
-      {children}
-    </button>
   );
 }

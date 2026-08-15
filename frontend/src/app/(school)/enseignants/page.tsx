@@ -12,8 +12,6 @@ import {
   CalendarCheck,
   Mail,
   UserX,
-  LayoutGrid,
-  List as ListIcon,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
@@ -27,10 +25,14 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { OverflowTags } from '@/components/ui/OverflowTags';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
+
+const PAGE_SIZE = 10;
 
 interface SubjectOption {
   id: string;
@@ -58,7 +60,8 @@ export default function TeachersPage() {
   const [search, setSearch] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
   const [status, setStatus] = useState<'' | TeacherStatus>('');
-  const [view, setView] = useState<'list' | 'grid'>('list');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -89,6 +92,12 @@ export default function TeachersPage() {
       return true;
     });
   }, [teachers, search, subjectFilter, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, subjectFilter, status]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function onDelete(t: TeacherListItem) {
     if (!window.confirm(`Supprimer « ${t.name} » ?`)) return;
@@ -179,7 +188,7 @@ export default function TeachersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Enseignants</h1>
@@ -250,26 +259,7 @@ export default function TeachersPage() {
               <SelectItem value="INACTIVE">Inactif(ve)</SelectItem>
             </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} résultats</span>
-            <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
-              <button
-                type="button"
-                onClick={() => setView('list')}
-                aria-label="Vue liste"
-                aria-pressed={view === 'list'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'list' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <ListIcon size={15} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('grid')}
-                aria-label="Vue grille"
-                aria-pressed={view === 'grid'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'grid' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <LayoutGrid size={15} />
-              </button>
-            </div>
+            <ViewToggle view={view} onChange={setView} className="ml-auto" />
           </div>
 
           {filtered.length === 0 ? (
@@ -281,15 +271,17 @@ export default function TeachersPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((t) => (
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((t) => (
                 <Card key={t.id} className="gap-3 p-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex min-w-0 items-center gap-2.5">
                       <Avatar name={t.name} size={36} src={t.photoUrl} />
-                      <div>
-                        <div className="font-bold text-foreground">{t.name}</div>
-                        {t.email && <div className="text-2xs text-muted-foreground">{t.email}</div>}
+                      <div className="min-w-0">
+                        <div className="truncate font-bold text-foreground">{t.name}</div>
+                        {t.email && (
+                          <div className="truncate text-2xs text-muted-foreground">{t.email}</div>
+                        )}
                       </div>
                     </div>
                     <ActionMenu items={menuItemsFor(t)} />
@@ -325,78 +317,91 @@ export default function TeachersPage() {
               ))}
             </div>
           ) : (
-            <Card className="overflow-x-auto">
-              <table className="w-full min-w-[960px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>Enseignant</Th>
-                    <Th>Matière(s)</Th>
-                    <Th>Classes assignées</Th>
-                    <Th>Statut</Th>
-                    <Th>Heures/sem.</Th>
-                    <Th>Contact</Th>
-                    <Th className="w-[70px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((t) => (
-                    <tr key={t.id} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar name={t.name} size={32} src={t.photoUrl} />
-                          <div className="font-semibold text-foreground">{t.name}</div>
-                        </div>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <OverflowTags
-                          items={t.subjects}
-                          keyOf={(s) => s.id}
-                          renderItem={(s) => {
-                            const v = getSubjectVisual(s.name);
-                            return (
-                              <span
-                                className="inline-flex rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
-                                style={{ background: v.badgeBg, color: v.badgeFg }}
-                              >
-                                {s.name}
-                              </span>
-                            );
-                          }}
-                          emptyLabel="Aucune"
-                        />
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <OverflowTags
-                          items={t.classes}
-                          keyOf={(c) => c.id}
-                          renderItem={(c) => (
-                            <span className="inline-flex rounded-full bg-info px-2 py-0.5 text-2xs font-semibold whitespace-nowrap text-info-foreground">
-                              {c.name}
-                            </span>
-                          )}
-                          emptyLabel="—"
-                        />
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
-                      </td>
-                      <td className="px-3.5 py-2.5 font-semibold text-foreground">
-                        {t.weeklyHours}h
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">{t.email ?? '—'}</td>
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-1">
-                          <IconButton onClick={() => setEditing(t.id)} label="Modifier">
-                            <Pencil size={14} />
-                          </IconButton>
-                          <ActionMenu items={menuItemsFor(t)} />
-                        </div>
-                      </td>
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[960px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>Enseignant</Th>
+                      <Th>Matière(s)</Th>
+                      <Th>Classes assignées</Th>
+                      <Th>Statut</Th>
+                      <Th>Heures/sem.</Th>
+                      <Th>Contact</Th>
+                      <Th className="w-[70px]" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paged.map((t) => (
+                      <tr key={t.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar name={t.name} size={32} src={t.photoUrl} />
+                            <div className="font-semibold text-foreground">{t.name}</div>
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <OverflowTags
+                            items={t.subjects}
+                            keyOf={(s) => s.id}
+                            renderItem={(s) => {
+                              const v = getSubjectVisual(s.name);
+                              return (
+                                <span
+                                  className="inline-flex rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
+                                  style={{ background: v.badgeBg, color: v.badgeFg }}
+                                >
+                                  {s.name}
+                                </span>
+                              );
+                            }}
+                            emptyLabel="Aucune"
+                          />
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <OverflowTags
+                            items={t.classes}
+                            keyOf={(c) => c.id}
+                            renderItem={(c) => (
+                              <span className="inline-flex rounded-full bg-info px-2 py-0.5 text-2xs font-semibold whitespace-nowrap text-info-foreground">
+                                {c.name}
+                              </span>
+                            )}
+                            emptyLabel="—"
+                          />
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
+                        </td>
+                        <td className="px-3.5 py-2.5 font-semibold text-foreground">
+                          {t.weeklyHours}h
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">{t.email ?? '—'}</td>
+                        <td className="px-3.5 py-2.5">
+                          <ActionMenu items={menuItemsFor(t)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pager
+                centered
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={filtered.length}
+                onChange={setPage}
+              />
             </Card>
+          )}
+          {view === 'grid' && filtered.length > 0 && (
+            <Pager
+              centered
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={filtered.length}
+              onChange={setPage}
+            />
           )}
         </>
       )}
@@ -440,26 +445,5 @@ function Badge({
     >
       {children}
     </span>
-  );
-}
-
-function IconButton({
-  children,
-  onClick,
-  label,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-    >
-      {children}
-    </button>
   );
 }

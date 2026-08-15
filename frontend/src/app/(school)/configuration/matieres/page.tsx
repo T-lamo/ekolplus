@@ -35,10 +35,14 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { OverflowTags } from '@/components/ui/OverflowTags';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import { SubjectFormModal } from './SubjectFormModal';
 import type { SubjectData } from './types';
+
+const PAGE_SIZE = 10;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 
@@ -58,6 +62,8 @@ export default function MatieresPage() {
   const [search, setSearch] = useState('');
   const [domain, setDomain] = useState('');
   const [status, setStatus] = useState<StatusFilter>('');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<SubjectData | 'new' | null>(null);
 
   useEffect(() => {
@@ -88,6 +94,12 @@ export default function MatieresPage() {
       return true;
     });
   }, [subjects, search, domain, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, domain, status]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const stats = useMemo(() => {
     const all = subjects ?? [];
@@ -194,7 +206,7 @@ export default function MatieresPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Matières</h1>
@@ -273,112 +285,195 @@ export default function MatieresPage() {
               <SelectItem value="unassigned">Non affectée</SelectItem>
               <SelectItem value="archived">Archivée</SelectItem>
             </FilterSelect>
-            <span className="ml-auto text-sm text-muted-foreground">
-              {filtered.length} matières
-            </span>
+            <span className="text-sm text-muted-foreground">{filtered.length} matières</span>
+            <ViewToggle view={view} onChange={setView} className="ml-auto" />
           </div>
 
-          <Card className="overflow-x-auto">
-            {filtered.length === 0 ? (
+          {filtered.length === 0 ? (
+            <Card>
               <p className="p-5 text-sm text-muted-foreground">
                 {subjects.length === 0 ? 'Aucune matière — ajoute la première.' : 'Aucun résultat.'}
               </p>
-            ) : (
-              <table className="w-full min-w-[900px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>Matière</Th>
-                    <Th>Domaine</Th>
-                    <Th>Coefficient</Th>
-                    <Th>Enseignant assigné</Th>
-                    <Th>Classes</Th>
-                    <Th>Nb. évaluations</Th>
-                    <Th>Statut</Th>
-                    <Th className="w-[80px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((s) => {
-                    const visual = getSubjectVisual(s.name);
-                    return (
-                      <tr key={s.id} className="border-b border-border last:border-none">
-                        <td className="px-3.5 py-2.5">
-                          <div className="flex items-center gap-2.5">
-                            <div
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-                              style={{ background: visual.iconBg, color: visual.iconFg }}
-                            >
-                              <visual.Icon size={16} />
-                            </div>
-                            <div>
-                              <div className="font-semibold text-foreground">{s.name}</div>
-                              {s.code && (
-                                <div className="text-2xs text-muted-foreground">{s.code}</div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          {s.domain ? (
-                            <span
-                              className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
-                              style={{ background: visual.badgeBg, color: visual.badgeFg }}
-                            >
-                              {s.domain}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5 font-bold text-foreground">
+            </Card>
+          ) : view === 'grid' ? (
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((s) => {
+                const visual = getSubjectVisual(s.name);
+                return (
+                  <Card key={s.id} className="gap-3 p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+                          style={{ background: visual.iconBg, color: visual.iconFg }}
+                        >
+                          <visual.Icon size={17} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate font-bold text-foreground">{s.name}</div>
+                          {s.code && <div className="text-2xs text-muted-foreground">{s.code}</div>}
+                        </div>
+                      </div>
+                      <ActionMenu items={menuItemsFor(s)} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {s.domain && (
+                        <span
+                          className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
+                          style={{ background: visual.badgeBg, color: visual.badgeFg }}
+                        >
+                          {s.domain}
+                        </span>
+                      )}
+                      {!s.isActive ? (
+                        <Badge>Archivée</Badge>
+                      ) : s.classes.length > 0 ? (
+                        <Badge tone="success">Active</Badge>
+                      ) : (
+                        <Badge tone="warning">Non affectée</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      {s.teacherNames.length > 0 ? (
+                        <>
+                          <Avatar name={s.teacherNames[0]!} size={20} />
+                          <span className="truncate">
+                            {s.teacherNames[0]}
+                            {s.teacherNames.length > 1 && ` +${s.teacherNames.length - 1}`}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="italic text-muted-foreground">Non assigné</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                      <OverflowTags
+                        items={s.classes}
+                        keyOf={(c) => c.id}
+                        renderItem={(c) => <Badge>{c.name}</Badge>}
+                        emptyLabel="Aucune classe"
+                      />
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        Coef.{' '}
+                        <span className="font-bold text-foreground">
                           {coefficientLabel(s.coefficients)}
-                        </td>
-                        <td className="px-3.5 py-2.5 text-foreground">
-                          {s.teacherNames.length > 0 ? (
-                            <div className="flex items-center gap-1.5">
-                              <Avatar name={s.teacherNames[0]!} size={22} />
-                              <span>
-                                {s.teacherNames[0]}
-                                {s.teacherNames.length > 1 && ` +${s.teacherNames.length - 1}`}
-                              </span>
+                        </span>
+                      </span>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[900px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>Matière</Th>
+                      <Th>Domaine</Th>
+                      <Th>Coefficient</Th>
+                      <Th>Enseignant assigné</Th>
+                      <Th>Classes</Th>
+                      <Th>Nb. évaluations</Th>
+                      <Th>Statut</Th>
+                      <Th className="w-[80px]" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paged.map((s) => {
+                      const visual = getSubjectVisual(s.name);
+                      return (
+                        <tr key={s.id} className="border-b border-border last:border-none">
+                          <td className="px-3.5 py-2.5">
+                            <div className="flex items-center gap-2.5">
+                              <div
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                                style={{ background: visual.iconBg, color: visual.iconFg }}
+                              >
+                                <visual.Icon size={16} />
+                              </div>
+                              <div>
+                                <div className="font-semibold text-foreground">{s.name}</div>
+                                {s.code && (
+                                  <div className="text-2xs text-muted-foreground">{s.code}</div>
+                                )}
+                              </div>
                             </div>
-                          ) : (
-                            <span className="italic text-muted-foreground">Non assigné</span>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          <OverflowTags
-                            items={s.classes}
-                            keyOf={(c) => c.id}
-                            renderItem={(c) => <Badge>{c.name}</Badge>}
-                            emptyLabel="Aucune classe"
-                          />
-                        </td>
-                        <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
-                        <td className="px-3.5 py-2.5">
-                          {!s.isActive ? (
-                            <Badge>Archivée</Badge>
-                          ) : s.classes.length > 0 ? (
-                            <Badge tone="success">Active</Badge>
-                          ) : (
-                            <Badge tone="warning">Non affectée</Badge>
-                          )}
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          <div className="flex items-center gap-1">
-                            <IconButton onClick={() => setEditing(s)} label="Modifier">
-                              <Pencil size={14} />
-                            </IconButton>
+                          </td>
+                          <td className="px-3.5 py-2.5">
+                            {s.domain ? (
+                              <span
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
+                                style={{ background: visual.badgeBg, color: visual.badgeFg }}
+                              >
+                                {s.domain}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5 font-bold text-foreground">
+                            {coefficientLabel(s.coefficients)}
+                          </td>
+                          <td className="px-3.5 py-2.5 text-foreground">
+                            {s.teacherNames.length > 0 ? (
+                              <div className="flex items-center gap-1.5">
+                                <Avatar name={s.teacherNames[0]!} size={22} />
+                                <span>
+                                  {s.teacherNames[0]}
+                                  {s.teacherNames.length > 1 && ` +${s.teacherNames.length - 1}`}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="italic text-muted-foreground">Non assigné</span>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5">
+                            <OverflowTags
+                              items={s.classes}
+                              keyOf={(c) => c.id}
+                              renderItem={(c) => <Badge>{c.name}</Badge>}
+                              emptyLabel="Aucune classe"
+                            />
+                          </td>
+                          <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
+                          <td className="px-3.5 py-2.5">
+                            {!s.isActive ? (
+                              <Badge>Archivée</Badge>
+                            ) : s.classes.length > 0 ? (
+                              <Badge tone="success">Active</Badge>
+                            ) : (
+                              <Badge tone="warning">Non affectée</Badge>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5">
                             <ActionMenu items={menuItemsFor(s)} />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </Card>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <Pager
+                centered
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={filtered.length}
+                onChange={setPage}
+              />
+            </Card>
+          )}
+          {view === 'grid' && filtered.length > 0 && (
+            <Pager
+              centered
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={filtered.length}
+              onChange={setPage}
+            />
+          )}
         </>
       )}
 
@@ -459,26 +554,5 @@ function SummaryCard({
         <div className="text-lg font-bold text-foreground">{value}</div>
       </div>
     </Card>
-  );
-}
-
-function IconButton({
-  children,
-  onClick,
-  label,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-    >
-      {children}
-    </button>
   );
 }

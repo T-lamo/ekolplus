@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   LayoutTemplate,
   CheckCircle2,
@@ -20,7 +20,11 @@ import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import type { TemplateListData, TemplateRow } from './types';
+
+const PAGE_SIZE = 10;
 
 function TemplateCardSkeleton() {
   return (
@@ -58,6 +62,12 @@ export default function BulletinTemplatesPage() {
   const [data, setData] = useState<TemplateListData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'personal' | 'global'>('personal');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tab]);
 
   useEffect(() => {
     if (!user) return;
@@ -157,9 +167,40 @@ export default function BulletinTemplatesPage() {
 
   const active = data.personal.find((t) => t.isActive);
   const rows = tab === 'personal' ? data.personal : data.global;
+  const paged = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function tableMenuItemsFor(t: TemplateRow): ActionMenuItem[] {
+    if (tab === 'global') {
+      return [{ label: 'Dupliquer', icon: <Copy size={13} />, onClick: () => fork(t.id) }];
+    }
+    return [
+      {
+        label: 'Éditer',
+        icon: <Pencil size={13} />,
+        onClick: () => router.push(`/configuration/modele-bulletin/${t.id}/edit`),
+      },
+      ...(t.isActive
+        ? []
+        : [
+            {
+              label: 'Définir comme actif',
+              icon: <CheckCircle2 size={13} />,
+              onClick: () => setActive(t.id),
+            },
+          ]),
+      { label: 'Dupliquer', icon: <Copy size={13} />, onClick: () => fork(t.id) },
+      {
+        label: 'Supprimer',
+        icon: <Trash2 size={13} />,
+        onClick: () => remove(t.id),
+        tone: 'danger' as const,
+        divider: true,
+      },
+    ];
+  }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div>
         <h1 className="text-xl font-bold text-foreground">Modèles de bulletin</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -194,33 +235,36 @@ export default function BulletinTemplatesPage() {
         </Card>
       )}
 
-      <div role="tablist" className="flex w-fit gap-1 rounded-lg bg-muted p-1">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'personal'}
-          onClick={() => setTab('personal')}
-          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
-        >
-          <User size={13} />
-          Mes modèles
-          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
-            {data.personal.length}
-          </span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'global'}
-          onClick={() => setTab('global')}
-          className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
-        >
-          <Globe size={13} />
-          Modèles globaux
-          <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
-            {data.global.length}
-          </span>
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" className="flex w-fit gap-1 rounded-lg bg-muted p-1">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'personal'}
+            onClick={() => setTab('personal')}
+            className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          >
+            <User size={13} />
+            Mes modèles
+            <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
+              {data.personal.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'global'}
+            onClick={() => setTab('global')}
+            className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          >
+            <Globe size={13} />
+            Modèles globaux
+            <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
+              {data.global.length}
+            </span>
+          </button>
+        </div>
+        <ViewToggle view={view} onChange={setView} />
       </div>
 
       {tab === 'global' && (
@@ -239,21 +283,98 @@ export default function BulletinTemplatesPage() {
               : 'Aucun modèle global disponible.'}
           </p>
         </Card>
+      ) : view === 'grid' ? (
+        <>
+          <div className="grid flex-1 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {paged.map((t) => (
+              <TemplateCard
+                key={t.id}
+                template={t}
+                isGlobal={tab === 'global'}
+                onFork={() => fork(t.id)}
+                onDelete={() => remove(t.id)}
+                onSetActive={() => setActive(t.id)}
+              />
+            ))}
+          </div>
+          <Pager centered page={page} pageSize={PAGE_SIZE} total={rows.length} onChange={setPage} />
+        </>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((t) => (
-            <TemplateCard
-              key={t.id}
-              template={t}
-              isGlobal={tab === 'global'}
-              onFork={() => fork(t.id)}
-              onDelete={() => remove(t.id)}
-              onSetActive={() => setActive(t.id)}
-            />
-          ))}
-        </div>
+        <Card className="flex-1">
+          <div className="flex-1 overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <Th>Modèle</Th>
+                  <Th>Description</Th>
+                  <Th>Type</Th>
+                  <Th>Dernière modification</Th>
+                  <Th className="w-[70px]" />
+                </tr>
+              </thead>
+              <tbody>
+                {paged.map((t) => (
+                  <tr key={t.id} className="border-b border-border last:border-none">
+                    <td className="px-3.5 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          aria-hidden
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: t.primaryColor }}
+                        />
+                        <span className="font-semibold text-foreground">{t.name}</span>
+                      </div>
+                    </td>
+                    <td className="max-w-[340px] px-3.5 py-2.5 text-xs text-muted-foreground">
+                      {t.description}
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      {tab === 'global' ? (
+                        <span
+                          className="inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                          style={{ background: `${t.primaryColor}1a`, color: t.primaryColor }}
+                        >
+                          <Lock size={11} />
+                          Prédéfini
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${t.isActive ? 'bg-success text-success-foreground' : 'bg-secondary text-secondary-foreground'}`}
+                        >
+                          {t.isActive ? <CheckCircle2 size={11} /> : <LayoutTemplate size={11} />}
+                          {t.isActive ? 'Actif' : 'Personnel'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-muted-foreground">
+                      {new Date(t.updatedAt).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      <ActionMenu items={tableMenuItemsFor(t)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pager centered page={page} pageSize={PAGE_SIZE} total={rows.length} onChange={setPage} />
+        </Card>
       )}
     </div>
+  );
+}
+
+function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
+  return (
+    <th
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+    >
+      {children}
+    </th>
   );
 }
 

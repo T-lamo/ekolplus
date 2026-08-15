@@ -10,8 +10,6 @@ import {
   Trash2,
   Plus,
   Download,
-  LayoutGrid,
-  List as ListIcon,
   Eye,
   Users,
   UserPlus,
@@ -34,11 +32,15 @@ import {
   SkeletonStatCards,
   SkeletonTable,
 } from '@/components/ui/Skeleton';
+import { ViewToggle } from '@/components/ui/ViewToggle';
+import { Pager } from '@/components/ui/Pager';
 import { getClassDotColor } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { ClassFormModal } from './ClassFormModal';
 import type { ClassData } from './types';
+
+const PAGE_SIZE = 10;
 
 interface SchoolInfo {
   academicYear: { label: string } | null;
@@ -54,7 +56,8 @@ export default function ClassesPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
-  const [view, setView] = useState<'list' | 'grid'>('list');
+  const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<ClassData | 'new' | null>(null);
 
   useEffect(() => {
@@ -87,6 +90,12 @@ export default function ClassesPage() {
       return true;
     });
   }, [classes, search, level]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, level]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const stats = useMemo(() => {
     const all = classes ?? [];
@@ -171,7 +180,7 @@ export default function ClassesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Classes</h1>
@@ -257,26 +266,7 @@ export default function ClassesPage() {
               </SelectItem>
             </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} classes</span>
-            <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-0.5">
-              <button
-                type="button"
-                onClick={() => setView('grid')}
-                aria-label="Vue grille"
-                aria-pressed={view === 'grid'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'grid' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <LayoutGrid size={15} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('list')}
-                aria-label="Vue liste"
-                aria-pressed={view === 'list'}
-                className={`flex h-8 w-8 items-center justify-center rounded ${view === 'list' ? 'bg-secondary text-primary' : 'text-muted-foreground'}`}
-              >
-                <ListIcon size={15} />
-              </button>
-            </div>
+            <ViewToggle view={view} onChange={setView} className="ml-auto" />
           </div>
 
           {filtered.length === 0 ? (
@@ -286,21 +276,14 @@ export default function ClassesPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((c) => (
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((c) => (
                 <Card key={c.id} className="gap-3 p-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        aria-hidden
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: getClassDotColor(c.id) }}
-                      />
-                      <div>
-                        <div className="font-bold text-foreground">{c.name}</div>
-                        {c.room && (
-                          <div className="text-[11px] text-muted-foreground">{c.room}</div>
-                        )}
+                    <div className="min-w-0">
+                      <div className="truncate font-bold text-foreground">{c.name}</div>
+                      <div className="mt-0.5 truncate text-2xs text-muted-foreground">
+                        {c.room ?? 'Salle non renseignée'}
                       </div>
                     </div>
                     <ActionMenu items={menuItemsFor(c)} />
@@ -313,7 +296,8 @@ export default function ClassesPage() {
                     {c.homeroomTeacher ? (
                       <>
                         <Avatar name={c.homeroomTeacher.name} size={20} />
-                        <span>{c.homeroomTeacher.name}</span>
+                        <span className="truncate">{c.homeroomTeacher.name}</span>
+                        <span className="shrink-0 text-muted-foreground">· Prof. principal</span>
                       </>
                     ) : (
                       <span className="italic text-muted-foreground">
@@ -334,80 +318,96 @@ export default function ClassesPage() {
               ))}
             </div>
           ) : (
-            <Card className="overflow-x-auto">
-              <table className="w-full min-w-[920px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <Th>Classe</Th>
-                    <Th>Niveau</Th>
-                    <Th>Professeur principal</Th>
-                    <Th>Élèves</Th>
-                    <Th>Matières</Th>
-                    <Th>Moyenne générale</Th>
-                    <Th>Statut</Th>
-                    <Th className="w-[80px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((c) => (
-                    <tr key={c.id} className="border-b border-border last:border-none">
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <span
-                            aria-hidden
-                            className="h-2 w-2 shrink-0 rounded-full"
-                            style={{ background: getClassDotColor(c.id) }}
-                          />
-                          <div>
-                            <div className="font-semibold text-foreground">{c.name}</div>
-                            {c.room && (
-                              <div className="text-[11px] text-muted-foreground">{c.room}</div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <Badge>{c.level}</Badge>
-                      </td>
-                      <td className="px-3.5 py-2.5 text-foreground">
-                        {c.homeroomTeacher ? (
-                          <div className="flex items-center gap-1.5">
-                            <Avatar name={c.homeroomTeacher.name} size={22} />
-                            <span>{c.homeroomTeacher.name}</span>
-                          </div>
-                        ) : (
-                          <span className="italic text-muted-foreground">Non affecté</span>
-                        )}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-foreground">
-                        <span className="font-semibold">—</span>
-                        <span className="text-muted-foreground"> / {c.capacity ?? '—'} places</span>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <Link
-                          href={`/configuration/coefficients?classId=${c.id}`}
-                          className="font-semibold text-primary hover:underline"
-                        >
-                          {c.subjectCount}
-                        </Link>
-                      </td>
-                      <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
-                      <td className="px-3.5 py-2.5">
-                        <Badge tone="success">Active</Badge>
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <div className="flex items-center gap-1">
-                          <IconButton onClick={() => setEditing(c)} label="Modifier">
-                            <Pencil size={14} />
-                          </IconButton>
-                          <ActionMenu items={menuItemsFor(c)} />
-                        </div>
-                      </td>
+            <Card className="flex-1">
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full min-w-[920px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <Th>Classe</Th>
+                      <Th>Niveau</Th>
+                      <Th>Professeur principal</Th>
+                      <Th>Élèves</Th>
+                      <Th>Matières</Th>
+                      <Th>Moyenne générale</Th>
+                      <Th>Statut</Th>
+                      <Th className="w-[80px]" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paged.map((c) => (
+                      <tr key={c.id} className="border-b border-border last:border-none">
+                        <td className="px-3.5 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <span
+                              aria-hidden
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: getClassDotColor(c.id) }}
+                            />
+                            <div>
+                              <div className="font-semibold text-foreground">{c.name}</div>
+                              {c.room && (
+                                <div className="text-2xs text-muted-foreground">{c.room}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <Badge>{c.level}</Badge>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-foreground">
+                          {c.homeroomTeacher ? (
+                            <div className="flex items-center gap-1.5">
+                              <Avatar name={c.homeroomTeacher.name} size={22} />
+                              <span>{c.homeroomTeacher.name}</span>
+                            </div>
+                          ) : (
+                            <span className="italic text-muted-foreground">Non affecté</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-foreground">
+                          <span className="font-semibold">—</span>
+                          <span className="text-muted-foreground">
+                            {' '}
+                            / {c.capacity ?? '—'} places
+                          </span>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <Link
+                            href={`/configuration/coefficients?classId=${c.id}`}
+                            className="font-semibold text-primary hover:underline"
+                          >
+                            {c.subjectCount}
+                          </Link>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
+                        <td className="px-3.5 py-2.5">
+                          <Badge tone="success">Active</Badge>
+                        </td>
+                        <td className="px-3.5 py-2.5">
+                          <ActionMenu items={menuItemsFor(c)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pager
+                centered
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={filtered.length}
+                onChange={setPage}
+              />
             </Card>
+          )}
+          {view === 'grid' && filtered.length > 0 && (
+            <Pager
+              centered
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={filtered.length}
+              onChange={setPage}
+            />
           )}
         </>
       )}
@@ -416,7 +416,6 @@ export default function ClassesPage() {
         <ClassFormModal
           cls={editing === 'new' ? null : editing}
           teachers={teachers}
-          onTeacherCreated={(t) => setTeachers((prev) => [...prev, t])}
           onClose={() => setEditing(null)}
           onSaved={(saved) =>
             setClasses((prev) => {
@@ -434,7 +433,7 @@ export default function ClassesPage() {
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -454,7 +453,7 @@ function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${toneClasses[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${toneClasses[tone]}`}
     >
       {children}
     </span>
@@ -476,7 +475,7 @@ function SummaryCard({
     secondary: 'bg-secondary text-primary',
     success: 'bg-success text-success-foreground',
     warning: 'bg-warning text-warning-foreground',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
   } as const;
   return (
     <Card className="flex-row items-center gap-3 p-3.5">
@@ -486,30 +485,9 @@ function SummaryCard({
         <Icon size={17} />
       </div>
       <div>
-        <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
         <div className="text-lg font-bold text-foreground">{value}</div>
       </div>
     </Card>
-  );
-}
-
-function IconButton({
-  children,
-  onClick,
-  label,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-    >
-      {children}
-    </button>
   );
 }

@@ -13,8 +13,12 @@ jobs:
     env:
       # Dummy env so the app can boot during typecheck/build (validation runs at import-time).
       DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
+      # Same host as DATABASE_URL — prisma migrate's direct (non-pooled) connection, required per README.
+      DIRECT_URL: postgresql://user:pass@localhost:5432/db?schema=public
       JWT_SECRET: ci-only-jwt-secret-at-least-32-characters-long-xyz
       ENCRYPTION_KEY: aGVsbG8td29ybGQtdGhpcy1pcy0zMi1ieXRlcy1sb25n
+      CRON_SECRET: ci-only-cron-secret-value-not-for-prod
+      APP_URL: http://localhost:3000
       COOKIE_PREFIX: app
       NEXT_PUBLIC_COOKIE_PREFIX: app
       AUTH_FORGOT_TARGET_LATENCY_MS: '0'

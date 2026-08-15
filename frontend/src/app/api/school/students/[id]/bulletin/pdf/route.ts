@@ -4,6 +4,9 @@
 // against the standalone print page (app/print/bulletin/...), streaming
 // the resulting PDF bytes back.
 export const runtime = 'nodejs';
+// Cold-starting headless Chromium + rendering the print page routinely
+// exceeds Vercel's default function timeout — allow the full minute.
+export const maxDuration = 60;
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';

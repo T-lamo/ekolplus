@@ -10,6 +10,7 @@ import 'server-only';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 import { signPrintToken, signTemplatePreviewToken } from './print-token';
+import { resolvePrintBaseUrl } from './print-base-url';
 import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
 
 export class PdfGenerationError extends Error {}
@@ -64,7 +65,7 @@ export async function generateBulletinPdf(
   options: GeneratePdfOptions,
 ): Promise<Buffer> {
   const token = signPrintToken({ schoolId, studentId, termId });
-  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const base = resolvePrintBaseUrl();
   const url = `${base}/print/bulletin/${studentId}/${termId}?token=${encodeURIComponent(token)}`;
   return renderPdfFromUrl(url, options);
 }
@@ -79,7 +80,7 @@ export async function generateBulletinTemplatePreviewPdf(
   options: GeneratePdfOptions,
 ): Promise<Buffer> {
   const token = signTemplatePreviewToken({ schoolId, config });
-  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const base = resolvePrintBaseUrl();
   const url = `${base}/print/bulletin-template-preview?token=${encodeURIComponent(token)}`;
   return renderPdfFromUrl(url, options);
 }

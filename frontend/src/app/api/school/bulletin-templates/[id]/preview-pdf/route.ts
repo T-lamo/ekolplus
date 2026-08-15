@@ -6,6 +6,9 @@
 // not whatever was last persisted. Renders against SAMPLE_BULLETIN_DATA,
 // same fixture the editor's on-screen preview uses.
 export const runtime = 'nodejs';
+// Cold-starting headless Chromium + rendering the print page routinely
+// exceeds Vercel's default function timeout — allow the full minute.
+export const maxDuration = 60;
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';

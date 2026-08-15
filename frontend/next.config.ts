@@ -54,8 +54,11 @@ const config: NextConfig = {
   reactStrictMode: true,
   // Standalone output bundles a self-contained server.js + minimal node_modules
   // into .next/standalone — required by the Docker runtime image (frontend/Dockerfile).
-  // Has no impact on `next dev` / `next start` workflows.
-  output: 'standalone',
+  // Has no impact on `next dev` / `next start` workflows. Skipped on Vercel
+  // (which always sets VERCEL=1 during build): Vercel's own builder expects
+  // .next/*.nft.json tracing files in the standard location, and `standalone`
+  // mode moves them, causing a build-time ENOENT on next-server.js.nft.json.
+  ...(process.env.VERCEL ? {} : { output: 'standalone' as const }),
   async headers() {
     return [
       {

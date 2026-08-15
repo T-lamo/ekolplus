@@ -115,7 +115,7 @@ function TagList({
         <span
           key={it.id}
           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-            tone === 'primary' ? 'bg-secondary text-primary' : 'bg-[#e0f0ff] text-[#2563eb]'
+            tone === 'primary' ? 'bg-secondary text-primary' : 'bg-info text-info-foreground'
           }`}
         >
           {it.name}
@@ -489,7 +489,7 @@ export function TeacherFormModal({
                       Classes assignées
                     </div>
                     <TagList items={detail?.classes ?? []} tone="info" />
-                    <p className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <p className="mt-1.5 flex items-center gap-1 text-2xs text-muted-foreground">
                       <LinkIcon size={11} />
                       Les matières et classes se configurent depuis la page{' '}
                       <Link
@@ -512,11 +512,11 @@ export function TeacherFormModal({
                 subtitle="Compte utilisateur et permissions"
               >
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3.5 py-3">
-                  <p className="text-[13px] text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Les comptes de connexion pour les enseignants arrivent dans une prochaine
                     version.
                   </p>
-                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-2xs font-semibold text-muted-foreground">
                     Bientôt disponible
                   </span>
                 </div>

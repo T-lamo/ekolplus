@@ -103,7 +103,7 @@ function GrowthTile({
   return (
     <div className="flex flex-col gap-1 rounded-lg border border-border p-3.5">
       <span className="text-xs font-semibold text-foreground">{label}</span>
-      <span className="text-[11px] text-muted-foreground">{sub}</span>
+      <span className="text-2xs text-muted-foreground">{sub}</span>
       <span
         className={`mt-1 text-lg font-extrabold ${accent ? 'text-success-foreground' : 'text-foreground'}`}
       >
@@ -275,7 +275,7 @@ export default function AdminStatisticsPage() {
                     ] as const
                   ).map(([label, value]) => (
                     <div key={label}>
-                      <div className="text-[11px] text-muted-foreground">{label}</div>
+                      <div className="text-2xs text-muted-foreground">{label}</div>
                       <div className="text-sm font-extrabold text-foreground">{value}</div>
                     </div>
                   ))}
@@ -299,7 +299,7 @@ export default function AdminStatisticsPage() {
                     ariaLabel={T.plans.title}
                     footer={
                       data.plans.expired > 0 ? (
-                        <div className="mt-1 flex items-center gap-2 border-t border-border pt-2 text-[13px]">
+                        <div className="mt-1 flex items-center gap-2 border-t border-border pt-2 text-caption">
                           <span
                             aria-hidden
                             className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/40"
@@ -361,7 +361,7 @@ export default function AdminStatisticsPage() {
                 <div className="flex flex-col gap-3 p-4">
                   {data.geo.map((g) => (
                     <div key={g.country} className="flex items-center gap-3">
-                      <span className="w-28 shrink-0 truncate text-[13px] font-semibold text-foreground">
+                      <span className="w-28 shrink-0 truncate text-caption font-semibold text-foreground">
                         {g.country}
                       </span>
                       <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">

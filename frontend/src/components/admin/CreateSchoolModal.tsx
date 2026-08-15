@@ -122,7 +122,7 @@ export function CreateSchoolModal({
           <Card className="flex-row items-start gap-3 bg-[#0f0a1e] px-5 py-5">
             <MailCheck size={18} className="mt-0.5 shrink-0 text-violet-300" />
             <div className="flex flex-col gap-1">
-              <span className="text-[13px] font-semibold text-white">
+              <span className="text-caption font-semibold text-white">
                 {T.verificationEmailSentLabel}
               </span>
               <p className="text-xs text-white/40">{T.verificationEmailSentNote}</p>
@@ -148,8 +148,8 @@ export function CreateSchoolModal({
               <School size={14} className="text-primary" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-foreground">{T.schoolSection.title}</div>
-              <div className="text-[11px] text-muted-foreground">{T.schoolSection.subtitle}</div>
+              <div className="text-caption font-bold text-foreground">{T.schoolSection.title}</div>
+              <div className="text-2xs text-muted-foreground">{T.schoolSection.subtitle}</div>
             </div>
           </div>
           <div className="flex flex-col gap-4 p-5">
@@ -247,12 +247,12 @@ export function CreateSchoolModal({
 
         <Card>
           <div className="flex items-center gap-2.5 border-b border-border px-5 py-3.5">
-            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md bg-[#e0f0ff]">
-              <UserCheck size={14} className="text-[#2563eb]" />
+            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md bg-info">
+              <UserCheck size={14} className="text-info-foreground" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-foreground">{T.adminSection.title}</div>
-              <div className="text-[11px] text-muted-foreground">{T.adminSection.subtitle}</div>
+              <div className="text-caption font-bold text-foreground">{T.adminSection.title}</div>
+              <div className="text-2xs text-muted-foreground">{T.adminSection.subtitle}</div>
             </div>
           </div>
           <div className="flex flex-col gap-4 p-5">

@@ -235,7 +235,7 @@ export function NotesResultatsTab({
             <div className="flex flex-col gap-4">
               <Card className="gap-3.5 p-4.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                  <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                     <ListChecks size={14} className="text-primary" />
                     Notes détaillées par matière
                   </div>
@@ -252,30 +252,30 @@ export function NotesResultatsTab({
                   <table className="w-full min-w-[720px] border-collapse text-sm">
                     <thead>
                       <tr>
-                        <th className="border-b border-border py-2 pr-3 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border py-2 pr-3 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Matière
                         </th>
-                        <th className="border-b border-border px-3 py-2 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Coeff.
                         </th>
                         {Array.from({ length: maxEvalCount }, (_, i) => (
                           <th
                             key={i}
-                            className="border-b border-border px-3 py-2 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+                            className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase"
                           >
                             Éval. {i + 1}
                           </th>
                         ))}
-                        <th className="border-b border-border px-3 py-2 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Moy. matière
                         </th>
-                        <th className="border-b border-border px-3 py-2 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Moy. classe
                         </th>
-                        <th className="border-b border-border px-3 py-2 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Tendance
                         </th>
-                        <th className="border-b border-border py-2 pl-3 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                        <th className="border-b border-border py-2 pl-3 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Appréciation
                         </th>
                       </tr>
@@ -286,7 +286,7 @@ export function NotesResultatsTab({
                           <tr className="bg-muted">
                             <td
                               colSpan={5 + maxEvalCount}
-                              className="px-3 py-1 text-[11px] font-bold tracking-wide text-muted-foreground uppercase"
+                              className="px-3 py-1 text-2xs font-bold tracking-wide text-muted-foreground uppercase"
                             >
                               {g.domain}
                             </td>
@@ -338,7 +338,7 @@ export function NotesResultatsTab({
                   </table>
                 </div>
                 <div className="mt-1 flex items-center justify-between border-t-2 border-border pt-3">
-                  <span className="text-[13px] font-bold text-foreground">
+                  <span className="text-caption font-bold text-foreground">
                     Moyenne générale pondérée
                   </span>
                   <div className="flex items-center gap-3">
@@ -355,7 +355,7 @@ export function NotesResultatsTab({
               </Card>
 
               <Card className="gap-3.5 p-4.5">
-                <div className="text-[13px] font-semibold text-foreground">
+                <div className="text-caption font-semibold text-foreground">
                   Évolution des moyennes par matière
                 </div>
                 <div className="flex flex-col gap-2.5">
@@ -384,7 +384,7 @@ export function NotesResultatsTab({
                     </div>
                   ))}
                 </div>
-                <div className="mt-1 flex items-center gap-4 border-t border-border pt-3 text-[11px] text-muted-foreground">
+                <div className="mt-1 flex items-center gap-4 border-t border-border pt-3 text-2xs text-muted-foreground">
                   <Legend color="#ef4444" label="Insuffisant (<8)" />
                   <Legend color="var(--color-warning-foreground)" label="Passable (8–12)" />
                   <Legend color="var(--color-success-foreground)" label="Bien (12+)" />
@@ -397,11 +397,11 @@ export function NotesResultatsTab({
             <div className="flex flex-col gap-4">
               <Card className="gap-2 p-4.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                  <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                     <Trophy size={14} className="text-primary" />
                     Classement — {data.className}
                   </div>
-                  <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-secondary-foreground">
                     {data.rank ? `${data.rank}e / ${data.rankedCount}` : '—'}
                   </span>
                 </div>
@@ -412,7 +412,7 @@ export function NotesResultatsTab({
                     'gap' in row ? (
                       <div
                         key={row.key}
-                        className="py-1 text-center text-[11px] text-muted-foreground"
+                        className="py-1 text-center text-2xs text-muted-foreground"
                       >
                         · · ·
                       </div>
@@ -422,19 +422,19 @@ export function NotesResultatsTab({
                         className={`flex items-center gap-2.5 py-2 ${row.isSelf ? 'rounded-md bg-secondary px-1.5' : 'border-b border-border last:border-b-0'}`}
                       >
                         <div
-                          className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${row.isSelf ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
+                          className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-bold ${row.isSelf ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
                         >
                           {row.position}
                         </div>
                         <Avatar name={row.name} size={26} />
                         <div className="min-w-0 flex-1">
                           <div
-                            className={`truncate text-[13px] ${row.isSelf ? 'font-semibold text-primary' : 'font-medium text-foreground'}`}
+                            className={`truncate text-caption ${row.isSelf ? 'font-semibold text-primary' : 'font-medium text-foreground'}`}
                           >
                             {row.name}
                           </div>
                           {row.isSelf && (
-                            <div className="text-[11px] text-muted-foreground">Vous consultez</div>
+                            <div className="text-2xs text-muted-foreground">Vous consultez</div>
                           )}
                         </div>
                         <span
@@ -477,7 +477,7 @@ export function NotesResultatsTab({
                     className="mt-0.5 shrink-0 text-destructive-foreground"
                   />
                   <div>
-                    <div className="mb-1 text-[13px] font-bold text-destructive-foreground">
+                    <div className="mb-1 text-caption font-bold text-destructive-foreground">
                       Alerte pédagogique
                     </div>
                     <div className="text-xs leading-relaxed text-destructive-foreground">
@@ -492,7 +492,7 @@ export function NotesResultatsTab({
               {data.termMode === 'SPECIFIC' && (
                 <Card className="gap-2.5 p-4.5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                    <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                       <Target size={14} className="text-primary" />
                       Objectifs — {currentTermLabel}
                     </div>
@@ -510,7 +510,7 @@ export function NotesResultatsTab({
                     data.goals.map((g) => (
                       <div key={g.id} className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[13px] font-medium text-foreground">
+                          <span className="text-caption font-medium text-foreground">
                             {g.subjectName}
                           </span>
                           <div className="flex items-center gap-1.5 text-xs">
@@ -587,11 +587,11 @@ function SummaryCard({
       <div className={`flex h-8 w-8 items-center justify-center rounded-md ${iconBg[tone]}`}>
         <Icon size={16} />
       </div>
-      <div className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+      <div className="text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
         {label}
       </div>
       <div className={`text-[26px] leading-none font-bold ${valueColor[tone]}`}>{value}</div>
-      <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
+      <div className="truncate text-2xs text-muted-foreground">{sub}</div>
     </Card>
   );
 }

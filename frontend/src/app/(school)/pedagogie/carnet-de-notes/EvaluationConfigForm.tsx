@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ClassSubjectOption, EvaluationConfig, EvaluationType, TermOption } from './types';
@@ -103,12 +104,7 @@ export function EvaluationConfigForm({
       />
 
       <div className="grid grid-cols-3 gap-3.5">
-        <Field
-          label="Date"
-          type="date"
-          value={value.date ?? ''}
-          onChange={(e) => set('date', e.target.value || null)}
-        />
+        <DateField label="Date" value={value.date ?? ''} onChange={(v) => set('date', v || null)} />
         <Select
           label="Note maximale"
           value={String(value.maxScore)}

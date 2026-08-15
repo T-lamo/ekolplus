@@ -383,23 +383,23 @@ export default function BulletinEditorPage() {
                 onBlur={() => renameTemplate(nameInput)}
                 maxLength={120}
                 aria-label="Nom du modèle"
-                className="w-48 rounded border border-transparent bg-transparent px-1 py-0.5 text-[13px] font-semibold text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
+                className="w-48 rounded border border-transparent bg-transparent px-1 py-0.5 text-caption font-semibold text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
               />
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+            <div className="flex items-center gap-1.5 text-caption font-semibold text-foreground">
               <LayoutTemplate size={14} className="text-primary" />
               {data.name}
             </div>
           )}
           {data.isActive && (
-            <span className="flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-[11px] font-semibold text-success-foreground">
+            <span className="flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
               <CheckCircle2 size={10} />
               Actif
             </span>
           )}
           {!data.isOwn && (
-            <span className="flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[11px] font-semibold text-warning-foreground">
+            <span className="flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
               Lecture seule — modèle global
             </span>
           )}
@@ -486,10 +486,10 @@ export default function BulletinEditorPage() {
         {/* Left: block list */}
         {data.isOwn && (
           <div className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-card p-3.5">
-            <div className="mb-2.5 text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+            <div className="mb-2.5 text-2xs font-bold tracking-wide text-muted-foreground uppercase">
               Blocs du bulletin
             </div>
-            <p className="mb-2.5 text-[11px] text-muted-foreground">
+            <p className="mb-2.5 text-2xs text-muted-foreground">
               Glissez pour réorganiser les blocs
             </p>
             {orderedBlocks.map((b) => {
@@ -551,7 +551,7 @@ export default function BulletinEditorPage() {
             >
               <ZoomOut size={13} />
             </button>
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-2xs font-medium text-foreground">
               {zoom}%
             </span>
             <button
@@ -565,7 +565,7 @@ export default function BulletinEditorPage() {
             <button
               type="button"
               onClick={() => setZoom(computeFitZoom())}
-              className="text-[11px] font-medium text-primary"
+              className="text-2xs font-medium text-primary"
             >
               Ajuster à la page
             </button>
@@ -575,7 +575,7 @@ export default function BulletinEditorPage() {
             className="flex flex-1 items-start justify-center overflow-auto bg-[#d8d8e8] p-7"
           >
             <div style={{ width: scaledSize.width }}>
-              <div className="mb-2 flex items-center justify-center gap-1.5 text-[11px] text-[#888]">
+              <div className="mb-2 flex items-center justify-center gap-1.5 text-2xs text-[#888]">
                 <FileText size={12} />
                 Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
                 {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
@@ -627,10 +627,10 @@ export default function BulletinEditorPage() {
                   })()}
                 </span>
                 <div>
-                  <div className="text-[13px] font-bold text-foreground">
+                  <div className="text-caption font-bold text-foreground">
                     {BLOCK_LABEL[selected]}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">Bloc sélectionné</div>
+                  <div className="text-2xs text-muted-foreground">Bloc sélectionné</div>
                 </div>
               </div>
               <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
@@ -639,7 +639,7 @@ export default function BulletinEditorPage() {
                     key={t}
                     type="button"
                     onClick={() => setPropTab(t)}
-                    className={`flex-1 rounded px-1 py-1 text-[11px] font-medium ${propTab === t ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
+                    className={`flex-1 rounded px-1 py-1 text-2xs font-medium ${propTab === t ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
                   >
                     {t === 'style' ? 'Style' : t === 'content' ? 'Contenu' : 'Espacement'}
                   </button>
@@ -968,7 +968,7 @@ function PropSection({
 }) {
   return (
     <div className={`p-3.5 ${last ? '' : 'border-b border-border'}`}>
-      <div className="mb-2.5 text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+      <div className="mb-2.5 text-2xs font-bold tracking-wide text-muted-foreground uppercase">
         {title}
       </div>
       {children}
@@ -1033,7 +1033,7 @@ function PropSliderRow({
     <div className="mb-2.5">
       <div className="mb-1 flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-foreground">{label}</span>
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-2xs text-muted-foreground">
           {value}
           {suffix}
         </span>

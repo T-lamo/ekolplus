@@ -6,6 +6,7 @@ import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { FEES } from '@/lib/constants';
@@ -229,12 +230,7 @@ export function PaymentRegistrationModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
-              <Field
-                label={t.dateLabel}
-                type="date"
-                value={paidAt}
-                onChange={(e) => setPaidAt(e.target.value)}
-              />
+              <DateField label={t.dateLabel} value={paidAt} onChange={setPaidAt} />
             </div>
             <Field
               label={t.referenceLabel}

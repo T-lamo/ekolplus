@@ -12,7 +12,7 @@ const STATUS_META: Record<AttendanceStatus, { label: string; bg: string; fg: str
   PRESENT: { label: 'Présent', bg: 'bg-success', fg: 'text-success-foreground' },
   ABSENT: { label: 'Absent', bg: 'bg-destructive', fg: 'text-destructive-foreground' },
   LATE: { label: 'Retard', bg: 'bg-warning', fg: 'text-warning-foreground' },
-  EXCUSED: { label: 'Justifié', bg: 'bg-[#e0f0ff]', fg: 'text-[#2563eb]' },
+  EXCUSED: { label: 'Justifié', bg: 'bg-info', fg: 'text-info-foreground' },
 };
 
 function fmtDate(iso: string): string {
@@ -110,7 +110,7 @@ export function PresencesTab({ studentId }: { studentId: string }) {
       </div>
 
       <Card className="gap-3 p-4.5">
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+        <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
           <CalendarCheck size={14} className="text-primary" />
           Journal de présence
         </div>
@@ -123,13 +123,13 @@ export function PresencesTab({ studentId }: { studentId: string }) {
             <table className="w-full min-w-[420px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                  <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                     Date
                   </th>
-                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                  <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                     Statut
                   </th>
-                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                  <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                     Justification
                   </th>
                 </tr>
@@ -139,12 +139,12 @@ export function PresencesTab({ studentId }: { studentId: string }) {
                   const meta = STATUS_META[d.status];
                   return (
                     <tr key={d.date} className="border-b border-border last:border-b-0">
-                      <td className="px-2 py-2.5 text-[13px] font-medium text-foreground capitalize">
+                      <td className="px-2 py-2.5 text-caption font-medium text-foreground capitalize">
                         {fmtDate(d.date)}
                       </td>
                       <td className="px-2 py-2.5">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ${meta.bg} ${meta.fg}`}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-2xs font-bold ${meta.bg} ${meta.fg}`}
                         >
                           {meta.label}
                         </span>
@@ -181,7 +181,7 @@ function AttendanceStat({
     success: 'bg-success text-success-foreground',
     destructive: 'bg-destructive text-destructive-foreground',
     warning: 'bg-warning text-warning-foreground',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
   };
   return (
     <Card className="gap-2 p-4">
@@ -189,7 +189,7 @@ function AttendanceStat({
         <Icon size={15} />
       </div>
       <div className="text-xl font-extrabold text-foreground">{value}</div>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
+      <div className="text-2xs text-muted-foreground">{label}</div>
     </Card>
   );
 }

@@ -174,7 +174,10 @@ export default function TeacherProfilePage() {
       <Card className="relative gap-4 overflow-hidden p-6">
         <div
           className="absolute inset-x-0 top-0 h-[72px]"
-          style={{ background: 'linear-gradient(135deg, #6c2bd9 0%, #a855f7 100%)' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-gradient-end) 100%)',
+          }}
         />
         <div className="relative z-10 flex flex-col gap-4 pt-7 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">
@@ -222,7 +225,7 @@ export default function TeacherProfilePage() {
                 )}
               </div>
               <div className="mt-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-secondary-foreground">
                   <span
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: STATUS_DOT[teacher.status] }}
@@ -252,7 +255,7 @@ export default function TeacherProfilePage() {
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-md px-3.5 py-2 text-[13px] font-medium whitespace-nowrap ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-md px-3.5 py-2 text-caption font-medium whitespace-nowrap ${
                 tab === t.key ? 'bg-secondary font-semibold text-primary' : 'text-muted-foreground'
               }`}
             >
@@ -267,7 +270,7 @@ export default function TeacherProfilePage() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card className="p-5">
             <div className="mb-3.5 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <UserCheck size={14} className="text-primary" />
                 Informations personnelles
               </div>
@@ -289,7 +292,7 @@ export default function TeacherProfilePage() {
 
           <Card className="p-5">
             <div className="mb-3.5 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <Briefcase size={14} className="text-primary" />
                 Coordonnées & Contrat
               </div>
@@ -317,7 +320,7 @@ export default function TeacherProfilePage() {
       {tab === 'assignments' && (
         <Card className="p-5">
           <div className="mb-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <BookOpen size={14} className="text-primary" />
               Matières & Classes assignées
             </div>
@@ -337,7 +340,7 @@ export default function TeacherProfilePage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[520px] border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-border text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  <tr className="border-b border-border text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                     <th className="py-2 pr-3">Matière</th>
                     <th className="py-2 pr-3">Classe</th>
                     <th className="py-2 pr-3">Heures / sem.</th>
@@ -347,18 +350,20 @@ export default function TeacherProfilePage() {
                 <tbody>
                   {teacher.assignments.map((a) => (
                     <tr key={a.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-3 text-[13px] font-medium text-foreground">
+                      <td className="py-2.5 pr-3 text-caption font-medium text-foreground">
                         {a.subject.name}
                       </td>
                       <td className="py-2.5 pr-3">
-                        <span className="rounded-full bg-[#e0f0ff] px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                        <span className="rounded-full bg-info px-2.5 py-1 text-xs font-semibold text-info-foreground">
                           {a.class.name}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-3 text-[13px] text-foreground">
+                      <td className="py-2.5 pr-3 text-caption text-foreground">
                         {a.weeklyHours !== null ? `${a.weeklyHours} h` : '—'}
                       </td>
-                      <td className="py-2.5 text-[13px] text-foreground">{a.coefficient ?? '—'}</td>
+                      <td className="py-2.5 text-caption text-foreground">
+                        {a.coefficient ?? '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -379,7 +384,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
       <div className="text-xl leading-none font-bold text-foreground">{value}</div>
-      <div className="text-center text-[11px] text-muted-foreground">{label}</div>
+      <div className="text-center text-2xs text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -388,7 +393,7 @@ function InfoRow({ label, value, last = false }: { label: string; value: string;
   return (
     <div className={`flex items-start gap-2 py-1.5 ${last ? '' : 'border-b border-border'}`}>
       <span className="min-w-[130px] shrink-0 text-xs text-muted-foreground">{label}</span>
-      <span className="text-[13px] font-medium text-foreground">{value}</span>
+      <span className="text-caption font-medium text-foreground">{value}</span>
     </div>
   );
 }

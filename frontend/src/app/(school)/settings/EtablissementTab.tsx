@@ -90,10 +90,10 @@ export function EtablissementTab({
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">
+        <h2 className="text-caption font-bold text-foreground">
           Informations de l&apos;établissement
         </h2>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Ces informations apparaissent sur les bulletins et documents officiels.
         </p>
       </div>

@@ -8,7 +8,7 @@ export function DemoRequestSection() {
       <div className="rounded-2xl bg-violet-600 p-6 text-white shadow-xl md:p-16">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-6 text-left">
-            <span className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1 text-2xs font-semibold uppercase tracking-wider">
               <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> Démo gratuite
             </span>
             <h2 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">

@@ -167,16 +167,16 @@ export default function BulletinViewerPage() {
         </Link>
 
         <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
             Élève
           </div>
           <div className="mb-2.5 flex items-center gap-2.5">
             <Avatar name={`${data.firstName} ${data.lastName}`} size={38} />
             <div>
-              <div className="text-[13px] font-bold text-foreground">
+              <div className="text-caption font-bold text-foreground">
                 {data.firstName} {data.lastName}
               </div>
-              <div className="text-[11px] text-muted-foreground">#{data.studentNumber}</div>
+              <div className="text-2xs text-muted-foreground">#{data.studentNumber}</div>
             </div>
           </div>
           <div className="flex flex-col gap-1.5 text-xs">
@@ -189,20 +189,20 @@ export default function BulletinViewerPage() {
         </div>
 
         <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
             Actions
           </div>
           <ActionBtn icon={Printer} label="Imprimer" primary onClick={printBulletin} />
           <a
             href={`/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}`}
-            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
+            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
           >
             <Download size={14} className="text-muted-foreground" />
             Télécharger PDF
           </a>
           <Link
             href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
-            className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-[13px] font-medium text-foreground"
+            className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
           >
             <Pencil size={14} className="text-muted-foreground" />
             Modifier l&apos;appréciation
@@ -210,7 +210,7 @@ export default function BulletinViewerPage() {
         </div>
 
         <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
             Navigation
           </div>
           <div className="flex gap-2">
@@ -243,7 +243,7 @@ export default function BulletinViewerPage() {
               </span>
             )}
           </div>
-          <div className="mt-2 text-center text-[11px] text-muted-foreground">
+          <div className="mt-2 text-center text-2xs text-muted-foreground">
             Élève {data.studentIndex ?? '—'} sur {data.classSize}
           </div>
         </div>
@@ -370,7 +370,7 @@ function ActionBtn({
     <button
       type="button"
       onClick={onClick}
-      className={`mb-1 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-medium ${cls}`}
+      className={`mb-1 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-caption font-medium ${cls}`}
     >
       <Icon size={14} />
       {label}

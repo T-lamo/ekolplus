@@ -314,7 +314,7 @@ export default function PaymentConfigurationPage() {
                       <div className="text-sm font-semibold text-foreground">
                         {t.latePenaltyToggle}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-2xs text-muted-foreground">
                         {t.latePenaltyToggleDesc}
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export default function PaymentConfigurationPage() {
                       <div className="text-sm font-semibold text-foreground">
                         {t.autoRemindersToggle}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-2xs text-muted-foreground">
                         {t.autoRemindersToggleDesc}
                       </div>
                     </div>
@@ -377,7 +377,7 @@ export default function PaymentConfigurationPage() {
                         {classes?.find((c) => c.id === selectedId)?.studentCount ?? 0} élèves
                       </span>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${
                           structure.feeStructure
                             ? 'bg-success text-success-foreground'
                             : 'bg-warning text-warning-foreground'
@@ -487,7 +487,7 @@ export default function PaymentConfigurationPage() {
                             <Split size={13} className="text-primary" />
                             {t.tranchesBuilderTitle}
                           </h3>
-                          <p className="mt-0.5 text-[11px] text-muted-foreground">
+                          <p className="mt-0.5 text-2xs text-muted-foreground">
                             {t.tranchesBuilderSubtitle(
                               fmtMoney(allocated, automation?.currency),
                               tranches.length,
@@ -519,7 +519,7 @@ export default function PaymentConfigurationPage() {
                           {tranches.map((tr, i) => (
                             <div
                               key={tr.key}
-                              className="flex items-center gap-1 text-[11px] text-muted-foreground"
+                              className="flex items-center gap-1 text-2xs text-muted-foreground"
                             >
                               <span
                                 className="h-[9px] w-[9px] shrink-0 rounded-sm"
@@ -544,7 +544,7 @@ export default function PaymentConfigurationPage() {
                             >
                               <div className="flex min-w-0 items-center gap-2.5">
                                 <span
-                                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-2xs font-bold text-white"
                                   style={{ background: color }}
                                 >
                                   {i + 1}
@@ -555,7 +555,7 @@ export default function PaymentConfigurationPage() {
                                       {tr.label || `Tranche ${i + 1}`}
                                     </span>
                                     {hasPenalty && (
-                                      <span className="text-[11px] whitespace-nowrap text-muted-foreground">
+                                      <span className="text-2xs whitespace-nowrap text-muted-foreground">
                                         ·{' '}
                                         {t.trancheLatePenaltySummary(
                                           Number(tr.latePenaltyPercent),
@@ -566,7 +566,7 @@ export default function PaymentConfigurationPage() {
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-[11px] text-muted-foreground">
+                                  <div className="text-2xs text-muted-foreground">
                                     {fmtDateShort(tr.dueDate)}
                                   </div>
                                 </div>
@@ -608,7 +608,7 @@ export default function PaymentConfigurationPage() {
                 </Card>
 
                 <Card className="flex-row flex-wrap items-center justify-between gap-3 p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <p className="flex items-center gap-1.5 text-2xs text-muted-foreground">
                     {t.saveBarHelper}
                   </p>
                   <div className="flex gap-2">

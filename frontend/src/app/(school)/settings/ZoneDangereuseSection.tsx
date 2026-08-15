@@ -130,8 +130,8 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
       <Card className="border-destructive-foreground/30">
         <div className="flex items-center justify-between gap-3 border-b border-destructive-foreground/30 bg-destructive px-5 py-3.5">
           <div>
-            <h2 className="text-[13px] font-bold text-destructive-foreground">Zone dangereuse</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <h2 className="text-caption font-bold text-destructive-foreground">Zone dangereuse</h2>
+            <p className="text-2xs text-muted-foreground">
               Ces actions sont irréversibles. Procédez avec précaution.
             </p>
           </div>

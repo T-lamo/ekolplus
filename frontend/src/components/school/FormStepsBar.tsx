@@ -33,10 +33,10 @@ export function FormStepsBar({
           {activeIndex + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-medium text-muted-foreground">
+          <div className="text-2xs font-medium text-muted-foreground">
             Étape {activeIndex + 1} sur {steps.length}
           </div>
-          <div className="truncate text-[13px] font-semibold text-foreground">{active?.label}</div>
+          <div className="truncate text-caption font-semibold text-foreground">{active?.label}</div>
         </div>
         <div className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-muted">
           <div
@@ -67,7 +67,7 @@ export function FormStepsBar({
                 className={`flex shrink-0 items-center gap-2 ${reachable ? '' : 'cursor-default'}`}
               >
                 <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold ${
                     done || isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
@@ -76,7 +76,7 @@ export function FormStepsBar({
                   {done ? <Check size={12} /> : i + 1}
                 </span>
                 <span
-                  className={`text-[13px] whitespace-nowrap ${
+                  className={`text-caption whitespace-nowrap ${
                     isActive
                       ? 'font-semibold text-primary'
                       : done

@@ -171,7 +171,7 @@ export default function EditEvaluationPage() {
       <div className="flex items-center gap-2.5 rounded-lg border-l-[3px] border-warning-foreground bg-warning px-4 py-3">
         <AlertTriangle size={16} className="shrink-0 text-warning-foreground" />
         <div>
-          <div className="text-[13px] font-semibold text-warning-foreground">
+          <div className="text-caption font-semibold text-warning-foreground">
             Modification d&apos;une évaluation existante
           </div>
           <div className="text-xs text-warning-foreground/90">
@@ -196,7 +196,7 @@ export default function EditEvaluationPage() {
       )}
 
       <Card className="flex-row items-center justify-between p-3.5">
-        <span className="text-[13px] text-muted-foreground">
+        <span className="text-caption text-muted-foreground">
           Des modifications non enregistrées peuvent exister.
         </span>
         <div className="flex items-center gap-2">

@@ -19,8 +19,8 @@ export function AbonnementTab() {
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">Abonnement</h2>
-        <p className="text-[11px] text-muted-foreground">
+        <h2 className="text-caption font-bold text-foreground">Abonnement</h2>
+        <p className="text-2xs text-muted-foreground">
           Ton forfait actuel et les options disponibles.
         </p>
       </div>
@@ -31,7 +31,7 @@ export function AbonnementTab() {
             <div className="text-sm font-bold text-foreground">Starter</div>
             <div className="text-xs text-muted-foreground">Gratuit</div>
           </div>
-          <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-primary">
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-primary">
             Forfait actuel
           </span>
         </div>

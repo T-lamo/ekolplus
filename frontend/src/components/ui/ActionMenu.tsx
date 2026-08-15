@@ -67,7 +67,7 @@ export function ActionMenu({
               {item.divider && i > 0 && <DropdownMenu.Separator className="my-1 h-px bg-border" />}
               <DropdownMenu.Item
                 onSelect={item.onClick}
-                className={`flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium outline-none ${itemToneClass(item.tone, 'highlighted')}`}
+                className={`flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-caption font-medium outline-none ${itemToneClass(item.tone, 'highlighted')}`}
               >
                 {item.icon}
                 <span className="break-words">{item.label}</span>
@@ -118,7 +118,7 @@ function SearchableActionMenu({ items }: { items: ActionMenuItem[] }) {
                 value={query}
                 onValueChange={setQuery}
                 placeholder="Rechercher une action..."
-                className="w-full bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
+                className="w-full bg-transparent text-caption text-foreground outline-none placeholder:text-muted-foreground"
               />
             </div>
             <Command.List className="max-h-[min(320px,var(--radix-popover-content-available-height))] overflow-y-auto p-1.5">
@@ -133,7 +133,7 @@ function SearchableActionMenu({ items }: { items: ActionMenuItem[] }) {
                   <Command.Item
                     value={item.label}
                     onSelect={() => select(item)}
-                    className={`flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium outline-none ${itemToneClass(item.tone, 'selected')}`}
+                    className={`flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-caption font-medium outline-none ${itemToneClass(item.tone, 'selected')}`}
                   >
                     {item.icon}
                     <span className="break-words">{item.label}</span>

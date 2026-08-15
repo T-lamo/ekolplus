@@ -15,7 +15,7 @@ interface SidebarItemProps {
 export function SidebarItem({ item, active, collapsed, variant, onNavigate }: SidebarItemProps) {
   const Icon = item.icon;
   const iconSize = variant === 'light' ? 15 : 14;
-  const fontSizeClass = variant === 'light' ? 'text-[13px]' : 'text-xs';
+  const fontSizeClass = variant === 'light' ? 'text-caption' : 'text-xs';
 
   const activeClasses =
     variant === 'light'

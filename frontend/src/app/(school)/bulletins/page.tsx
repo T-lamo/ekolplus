@@ -280,7 +280,7 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
         <div className="flex items-center gap-2.5">
           <Avatar name={`${student.firstName} ${student.lastName}`} size={30} />
           <div>
-            <div className="text-[13px] font-semibold text-foreground">
+            <div className="text-caption font-semibold text-foreground">
               {student.firstName} {student.lastName}
             </div>
             <div className="text-xs text-muted-foreground">#{student.studentNumber}</div>
@@ -313,7 +313,7 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
       </td>
       <td className="px-3.5 py-2.5">
         <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${student.status === 'GENERATED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold ${student.status === 'GENERATED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
         >
           {student.status === 'GENERATED' ? 'Généré' : 'En attente'}
         </span>
@@ -336,7 +336,7 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
 function Th({ children, className = '' }: { children?: React.ReactNode; className?: string }) {
   return (
     <th
-      className={`px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
+      className={`px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase ${className}`}
     >
       {children}
     </th>
@@ -360,14 +360,14 @@ function SummaryCard({
     secondary: 'bg-secondary text-primary',
     success: 'bg-success text-success-foreground',
     warning: 'bg-warning text-warning-foreground',
-    blue: 'bg-[#e0f0ff] text-[#2563eb]',
+    blue: 'bg-info text-info-foreground',
     destructive: 'bg-destructive text-destructive-foreground',
   };
   const valueColor: Record<string, string> = {
     secondary: 'text-foreground',
     success: 'text-success-foreground',
     warning: 'text-warning-foreground',
-    blue: 'text-[#2563eb]',
+    blue: 'text-info-foreground',
     destructive: 'text-destructive-foreground',
   };
   return (
@@ -378,9 +378,9 @@ function SummaryCard({
         <Icon size={18} />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-[11px] font-medium text-muted-foreground">{label}</div>
+        <div className="truncate text-2xs font-medium text-muted-foreground">{label}</div>
         <div className={`text-lg font-bold ${valueColor[tone]}`}>{value}</div>
-        {sub && <div className="truncate text-[11px] text-muted-foreground">{sub}</div>}
+        {sub && <div className="truncate text-2xs text-muted-foreground">{sub}</div>}
       </div>
     </Card>
   );

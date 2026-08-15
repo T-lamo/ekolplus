@@ -58,10 +58,10 @@ export default function LoginPage() {
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       const me = await refresh();
       // Platform staff (ADMIN/SUPERADMIN) land on the SaaS back-office;
-      // school users land on their configuration home. `/` stays the public
+      // school users land on their dashboard. `/` stays the public
       // marketing landing — a logged-in user must never land there.
       const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
-      router.push(isPlatformStaff ? '/admin' : '/configuration/classes');
+      router.push(isPlatformStaff ? '/admin' : '/dashboard');
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

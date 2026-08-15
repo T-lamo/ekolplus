@@ -32,7 +32,7 @@ export function StatCard({ label, value, icon, delta, deltaTone = 'success', sub
       </div>
       <div className="text-xl font-extrabold text-foreground">{value}</div>
       {(delta !== undefined || sub !== undefined) && (
-        <div className="flex items-baseline gap-1.5 text-[11px]">
+        <div className="flex items-baseline gap-1.5 text-2xs">
           {delta !== undefined && (
             <span className={cn('font-bold', DELTA_CLASSES[deltaTone])}>{delta}</span>
           )}

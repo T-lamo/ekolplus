@@ -99,12 +99,12 @@ export function FeeHistoryModal({
               <div className="text-sm font-bold text-foreground">
                 {data.student.firstName} {data.student.lastName}
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-2xs text-muted-foreground">
                 #{data.student.studentNumber} {data.class ? `· ${data.class.name}` : ''}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[11px] text-muted-foreground">Solde dû</div>
+              <div className="text-2xs text-muted-foreground">Solde dû</div>
               <div className="text-sm font-extrabold text-foreground">
                 {fmtMoney(data.balance, currency)}
               </div>
@@ -119,7 +119,7 @@ export function FeeHistoryModal({
               >
                 <div>
                   <div className="text-sm font-semibold text-foreground">{t.label}</div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     {fmtMoney(t.paidAmount, currency)} / {fmtMoney(t.amount, currency)} · échéance{' '}
                     {fmtDate(t.dueDate)}
                   </div>
@@ -141,7 +141,7 @@ export function FeeHistoryModal({
                       <div className="text-sm font-semibold text-foreground">
                         {fmtMoney(p.amount + p.penaltyAmount, currency)}
                       </div>
-                      <div className="truncate text-[11px] text-muted-foreground">
+                      <div className="truncate text-2xs text-muted-foreground">
                         {fmtDate(p.paidAt)} · {FEES.paymentMethodLabel[p.method]} ·{' '}
                         {p.recordedByName}
                       </div>

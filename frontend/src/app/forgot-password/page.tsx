@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_FORGOT_PASSWORD.confirmation.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_FORGOT_PASSWORD.confirmation.body(email)}
               </p>
               <Link
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_FORGOT_PASSWORD.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_FORGOT_PASSWORD.subtitle}
               </p>
 

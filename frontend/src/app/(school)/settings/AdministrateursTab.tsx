@@ -21,8 +21,8 @@ export function AdministrateursTab({ members }: { members: MemberData[] }) {
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">Administrateurs</h2>
-        <p className="text-[11px] text-muted-foreground">
+        <h2 className="text-caption font-bold text-foreground">Administrateurs</h2>
+        <p className="text-2xs text-muted-foreground">
           Comptes ayant accès à l&apos;espace de gestion de l&apos;établissement.
         </p>
       </div>
@@ -36,7 +36,7 @@ export function AdministrateursTab({ members }: { members: MemberData[] }) {
               <div className="truncate text-xs text-muted-foreground">{m.email}</div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-0.5">
-              <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">
+              <span className="rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-secondary-foreground">
                 {ROLE_LABEL[m.role]}
               </span>
               <span className="text-[10px] text-muted-foreground">Depuis le {fmt(m.joinedAt)}</span>

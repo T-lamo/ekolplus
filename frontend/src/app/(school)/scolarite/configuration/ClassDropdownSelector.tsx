@@ -118,14 +118,14 @@ export function ClassDropdownSelector({
                         <span className="block truncate text-sm font-semibold text-foreground">
                           {c.name}
                         </span>
-                        <span className="block truncate text-[11px] text-muted-foreground">
+                        <span className="block truncate text-2xs text-muted-foreground">
                           {c.configured
                             ? `${c.studentCount} élèves · ${c.trancheCount} tranches`
                             : `${c.studentCount} élèves`}
                         </span>
                       </span>
                       <span
-                        className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
+                        className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${
                           c.configured
                             ? 'bg-success text-success-foreground'
                             : 'bg-warning text-warning-foreground'

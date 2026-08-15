@@ -368,7 +368,7 @@ export function BulletinCanvas({
               <span className="font-bold" style={{ fontSize: 12, color: config.primaryColor }}>
                 {fmt(data.overallAverage)} / 20
               </span>
-              <span className="ml-2.5 text-[#8884a0]" style={{ fontSize: 10 }}>
+              <span className="ml-2.5 text-muted-foreground" style={{ fontSize: 10 }}>
                 Rang : {ordinal(data.rank)} / {data.rankedCount} élèves
               </span>
             </td>
@@ -378,26 +378,26 @@ export function BulletinCanvas({
     ),
     absences: () => (
       <div>
-        <div className="mb-1.5 text-[9px] font-bold tracking-wide text-[#8884a0] uppercase">
+        <div className="mb-1.5 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
           Absences &amp; Retards
         </div>
         <div className="flex gap-1.5">
           <div className="flex flex-1 items-center gap-1.5 rounded-md bg-[#fff8e1] px-2.5 py-1.5">
             <CalendarX size={14} className="shrink-0 text-[#f59e0b]" />
             <div>
-              <div className="text-[13px] font-extrabold text-[#f59e0b]">
+              <div className="text-caption font-extrabold text-[#f59e0b]">
                 {data.absencesDays == null ? '—' : `${data.absencesDays} jours`}
               </div>
-              <div className="text-[9px] text-[#8884a0]">Absences totales</div>
+              <div className="text-[9px] text-muted-foreground">Absences totales</div>
             </div>
           </div>
           <div className="flex flex-1 items-center gap-1.5 rounded-md bg-[#fdecea] px-2.5 py-1.5">
             <CalendarX size={14} className="shrink-0 text-[#d93025]" />
             <div>
-              <div className="text-[13px] font-extrabold text-[#d93025]">
+              <div className="text-caption font-extrabold text-[#d93025]">
                 {data.retards == null ? '—' : data.retards}
               </div>
-              <div className="text-[9px] text-[#8884a0]">Retards</div>
+              <div className="text-[9px] text-muted-foreground">Retards</div>
             </div>
           </div>
         </div>
@@ -405,17 +405,17 @@ export function BulletinCanvas({
     ),
     appreciation: () => (
       <div className="rounded-md border border-[#e8e4f6] bg-[#faf9ff] p-2.5">
-        <div className="mb-1 text-[9px] font-bold tracking-wide text-[#8884a0] uppercase">
+        <div className="mb-1 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
           Appréciation générale du conseil de classe
         </div>
-        <div className="text-[11px] leading-relaxed text-[#1a1a2e] italic">
+        <div className="text-2xs leading-relaxed text-[#1a1a2e] italic">
           {data.generalAppreciation || 'Aucune appréciation générale saisie.'}
         </div>
       </div>
     ),
     signatures: () => (
       <div>
-        <div className="mb-1.5 text-[9px] font-bold tracking-wide text-[#8884a0] uppercase">
+        <div className="mb-1.5 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
           Signatures
         </div>
         <div className="flex gap-3.5">
@@ -444,7 +444,9 @@ export function BulletinCanvas({
     >
       <div
         className="h-1.5 shrink-0"
-        style={{ background: `linear-gradient(90deg, ${config.primaryColor}, #a855f7)` }}
+        style={{
+          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-primary-gradient-end))`,
+        }}
       />
 
       {(visible('header') || visible('studentInfo')) && (
@@ -485,7 +487,7 @@ export function BulletinCanvas({
                 >
                   {config.content.title}
                 </div>
-                <div className="text-[10px] text-[#8884a0]">
+                <div className="text-[10px] text-muted-foreground">
                   Année {data.academicYear} · {data.period}
                 </div>
               </div>
@@ -505,7 +507,7 @@ export function BulletinCanvas({
               <div className="mt-0.5 text-[10px] text-[#6b6b8d]">
                 {data.className} · Effectif : {data.classSize}
               </div>
-              <div className="text-[9px] text-[#8884a0]">{data.studentNumber}</div>
+              <div className="text-[9px] text-muted-foreground">{data.studentNumber}</div>
             </div>
           )}
         </div>
@@ -533,7 +535,7 @@ export function BulletinCanvas({
 
         {config.content.footerMessage && (
           <div
-            className="shrink-0 text-center text-[#8884a0] italic"
+            className="shrink-0 text-center text-muted-foreground italic"
             style={{ fontSize: config.typography.footer }}
           >
             {config.content.footerMessage}
@@ -543,7 +545,9 @@ export function BulletinCanvas({
 
       <div
         className="h-1.5 shrink-0"
-        style={{ background: `linear-gradient(90deg, ${config.primaryColor}, #a855f7)` }}
+        style={{
+          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-primary-gradient-end))`,
+        }}
       />
     </div>
   );
@@ -568,7 +572,7 @@ function StatBox({
       <div className="text-base font-extrabold" style={{ color }}>
         {value}
       </div>
-      <div className="mt-0.5 text-[9px] text-[#8884a0]">{label}</div>
+      <div className="mt-0.5 text-[9px] text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -588,7 +592,7 @@ function SigBox({
       style={{ borderColor: `${color}80` }}
     >
       {imageUrl && <img src={imageUrl} alt={label} className="mb-1 h-8 w-auto object-contain" />}
-      <div className="text-center text-[9px] text-[#8884a0]">{label}</div>
+      <div className="text-center text-[9px] text-muted-foreground">{label}</div>
     </div>
   );
 }

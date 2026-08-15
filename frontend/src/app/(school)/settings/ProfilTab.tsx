@@ -61,8 +61,8 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
   return (
     <Card className="gap-3 p-5">
       <div className="border-b border-border pb-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">Mon profil</h2>
-        <p className="text-[11px] text-muted-foreground">Informations du compte administrateur</p>
+        <h2 className="text-caption font-bold text-foreground">Mon profil</h2>
+        <p className="text-2xs text-muted-foreground">Informations du compte administrateur</p>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="w-32">
@@ -236,10 +236,10 @@ function PasswordCard({ user }: { user: User }) {
   return (
     <Card className="gap-3 p-5">
       <div className="border-b border-border pb-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">
+        <h2 className="text-caption font-bold text-foreground">
           {hasPassword ? 'Mot de passe' : 'Définir un mot de passe'}
         </h2>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           {hasPassword
             ? 'Modifie ton mot de passe de connexion'
             : 'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.'}
@@ -251,7 +251,7 @@ function PasswordCard({ user }: { user: User }) {
           <ShieldAlert size={16} className="shrink-0 text-primary" />
           <div>
             <div className="text-xs font-semibold text-primary">Dernière modification</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">{lastChanged}</div>
+            <div className="mt-0.5 text-2xs text-muted-foreground">{lastChanged}</div>
           </div>
         </div>
       )}
@@ -297,7 +297,7 @@ function PasswordCard({ user }: { user: User }) {
               </span>
             </div>
           )}
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-2xs text-muted-foreground">
             Min. 8 caractères, une majuscule, un chiffre
           </p>
         </div>
@@ -316,7 +316,7 @@ function PasswordCard({ user }: { user: User }) {
           {passwordsMatch && (
             <div className="mt-1 flex items-center gap-1.5">
               <CheckCircle size={11} className="text-success-foreground" />
-              <span className="text-[11px] font-medium text-success-foreground">
+              <span className="text-2xs font-medium text-success-foreground">
                 Les mots de passe correspondent
               </span>
             </div>
@@ -343,7 +343,7 @@ function PasswordCard({ user }: { user: User }) {
         {hasPassword && (
           <div className={cn('flex items-start gap-2 rounded-md bg-warning px-3.5 py-2.5')}>
             <ShieldAlert size={14} className="mt-0.5 shrink-0 text-warning-foreground" />
-            <p className="text-[11px] leading-relaxed text-warning-foreground">
+            <p className="text-2xs leading-relaxed text-warning-foreground">
               Après modification, tu seras déconnecté·e de toutes les sessions actives.
             </p>
           </div>

@@ -19,7 +19,6 @@ import {
   UserCheck,
   History,
   Zap,
-  Printer,
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -36,7 +35,7 @@ function mentionClass(m: Mention | null): string {
     case 'TRES_BIEN':
       return 'bg-success text-success-foreground';
     case 'BIEN':
-      return 'bg-[#e0f0ff] text-[#2563eb]';
+      return 'bg-info text-info-foreground';
     case 'ASSEZ_BIEN':
       return 'bg-warning text-warning-foreground';
     case 'PASSABLE':
@@ -190,7 +189,7 @@ export default function AppreciationDetailPage() {
           <div className="text-base font-bold text-foreground">
             {data.firstName} {data.lastName}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Hash size={11} />
               {data.studentNumber}
@@ -209,7 +208,7 @@ export default function AppreciationDetailPage() {
               <>
                 <span className="text-border">·</span>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${mentionClass(data.general.mention)}`}
+                  className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
                   {MENTION_LABEL[data.general.mention]}
                 </span>
@@ -221,7 +220,7 @@ export default function AppreciationDetailPage() {
           <button
             type="button"
             onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-[13px] font-semibold text-foreground"
+            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground"
           >
             <Mail size={13} />
             Notifier le tuteur
@@ -229,14 +228,14 @@ export default function AppreciationDetailPage() {
           <button
             type="button"
             onClick={() => toast('Disponible avec les Bulletins (Epic 7).', 'info')}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-[13px] font-semibold text-foreground"
+            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground"
           >
             <FileText size={13} />
             Générer le bulletin
           </button>
           <Link
             href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId}`}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-[13px] font-semibold text-primary-foreground"
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-caption font-semibold text-primary-foreground"
           >
             <Pencil size={13} />
             Modifier l&apos;appréciation
@@ -253,7 +252,7 @@ export default function AppreciationDetailPage() {
             </div>
             {data.general ? (
               <>
-                <div className="rounded-md bg-muted p-3.5 text-[13px] leading-relaxed text-foreground">
+                <div className="rounded-md bg-muted p-3.5 text-caption leading-relaxed text-foreground">
                   {data.general.text || <span className="text-muted-foreground italic">—</span>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -265,7 +264,7 @@ export default function AppreciationDetailPage() {
                   <span>Saisie le {fmtDate(data.general.createdAt)}</span>
                   <span className="text-border">·</span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
                   >
                     {data.general.status === 'PUBLISHED' ? 'Saisie' : 'Brouillon'}
                   </span>
@@ -287,22 +286,22 @@ export default function AppreciationDetailPage() {
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Matière
                     </th>
-                    <th className="px-2 py-2 text-center text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
                       Coeff.
                     </th>
-                    <th className="px-2 py-2 text-center text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
                       Moy.
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Mention
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Appréciation
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Enseignant
                     </th>
                   </tr>
@@ -310,7 +309,7 @@ export default function AppreciationDetailPage() {
                 <tbody>
                   {data.subjects.map((s) => (
                     <tr key={s.classSubjectId} className="border-b border-border last:border-b-0">
-                      <td className="px-2 py-2 text-[13px] font-semibold text-foreground">
+                      <td className="px-2 py-2 text-caption font-semibold text-foreground">
                         {s.subjectName}
                       </td>
                       <td className="px-2 py-2 text-center text-xs text-muted-foreground">
@@ -322,7 +321,7 @@ export default function AppreciationDetailPage() {
                       <td className="px-2 py-2">
                         {s.mention ? (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${mentionClass(s.mention)}`}
+                            className={`rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
                           >
                             {MENTION_LABEL[s.mention]}
                           </span>
@@ -344,7 +343,7 @@ export default function AppreciationDetailPage() {
               </table>
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
-              <span className="text-[13px] font-medium text-muted-foreground">
+              <span className="text-caption font-medium text-muted-foreground">
                 Moyenne générale
               </span>
               <span className="text-xl font-extrabold text-foreground">
@@ -352,7 +351,7 @@ export default function AppreciationDetailPage() {
               </span>
               {data.general?.mention && (
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${mentionClass(data.general.mention)}`}
+                  className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
                   {MENTION_LABEL[data.general.mention]}
                 </span>
@@ -406,7 +405,7 @@ export default function AppreciationDetailPage() {
                 {data.homeroomTeacherName?.[0] ?? '—'}
               </div>
               <div>
-                <div className="text-[13px] font-bold text-foreground">
+                <div className="text-caption font-bold text-foreground">
                   {data.homeroomTeacherName ?? 'Non défini'}
                 </div>
                 <div className="text-xs text-muted-foreground">{data.className}</div>
@@ -435,7 +434,7 @@ export default function AppreciationDetailPage() {
             <button
               type="button"
               onClick={() => toast('Disponible avec les Bulletins (Epic 7).', 'info')}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-foreground hover:bg-muted"
+              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-foreground hover:bg-muted"
             >
               <FileText size={14} className="text-muted-foreground" />
               Générer le bulletin PDF
@@ -443,24 +442,16 @@ export default function AppreciationDetailPage() {
             <button
               type="button"
               onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-foreground hover:bg-muted"
+              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-foreground hover:bg-muted"
             >
               <Mail size={14} className="text-muted-foreground" />
               Envoyer au tuteur légal
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-foreground hover:bg-muted"
-            >
-              <Printer size={14} className="text-muted-foreground" />
-              Imprimer l&apos;appréciation
             </button>
             <div className="my-1 h-px bg-border" />
             <button
               type="button"
               onClick={onDelete}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-destructive-foreground hover:bg-destructive"
+              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-destructive-foreground hover:bg-destructive"
             >
               <Trash2 size={14} />
               Supprimer l&apos;appréciation
@@ -483,7 +474,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between text-[13px]">
+    <div className="flex items-center justify-between text-caption">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium text-foreground">{value}</span>
     </div>

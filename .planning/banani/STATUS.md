@@ -1,10 +1,13 @@
 # Banani implementation status
 
-Last updated: 2026-08-14 (annee-scolaire-wizard, school-dashboard, presences-bulletins-tabs)
+Last updated: 2026-08-15 (cards-redesign)
 
 Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/AcademicYear/Term/Enrollment as first-class models). All 6 open questions decided and locked 2026-08-11.
 
 ## Done
+- [x] `cards-redesign` (« Classes Grid » `WCr1VTvFdbcZ`, flow `2oB_n5kLBeuy`) → **REVERTED same day on user feedback** — plan: `cards-redesign.md` — 2026-08-15
+  - The full Banani card anatomy (colored accent bar, stat tiles, metric bar, quick-action footer) was built on 6 pages, verified in-browser, then rejected by the user: cards took too much vertical space and the per-entity accent colors changing card-to-card looked bad. **Locked preference: card views stay simple and compact** — white uniform cards, kebab ⋯ in the header, badges row, one info line, single border-t footer line. `CardKit.tsx` deleted; the simple pre-redesign card layout is the reference for any future card view. Do not re-propose per-card accent colors or stat-tile-heavy cards.
+  - Verified after revert: typecheck/lint/format green, real browser pass (cards render, no page errors).
 - [x] `annee-scolaire-wizard` → `src/app/(school)/settings/nouvelle-annee/page.tsx` — plan: `annee-scolaire-wizard.md` (spec) / `docs/superpowers/plans/2026-08-14-academic-year-rollover.md` (14-task execution plan, subagent-driven-development) — commits `e64a826`..`2804d99`
   - OWNER-only 3-step wizard to roll over a school to a new academic year: Step 1 creates the new year (autosaved as a per-school `AcademicYearRolloverDraft`), Step 2 maps each current class to a destination (existing or newly-created, inline "Créer nouvelle" flow), Step 3 shows promoted/exceptions/unenrolled counts + a paginated student list, then commits via a type-to-confirm gate (school name, same pattern as `ZoneDangereuseSection`'s destructive actions).
   - **Atomicity**: the actual rollover (`executeRollover`) creates the new `AcademicYear`, archives the old one, creates/reuses destination classes, and re-enrolls students — all inside one `prisma.$transaction`, plus the draft deletion and `AdminAction` audit row in the same tx (no side effects outside it, mirroring the `reset-year` route's precedent).

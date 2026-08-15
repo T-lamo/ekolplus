@@ -67,7 +67,7 @@ export function UserStatusBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' }) 
 export function PlanBadge({ planKey, name }: { planKey: string; name: string }) {
   const emoji = ADMIN_SAAS.planEmoji[planKey];
   return (
-    <span className="inline-flex items-center gap-1 text-[13px] font-semibold whitespace-nowrap text-foreground">
+    <span className="inline-flex items-center gap-1 text-caption font-semibold whitespace-nowrap text-foreground">
       {emoji && <span aria-hidden>{emoji}</span>}
       {name}
     </span>

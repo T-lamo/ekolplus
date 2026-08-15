@@ -267,7 +267,7 @@ export default function SystemSettingsPage() {
       />
 
       {readOnly && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-3 text-[13px] text-foreground">
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-3 text-caption text-foreground">
           <Lock size={14} className="shrink-0 text-primary" />
           {T.superadminOnly}
         </div>
@@ -282,7 +282,7 @@ export default function SystemSettingsPage() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className="rounded-lg px-3 py-2 text-[13px] font-medium whitespace-nowrap text-muted-foreground hover:bg-secondary hover:text-primary"
+              className="rounded-lg px-3 py-2 text-caption font-medium whitespace-nowrap text-muted-foreground hover:bg-secondary hover:text-primary"
             >
               {item.label}
             </a>
@@ -379,7 +379,7 @@ export default function SystemSettingsPage() {
                   value={form.trialDays}
                   onChange={(e) => patch({ trialDays: e.target.value })}
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">{T.billing.trialDaysHint}</p>
+                <p className="mt-1 text-2xs text-muted-foreground">{T.billing.trialDaysHint}</p>
               </div>
               {data.plans.map((p) => (
                 <Field
@@ -399,10 +399,10 @@ export default function SystemSettingsPage() {
                   <CreditCard size={15} />
                 </span>
                 <div>
-                  <div className="text-[13px] font-semibold text-foreground">
+                  <div className="text-caption font-semibold text-foreground">
                     {T.billing.stripeTitle}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{T.billing.stripeHint}</div>
+                  <div className="text-2xs text-muted-foreground">{T.billing.stripeHint}</div>
                 </div>
               </div>
               <Badge tone={data.stripe.configured ? 'success' : 'muted'}>
@@ -425,10 +425,10 @@ export default function SystemSettingsPage() {
                   className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
                 >
                   <div>
-                    <div className="text-[13px] font-semibold text-foreground">
+                    <div className="text-caption font-semibold text-foreground">
                       {T.notifications.items[key].label}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-2xs text-muted-foreground">
                       {T.notifications.items[key].sub} — {T.notifications.channelPending}
                     </div>
                   </div>
@@ -464,7 +464,7 @@ export default function SystemSettingsPage() {
                   readOnly
                   disabled
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">{T.security.sessionHint}</p>
+                <p className="mt-1 text-2xs text-muted-foreground">{T.security.sessionHint}</p>
               </div>
             </div>
             <div className="mt-3.5 flex flex-col gap-2">
@@ -473,7 +473,7 @@ export default function SystemSettingsPage() {
                   key={label}
                   className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3.5 py-3"
                 >
-                  <span className="text-[13px] font-medium text-foreground">{label}</span>
+                  <span className="text-caption font-medium text-foreground">{label}</span>
                   <Badge tone="muted">{T.security.comingSoon}</Badge>
                 </div>
               ))}
@@ -485,7 +485,7 @@ export default function SystemSettingsPage() {
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
                 <Database size={15} />
               </span>
-              <p className="text-[13px] leading-relaxed text-muted-foreground">{T.backups.body}</p>
+              <p className="text-caption leading-relaxed text-muted-foreground">{T.backups.body}</p>
             </div>
           </SettingsSection>
 
@@ -497,10 +497,10 @@ export default function SystemSettingsPage() {
               </h2>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-[13px] font-semibold text-foreground">
+                  <div className="text-caption font-semibold text-foreground">
                     {T.danger.resetTitle}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{T.danger.resetBody}</div>
+                  <div className="text-2xs text-muted-foreground">{T.danger.resetBody}</div>
                 </div>
                 <Button
                   variant="outline"

@@ -22,7 +22,7 @@ export function FeeKpiRow({ items }: { items: FeeKpiItem[] }) {
             <span className="text-xs font-semibold">{item.label}</span>
           </div>
           <div className="text-xl font-extrabold text-foreground">{item.value}</div>
-          {item.sub && <div className="text-[11px] text-muted-foreground">{item.sub}</div>}
+          {item.sub && <div className="text-2xs text-muted-foreground">{item.sub}</div>}
           {item.progressPercent !== undefined && (
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div

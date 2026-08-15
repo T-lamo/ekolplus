@@ -130,7 +130,7 @@ export function PhoneInput({
                     value={query}
                     onValueChange={setQuery}
                     placeholder="Rechercher un pays..."
-                    className="w-full bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
+                    className="w-full bg-transparent text-caption text-foreground outline-none placeholder:text-muted-foreground"
                   />
                 </div>
                 <Command.List className="max-h-[min(320px,var(--radix-popover-content-available-height))] overflow-y-auto p-1.5">
@@ -143,7 +143,7 @@ export function PhoneInput({
                       value={`${c.name} ${c.dialCode}`}
                       onSelect={() => selectCountry(c)}
                       className={cn(
-                        'flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-foreground outline-none data-[selected=true]:bg-secondary data-[selected=true]:text-primary',
+                        'flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-caption font-medium text-foreground outline-none data-[selected=true]:bg-secondary data-[selected=true]:text-primary',
                         c.iso2 === country.iso2 && 'text-primary',
                       )}
                     >

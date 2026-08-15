@@ -374,7 +374,6 @@ export const FEES = {
     byClassTitle: 'Retards par classe',
     quickActionsTitle: 'Actions rapides',
     exportExcel: 'Exporter Excel',
-    exportPdf: 'Exporter PDF',
   },
   registerPayment: {
     title: 'Enregistrer un paiement',

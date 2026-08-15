@@ -10,7 +10,7 @@ export function HeroSection() {
     <section className="relative mx-auto max-w-7xl px-6 py-16">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-md border border-violet-600/10 bg-violet-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-violet-600">
+          <div className="inline-flex items-center gap-2 rounded-md border border-violet-600/10 bg-violet-50 px-3 py-1 text-2xs font-semibold uppercase tracking-wider text-violet-600">
             <Zap className="h-3.5 w-3.5" aria-hidden="true" /> Nouveau : IA Tuteur Intégrée
           </div>
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-800 sm:text-5xl">

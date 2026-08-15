@@ -67,8 +67,8 @@ function EmptyRow({ children }: { children: string }) {
 }
 
 const TH_CLASS =
-  'px-3 py-2 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
-const TD_CLASS = 'px-3 py-2.5 text-[13px] whitespace-nowrap';
+  'px-3 py-2 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase';
+const TD_CLASS = 'px-3 py-2.5 text-caption whitespace-nowrap';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -199,19 +199,19 @@ export default function AdminDashboardPage() {
                 />
                 <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-3">
                   <div>
-                    <div className="text-[11px] text-muted-foreground">{T.revenue.total}</div>
+                    <div className="text-2xs text-muted-foreground">{T.revenue.total}</div>
                     <div className="text-sm font-extrabold text-foreground">
                       {fmtUsdRound(data.revenue.totalCents)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-muted-foreground">{T.revenue.avg}</div>
+                    <div className="text-2xs text-muted-foreground">{T.revenue.avg}</div>
                     <div className="text-sm font-extrabold text-foreground">
                       {fmtUsdRound(data.revenue.avgCents)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-muted-foreground">{T.revenue.growth}</div>
+                    <div className="text-2xs text-muted-foreground">{T.revenue.growth}</div>
                     <div className="text-sm font-extrabold text-success-foreground">
                       {data.revenue.growthPct !== null
                         ? `${data.revenue.growthPct >= 0 ? '+' : ''}${data.revenue.growthPct}%`
@@ -239,10 +239,10 @@ export default function AdminDashboardPage() {
                     <div key={u.id} className="flex items-center gap-2.5 px-4 py-2.5">
                       <Avatar name={u.name} size={30} />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13px] font-semibold text-foreground">
+                        <div className="truncate text-caption font-semibold text-foreground">
                           {u.name}
                         </div>
-                        <div className="truncate text-[11px] text-muted-foreground">
+                        <div className="truncate text-2xs text-muted-foreground">
                           {u.schoolName ?? '—'}
                           {u.orgRole ? ` · ${ADMIN_SAAS.orgRole[u.orgRole]}` : ''}
                         </div>
@@ -304,9 +304,7 @@ export default function AdminDashboardPage() {
                         <td className={TD_CLASS}>
                           <div className="font-semibold text-foreground">{s.name}</div>
                           {s.officialCode && (
-                            <div className="text-[11px] text-muted-foreground">
-                              {s.officialCode}
-                            </div>
+                            <div className="text-2xs text-muted-foreground">{s.officialCode}</div>
                           )}
                         </td>
                         <td className={`${TD_CLASS} text-muted-foreground`}>
@@ -379,7 +377,7 @@ export default function AdminDashboardPage() {
                         <tr key={t.id} className="hover:bg-muted/50">
                           <td className={TD_CLASS}>
                             <div className="font-semibold text-foreground">{t.schoolName}</div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-2xs text-muted-foreground">
                               {t.planName ?? '—'} · {t.students} élèves
                             </div>
                           </td>

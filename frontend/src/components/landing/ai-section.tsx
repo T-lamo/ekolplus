@@ -12,13 +12,13 @@ export function AiSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1 text-2xs font-semibold uppercase tracking-wider">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Schoolgesti AI
             </div>
             <h2 className="text-4xl font-bold leading-tight sm:text-5xl">
               L&apos;intelligence au service de la pédagogie
             </h2>
-            <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/70">
+            <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-2xs font-bold uppercase tracking-widest text-white/70">
               Bientôt disponible
             </span>
             <p className="text-lg text-white/70">

@@ -107,7 +107,7 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${active ? activeClass : baseClass}`}
+      className={`rounded-full px-2.5 py-1 text-2xs font-semibold whitespace-nowrap ${active ? activeClass : baseClass}`}
     >
       {children}
     </button>

@@ -111,7 +111,7 @@ function ResetPasswordForm() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_RESET_PASSWORD.done.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_RESET_PASSWORD.done.subtitle}
               </p>
               <Button onClick={() => router.push('/login')}>{AUTH_RESET_PASSWORD.done.cta}</Button>
@@ -121,7 +121,7 @@ function ResetPasswordForm() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_RESET_PASSWORD.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_RESET_PASSWORD.subtitle}
               </p>
               <form onSubmit={onSubmit} className="flex flex-col gap-4">

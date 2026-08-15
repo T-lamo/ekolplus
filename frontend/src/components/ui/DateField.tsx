@@ -87,7 +87,7 @@ export function DateField({
                   'flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground outline-none hover:bg-muted disabled:pointer-events-none disabled:opacity-30',
                 month_grid: 'w-full border-collapse',
                 weekdays: '',
-                weekday: 'w-9 pb-1.5 text-[11px] font-semibold text-muted-foreground',
+                weekday: 'w-9 pb-1.5 text-2xs font-semibold text-muted-foreground',
                 weeks: '',
                 week: '',
                 day: 'p-0.5 text-center align-middle',

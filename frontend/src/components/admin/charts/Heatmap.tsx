@@ -43,7 +43,7 @@ export function Heatmap({
                 <th
                   key={c}
                   scope="col"
-                  className="pb-1 text-center text-[11px] font-semibold text-muted-foreground"
+                  className="pb-1 text-center text-2xs font-semibold text-muted-foreground"
                 >
                   {c}
                 </th>
@@ -55,7 +55,7 @@ export function Heatmap({
               <tr key={r}>
                 <th
                   scope="row"
-                  className="pr-2 text-left text-[11px] font-semibold whitespace-nowrap text-muted-foreground"
+                  className="pr-2 text-left text-2xs font-semibold whitespace-nowrap text-muted-foreground"
                 >
                   {r}
                 </th>
@@ -64,7 +64,7 @@ export function Heatmap({
                   return (
                     <td
                       key={c}
-                      className={`h-9 rounded-md text-center text-[11px] font-bold tabular-nums ${cellClass(v, max)}`}
+                      className={`h-9 rounded-md text-center text-2xs font-bold tabular-nums ${cellClass(v, max)}`}
                     >
                       {v}
                     </td>

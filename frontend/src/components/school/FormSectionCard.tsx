@@ -28,7 +28,7 @@ export function FormSectionCard({
         </span>
         <div>
           <div className="text-sm font-bold text-foreground">{title}</div>
-          <div className="text-[11px] text-muted-foreground">{subtitle}</div>
+          <div className="text-2xs text-muted-foreground">{subtitle}</div>
         </div>
       </div>
       {children}

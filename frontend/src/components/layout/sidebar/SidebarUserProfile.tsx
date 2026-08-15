@@ -40,7 +40,7 @@ export function SidebarUserProfile({
           {!collapsed && (
             <div className="min-w-0 flex-1 text-left">
               <div className={`truncate text-xs font-semibold ${nameClasses}`}>{email}</div>
-              <div className={`text-[11px] ${roleClasses}`}>{roleLabel}</div>
+              <div className={`text-2xs ${roleClasses}`}>{roleLabel}</div>
             </div>
           )}
         </button>
@@ -53,7 +53,7 @@ export function SidebarUserProfile({
           className="z-50 w-56 rounded-lg border border-border bg-card p-1.5 shadow-xl"
         >
           <div className="truncate px-2 py-1.5 text-xs font-semibold text-foreground">{email}</div>
-          <div className="px-2 pb-1.5 text-[11px] text-muted-foreground">{roleLabel}</div>
+          <div className="px-2 pb-1.5 text-2xs text-muted-foreground">{roleLabel}</div>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <DropdownMenu.Item
             onSelect={() => router.push(profileHref)}

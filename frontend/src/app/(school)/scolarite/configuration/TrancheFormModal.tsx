@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { FEES } from '@/lib/constants';
@@ -60,13 +61,7 @@ export function TrancheFormModal({
           onChange={(e) => setLabel(e.target.value)}
         />
         <div className="grid grid-cols-2 gap-3.5">
-          <Field
-            label={t.trancheDueDateField}
-            type="date"
-            required
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <DateField label={t.trancheDueDateField} required value={dueDate} onChange={setDueDate} />
           <Field
             label={t.trancheAmountField}
             type="number"

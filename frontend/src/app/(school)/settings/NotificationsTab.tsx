@@ -89,8 +89,8 @@ export function NotificationsTab() {
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-[13px] font-bold text-foreground">Notifications</h2>
-        <p className="text-[11px] text-muted-foreground">
+        <h2 className="text-caption font-bold text-foreground">Notifications</h2>
+        <p className="text-2xs text-muted-foreground">
           Choisis les événements pour lesquels tu souhaites être notifié·e, par courriel ou dans
           l&apos;application.
         </p>
@@ -112,7 +112,7 @@ export function NotificationsTab() {
               </div>
               <div className="flex shrink-0 items-center gap-4">
                 <label className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium text-muted-foreground">Courriel</span>
+                  <span className="text-2xs font-medium text-muted-foreground">Courriel</span>
                   <Switch
                     checked={isEnabled(prefs, key, 'email')}
                     disabled={savingKey === `${key}:email`}
@@ -121,7 +121,7 @@ export function NotificationsTab() {
                   />
                 </label>
                 <label className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium text-muted-foreground">App</span>
+                  <span className="text-2xs font-medium text-muted-foreground">App</span>
                   <Switch
                     checked={isEnabled(prefs, key, 'inApp')}
                     disabled={savingKey === `${key}:inApp`}

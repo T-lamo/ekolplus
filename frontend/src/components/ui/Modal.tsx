@@ -53,7 +53,7 @@ export function Modal({
         className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-card ${maxWidth}`}
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <h2 className="text-[13px] font-bold text-foreground">{title}</h2>
+          <h2 className="text-caption font-bold text-foreground">{title}</h2>
           <button
             type="button"
             onClick={onClose}

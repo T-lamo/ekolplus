@@ -87,7 +87,7 @@ export function DonutChart({
       </div>
       <div className="flex w-full min-w-0 flex-col gap-2">
         {items.map((it, i) => (
-          <div key={it.label} className="flex items-center gap-2 text-[13px]">
+          <div key={it.label} className="flex items-center gap-2 text-caption">
             <span
               aria-hidden
               className={`h-2.5 w-2.5 shrink-0 rounded-full ${SWATCH_CLASSES[i] ?? 'bg-chart-1'}`}

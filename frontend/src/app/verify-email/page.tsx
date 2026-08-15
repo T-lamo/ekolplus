@@ -131,7 +131,7 @@ function VerifyEmailForm() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_VERIFY_EMAIL.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_VERIFY_EMAIL.subtitle}
               </p>
               <form onSubmit={onVerify} className="flex flex-col gap-4">
@@ -182,7 +182,7 @@ function VerifyEmailForm() {
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
                 {AUTH_VERIFY_EMAIL.setPassword.title}
               </h2>
-              <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
                 {AUTH_VERIFY_EMAIL.setPassword.subtitle}
               </p>
               <form onSubmit={onSetPassword} className="flex flex-col gap-4">

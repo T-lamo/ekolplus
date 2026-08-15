@@ -83,10 +83,10 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
               <FileText size={17} />
             </div>
             <div className="flex min-w-[160px] flex-1 flex-col gap-0.5">
-              <div className="text-[13px] font-bold text-foreground">{r.label}</div>
+              <div className="text-caption font-bold text-foreground">{r.label}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-bold ${
                     generated
                       ? 'bg-success text-success-foreground'
                       : 'bg-muted text-muted-foreground'
@@ -104,14 +104,14 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
             <div className="flex items-center gap-2">
               <Link
                 href={`/bulletins/${studentId}/${r.termId}`}
-                className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-[13px] font-semibold text-foreground"
+                className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-caption font-semibold text-foreground"
               >
                 <Eye size={13} />
                 Voir
               </Link>
               <a
                 href={`/api/school/students/${studentId}/bulletin/pdf?termId=${r.termId}`}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold ${
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-caption font-semibold ${
                   generated
                     ? 'bg-primary text-primary-foreground'
                     : 'pointer-events-none bg-muted text-muted-foreground'

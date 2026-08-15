@@ -18,7 +18,7 @@ const TONE_CLASSES: Record<Tone, string> = {
 function Pill({ tone, children }: { tone: Tone; children: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${TONE_CLASSES[tone]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${TONE_CLASSES[tone]}`}
     >
       {children}
     </span>

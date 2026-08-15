@@ -74,7 +74,7 @@ export function AdminSidebar({
       brandIcon={<GraduationCap size={15} className="text-white" />}
       brandText={
         <div className="flex flex-col gap-px">
-          <div className="text-[13px] font-extrabold text-white">Schoolgesti</div>
+          <div className="text-caption font-extrabold text-white">Schoolgesti</div>
           <div className="w-fit rounded-full bg-primary/22 px-1.5 py-px text-[9px] font-bold tracking-wide text-primary uppercase">
             Administration
           </div>
@@ -90,7 +90,7 @@ export function AdminSidebar({
       footer={
         <Link
           href="/"
-          className="mb-2 flex min-h-11 items-center gap-2 rounded-md px-2.5 text-[11px] text-white/38"
+          className="mb-2 flex min-h-11 items-center gap-2 rounded-md px-2.5 text-2xs text-white/38"
         >
           <ArrowLeft size={12} className="shrink-0" />
           Retour à l&apos;interface école

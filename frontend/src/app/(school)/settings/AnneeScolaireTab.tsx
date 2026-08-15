@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   Plus,
   Pencil,
-  Check,
-  X,
   Calendar,
   CalendarRange,
   Layers,
@@ -21,6 +19,7 @@ import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
+import { DateField } from '@/components/ui/DateField';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Switch } from '@/components/ui/Switch';
@@ -96,19 +95,23 @@ function StatusBadge({ status }: { status: TermData['status'] }) {
   );
 }
 
-function GradingScaleEditor({
+function EditGradingScaleModal({
   gradingScale,
   onUpdated,
+  onClose,
 }: {
   gradingScale: string | null;
   onUpdated: (gradingScale: string | null) => void;
+  onClose: () => void;
 }) {
   const { toast } = useToast();
-  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(gradingScale ?? '');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function onSave() {
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
     setSubmitting(true);
     try {
       const res = await api<{ academicYear: { gradingScale: string | null } }>(
@@ -117,58 +120,70 @@ function GradingScaleEditor({
       );
       onUpdated(res.academicYear.gradingScale);
       toast('Système de notation mis à jour.', 'success');
-      setEditing(false);
+      onClose();
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
+    <Modal title="Modifier le système de notation" onClose={onClose}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+        <Field
+          label="Système de notation"
+          autoFocus
+          placeholder="Sur 20 points"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        {error && (
+          <p role="alert" className="text-sm text-destructive-foreground">
+            {error}
+          </p>
+        )}
+        <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+          <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button type="submit" loading={submitting} className="w-fit">
+            Enregistrer
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function GradingScaleEditor({
+  gradingScale,
+  onUpdated,
+}: {
+  gradingScale: string | null;
+  onUpdated: (gradingScale: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  return (
     <div className="flex flex-col gap-1.5 text-sm">
       <span className="text-xs font-semibold text-foreground">Système de notation</span>
-      {editing ? (
-        <span className="flex h-10 items-center gap-1.5 rounded-md border border-primary bg-input px-2 ring-3 ring-primary/10">
-          <input
-            autoFocus
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Sur 20 points"
-            className="min-w-0 flex-1 border-none bg-transparent text-sm text-foreground outline-none"
-          />
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={submitting}
-            aria-label="Enregistrer"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-success-foreground hover:bg-success"
-          >
-            <Check size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setValue(gradingScale ?? '');
-              setEditing(false);
-            }}
-            aria-label="Annuler"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-          >
-            <X size={14} />
-          </button>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="flex h-10 items-center justify-between gap-2 rounded-md border border-border bg-input px-3 text-left text-sm text-foreground"
+      >
+        <span className={gradingScale ? '' : 'text-muted-foreground'}>
+          {gradingScale ?? 'Non défini'}
         </span>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="flex h-10 items-center justify-between gap-2 rounded-md border border-border bg-input px-3 text-left text-sm text-foreground"
-        >
-          <span className={gradingScale ? '' : 'text-muted-foreground'}>
-            {gradingScale ?? 'Non défini'}
-          </span>
-          <Pencil size={13} className="shrink-0 text-muted-foreground" />
-        </button>
+        <Pencil size={13} className="shrink-0 text-muted-foreground" />
+      </button>
+      {editing && (
+        <EditGradingScaleModal
+          gradingScale={gradingScale}
+          onUpdated={onUpdated}
+          onClose={() => setEditing(false)}
+        />
       )}
     </div>
   );
@@ -242,9 +257,16 @@ function TermTypeAndToggleFields({
   );
 }
 
-function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) => void }) {
+function EditTermModal({
+  term,
+  onSaved,
+  onClose,
+}: {
+  term: TermData;
+  onSaved: (term: TermData) => void;
+  onClose: () => void;
+}) {
   const { toast } = useToast();
-  const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(term.label);
   const [startDate, setStartDate] = useState(toDateInput(term.startDate));
   const [endDate, setEndDate] = useState(toDateInput(term.endDate));
@@ -253,7 +275,8 @@ function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onSave() {
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
@@ -263,7 +286,7 @@ function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) 
       });
       onSaved(res.term);
       toast('Période mise à jour.', 'success');
-      setEditing(false);
+      onClose();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
     } finally {
@@ -271,23 +294,13 @@ function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) 
     }
   }
 
-  if (editing) {
-    return (
-      <div className="flex flex-col gap-3 rounded-md border border-border p-3.5">
+  return (
+    <Modal title="Modifier la période" onClose={onClose}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
         <Field label="Nom de la période" value={label} onChange={(e) => setLabel(e.target.value)} />
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <Field
-            label="Date de début"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <Field
-            label="Date de fin"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
+          <DateField label="Date de début" value={startDate} onChange={setStartDate} />
+          <DateField label="Date de fin" value={endDate} onChange={setEndDate} />
         </div>
         <TermTypeAndToggleFields
           type={type}
@@ -300,63 +313,56 @@ function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) 
             {error}
           </p>
         )}
-        <div className="flex gap-2">
-          <Button type="button" size="sm" loading={submitting} className="w-fit" onClick={onSave}>
-            Enregistrer
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-fit"
-            onClick={() => {
-              setLabel(term.label);
-              setStartDate(toDateInput(term.startDate));
-              setEndDate(toDateInput(term.endDate));
-              setType(term.type);
-              setGradeEntryEnabled(term.gradeEntryEnabled);
-              setError(null);
-              setEditing(false);
-            }}
-          >
+        <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+          <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
             Annuler
           </Button>
+          <Button type="submit" loading={submitting} className="w-fit">
+            Enregistrer
+          </Button>
         </div>
-      </div>
-    );
-  }
+      </form>
+    </Modal>
+  );
+}
+
+function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) => void }) {
+  const [editing, setEditing] = useState(false);
 
   return (
-    <div
-      className={cn(
-        'flex flex-wrap items-center gap-3 rounded-md border px-3.5 py-2.5',
-        STATUS_ROW_CLASS[term.status],
-      )}
-    >
-      <span className={cn('h-2 w-2 shrink-0 rounded-full', STATUS_DOT_CLASS[term.status])} />
-      <div className="min-w-0 flex-1">
-        <div
-          className={cn(
-            'text-sm font-semibold',
-            term.status === 'CURRENT' ? 'text-primary' : 'text-foreground',
-          )}
-        >
-          {term.label}
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {fmt(term.startDate)} → {fmt(term.endDate)}
-        </div>
-      </div>
-      <StatusBadge status={term.status} />
-      <button
-        type="button"
-        onClick={() => setEditing(true)}
-        aria-label={`Modifier ${term.label}`}
-        className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+    <>
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-3 rounded-md border px-3.5 py-2.5',
+          STATUS_ROW_CLASS[term.status],
+        )}
       >
-        <Pencil size={13} className={term.status === 'CURRENT' ? 'text-primary' : ''} />
-      </button>
-    </div>
+        <span className={cn('h-2 w-2 shrink-0 rounded-full', STATUS_DOT_CLASS[term.status])} />
+        <div className="min-w-0 flex-1">
+          <div
+            className={cn(
+              'text-sm font-semibold',
+              term.status === 'CURRENT' ? 'text-primary' : 'text-foreground',
+            )}
+          >
+            {term.label}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {fmt(term.startDate)} → {fmt(term.endDate)}
+          </div>
+        </div>
+        <StatusBadge status={term.status} />
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          aria-label={`Modifier ${term.label}`}
+          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Pencil size={13} className={term.status === 'CURRENT' ? 'text-primary' : ''} />
+        </button>
+      </div>
+      {editing && <EditTermModal term={term} onSaved={onSaved} onClose={() => setEditing(false)} />}
+    </>
   );
 }
 
@@ -444,20 +450,8 @@ function NouvellePeriodeModal({
         </div>
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <Field
-            label="Date de début"
-            type="date"
-            required
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <Field
-            label="Date de fin"
-            type="date"
-            required
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
+          <DateField label="Date de début" required value={startDate} onChange={setStartDate} />
+          <DateField label="Date de fin" required value={endDate} onChange={setEndDate} />
         </div>
 
         <div className="flex flex-col gap-1.5">

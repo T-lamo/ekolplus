@@ -80,7 +80,7 @@ export function ImageUploader({
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive-foreground"
+            className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-destructive-foreground"
           >
             <X size={11} />
             Retirer
@@ -115,7 +115,7 @@ export function ImageUploader({
           e.target.value = '';
         }}
       />
-      {error && <p className="mt-1 text-[11px] text-destructive-foreground">{error}</p>}
+      {error && <p className="mt-1 text-2xs text-destructive-foreground">{error}</p>}
     </div>
   );
 }

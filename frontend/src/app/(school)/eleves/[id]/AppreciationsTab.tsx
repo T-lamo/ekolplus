@@ -14,7 +14,7 @@ function mentionClass(m: Mention | null): string {
     case 'TRES_BIEN':
       return 'bg-success text-success-foreground';
     case 'BIEN':
-      return 'bg-[#e0f0ff] text-[#2563eb]';
+      return 'bg-info text-info-foreground';
     case 'ASSEZ_BIEN':
       return 'bg-warning text-warning-foreground';
     case 'PASSABLE':
@@ -99,7 +99,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
         </FilterSelect>
         <Link
           href={editHref}
-          className="ml-auto flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[13px] font-semibold text-primary-foreground"
+          className="ml-auto flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-caption font-semibold text-primary-foreground"
         >
           <Pencil size={13} />
           Modifier l&apos;appréciation
@@ -119,13 +119,13 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
       ) : (
         <>
           <Card className="gap-3 p-4.5">
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <Star size={14} className="text-primary" />
               Appréciation générale
             </div>
             {data.general ? (
               <>
-                <div className="rounded-md bg-muted p-3.5 text-[13px] leading-relaxed text-foreground">
+                <div className="rounded-md bg-muted p-3.5 text-caption leading-relaxed text-foreground">
                   {data.general.text || <span className="text-muted-foreground italic">—</span>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -137,7 +137,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                   <span>Saisie le {fmtDate(data.general.createdAt)}</span>
                   <span className="text-border">·</span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
                   >
                     {data.general.status === 'PUBLISHED' ? 'Saisie' : 'Brouillon'}
                   </span>
@@ -145,7 +145,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                     <>
                       <span className="text-border">·</span>
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${mentionClass(data.general.mention)}`}
+                        className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                       >
                         {MENTION_LABEL[data.general.mention]}
                       </span>
@@ -161,7 +161,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
           </Card>
 
           <Card className="gap-3 p-4.5">
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <BookOpen size={14} className="text-primary" />
               Appréciations par matière
             </div>
@@ -169,22 +169,22 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Matière
                     </th>
-                    <th className="px-2 py-2 text-center text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
                       Coeff.
                     </th>
-                    <th className="px-2 py-2 text-center text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
                       Moy.
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Mention
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Appréciation
                     </th>
-                    <th className="px-2 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase">
+                    <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
                       Enseignant
                     </th>
                   </tr>
@@ -192,7 +192,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                 <tbody>
                   {data.subjects.map((s) => (
                     <tr key={s.classSubjectId} className="border-b border-border last:border-b-0">
-                      <td className="px-2 py-2 text-[13px] font-semibold text-foreground">
+                      <td className="px-2 py-2 text-caption font-semibold text-foreground">
                         {s.subjectName}
                       </td>
                       <td className="px-2 py-2 text-center text-xs text-muted-foreground">
@@ -204,7 +204,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                       <td className="px-2 py-2">
                         {s.mention ? (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${mentionClass(s.mention)}`}
+                            className={`rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
                           >
                             {MENTION_LABEL[s.mention]}
                           </span>
@@ -226,7 +226,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
               </table>
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
-              <span className="text-[13px] font-medium text-muted-foreground">
+              <span className="text-caption font-medium text-muted-foreground">
                 Moyenne générale
               </span>
               <span className="text-xl font-extrabold text-foreground">
@@ -234,7 +234,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
               </span>
               {data.general?.mention && (
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${mentionClass(data.general.mention)}`}
+                  className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
                   {MENTION_LABEL[data.general.mention]}
                 </span>

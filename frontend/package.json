@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3000 --turbopack",
     "build": "next build",
+    "vercel-build": "prisma migrate deploy && next build",
     "start": "next start",
     "test": "vitest run",
     "test:integration": "echo 'Phase 1: deferred to Phase 4 — see CONTEXT.md D-26' && exit 0",

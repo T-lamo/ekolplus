@@ -258,3 +258,34 @@ Three product decisions from the user, applied the same day (commits on
    the wizard's hint links there. Moving it under Paramètres → Année
    scolaire was considered and rejected: the catalog is year-independent.
 
+### Revision 2 — 2026-08-17 (second round of user feedback)
+
+4. **No demotion (business rule).** A destination class must be of a level
+   **equal or higher** than the source class's level, per the school's
+   grade-level catalog — "un élève de 3ème ne peut pas être mis en 4ème ou
+   en 5ème". Same level = repeat year (allowed); skipping levels upward is
+   allowed; when either level is not in the catalog the rule cannot be
+   judged and does not apply. Implemented once, in the pure shared module
+   `settings/nouvelle-annee/promotion-rules.ts` (`buildLevelRank`,
+   `isDemotion`, `findDemotions`, `findExceptionDemotions`, plus
+   `hasDestination`/`isDecided` moved there), enforced in three places:
+   - **Step 2 UI** — the destination picker only lists classes of equal or
+     higher level; a persisted forbidden destination (draft saved before
+     the catalog changed) shows a red per-row hint and blocks « Étape
+     suivante » with the full message;
+   - **`PATCH /api/school/academic-year-rollover`** — 400
+     `DEMOTION_NOT_ALLOWED` (class mappings and per-student exceptions,
+     the latter resolved through the active year's enrollments);
+   - **`POST …/confirm`** — same check, defense in depth. The confirm
+     route's stale-mapping guard now uses `isDecided`, so a class marked
+     « Fin de cursus » no longer trips `MAPPING_STALE` (a bug introduced by
+     revision 1, caught here).
+5. **Wizard header banner** used `text-warning` (`#fff8e1`, the pale
+   *background* token) as text colour → invisible. Now the app's warning
+   recipe (`bg-warning` + `text-warning-foreground` + `AlertTriangle`).
+6. **Consistency with the rest of the app**: the `Button` primitive is
+   `w-full` by default and every other screen passes `w-fit`; the wizard's
+   nav/back/confirm buttons now do too, and its title/subtitle use the
+   shared page-header typography (`text-xl font-extrabold tracking-tight` /
+   `text-xs`).
+

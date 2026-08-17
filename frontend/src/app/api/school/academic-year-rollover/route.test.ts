@@ -96,6 +96,12 @@ beforeEach(() => {
   prismaMock.teacher.count.mockResolvedValue(1);
   // GET also returns the school's grade-level catalog; default to none.
   prismaMock.gradeLevel.findMany.mockResolvedValue([]);
+  // PATCH's no-demotion rule loads the active year + its classes + the
+  // catalog; default to "no active year" so existing PATCH tests are
+  // unaffected (the rule is skipped without one).
+  mockResolveActiveAcademicYear.mockResolvedValue(null);
+  prismaMock.class.findMany.mockResolvedValue([]);
+  prismaMock.enrollment.findMany.mockResolvedValue([]);
 });
 
 describe('GET /api/school/academic-year-rollover', () => {
@@ -411,6 +417,73 @@ describe('PATCH /api/school/academic-year-rollover', () => {
   // Fix 1 (CRITICAL) — cross-tenant ownership validation. A malicious OWNER
   // of school A must not be able to point a destClassId/homeroomTeacherId
   // at school B's rows via this autosave endpoint.
+  describe('no-demotion rule (DEMOTION_NOT_ALLOWED)', () => {
+    const activeYear = { id: 'ay_1', label: '2025-2026', startDate: new Date('2025-09-01') };
+    const catalog = [
+      { name: '6ème', order: 0 },
+      { name: '5ème', order: 1 },
+      { name: '4ème', order: 2 },
+      { name: '3ème', order: 3 },
+    ];
+    const yearClasses = [
+      { id: 'c6', name: '6ème A', level: '6ème' },
+      { id: 'c5', name: '5ème A', level: '5ème' },
+      { id: 'c3', name: '3ème A', level: '3ème' },
+    ];
+
+    beforeEach(() => {
+      mockResolveActiveAcademicYear.mockResolvedValue(activeYear);
+      prismaMock.gradeLevel.findMany.mockResolvedValue(catalog as never);
+      prismaMock.class.findMany.mockResolvedValue(yearClasses as never);
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue(draftRow as never);
+      prismaMock.academicYearRolloverDraft.update.mockResolvedValue(draftRow as never);
+    });
+
+    it('a class mapped to a LOWER level → 400 DEMOTION_NOT_ALLOWED, draft untouched', async () => {
+      const res = await PATCH(
+        makeReq('PATCH', URL, { classMapping: { c3: { destClassId: 'c5' } } }),
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string; message: string };
+      expect(body.error).toBe('DEMOTION_NOT_ALLOWED');
+      expect(body.message).toContain('3ème A');
+      expect(body.message).toContain('5ème A');
+      expect(prismaMock.academicYearRolloverDraft.update).not.toHaveBeenCalled();
+    });
+
+    it('promotion, repeat year and Fin de cursus are accepted', async () => {
+      const res = await PATCH(
+        makeReq('PATCH', URL, {
+          classMapping: {
+            c6: { destClassId: 'c5' }, // promotion
+            c5: { destClassId: 'c5' }, // repeat
+            c3: { unenroll: true }, // fin de cursus
+          },
+        }),
+      );
+      expect(res.status).toBe(200);
+    });
+
+    it('a student exception sent below their current level → 400 DEMOTION_NOT_ALLOWED', async () => {
+      prismaMock.enrollment.findMany.mockResolvedValue([
+        { studentId: 's1', classId: 'c3' },
+      ] as never);
+      const res = await PATCH(
+        makeReq('PATCH', URL, { studentExceptions: { s1: { destClassId: 'c5' } } }),
+      );
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: string }).error).toBe('DEMOTION_NOT_ALLOWED');
+    });
+
+    it('rule is skipped when levels are not in the catalog', async () => {
+      prismaMock.gradeLevel.findMany.mockResolvedValue([] as never);
+      const res = await PATCH(
+        makeReq('PATCH', URL, { classMapping: { c3: { destClassId: 'c5' } } }),
+      );
+      expect(res.status).toBe(200);
+    });
+  });
+
   describe('cross-tenant ownership validation', () => {
     it('destClassId belonging to another school is rejected → 400 VALIDATION_FAILED', async () => {
       prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);

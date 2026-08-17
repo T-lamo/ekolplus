@@ -30,6 +30,12 @@ import {
 } from '@/lib/server/academic-year-rollover';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import {
+  findDemotions,
+  findExceptionDemotions,
+  formatDemotions,
+  isDecided,
+} from '@/app/(school)/settings/nouvelle-annee/promotion-rules';
 import type {
   ClassMappingEntry,
   StudentExceptionEntry,
@@ -126,13 +132,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // UI showed a promoted count that never accounted for them.
     const currentClasses = await prisma.class.findMany({
       where: { schoolId: mySchool.schoolId, academicYearId: activeYear.id },
-      select: { id: true },
+      select: { id: true, name: true, level: true },
     });
-    const hasDestination = (classId: string): boolean => {
-      const mapping = classMapping[classId];
-      return Boolean(mapping?.destClassId) || Boolean(mapping?.isNew && mapping?.newClass);
-    };
-    if (currentClasses.some((c) => !hasDestination(c.id))) {
+    // "Decided" = destination OR explicit « Fin de cursus » (unenroll) —
+    // shared rule with Step 2 (promotion-rules.ts).
+    if (currentClasses.some((c) => !isDecided(classMapping[c.id]))) {
       return NextResponse.json(
         {
           error: 'MAPPING_STALE',
@@ -141,6 +145,46 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
+    }
+
+    // No-demotion rule (defense in depth — PATCH already enforces it, but
+    // the catalog or the classes may have changed since the draft was saved).
+    const gradeLevels = await prisma.gradeLevel.findMany({
+      where: { schoolId: mySchool.schoolId },
+      orderBy: { order: 'asc' },
+      select: { name: true, order: true },
+    });
+    if (gradeLevels.length > 0) {
+      const demotions = findDemotions(classMapping, currentClasses, gradeLevels);
+      if (demotions.length > 0) {
+        return NextResponse.json(
+          { error: 'DEMOTION_NOT_ALLOWED', message: formatDemotions(demotions), demotions },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      const exceptionIds = Object.keys(studentExceptions);
+      if (exceptionIds.length > 0) {
+        const enrollments = await prisma.enrollment.findMany({
+          where: { academicYearId: activeYear.id, studentId: { in: exceptionIds } },
+          select: { studentId: true, classId: true },
+        });
+        const bad = findExceptionDemotions(
+          studentExceptions,
+          enrollments.map((e) => ({ id: e.studentId, classId: e.classId })),
+          currentClasses,
+          gradeLevels,
+        );
+        if (bad.length > 0) {
+          return NextResponse.json(
+            {
+              error: 'DEMOTION_NOT_ALLOWED',
+              message: `Rétrogradation impossible pour ${bad.length} élève(s) : la classe de destination doit être d'un niveau égal ou supérieur.`,
+              exceptions: bad,
+            },
+            { status: 400, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+      }
     }
 
     const result = await prisma.$transaction(async (tx) => {

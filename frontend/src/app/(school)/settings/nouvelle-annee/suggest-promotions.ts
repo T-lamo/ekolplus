@@ -12,19 +12,10 @@ export interface GradeLevelOption {
   order: number;
 }
 
-/** Same rule as `handleProceed`'s validation and `computeStats`'s class-
- * creation guard: an `isNew` entry only counts once `newClass` is present
- * (legacy drafts — the UI no longer produces `isNew` entries). */
-export function hasDestination(entry: ClassMappingEntry | undefined): boolean {
-  return Boolean(entry?.destClassId) || Boolean(entry?.isNew && entry?.newClass);
-}
-
-/** Step 2 may proceed once every class is DECIDED: either it has a
- * destination, or it is explicitly marked "fin de cursus" (`unenroll`). An
- * empty entry is "no decision yet" and blocks. */
-export function isDecided(entry: ClassMappingEntry | undefined): boolean {
-  return hasDestination(entry) || entry?.unenroll === true;
-}
+// `hasDestination` / `isDecided` live in ./promotion-rules (shared with the
+// API routes) — re-exported here so the wizard keeps one import path.
+export { hasDestination, isDecided } from './promotion-rules';
+import { isDecided } from './promotion-rules';
 
 /** For every class without a destination, propose an existing class at the
  * next level. Successor level = the next one in `order`-sorted sequence

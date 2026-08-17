@@ -31,6 +31,11 @@ import type {
   ClassMappingEntry,
   StudentExceptionEntry,
 } from '@/app/(school)/settings/nouvelle-annee/types';
+import {
+  findDemotions,
+  findExceptionDemotions,
+  formatDemotions,
+} from '@/app/(school)/settings/nouvelle-annee/promotion-rules';
 
 const NewClassSchema = z.object({
   name: z.string().trim().min(1),
@@ -70,6 +75,69 @@ const UpdateDraftBody = z.object({
   classMapping: z.record(z.string(), ClassMappingEntrySchema).optional(),
   studentExceptions: z.record(z.string(), StudentExceptionEntrySchema).optional(),
 });
+
+/** Loads the active year's classes (+ enrollments when exceptions are
+ * present) and the grade-level catalog, and returns a 400
+ * `DEMOTION_NOT_ALLOWED` response when any mapping/exception sends students
+ * to a level below their current one — or null when everything is fine. */
+async function rejectDemotions(
+  schoolId: string,
+  classMapping: Record<string, ClassMappingEntry> | undefined,
+  studentExceptions: Record<string, StudentExceptionEntry> | undefined,
+  requestId: string,
+): Promise<NextResponse | null> {
+  const hasMapping = classMapping && Object.keys(classMapping).length > 0;
+  const hasExceptions = studentExceptions && Object.keys(studentExceptions).length > 0;
+  if (!hasMapping && !hasExceptions) return null;
+
+  const activeYear = await resolveActiveAcademicYear(schoolId);
+  if (!activeYear) return null;
+
+  const [classes, gradeLevels] = await Promise.all([
+    prisma.class.findMany({
+      where: { schoolId, academicYearId: activeYear.id },
+      select: { id: true, name: true, level: true },
+    }),
+    prisma.gradeLevel.findMany({
+      where: { schoolId },
+      orderBy: { order: 'asc' },
+      select: { name: true, order: true },
+    }),
+  ]);
+  if (gradeLevels.length === 0) return null;
+
+  const demotions = hasMapping ? findDemotions(classMapping, classes, gradeLevels) : [];
+  if (demotions.length > 0) {
+    return NextResponse.json(
+      { error: 'DEMOTION_NOT_ALLOWED', message: formatDemotions(demotions), demotions },
+      { status: 400, headers: { 'x-request-id': requestId } },
+    );
+  }
+
+  if (hasExceptions) {
+    const enrollments = await prisma.enrollment.findMany({
+      where: { academicYearId: activeYear.id, studentId: { in: Object.keys(studentExceptions) } },
+      select: { studentId: true, classId: true },
+    });
+    const bad = findExceptionDemotions(
+      studentExceptions,
+      enrollments.map((e) => ({ id: e.studentId, classId: e.classId })),
+      classes,
+      gradeLevels,
+    );
+    if (bad.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'DEMOTION_NOT_ALLOWED',
+          message: `Rétrogradation impossible pour ${bad.length} élève(s) : la classe de destination doit être d'un niveau égal ou supérieur.`,
+          exceptions: bad,
+        },
+        { status: 400, headers: { 'x-request-id': requestId } },
+      );
+    }
+  }
+  return null;
+}
 
 function serializeDraft(draft: AcademicYearRolloverDraft) {
   return {
@@ -240,6 +308,20 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
+
+    // Business rule — NO DEMOTION (user decision 2026-08-17): a destination
+    // whose level ranks below the source's level in the school's grade-level
+    // catalog is refused, for class mappings and per-student exceptions
+    // alike. Same rule the wizard enforces client-side (promotion-rules.ts);
+    // re-checked here so a stale/hand-crafted draft can't bypass it. Skipped
+    // when there is no active year (GET already 424s in that case).
+    const demotionFail = await rejectDemotions(
+      mySchool.schoolId,
+      parsed.data.classMapping as unknown as Record<string, ClassMappingEntry> | undefined,
+      parsed.data.studentExceptions as unknown as Record<string, StudentExceptionEntry> | undefined,
+      ctx.requestId,
+    );
+    if (demotionFail) return demotionFail;
 
     const existingDraft = await prisma.academicYearRolloverDraft.findUnique({
       where: { schoolId: mySchool.schoolId },

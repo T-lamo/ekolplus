@@ -169,7 +169,7 @@ export function Step3Summary({
             loading={isLoading}
             disabled={isLoading || !matches}
             onClick={handleConfirm}
-            className={`w-full ${DESTRUCTIVE_BTN}`}
+            className={`w-fit ${DESTRUCTIVE_BTN}`}
           >
             {t.confirmButton}
           </Button>

@@ -8,15 +8,17 @@
 // de demander la création d'une nouvelle classe"). "Suggérer toutes les
 // promotions" bulk-fills undecided rows from the grade-level catalog.
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Wand2 } from 'lucide-react';
 import Link from 'next/link';
+import { ApiError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { ClassForPromotion, ClassMappingEntry } from './types';
 import { isDecided, suggestPromotions, type GradeLevelOption } from './suggest-promotions';
+import { buildLevelRank, findDemotions, formatDemotions, isDemotion } from './promotion-rules';
 
 /** Sentinel option value for "Fin de cursus" (`unenroll: true`). Class ids
  * are cuids, so no collision. */
@@ -32,6 +34,17 @@ interface Step2PromotionProps {
   onSave: (mapping: Record<string, ClassMappingEntry>) => Promise<void>;
   onNext: () => void;
   isLoading?: boolean;
+}
+
+/** `ApiError.message` is the stable code; the server puts the human text in
+ * `body.message` (e.g. DEMOTION_NOT_ALLOWED lists the offending classes). */
+function saveErrorText(err: unknown): string {
+  if (err instanceof ApiError) {
+    const detail = typeof err.body.message === 'string' ? err.body.message : null;
+    if (err.code === 'DEMOTION_NOT_ALLOWED' && detail) return detail;
+    return detail ?? err.message;
+  }
+  return err instanceof Error ? err.message : 'Erreur lors de la sauvegarde';
 }
 
 function selectValue(entry: ClassMappingEntry | undefined): string {
@@ -54,6 +67,9 @@ export function Step2Promotion({
   // Feedback line under the suggest button ("N classes pré-remplies" /
   // "aucune…"). Cleared on the next click.
   const [suggestNotice, setSuggestNotice] = useState<string | null>(null);
+  // Level ranks from the catalog — drives the NO-DEMOTION rule: a class can
+  // only be sent to a class of equal or higher level (promotion-rules.ts).
+  const levelRank = useMemo(() => buildLevelRank(gradeLevels), [gradeLevels]);
 
   const handleSuggestAll = () => {
     setError('');
@@ -84,11 +100,20 @@ export function Step2Promotion({
       }
     }
 
+    // NO DEMOTION — the picker already hides lower-level classes, but a
+    // draft saved before the catalog changed can still hold one. Same rule
+    // the API re-checks (400 DEMOTION_NOT_ALLOWED).
+    const demotions = findDemotions(activeMapping, classes, gradeLevels);
+    if (demotions.length > 0) {
+      setError(formatDemotions(demotions));
+      return;
+    }
+
     try {
       await onSave(activeMapping);
       onNext();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+      setError(saveErrorText(err));
     }
   };
 
@@ -97,7 +122,7 @@ export function Step2Promotion({
     try {
       await onSave(activeMapping);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+      setError(saveErrorText(err));
     }
   };
 
@@ -152,6 +177,15 @@ export function Step2Promotion({
                 mapping?.isNew && mapping.newClass && !mapping.destClassId
                   ? mapping.newClass.name
                   : null;
+              // A persisted destination that the rule now forbids (draft saved
+              // before the catalog changed): it's filtered out of the options,
+              // so say why the select looks empty.
+              const forbiddenDest = mapping?.destClassId
+                ? classes.find(
+                    (c) =>
+                      c.id === mapping.destClassId && isDemotion(cls.level, c.level, levelRank),
+                  )
+                : undefined;
 
               return (
                 <tr key={cls.id} className="border-b border-border">
@@ -167,16 +201,25 @@ export function Step2Promotion({
                         title={`${t.destClass} — ${cls.name}`}
                       >
                         <SelectItem value="">{t.pickDestination}</SelectItem>
-                        {classes.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name} ({c.level})
-                          </SelectItem>
-                        ))}
+                        {classes
+                          // NO DEMOTION: only classes of equal or higher level
+                          // (unknown levels can't be judged → offered).
+                          .filter((c) => !isDemotion(cls.level, c.level, levelRank))
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name} ({c.level})
+                            </SelectItem>
+                          ))}
                         <SelectItem value={UNENROLL_VALUE}>{t.endOfCursus}</SelectItem>
                       </FilterSelect>
                       {legacyNewClass && (
                         <span className="text-[11px] text-muted-foreground">
                           {t.legacyNewClass(legacyNewClass)}
+                        </span>
+                      )}
+                      {forbiddenDest && (
+                        <span role="alert" className="text-[11px] text-destructive-foreground">
+                          {t.demotionHint(forbiddenDest.name, forbiddenDest.level)}
                         </span>
                       )}
                     </div>
@@ -189,18 +232,20 @@ export function Step2Promotion({
       </Card>
 
       {error && (
-        <div className="rounded bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+        <p role="alert" className="text-sm text-destructive-foreground">
+          {error}
+        </p>
       )}
 
       <div className="rounded-md border border-border bg-muted px-4 py-3 text-xs text-muted-foreground">
         {t.step3Preview}
       </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={handleSaveDraft} disabled={isLoading}>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="w-fit" onClick={handleSaveDraft} disabled={isLoading}>
           {ACADEMIC_YEAR_ROLLOVER.step1.saveAsDraft}
         </Button>
-        <Button onClick={handleProceed} disabled={isLoading}>
+        <Button className="w-fit" onClick={handleProceed} disabled={isLoading}>
           {t.nextStep}
         </Button>
       </div>

@@ -130,6 +130,9 @@ beforeEach(() => {
   // Fix 6 — stale-mapping check default: the active year's only current
   // class is the one draftRow.classMapping already maps (old_class_1).
   prismaMock.class.findMany.mockResolvedValue([{ id: 'old_class_1' }] as never);
+  // No-demotion rule: no catalog by default → rule cannot apply.
+  prismaMock.gradeLevel.findMany.mockResolvedValue([]);
+  prismaMock.enrollment.findMany.mockResolvedValue([]);
   mockGetPromotionData.mockResolvedValue({ classes: [], students: [] });
   mockComputeStats.mockReturnValue({ promoted: 3, exceptions: 1, unenrolled: 0 });
   mockExecuteRollover.mockResolvedValue({ newAcademicYearId: 'ay_new' });
@@ -343,6 +346,69 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
       const res = await POST(makeReq(validBody));
       expect(res.status).toBe(201);
       expect(mockExecuteRollover).toHaveBeenCalled();
+    });
+
+    it('a class marked « Fin de cursus » (unenroll: true) counts as decided — no MAPPING_STALE', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: {
+          old_class_1: { destClassId: 'new_class_1' },
+          old_class_2: { unenroll: true },
+        },
+      } as never);
+      prismaMock.class.findMany.mockResolvedValueOnce([
+        { id: 'old_class_1' },
+        { id: 'old_class_2' },
+      ] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(201);
+      expect(mockExecuteRollover).toHaveBeenCalled();
+    });
+  });
+
+  describe('no-demotion rule (defense in depth)', () => {
+    const catalog = [
+      { name: '5ème', order: 0 },
+      { name: '3ème', order: 1 },
+    ];
+
+    it('a draft mapping a class to a LOWER level → 400 DEMOTION_NOT_ALLOWED, no transaction', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: { c3: { destClassId: 'c5' } },
+      } as never);
+      prismaMock.class.findMany.mockResolvedValueOnce([
+        { id: 'c3', name: '3ème A', level: '3ème' },
+        { id: 'c5', name: '5ème A', level: '5ème' },
+      ] as never);
+      prismaMock.gradeLevel.findMany.mockResolvedValue(catalog as never);
+      // c5 has no mapping — give it one so the stale guard passes.
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: { c3: { destClassId: 'c5' }, c5: { unenroll: true } },
+      } as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: string }).error).toBe('DEMOTION_NOT_ALLOWED');
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('promotion + fin de cursus pass the rule', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: { c5: { destClassId: 'c3' }, c3: { unenroll: true } },
+      } as never);
+      prismaMock.class.findMany.mockResolvedValueOnce([
+        { id: 'c3', name: '3ème A', level: '3ème' },
+        { id: 'c5', name: '5ème A', level: '5ème' },
+      ] as never);
+      prismaMock.gradeLevel.findMany.mockResolvedValue(catalog as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(201);
     });
   });
 });

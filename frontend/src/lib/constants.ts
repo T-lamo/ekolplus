@@ -515,6 +515,8 @@ export const ACADEMIC_YEAR_ROLLOVER = {
     pickDestination: '— Choisir une classe —',
     endOfCursus: 'Fin de cursus — non réinscrits',
     legacyNewClass: (name: string) => `Nouvelle classe « ${name} » (brouillon précédent)`,
+    demotionHint: (name: string, level: string) =>
+      `Rétrogradation impossible vers ${name} (${level}) — choisis un niveau égal ou supérieur.`,
     suggestAll: 'Suggérer toutes les promotions',
     suggestHint:
       "Configure l'ordre des niveaux dans Configuration > Niveaux pour activer les suggestions automatiques.",

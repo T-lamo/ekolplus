@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertTriangle } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { api, ApiError } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -288,7 +289,7 @@ export default function AcademicYearWizardPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-8">
         <p className="text-sm text-muted-foreground">{ACADEMIC_YEAR_ROLLOVER.emptyState}</p>
-        <Button onClick={() => router.push('/settings')}>
+        <Button className="w-fit" onClick={() => router.push('/settings')}>
           {ACADEMIC_YEAR_ROLLOVER.backToSettings}
         </Button>
       </div>
@@ -301,7 +302,7 @@ export default function AcademicYearWizardPage() {
         <p role="alert" className="text-sm text-destructive-foreground">
           {loadError || ACADEMIC_YEAR_ROLLOVER.error}
         </p>
-        <Button onClick={() => router.push('/settings')}>
+        <Button className="w-fit" onClick={() => router.push('/settings')}>
           {ACADEMIC_YEAR_ROLLOVER.backToSettings}
         </Button>
       </div>
@@ -311,14 +312,22 @@ export default function AcademicYearWizardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{ACADEMIC_YEAR_ROLLOVER.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="text-xl font-extrabold tracking-tight text-foreground">
+          {ACADEMIC_YEAR_ROLLOVER.title}
+        </h1>
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {ACADEMIC_YEAR_ROLLOVER.subtitle(activeYear.label, draftFields?.newYearLabel || '—')}
         </p>
       </div>
 
-      <div className="rounded-lg border border-warning bg-warning/5 p-3 text-xs text-warning">
-        {ACADEMIC_YEAR_ROLLOVER.warningBanner}
+      {/* Same warning-banner recipe as carnet-de-notes (bg-warning +
+          text-warning-foreground). `text-warning` is the pale BACKGROUND
+          token (#fff8e1) — used as text it was invisible. */}
+      <div className="flex items-center gap-2.5 rounded-lg border-l-[3px] border-warning-foreground bg-warning px-4 py-3">
+        <AlertTriangle size={16} className="shrink-0 text-warning-foreground" />
+        <p className="text-sm font-semibold text-warning-foreground">
+          {ACADEMIC_YEAR_ROLLOVER.warningBanner}
+        </p>
       </div>
 
       <FormStepsBar
@@ -361,7 +370,7 @@ export default function AcademicYearWizardPage() {
         )}
       </div>
 
-      <Button variant="ghost" onClick={() => router.push('/settings')}>
+      <Button variant="ghost" className="w-fit" onClick={() => router.push('/settings')}>
         {ACADEMIC_YEAR_ROLLOVER.backToSettings}
       </Button>
     </div>

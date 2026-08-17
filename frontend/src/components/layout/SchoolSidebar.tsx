@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   Link as LinkIcon,
+  ListOrdered,
   NotebookPen,
   Percent,
   School as SchoolIcon,
@@ -49,6 +50,7 @@ export const SCHOOL_SECTIONS: NavSection[] = [
     label: 'Configuration',
     items: [
       { label: 'Classes', href: '/configuration/classes', icon: SchoolIcon },
+      { label: 'Niveaux', href: '/configuration/niveaux', icon: ListOrdered },
       { label: 'Matières', href: '/configuration/matieres', icon: BookOpen },
       { label: 'Affectations', href: '/configuration/affectations', icon: LinkIcon },
       { label: 'Coefficients', href: '/configuration/coefficients', icon: Percent },

@@ -161,29 +161,19 @@ export function AffectationsTab({
       }
       right={
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-auto text-caption"
-            onClick={() => void onChanged()}
-          >
+          <Button variant="ghost" className="w-fit" onClick={() => void onChanged()}>
             Annuler les modifications
           </Button>
           <Button
             variant="outline"
-            size="sm"
-            className="w-auto text-caption"
+            className="w-fit"
             onClick={exportCsv}
             disabled={rows.length === 0}
           >
             <Download size={13} />
             Exporter
           </Button>
-          <Button
-            size="sm"
-            className="w-auto text-caption"
-            onClick={() => toast('Affectations enregistrées.', 'success')}
-          >
+          <Button className="w-fit" onClick={() => toast('Affectations enregistrées.', 'success')}>
             <Check size={14} />
             Enregistrer les affectations
           </Button>

@@ -127,14 +127,16 @@ export function SubjectPageShell({
 }
 
 /**
- * Sticky white footer (`.form-footer` / `.page-footer`), rendered by each tab
- * as its last child so it hugs the bottom of the scroll area regardless of
- * the tab's own height. `left` = status line, `right` = action buttons.
+ * White footer bar (`.form-footer` / `.page-footer`), rendered by each tab as
+ * its last child. Sits in the normal flow at the end of the content (pushed
+ * to the bottom when the tab is short) — deliberately not sticky, so nothing
+ * slides underneath it while scrolling. `left` = status line, `right` =
+ * action buttons.
  */
 export function SubjectPageFooter({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
     <footer
-      className={`${BLEED_X} sticky bottom-0 mt-auto -mb-5 flex flex-col gap-2 border-t border-border bg-card px-4 py-3 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:-mb-7`}
+      className={`${BLEED_X} mt-auto -mb-5 flex flex-col gap-2 border-t border-border bg-card px-4 py-3 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:-mb-7`}
     >
       <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">{left}</div>
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">{right}</div>

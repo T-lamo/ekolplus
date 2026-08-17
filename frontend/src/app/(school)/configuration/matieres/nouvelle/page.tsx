@@ -5,14 +5,13 @@
 // lands on the new subject's detail page (Informations tab, banner active).
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Info, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { SubjectPageFooter, SubjectPageShell } from '@/components/school/subjects/SubjectPageShell';
+import { SubjectPageShell } from '@/components/school/subjects/SubjectPageShell';
 import { SubjectForm, type SubjectFormOptions } from '@/components/school/subjects/SubjectForm';
 import { useSubjectForm } from '@/components/school/subjects/useSubjectForm';
 import type { SubjectData } from '../types';
@@ -93,74 +92,28 @@ export default function NouvelleMatierePage() {
   );
 
   const busy = form.submitting !== null;
+  // Single set of actions, in the header — same default-size Buttons as the
+  // rest of the app's page headers (no duplicated footer bar).
   const actions = (
     <>
-      <Badge tone="muted">Brouillon</Badge>
       <Button
         variant="outline"
-        size="sm"
-        className="w-auto text-caption"
+        className="w-fit"
         disabled={busy}
         onClick={() => form.submit('draft')}
       >
         Enregistrer comme brouillon
       </Button>
       <Button
-        size="sm"
-        className="w-auto text-caption"
+        className="w-fit"
         loading={form.submitting === 'publish'}
         disabled={busy}
         onClick={() => form.submit('publish')}
       >
-        <Check size={14} />
+        <Plus size={14} />
         Créer la matière
       </Button>
     </>
-  );
-
-  const footer = (
-    <SubjectPageFooter
-      left={
-        <>
-          <Info size={14} />
-          <span>
-            Les champs marqués <span className="text-destructive-foreground">*</span> sont
-            obligatoires
-          </span>
-        </>
-      }
-      right={
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-auto text-caption"
-            onClick={() => router.push('/configuration/matieres')}
-          >
-            Annuler
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-auto text-caption"
-            disabled={busy}
-            onClick={() => form.submit('draft')}
-          >
-            Enregistrer comme brouillon
-          </Button>
-          <Button
-            size="sm"
-            className="w-auto text-caption"
-            loading={form.submitting === 'publish'}
-            disabled={busy}
-            onClick={() => form.submit('publish')}
-          >
-            <Plus size={14} />
-            Créer la matière
-          </Button>
-        </>
-      }
-    />
   );
 
   return (
@@ -177,7 +130,7 @@ export default function NouvelleMatierePage() {
           {error}
         </p>
       ) : subjects === null ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_370px]">
           <div className="flex flex-col gap-3.5">
             <Skeleton className="h-64 rounded-lg" />
             <Skeleton className="h-72 rounded-lg" />
@@ -189,7 +142,6 @@ export default function NouvelleMatierePage() {
           <SubjectForm form={form} mode="create" options={options} />
         </div>
       )}
-      {footer}
     </SubjectPageShell>
   );
 }

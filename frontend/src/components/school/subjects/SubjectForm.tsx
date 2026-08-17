@@ -8,6 +8,7 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  Info,
   Lightbulb,
   Palette,
   School,
@@ -86,9 +87,17 @@ export function SubjectForm({
   }
 
   return (
-    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_370px]">
       {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
       <div className="flex min-w-0 flex-col gap-3.5">
+        {/* Required-fields note lives at the top (no sticky footer bar). */}
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Info size={14} />
+          <span>
+            Les champs marqués <span className="text-destructive-foreground">*</span> sont
+            obligatoires
+          </span>
+        </p>
         {serverError && (
           <p
             role="alert"
@@ -601,7 +610,10 @@ export function SubjectForm({
             aria-label="Statut de publication"
             className="flex flex-col gap-1.5"
           >
-            {SUBJECT_STATUS_OPTIONS.map((opt) => {
+            {/* A brand-new subject can't be created straight into the archive. */}
+            {SUBJECT_STATUS_OPTIONS.filter(
+              (opt) => mode === 'edit' || opt.value !== 'ARCHIVED',
+            ).map((opt) => {
               const selected = v.status === opt.value;
               return (
                 <button

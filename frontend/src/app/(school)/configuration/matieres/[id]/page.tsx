@@ -6,7 +6,7 @@
 // (add-matiere.md / programme-annuel.md / affectations-classes.md).
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Check, Info } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -19,7 +19,6 @@ import {
 import { ProgrammeTab } from '@/components/school/subjects/ProgrammeTab';
 import { SubjectForm, type SubjectFormOptions } from '@/components/school/subjects/SubjectForm';
 import {
-  SubjectPageFooter,
   SubjectPageShell,
   SubjectStatusBadge,
 } from '@/components/school/subjects/SubjectPageShell';
@@ -174,12 +173,7 @@ function SubjectDetailContent() {
     <>
       <SubjectStatusBadge status={subject.status} />
       {tab === 'info' && (
-        <Button
-          size="sm"
-          className="w-auto text-caption"
-          loading={busy}
-          onClick={() => form.submit('publish')}
-        >
+        <Button className="w-fit" loading={busy} onClick={() => form.submit('publish')}>
           <Check size={14} />
           Enregistrer
         </Button>
@@ -207,7 +201,7 @@ function SubjectDetailContent() {
           {error}
         </p>
       ) : !subject ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_370px]">
           <div className="flex flex-col gap-3.5">
             <Skeleton className="h-64 rounded-lg" />
             <Skeleton className="h-72 rounded-lg" />
@@ -224,49 +218,15 @@ function SubjectDetailContent() {
           onNavigateTab={setTab}
         />
       ) : (
-        <>
-          <div className="pb-5">
-            <SubjectForm
-              form={form}
-              mode="edit"
-              options={options}
-              onGoToProgramme={() => setTab('programme')}
-              onToggleClass={onToggleClass}
-            />
-          </div>
-          <SubjectPageFooter
-            left={
-              <>
-                <Info size={14} />
-                <span>
-                  Les champs marqués <span className="text-destructive-foreground">*</span> sont
-                  obligatoires
-                </span>
-              </>
-            }
-            right={
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-auto text-caption"
-                  onClick={() => router.push('/configuration/matieres')}
-                >
-                  Annuler
-                </Button>
-                <Button
-                  size="sm"
-                  className="w-auto text-caption"
-                  loading={busy}
-                  onClick={() => form.submit('publish')}
-                >
-                  <Check size={14} />
-                  Enregistrer
-                </Button>
-              </>
-            }
+        <div className="pb-5">
+          <SubjectForm
+            form={form}
+            mode="edit"
+            options={options}
+            onGoToProgramme={() => setTab('programme')}
+            onToggleClass={onToggleClass}
           />
-        </>
+        </div>
       )}
     </SubjectPageShell>
   );

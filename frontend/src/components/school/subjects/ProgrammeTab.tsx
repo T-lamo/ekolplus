@@ -273,30 +273,19 @@ export function ProgrammeTab({
       }
       right={
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-auto text-caption"
-            onClick={() => void load()}
-          >
+          <Button variant="ghost" className="w-fit" onClick={() => void load()}>
             Annuler
           </Button>
           <Button
             variant="outline"
-            size="sm"
-            className="w-auto text-caption"
+            className="w-fit"
             onClick={exportCsv}
             disabled={sortedChapters.length === 0}
           >
             <Download size={13} />
             Exporter CSV
           </Button>
-          <Button
-            size="sm"
-            className="w-auto text-caption"
-            loading={saving}
-            onClick={() => void saveAll()}
-          >
+          <Button className="w-fit" loading={saving} onClick={() => void saveAll()}>
             <Check size={14} />
             Enregistrer le programme
           </Button>

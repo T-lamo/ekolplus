@@ -15,9 +15,12 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { CARD_GRID } from '@/lib/layout';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
@@ -265,27 +268,32 @@ export default function StudentsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn(CARD_GRID, 'flex-1')}>
               {paged.map((s) => (
-                <Card key={s.id} className="gap-3 p-4">
-                  <div className="flex items-start justify-between">
-                    <Link href={`/eleves/${s.id}`} className="flex min-w-0 items-center gap-2.5">
-                      <Avatar name={`${s.firstName} ${s.lastName}`} size={36} src={s.photoUrl} />
-                      <div className="min-w-0">
-                        <div className="truncate font-bold text-foreground">
-                          {s.firstName} {s.lastName}
-                        </div>
-                        <div className="text-2xs text-muted-foreground">#{s.studentNumber}</div>
-                      </div>
-                    </Link>
-                    <ActionMenu items={menuItemsFor(s)} />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {s.class && <Badge>{s.class.name}</Badge>}
-                    <Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{fmtDate(s.dateOfBirth)}</div>
-                </Card>
+                <ListCard
+                  key={s.id}
+                  tile={<Avatar name={`${s.firstName} ${s.lastName}`} size={38} src={s.photoUrl} />}
+                  title={`${s.firstName} ${s.lastName}`}
+                  href={`/eleves/${s.id}`}
+                  subtitle={`#${s.studentNumber}`}
+                  menu={<ActionMenu items={menuItemsFor(s)} />}
+                  metaLeft={
+                    s.class ? (
+                      <Badge>{s.class.name}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground italic">Sans classe</span>
+                    )
+                  }
+                  metaRight={<Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>}
+                  footerLeft={
+                    <span className="text-muted-foreground">
+                      Naissance{' '}
+                      <span className="font-semibold text-foreground">
+                        {fmtDate(s.dateOfBirth)}
+                      </span>
+                    </span>
+                  }
+                />
               ))}
             </div>
           ) : (

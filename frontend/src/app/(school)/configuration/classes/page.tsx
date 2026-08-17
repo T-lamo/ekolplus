@@ -21,6 +21,7 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
@@ -34,7 +35,9 @@ import {
 } from '@/components/ui/Skeleton';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
+import { CARD_GRID } from '@/lib/layout';
 import { getClassDotColor } from '@/lib/subject-visuals';
+import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { ClassFormModal } from './ClassFormModal';
@@ -276,45 +279,41 @@ export default function ClassesPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn(CARD_GRID, 'flex-1')}>
               {paged.map((c) => (
-                <Card key={c.id} className="gap-3 p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0">
-                      <div className="truncate font-bold text-foreground">{c.name}</div>
-                      <div className="mt-0.5 truncate text-2xs text-muted-foreground">
-                        {c.room ?? 'Salle non renseignée'}
-                      </div>
-                    </div>
-                    <ActionMenu items={menuItemsFor(c)} />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge>{c.level}</Badge>
-                    <Badge tone="success">Active</Badge>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-foreground">
-                    {c.homeroomTeacher ? (
-                      <>
-                        <Avatar name={c.homeroomTeacher.name} size={20} />
-                        <span className="truncate">{c.homeroomTeacher.name}</span>
-                        <span className="shrink-0 text-muted-foreground">· Prof. principal</span>
-                      </>
-                    ) : (
-                      <span className="italic text-muted-foreground">
-                        Professeur principal non affecté
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between border-t border-border pt-3 text-xs">
+                <ListCard
+                  key={c.id}
+                  tile={
+                    <ListCardTile className="bg-secondary text-primary">
+                      <SchoolIcon size={18} />
+                    </ListCardTile>
+                  }
+                  title={c.name}
+                  subtitle={c.room ?? 'Salle non renseignée'}
+                  menu={<ActionMenu items={menuItemsFor(c)} />}
+                  metaLeft={
+                    <ListCardPerson
+                      name={c.homeroomTeacher?.name}
+                      suffix="· Prof. principal"
+                      emptyLabel="Professeur principal non affecté"
+                    />
+                  }
+                  metaRight={<Badge>{c.level}</Badge>}
+                  footerLeft={
                     <Link
                       href={`/configuration/coefficients?classId=${c.id}`}
                       className="font-semibold text-primary hover:underline"
                     >
                       {c.subjectCount} matières
                     </Link>
-                    <span className="text-muted-foreground">— / {c.capacity ?? '—'} places</span>
-                  </div>
-                </Card>
+                  }
+                  footerRight={
+                    <>
+                      <span className="font-bold text-foreground">{c.studentCount}</span>
+                      {c.capacity != null ? ` / ${c.capacity}` : ''} élèves
+                    </>
+                  }
+                />
               ))}
             </div>
           ) : (
@@ -365,7 +364,7 @@ export default function ClassesPage() {
                           )}
                         </td>
                         <td className="px-3.5 py-2.5 text-foreground">
-                          <span className="font-semibold">—</span>
+                          <span className="font-semibold">{c.studentCount}</span>
                           <span className="text-muted-foreground">
                             {' '}
                             / {c.capacity ?? '—'} places

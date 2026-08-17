@@ -19,6 +19,7 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
@@ -32,7 +33,9 @@ import {
 } from '@/components/ui/Skeleton';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
+import { CARD_GRID } from '@/lib/layout';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
@@ -298,54 +301,40 @@ export default function AffectationsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn(CARD_GRID, 'flex-1')}>
               {paged.map((r) => {
                 const visual = getSubjectVisual(r.subject.name);
                 return (
-                  <Card key={r.id} className="gap-3 p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <div
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-                          style={{ background: visual.iconBg, color: visual.iconFg }}
-                        >
-                          <visual.Icon size={17} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="truncate font-bold text-foreground">{r.subject.name}</div>
-                          {r.subject.code && (
-                            <div className="text-2xs text-muted-foreground">{r.subject.code}</div>
-                          )}
-                        </div>
-                      </div>
-                      <ActionMenu items={menuItemsFor(r)} />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge>{r.class.name}</Badge>
-                      {r.teacher ? (
+                  <ListCard
+                    key={r.id}
+                    tile={
+                      <ListCardTile style={{ background: visual.iconBg, color: visual.iconFg }}>
+                        <visual.Icon size={18} />
+                      </ListCardTile>
+                    }
+                    title={r.subject.name}
+                    subtitle={[r.class.name, r.subject.code].filter(Boolean).join(' · ')}
+                    menu={<ActionMenu items={menuItemsFor(r)} />}
+                    metaLeft={<ListCardPerson name={r.teacher?.name} />}
+                    metaRight={
+                      r.teacher ? (
                         <Badge tone="success">Active</Badge>
                       ) : (
                         <Badge tone="warning">Sans enseignant</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-foreground">
-                      {r.teacher ? (
-                        <>
-                          <Avatar name={r.teacher.name} size={20} />
-                          <span className="truncate">{r.teacher.name}</span>
-                        </>
-                      ) : (
-                        <span className="italic text-muted-foreground">Non assigné</span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-                      <span>{r.weeklyHours ? `${r.weeklyHours}h / semaine` : '—'}</span>
-                      <span>
+                      )
+                    }
+                    footerLeft={
+                      <span className="text-muted-foreground">
+                        {r.weeklyHours ? `${r.weeklyHours}h / semaine` : '—'}
+                      </span>
+                    }
+                    footerRight={
+                      <>
                         Coef.{' '}
                         <span className="font-bold text-foreground">{r.coefficient ?? '—'}</span>
-                      </span>
-                    </div>
-                  </Card>
+                      </>
+                    }
+                  />
                 );
               })}
             </div>

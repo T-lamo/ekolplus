@@ -23,6 +23,7 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
@@ -37,7 +38,9 @@ import {
 import { OverflowTags } from '@/components/ui/OverflowTags';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
+import { CARD_GRID } from '@/lib/layout';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import { SUBJECT_STATUS_LABEL } from './subject-form.constants';
 import type { SubjectData } from './types';
@@ -311,73 +314,57 @@ export default function MatieresPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn(CARD_GRID, 'flex-1')}>
               {paged.map((s) => {
                 const visual = getSubjectVisual(s.name, { icon: s.icon, color: s.color });
+                const status =
+                  s.status === 'DRAFT' ? (
+                    <Badge>Brouillon</Badge>
+                  ) : !s.isActive ? (
+                    <Badge>Archivée</Badge>
+                  ) : s.classes.length > 0 ? (
+                    <Badge tone="success">Active</Badge>
+                  ) : (
+                    <Badge tone="warning">Non affectée</Badge>
+                  );
                 return (
-                  <Card key={s.id} className="gap-3 p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <div
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-                          style={{ background: visual.iconBg, color: visual.iconFg }}
-                        >
-                          <visual.Icon size={17} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="truncate font-bold text-foreground">{s.name}</div>
-                          {s.code && <div className="text-2xs text-muted-foreground">{s.code}</div>}
-                        </div>
-                      </div>
-                      <ActionMenu items={menuItemsFor(s)} />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {s.domain && (
-                        <span
-                          className="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap"
-                          style={{ background: visual.badgeBg, color: visual.badgeFg }}
-                        >
-                          {s.domain}
-                        </span>
-                      )}
-                      {s.status === 'DRAFT' ? (
-                        <Badge>Brouillon</Badge>
-                      ) : !s.isActive ? (
-                        <Badge>Archivée</Badge>
-                      ) : s.classes.length > 0 ? (
-                        <Badge tone="success">Active</Badge>
-                      ) : (
-                        <Badge tone="warning">Non affectée</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-foreground">
-                      {s.teacherNames.length > 0 ? (
-                        <>
-                          <Avatar name={s.teacherNames[0]!} size={20} />
-                          <span className="truncate">
-                            {s.teacherNames[0]}
-                            {s.teacherNames.length > 1 && ` +${s.teacherNames.length - 1}`}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="italic text-muted-foreground">Non assigné</span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                  <ListCard
+                    key={s.id}
+                    tile={
+                      <ListCardTile style={{ background: visual.iconBg, color: visual.iconFg }}>
+                        <visual.Icon size={18} />
+                      </ListCardTile>
+                    }
+                    title={s.name}
+                    href={`/configuration/matieres/${s.id}`}
+                    subtitle={[s.code, s.domain].filter(Boolean).join(' · ') || '—'}
+                    menu={<ActionMenu items={menuItemsFor(s)} />}
+                    metaLeft={
+                      <ListCardPerson
+                        name={s.teacherNames[0]}
+                        suffix={
+                          s.teacherNames.length > 1 ? `+${s.teacherNames.length - 1}` : undefined
+                        }
+                      />
+                    }
+                    metaRight={status}
+                    footerLeft={
                       <OverflowTags
                         items={s.classes}
                         keyOf={(c) => c.id}
                         renderItem={(c) => <Badge>{c.name}</Badge>}
                         emptyLabel="Aucune classe"
                       />
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                    }
+                    footerRight={
+                      <>
                         Coef.{' '}
                         <span className="font-bold text-foreground">
                           {coefficientLabel(s.coefficients)}
                         </span>
-                      </span>
-                    </div>
-                  </Card>
+                      </>
+                    }
+                  />
                 );
               })}
             </div>

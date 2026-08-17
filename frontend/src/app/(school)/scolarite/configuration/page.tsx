@@ -12,6 +12,8 @@ import { Select, SelectItem } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { FEES } from '@/lib/constants';
+import { ASIDE_GRID } from '@/lib/layout';
+import { cn } from '@/lib/utils';
 import { fmtMoney, fmtDateShort } from '@/lib/fees-format';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
 import {
@@ -281,14 +283,16 @@ export default function PaymentConfigurationPage() {
       )}
 
       {classes === null && !error ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-[260px_1fr]">
+        <div className={ASIDE_GRID}>
           <Skeleton className="h-96 w-full" />
           <Skeleton className="h-96 w-full" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-[260px_1fr]">
-          {/* LEFT PANEL */}
-          <div className="flex min-w-0 flex-col gap-2.5">
+        <div className={cn(ASIDE_GRID, 'items-start')}>
+          {/* Panneau classes + paramètres globaux — à droite sur desktop (même
+              largeur que la colonne droite de la fiche matière), en premier
+              sur mobile pour choisir la classe avant l'éditeur. */}
+          <div className="flex min-w-0 flex-col gap-4 lg:order-2">
             <ClassFeeSummaryCard
               classes={classes ?? []}
               filter={filter}
@@ -301,7 +305,7 @@ export default function PaymentConfigurationPage() {
               onSelect={setSelectedId}
             />
 
-            <Card className="mt-1 gap-3.5 p-4">
+            <Card className="gap-3.5 p-4">
               <h2 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                 {t.globalSettingsTitle}
               </h2>
@@ -357,8 +361,8 @@ export default function PaymentConfigurationPage() {
             </Card>
           </div>
 
-          {/* RIGHT PANEL */}
-          <div className="flex min-w-0 flex-col gap-3.5">
+          {/* Éditeur de la classe sélectionnée */}
+          <div className="flex min-w-0 flex-col gap-4 lg:order-1">
             {!selectedId ? (
               <Card className="p-5">
                 <p className="text-sm text-muted-foreground">{t.selectClassPrompt}</p>
@@ -367,8 +371,11 @@ export default function PaymentConfigurationPage() {
               <Skeleton className="h-80 w-full" />
             ) : (
               <>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                {/* En-tête en carte, comme la fiche matière : titre + statut à
+                    gauche, actions à droite (passent à la ligne, alignées à
+                    droite, quand la colonne est étroite). */}
+                <Card className="flex-row flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5">
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-[17px] font-bold tracking-tight text-foreground">
                         Configuration — {structure.class.name}
@@ -388,7 +395,7 @@ export default function PaymentConfigurationPage() {
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{t.editorSubtitle}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                     {copySources.length > 0 && (
                       <Button
                         variant="outline"
@@ -399,12 +406,15 @@ export default function PaymentConfigurationPage() {
                         {t.copyFromClass}
                       </Button>
                     )}
+                    <Button variant="ghost" className="w-fit" onClick={onCancel}>
+                      {t.cancel}
+                    </Button>
                     <Button className="w-fit" loading={saving} onClick={onSave}>
                       <Save size={13} />
                       {t.save}
                     </Button>
                   </div>
-                </div>
+                </Card>
 
                 {copyPickerOpen && copySources.length > 0 && (
                   <Card className="flex-row items-end gap-2 p-3.5">
@@ -605,21 +615,6 @@ export default function PaymentConfigurationPage() {
                       </div>
                     </div>
                   )}
-                </Card>
-
-                <Card className="flex-row flex-wrap items-center justify-between gap-3 p-4">
-                  <p className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                    {t.saveBarHelper}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" className="w-fit" onClick={onCancel}>
-                      {t.cancel}
-                    </Button>
-                    <Button className="w-fit" loading={saving} onClick={onSave}>
-                      <Save size={13} />
-                      {t.saveConfiguration}
-                    </Button>
-                  </div>
                 </Card>
               </>
             )}

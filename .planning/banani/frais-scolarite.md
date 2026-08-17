@@ -222,3 +222,8 @@ All French strings already captured verbatim in the fetch — will be added to `
 - [x] `/scolarite/relances` — Relances Impayés screen
 - [x] `PaymentRegistrationModal` (shared across paiements/relances)
 - [x] 375 / 768 / 1280 checks, format/lint/typecheck/build/test, real E2E — see STATUS.md for the 2 layout bugs found and fixed during this pass
+
+## Écarts assumés (2026-08-17, cohérence app)
+- **Payment Configuration** : le panneau « Classes de l'école + Paramètres globaux » (260 px à gauche dans le mock) passe **à droite**, à la largeur commune `ASIDE_GRID` (360 px lg / 420 px xl, `src/lib/layout.ts`) — même colonne latérale que la fiche matière ; sur mobile il reste au-dessus de l'éditeur (`lg:order-*`) pour choisir la classe d'abord.
+- Une seule action « Enregistrer » (en-tête : Copier depuis une classe · Annuler · Enregistrer) — la barre de pied dupliquée est retirée (règle « pas de fonctionnalité dupliquée sur une même page »).
+- **Relances** : colonne droite = `ASIDE_GRID` (au lieu de 320 px).

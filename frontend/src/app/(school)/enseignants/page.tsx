@@ -18,6 +18,7 @@ import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
+import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
@@ -28,7 +29,9 @@ import { OverflowTags } from '@/components/ui/OverflowTags';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
+import { CARD_GRID } from '@/lib/layout';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { cn } from '@/lib/utils';
 import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
@@ -271,22 +274,15 @@ export default function TeachersPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn(CARD_GRID, 'flex-1')}>
               {paged.map((t) => (
-                <Card key={t.id} className="gap-3 p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <Avatar name={t.name} size={36} src={t.photoUrl} />
-                      <div className="min-w-0">
-                        <div className="truncate font-bold text-foreground">{t.name}</div>
-                        {t.email && (
-                          <div className="truncate text-2xs text-muted-foreground">{t.email}</div>
-                        )}
-                      </div>
-                    </div>
-                    <ActionMenu items={menuItemsFor(t)} />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
+                <ListCard
+                  key={t.id}
+                  tile={<Avatar name={t.name} size={38} src={t.photoUrl} />}
+                  title={t.name}
+                  subtitle={t.email ?? '—'}
+                  menu={<ActionMenu items={menuItemsFor(t)} />}
+                  metaLeft={
                     <OverflowTags
                       items={t.subjects}
                       keyOf={(s) => s.id}
@@ -303,17 +299,17 @@ export default function TeachersPage() {
                       }}
                       emptyLabel="Aucune matière"
                     />
-                    <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-                    <span className="truncate">
+                  }
+                  metaRight={<Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>}
+                  footerLeft={
+                    <span className="truncate text-muted-foreground">
                       {t.classes.map((c) => c.name).join(', ') || 'Aucune classe'}
                     </span>
-                    <span className="shrink-0 font-semibold text-foreground">
-                      {t.weeklyHours}h/sem.
-                    </span>
-                  </div>
-                </Card>
+                  }
+                  footerRight={
+                    <span className="font-semibold text-foreground">{t.weeklyHours}h/sem.</span>
+                  }
+                />
               ))}
             </div>
           ) : (

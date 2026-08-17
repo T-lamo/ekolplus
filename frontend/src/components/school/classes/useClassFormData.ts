@@ -16,6 +16,9 @@ interface SubjectRow {
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
   isActive: boolean;
   defaultCoefficient: number | null;
+  abbreviation: string | null;
+  code: string | null;
+  color: string | null;
 }
 interface SchoolPayload {
   academicYear: {
@@ -61,6 +64,8 @@ export function useClassFormData(enabled: boolean) {
             id: row.id,
             name: row.name,
             defaultCoefficient: row.defaultCoefficient,
+            abbreviation: row.abbreviation ?? row.code ?? null,
+            color: row.color ?? null,
           }));
         const year = school.academicYear;
         const termType = year?.terms[0]?.type ?? null;

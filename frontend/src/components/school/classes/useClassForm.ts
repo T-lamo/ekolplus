@@ -30,6 +30,19 @@ export interface ClassFormSubject {
   id: string;
   name: string;
   defaultCoefficient: number | null;
+  /** Chip label (abbreviation, else code) — falls back to the name. */
+  abbreviation: string | null;
+  color: string | null;
+}
+
+/** Editable pivot fields of « Détail des matières » (edit mode). */
+export interface ClassPivot {
+  id: string;
+  subjectId: string;
+  teacherId: string | null;
+  coefficient: number | null;
+  weeklyHours: number | null;
+  locked: boolean;
 }
 
 function initialValues(cls: ClassDetail | null | undefined, catalog: string[]): ClassFormValues {
@@ -84,6 +97,10 @@ export function useClassForm({
   const [pivotBySubject, setPivotBySubject] = useState<Record<string, string>>(
     cls?.classSubjectIdBySubject ?? {},
   );
+  const [pivots, setPivots] = useState<Record<string, ClassPivot>>(() =>
+    Object.fromEntries((cls?.classSubjects ?? []).map((p) => [p.subjectId, p])),
+  );
+  const [pivotBusy, setPivotBusy] = useState<string | null>(null);
   const [subjectError, setSubjectError] = useState<string | null>(null);
 
   // Re-seed only when the entity (or the catalog it depends on) changes.
@@ -92,6 +109,7 @@ export function useClassForm({
   useEffect(() => {
     setValues(initialValues(cls, levelCatalog));
     setPivotBySubject(cls?.classSubjectIdBySubject ?? {});
+    setPivots(Object.fromEntries((cls?.classSubjects ?? []).map((p) => [p.subjectId, p])));
     setErrors({});
   }, [clsId, catalogKey]);
 
@@ -129,15 +147,38 @@ export function useClassForm({
       }));
       try {
         if (checked) {
-          const res = await api<{ classSubject: { id: string } }>('/api/school/class-subjects', {
+          const res = await api<{
+            classSubject: {
+              id: string;
+              teacherId: string | null;
+              coefficient: number | null;
+              weeklyHours: number | null;
+            };
+          }>('/api/school/class-subjects', {
             method: 'POST',
             body: { classId: cls.id, subjectId, coefficient: subject?.defaultCoefficient ?? null },
           });
           setPivotBySubject((prev) => ({ ...prev, [subjectId]: res.classSubject.id }));
+          setPivots((prev) => ({
+            ...prev,
+            [subjectId]: {
+              id: res.classSubject.id,
+              subjectId,
+              teacherId: res.classSubject.teacherId ?? null,
+              coefficient: res.classSubject.coefficient ?? null,
+              weeklyHours: res.classSubject.weeklyHours ?? null,
+              locked: false,
+            },
+          }));
         } else {
           const pivotId = pivotBySubject[subjectId];
           if (pivotId) await api(`/api/school/class-subjects/${pivotId}`, { method: 'DELETE' });
           setPivotBySubject((prev) => {
+            const next = { ...prev };
+            delete next[subjectId];
+            return next;
+          });
+          setPivots((prev) => {
             const next = { ...prev };
             delete next[subjectId];
             return next;
@@ -154,6 +195,53 @@ export function useClassForm({
       }
     },
     [mode, cls, lockedSubjectIds, subjects, pivotBySubject],
+  );
+
+  /** Multi-select handler: toggles every id that changed, one at a time. */
+  const setSubjectIds = useCallback(
+    async (ids: string[]) => {
+      const current = new Set(values.subjectIds);
+      const next = new Set(ids);
+      const added = ids.filter((id) => !current.has(id));
+      const removed = values.subjectIds.filter((id) => !next.has(id));
+      for (const id of added) await toggleSubject(id, true);
+      for (const id of removed) await toggleSubject(id, false);
+    },
+    [values.subjectIds, toggleSubject],
+  );
+
+  /** Edit mode only — inline « Détail des matières » edits (upsert pivot). */
+  const updatePivot = useCallback(
+    async (
+      subjectId: string,
+      patch: {
+        teacherId?: string | null;
+        coefficient?: number | null;
+        weeklyHours?: number | null;
+      },
+    ) => {
+      if (!cls) return;
+      const before = pivots[subjectId];
+      if (!before) return;
+      setSubjectError(null);
+      setPivotBusy(subjectId);
+      setPivots((prev) => {
+        const cur = prev[subjectId];
+        return cur ? { ...prev, [subjectId]: { ...cur, ...patch } } : prev;
+      });
+      try {
+        await api('/api/school/class-subjects', {
+          method: 'POST',
+          body: { classId: cls.id, subjectId, ...patch },
+        });
+      } catch (err) {
+        setPivots((prev) => ({ ...prev, [subjectId]: before }));
+        setSubjectError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      } finally {
+        setPivotBusy(null);
+      }
+    },
+    [cls, pivots],
   );
 
   const submit = useCallback(async () => {
@@ -209,8 +297,12 @@ export function useClassForm({
     submitting,
     serverError,
     toggleSubject,
+    setSubjectIds,
     subjectError,
     lockedSubjectIds,
+    pivots,
+    pivotBusy,
+    updatePivot,
   };
 }
 

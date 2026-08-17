@@ -12,19 +12,19 @@ import {
   ArrowRightCircle,
   BookOpen,
   CheckCircle2,
+  ChevronRight,
   Info,
   NotebookPen,
   Palette,
   Plus,
   School,
-  Search,
   UserCheck,
-  Check,
   Lock,
 } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import { ASIDE_GRID } from '@/lib/layout';
 import { SUBJECT_COLORS } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
@@ -110,17 +110,24 @@ export function ClassForm({
   options: ClassFormOptions;
 }) {
   const { values: v, setField, errors, serverError, mode } = form;
-  const [subjectFilter, setSubjectFilter] = useState('');
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const selectedTeacher = useMemo(
     () => options.teachers.find((t) => t.id === v.homeroomTeacherId) ?? null,
     [options.teachers, v.homeroomTeacherId],
   );
-  const filteredSubjects = useMemo(() => {
-    const q = subjectFilter.trim().toLowerCase();
-    return q ? options.subjects.filter((s) => s.name.toLowerCase().includes(q)) : options.subjects;
-  }, [options.subjects, subjectFilter]);
   const selectedCount = v.subjectIds.length;
+  // Selected subjects with their pivot (edit mode) — « Détail des matières »
+  // table + the two extra checklist lines.
+  const selectedSubjects = useMemo(
+    () =>
+      options.subjects
+        .filter((s) => v.subjectIds.includes(s.id))
+        .sort((a, b) => a.name.localeCompare(b.name, 'fr')),
+    [options.subjects, v.subjectIds],
+  );
+  const withoutTeacher = selectedSubjects.filter((s) => !form.pivots[s.id]?.teacherId).length;
+  const withoutCoef = selectedSubjects.filter((s) => form.pivots[s.id]?.coefficient == null).length;
   const done = classSectionsDone(form);
   const color = v.color ?? 'var(--color-primary)';
   const levelLabel = effectiveLevel(v);
@@ -326,116 +333,77 @@ export function ClassForm({
             title="Matières de la classe"
             subtitle="Sélectionner les matières enseignées dans cette classe."
           >
-            <div className="mb-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs whitespace-nowrap text-muted-foreground">
+            <MultiSelect
+              id="class-subjects"
+              options={options.subjects.map((s) => ({
+                id: s.id,
+                label: s.name,
+                chip: s.abbreviation ?? s.name,
+                ...(s.defaultCoefficient != null ? { hint: `Coef. ${s.defaultCoefficient}` } : {}),
+                color: s.color,
+                locked: form.lockedSubjectIds.has(s.id),
+                lockedHint: 'Des notes existent — la matière ne peut plus être retirée',
+              }))}
+              value={v.subjectIds}
+              onChange={(ids) => void form.setSubjectIds(ids)}
+              placeholder={
+                options.subjects.length === 0
+                  ? 'Aucune matière active — crée d’abord les matières de l’école'
+                  : 'Choisir les matières de la classe…'
+              }
+              searchPlaceholder="Rechercher une matière…"
+              emptyLabel="Aucune matière trouvée"
+              disabled={options.subjects.length === 0}
+            />
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+              <span>
                 {selectedCount} matière{selectedCount > 1 ? 's' : ''} sélectionnée
                 {selectedCount > 1 ? 's' : ''} sur {options.subjects.length} disponible
                 {options.subjects.length > 1 ? 's' : ''}
               </span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <label className="flex min-w-[150px] items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5">
-                  <Search size={12} className="shrink-0 text-muted-foreground" />
-                  <input
-                    value={subjectFilter}
-                    onChange={(e) => setSubjectFilter(e.target.value)}
-                    placeholder="Filtrer…"
-                    aria-label="Filtrer les matières"
-                    className="w-full min-w-0 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
-                  />
-                </label>
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 {mode === 'create' && options.subjects.length > 0 && (
                   <>
                     <button
                       type="button"
-                      onClick={() =>
-                        options.subjects.forEach((s) => void form.toggleSubject(s.id, true))
-                      }
-                      className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
+                      onClick={() => void form.setSubjectIds(options.subjects.map((s) => s.id))}
+                      className="font-medium hover:text-foreground"
                     >
                       Tout sélectionner
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        options.subjects.forEach((s) => void form.toggleSubject(s.id, false))
-                      }
-                      className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
+                      onClick={() => void form.setSubjectIds([])}
+                      className="font-medium hover:text-foreground"
                     >
                       Tout désélectionner
                     </button>
                   </>
                 )}
-              </div>
+                <Link
+                  href="/configuration/matieres/nouvelle"
+                  className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                >
+                  <Plus size={12} />
+                  Créer une nouvelle matière
+                </Link>
+              </span>
             </div>
             {form.subjectError && (
-              <p role="alert" className="mb-2 text-xs text-destructive-foreground">
+              <p role="alert" className="mt-2 text-xs text-destructive-foreground">
                 {form.subjectError}
               </p>
             )}
-            {options.subjects.length === 0 ? (
-              <div className="rounded-md border border-dashed border-border px-4 py-5 text-center text-xs text-muted-foreground">
-                Aucune matière active — crée d&apos;abord les matières de l&apos;école.
-              </div>
-            ) : filteredSubjects.length === 0 ? (
-              <div className="rounded-md bg-background px-3 py-2.5 text-xs text-muted-foreground italic">
-                Aucune matière ne correspond au filtre.
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                {filteredSubjects.map((s) => {
-                  const checked = v.subjectIds.includes(s.id);
-                  const locked = checked && form.lockedSubjectIds.has(s.id);
-                  return (
-                    <label
-                      key={s.id}
-                      className={cn(
-                        // `relative` contains the sr-only checkbox (absolute) — otherwise
-                        // its static position below the fold stretches the document.
-                        'relative flex cursor-pointer items-center gap-2.5 rounded-md bg-background px-3 py-[9px]',
-                        !checked && 'opacity-70 hover:opacity-100',
-                        locked && 'cursor-not-allowed',
-                      )}
-                      title={
-                        locked ? 'Des notes existent — retirer depuis Affectations' : undefined
-                      }
-                    >
-                      <input
-                        type="checkbox"
-                        className="sr-only"
-                        checked={checked}
-                        disabled={locked}
-                        onChange={(e) => void form.toggleSubject(s.id, e.target.checked)}
-                      />
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border-[1.5px]',
-                          checked
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-input',
-                        )}
-                      >
-                        {checked && <Check size={10} strokeWidth={3} />}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-caption font-medium text-foreground">
-                        {s.name}
-                      </span>
-                      {locked && <Lock size={12} className="shrink-0 text-muted-foreground" />}
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground">
-                        Coeff. {s.defaultCoefficient ?? '—'}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+            {mode === 'edit' && selectedSubjects.length > 0 && (
+              <SubjectsDetail
+                open={detailOpen}
+                onToggle={() => setDetailOpen((o) => !o)}
+                subjects={selectedSubjects}
+                teachers={options.teachers}
+                form={form}
+                withoutTeacher={withoutTeacher}
+              />
             )}
-            <Link
-              href="/configuration/matieres/nouvelle"
-              className="mt-2.5 inline-flex items-center gap-1.5 py-1 text-caption font-medium text-primary hover:underline"
-            >
-              <Plus size={13} />
-              Créer une nouvelle matière
-            </Link>
           </FormCard>
 
           <FormCard
@@ -581,6 +549,17 @@ export function ClassForm({
               <ChecklistItem done={done.checklist.profOk!}>
                 Professeur principal assigné
               </ChecklistItem>
+              {mode === 'edit' && selectedCount > 0 && (
+                <>
+                  <ChecklistItem done={withoutTeacher === 0}>
+                    Toutes les matières ont un enseignant
+                    {withoutTeacher > 0 ? ` (${withoutTeacher} sans)` : ''}
+                  </ChecklistItem>
+                  <ChecklistItem done={withoutCoef === 0}>
+                    Coefficients renseignés{withoutCoef > 0 ? ` (${withoutCoef} manquants)` : ''}
+                  </ChecklistItem>
+                </>
+              )}
             </ul>
             {!done.checklist.profOk && (
               <div className="mt-2.5 flex items-start gap-1.5 rounded-md bg-warning px-2.5 py-2">
@@ -656,6 +635,196 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
       <span className="text-2xs text-muted-foreground">{label}</span>
       <span className="truncate text-2xs font-semibold text-foreground">{value}</span>
     </div>
+  );
+}
+
+/** « Détail des matières » — collapsed by default: one dense row per selected
+ * subject with the pivot's teacher / coefficient / weekly hours, edited in
+ * place (upsert). Replaces the former Coefficients & Affectations pages for
+ * the class-centric view. */
+function SubjectsDetail({
+  open,
+  onToggle,
+  subjects,
+  teachers,
+  form,
+  withoutTeacher,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  subjects: ClassFormSubject[];
+  teachers: ClassFormTeacher[];
+  form: ClassFormController;
+  withoutTeacher: number;
+}) {
+  return (
+    <div className="mt-3 overflow-hidden rounded-md border border-border">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls="class-subjects-detail"
+        className="flex w-full items-center gap-2 bg-muted px-3 py-2 text-left hover:bg-muted/70"
+      >
+        <ChevronRight
+          size={14}
+          className={cn('shrink-0 text-muted-foreground transition-transform', open && 'rotate-90')}
+        />
+        <span className="text-caption font-semibold text-foreground">
+          Détail des matières ({subjects.length})
+        </span>
+        <span className="hidden text-2xs text-muted-foreground sm:inline">
+          enseignant · coefficient · heures / semaine
+        </span>
+        {withoutTeacher > 0 && (
+          <span className="ml-auto rounded-full bg-warning px-2 py-px text-2xs font-semibold text-warning-foreground">
+            {withoutTeacher} sans enseignant
+          </span>
+        )}
+      </button>
+      {open && (
+        <div id="class-subjects-detail" className="overflow-x-auto">
+          <table className="w-full min-w-[520px] border-collapse text-caption">
+            <thead>
+              <tr className="border-t border-b border-border bg-card text-left text-2xs font-semibold text-muted-foreground uppercase">
+                <th className="px-3 py-1.5 font-semibold">Matière</th>
+                <th className="px-2 py-1.5 font-semibold">Enseignant</th>
+                <th className="w-[72px] px-2 py-1.5 text-center font-semibold">Coef.</th>
+                <th className="w-[84px] px-2 py-1.5 text-center font-semibold">h / sem</th>
+                <th className="w-8 px-2 py-1.5" aria-label="Verrou" />
+              </tr>
+            </thead>
+            <tbody>
+              {subjects.map((s) => {
+                const pivot = form.pivots[s.id];
+                const busy = form.pivotBusy === s.id;
+                return (
+                  <tr
+                    key={s.id}
+                    className={cn('border-b border-border last:border-b-0', busy && 'opacity-60')}
+                  >
+                    <td className="px-3 py-1.5">
+                      <span className="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                          style={{ background: s.color ?? 'var(--color-primary)' }}
+                        />
+                        <span className="truncate font-medium text-foreground">{s.name}</span>
+                      </span>
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <BareSelect
+                        value={pivot?.teacherId ?? ''}
+                        onValueChange={(id) =>
+                          void form.updatePivot(s.id, { teacherId: id || null })
+                        }
+                        placeholder="—"
+                        className="h-8 py-1 text-xs"
+                        disabled={!pivot || busy}
+                      >
+                        <SelectItem value="">— Aucun —</SelectItem>
+                        {teachers.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                      </BareSelect>
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <NumberCell
+                        ariaLabel={`Coefficient de ${s.name}`}
+                        value={pivot?.coefficient ?? null}
+                        min={1}
+                        max={10}
+                        step={1}
+                        disabled={!pivot || busy}
+                        onCommit={(n) => void form.updatePivot(s.id, { coefficient: n })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <NumberCell
+                        ariaLabel={`Heures hebdomadaires de ${s.name}`}
+                        value={pivot?.weeklyHours ?? null}
+                        min={0.5}
+                        max={60}
+                        step={0.5}
+                        disabled={!pivot || busy}
+                        onCommit={(n) => void form.updatePivot(s.id, { weeklyHours: n })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 text-center">
+                      {pivot?.locked && (
+                        <Lock
+                          size={12}
+                          className="inline text-muted-foreground"
+                          aria-label="Des notes existent pour cette matière"
+                        />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Small numeric cell that commits on blur / Enter (only when the value changed). */
+function NumberCell({
+  value,
+  min,
+  max,
+  step,
+  disabled,
+  ariaLabel,
+  onCommit,
+}: {
+  value: number | null;
+  min: number;
+  max: number;
+  step: number;
+  disabled?: boolean;
+  ariaLabel: string;
+  onCommit: (value: number | null) => void;
+}) {
+  const [text, setText] = useState(value == null ? '' : String(value));
+  useEffect(() => {
+    setText(value == null ? '' : String(value));
+  }, [value]);
+  function commit() {
+    const trimmed = text.trim();
+    if (trimmed === '') {
+      if (value !== null) onCommit(null);
+      return;
+    }
+    const n = Number(trimmed.replace(',', '.'));
+    if (!Number.isFinite(n) || n < min || n > max) {
+      setText(value == null ? '' : String(value));
+      return;
+    }
+    if (n !== value) onCommit(n);
+  }
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      aria-label={ariaLabel}
+      value={text}
+      min={min}
+      max={max}
+      step={step}
+      disabled={disabled}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+      }}
+      className="h-8 w-full rounded-md border border-border bg-input px-2 text-center text-xs text-foreground outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:opacity-60"
+    />
   );
 }
 

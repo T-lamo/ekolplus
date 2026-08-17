@@ -1,6 +1,7 @@
 // GET /api/school/classes/[id] — class detail for the fiche classe
 // (add-class.md): profile + subjectIds + lockedSubjectIds (pivots that already
-// carry evaluations) + studentCount. Any school member can read.
+// carry evaluations) + classSubjects detail (teacher / coefficient / weekly
+// hours) + studentCount. Any school member can read.
 // PATCH /api/school/classes/[id] — update a class (ADMIN).
 // DELETE /api/school/classes/[id] — delete, blocked (409) if it still has
 // ClassSubject rows. See .planning/banani/classes-config.md.
@@ -59,7 +60,14 @@ export async function GET(
         homeroomTeacher: { select: { id: true, name: true, photoUrl: true } },
         academicYear: { select: { id: true, label: true } },
         classSubjects: {
-          select: { id: true, subjectId: true, _count: { select: { evaluations: true } } },
+          select: {
+            id: true,
+            subjectId: true,
+            teacherId: true,
+            coefficient: true,
+            weeklyHours: true,
+            _count: { select: { evaluations: true } },
+          },
         },
         _count: { select: { enrollments: true } },
       },
@@ -94,6 +102,16 @@ export async function GET(
           classSubjectIdBySubject: Object.fromEntries(
             cls.classSubjects.map((cs) => [cs.subjectId, cs.id]),
           ),
+          // Per-pivot detail for the fiche classe's « Détail des matières »
+          // table (enseignant / coefficient / h·sem, édités en ligne).
+          classSubjects: cls.classSubjects.map((cs) => ({
+            id: cs.id,
+            subjectId: cs.subjectId,
+            teacherId: cs.teacherId,
+            coefficient: cs.coefficient,
+            weeklyHours: cs.weeklyHours,
+            locked: cs._count.evaluations > 0,
+          })),
         },
       },
       { headers: { 'x-request-id': ctx.requestId } },

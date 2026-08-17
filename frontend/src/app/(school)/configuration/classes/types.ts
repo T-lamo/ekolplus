@@ -22,6 +22,17 @@ export interface ClassDetail extends Omit<ClassData, 'homeroomTeacher'> {
   /** Pivots that already carry evaluations — the checkbox is locked. */
   lockedSubjectIds: string[];
   classSubjectIdBySubject: Record<string, string>;
+  /** Pivot detail — « Détail des matières » table of the fiche classe. */
+  classSubjects: ClassSubjectDetail[];
+}
+
+export interface ClassSubjectDetail {
+  id: string;
+  subjectId: string;
+  teacherId: string | null;
+  coefficient: number | null;
+  weeklyHours: number | null;
+  locked: boolean;
 }
 
 /** Row of GET /api/school/grade-levels — the school's ordered catalog. */

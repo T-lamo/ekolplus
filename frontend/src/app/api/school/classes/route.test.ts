@@ -170,8 +170,22 @@ describe('GET /api/school/classes/[id]', () => {
       ...createdClass,
       academicYear: { id: 'year_1', label: '2024-2025' },
       classSubjects: [
-        { id: 'cs1', subjectId: 's1', _count: { evaluations: 3 } },
-        { id: 'cs2', subjectId: 's2', _count: { evaluations: 0 } },
+        {
+          id: 'cs1',
+          subjectId: 's1',
+          teacherId: 'tea_1',
+          coefficient: 4,
+          weeklyHours: 5,
+          _count: { evaluations: 3 },
+        },
+        {
+          id: 'cs2',
+          subjectId: 's2',
+          teacherId: null,
+          coefficient: null,
+          weeklyHours: null,
+          _count: { evaluations: 0 },
+        },
       ],
       _count: { enrollments: 24 },
     } as never);
@@ -182,6 +196,25 @@ describe('GET /api/school/classes/[id]', () => {
     expect(body.class.subjectIds).toEqual(['s1', 's2']);
     expect(body.class.lockedSubjectIds).toEqual(['s1']);
     expect(body.class.classSubjectIdBySubject).toEqual({ s1: 'cs1', s2: 'cs2' });
+    // Pivot detail for the « Détail des matières » table.
+    expect(body.class.classSubjects).toEqual([
+      {
+        id: 'cs1',
+        subjectId: 's1',
+        teacherId: 'tea_1',
+        coefficient: 4,
+        weeklyHours: 5,
+        locked: true,
+      },
+      {
+        id: 'cs2',
+        subjectId: 's2',
+        teacherId: null,
+        coefficient: null,
+        weeklyHours: null,
+        locked: false,
+      },
+    ]);
     expect(body.class.studentCount).toBe(24);
     expect(body.class.color).toBe('#2563eb');
   });

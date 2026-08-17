@@ -1,7 +1,7 @@
 # Grade Level Ordering & Promotion Auto-Suggest — Design Spec
 
 Date: 2026-08-17
-Status: Approved for planning
+Status: Implemented 2026-08-17 — plan: docs/superpowers/plans/2026-08-17-grade-level-ordering.md
 
 ## Problem
 

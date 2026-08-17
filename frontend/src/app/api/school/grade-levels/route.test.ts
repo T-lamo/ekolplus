@@ -22,6 +22,7 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
 import { GET, POST } from './route';
 import { PATCH, DELETE } from './[id]/route';
+import { POST as REORDER } from './reorder/route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
 const mockVerifyCsrf = vi.mocked(verifyCsrf);
@@ -274,5 +275,78 @@ describe('DELETE /api/school/grade-levels/[id]', () => {
     const res = await DELETE(req('DELETE', '/api/school/grade-levels/l1'), params('l1'));
     expect(res.status).toBe(204);
     expect(prismaMock.gradeLevel.delete).toHaveBeenCalledWith({ where: { id: 'l1' } });
+  });
+});
+
+describe('POST /api/school/grade-levels/reorder', () => {
+  const existing = [row('l1', '6ème', 0), row('l2', '5ème', 1), row('l3', '4ème', 2)];
+
+  beforeEach(() => {
+    prismaMock.gradeLevel.findMany.mockResolvedValue(existing as never);
+    prismaMock.$transaction.mockResolvedValue([] as never);
+  });
+
+  it('missing CSRF → 403', async () => {
+    mockVerifyCsrf.mockReturnValueOnce(
+      NextResponse.json({ error: 'CSRF_INVALID' }, { status: 403 }),
+    );
+    const res = await REORDER(
+      req('POST', '/api/school/grade-levels/reorder', { orderedIds: ['l1', 'l2', 'l3'] }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+    mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    const res = await REORDER(
+      req('POST', '/api/school/grade-levels/reorder', { orderedIds: ['l1', 'l2', 'l3'] }),
+    );
+    expect(res.status).toBe(403);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('non-array / empty body → 400 VALIDATION_FAILED', async () => {
+    for (const body of [{}, { orderedIds: 'l1' }, { orderedIds: [] }]) {
+      const res = await REORDER(req('POST', '/api/school/grade-levels/reorder', body));
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: string }).error).toBe('VALIDATION_FAILED');
+    }
+  });
+
+  it('missing / extra / duplicate ids → 400 INVALID_LEVEL_SET', async () => {
+    for (const orderedIds of [
+      ['l1', 'l2'], // missing l3
+      ['l1', 'l2', 'l3', 'l9'], // extra
+      ['l1', 'l2', 'l2'], // duplicate (same length as existing)
+    ]) {
+      const res = await REORDER(req('POST', '/api/school/grade-levels/reorder', { orderedIds }));
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: string }).error).toBe('INVALID_LEVEL_SET');
+    }
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('rewrites order = array index in one $transaction → 200 { levels }', async () => {
+    const res = await REORDER(
+      req('POST', '/api/school/grade-levels/reorder', { orderedIds: ['l3', 'l1', 'l2'] }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()) as unknown).toEqual({
+      levels: [
+        { id: 'l3', name: '4ème', order: 0 },
+        { id: 'l1', name: '6ème', order: 1 },
+        { id: 'l2', name: '5ème', order: 2 },
+      ],
+    });
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledTimes(3);
+    expect(prismaMock.gradeLevel.update).toHaveBeenNthCalledWith(1, {
+      where: { id: 'l3' },
+      data: { order: 0 },
+    });
+    expect(prismaMock.gradeLevel.update).toHaveBeenNthCalledWith(3, {
+      where: { id: 'l2' },
+      data: { order: 2 },
+    });
   });
 });

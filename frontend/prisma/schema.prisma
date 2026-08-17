@@ -172,6 +172,7 @@ model School {
   billingTransactions   BillingTransaction[]
   restrictedCoupons     Coupon[]
   rolloverDraft         AcademicYearRolloverDraft?
+  gradeLevels           GradeLevel[]
 
   @@index([organizationId])
 }
@@ -223,6 +224,26 @@ model AcademicYearRolloverDraft {
   createdBy String
 
   @@unique([schoolId])
+}
+
+// Per-school ordered catalog of grade levels ("6ème" → "5ème" → … →
+// "Terminale"). Cross-referenced with `Class.level` by EXACT string match —
+// there is deliberately no FK from Class (Class.level stays free text; see
+// docs/superpowers/specs/2026-08-17-grade-level-ordering-design.md). Used by
+// the rollover wizard's Step 2 to auto-suggest promotion destinations.
+// `order` is only indexed, not unique: the reorder route rewrites every row's
+// order for the school in one transaction, and nothing else writes it.
+model GradeLevel {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, name])
+  @@index([schoolId, order])
 }
 
 // Trimestre/Semestre. `status` (Terminé/En cours/À venir) is NOT stored —

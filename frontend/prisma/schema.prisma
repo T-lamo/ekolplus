@@ -173,6 +173,7 @@ model School {
   restrictedCoupons     Coupon[]
   rolloverDraft         AcademicYearRolloverDraft?
   gradeLevels           GradeLevel[]
+  timetableSessions     TimetableSession[]
 
   @@index([organizationId])
 }
@@ -203,6 +204,8 @@ model AcademicYear {
   terms       Term[]
   classes     Class[]
   enrollments Enrollment[]
+
+  timetableSessions TimetableSession[]
 
   @@index([schoolId, isActive])
 }
@@ -346,6 +349,8 @@ model Subject {
   prerequisites Subject[]        @relation("SubjectPrerequisites")
   requiredBy    Subject[]        @relation("SubjectPrerequisites")
 
+  timetableSessions TimetableSession[]
+
   @@index([schoolId])
 }
 
@@ -408,6 +413,8 @@ model Teacher {
   homeroomClasses     Class[]        @relation("HomeroomTeacher")
   responsibleSubjects Subject[]      @relation("SubjectResponsible")
 
+  timetableSessions TimetableSession[]
+
   @@index([schoolId])
 }
 
@@ -433,6 +440,8 @@ model Class {
   classSubjects ClassSubject[]
   enrollments   Enrollment[]
   feeStructure  FeeStructure?
+
+  timetableSessions TimetableSession[]
 
   @@unique([academicYearId, name])
   @@index([schoolId])
@@ -1205,4 +1214,40 @@ model Withdrawal {
   @@index([userId, requestedAt])
   @@index([status, requestedAt])
   @@index([provider, providerPayoutId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Emploi du temps (emploi-du-temps.md). One row per concrete session; a
+// weekly recurrence is expanded at creation into N rows sharing `seriesId`
+// (delete « this session » or « the whole series »). `date` is a calendar
+// day (UTC midnight), times are minutes from midnight (450 = 07:30) so no
+// timezone drift. `color` overrides the subject's identity colour.
+// ───────────────────────────────────────────────────────────────────────
+model TimetableSession {
+  id             String       @id @default(cuid())
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId      String?
+  teacher        Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  room           String?
+  type           String       @default("CM") // CM | TD | TP | EXAM
+  color          String?
+  date           DateTime     @db.Date
+  startMinutes   Int
+  endMinutes     Int
+  description    String?
+  meetingUrl     String?
+  seriesId       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([schoolId, classId, date])
+  @@index([schoolId, teacherId, date])
+  @@index([seriesId])
 }

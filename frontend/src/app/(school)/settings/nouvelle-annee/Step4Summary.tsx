@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { ApiError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
-import { StudentStatusBadge } from '@/components/school/StudentStatusBadge';
+import {
+  StudentStatusBadge,
+  type StudentRolloverStatus,
+} from '@/components/school/StudentStatusBadge';
 import { PromoCounterCard } from '@/components/school/PromoCounterCard';
 import { ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { PromotionStats } from './types';
@@ -15,41 +19,55 @@ import type { PromotionStats } from './types';
 // className override on top of `primary`.
 const DESTRUCTIVE_BTN = 'bg-destructive text-destructive-foreground hover:bg-destructive/90';
 
-interface Step3Student {
+export interface SummaryStudent {
   id: string;
   firstName: string;
   lastName: string;
-  status: 'promu' | 'exception' | 'nonreinscrit';
+  status: StudentRolloverStatus;
   destClassName?: string;
 }
 
-interface Step3SummaryProps {
+interface Step4SummaryProps {
   stats: PromotionStats;
-  students: Step3Student[];
+  students: SummaryStudent[];
   oldYearLabel: string;
   newYearLabel: string;
   schoolName: string;
   onConfirm: (confirmName: string) => Promise<void>;
+  onPrev: () => void;
   isLoading?: boolean;
 }
 
 const PAGE_SIZE = 8;
 
-/** Step 3 of the "nouvelle année" wizard — read-only recap (counter cards +
+/** `ApiError.message` is the stable code; the server's French text
+ * (MAPPING_STALE → "revenir à l'étape 3…", DEMOTION_NOT_ALLOWED, …) lives in
+ * `body.message`. */
+function confirmErrorText(err: unknown): string {
+  if (err instanceof ApiError) {
+    const detail = typeof err.body.message === 'string' ? err.body.message : null;
+    return detail ?? err.message;
+  }
+  return err instanceof Error ? err.message : 'Erreur lors de la confirmation';
+}
+
+/** Step 4 of the "nouvelle année" wizard — read-only recap (counter cards +
  * paginated student table) followed by the destructive type-to-confirm zone
  * that commits the rollover. Status/destClassName are computed upstream by
- * the wizard orchestrator (from `computeStats` + the class mapping/exception
- * draft) — this component only renders what it's given. */
-export function Step3Summary({
+ * the wizard orchestrator (`deriveOutcome` in student-decisions.ts, from the
+ * class mapping + per-student decisions) — this component only renders what
+ * it's given; decisions are edited in Step 3 (« Étape précédente »). */
+export function Step4Summary({
   stats,
   students,
   oldYearLabel,
   newYearLabel,
   schoolName,
   onConfirm,
+  onPrev,
   isLoading = false,
-}: Step3SummaryProps) {
-  const t = ACADEMIC_YEAR_ROLLOVER.step3;
+}: Step4SummaryProps) {
+  const t = ACADEMIC_YEAR_ROLLOVER.step4;
   const [confirmInput, setConfirmInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -71,7 +89,7 @@ export function Step3Summary({
     try {
       await onConfirm(confirmInput.trim());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la confirmation');
+      setError(confirmErrorText(err));
     }
   }
 
@@ -80,7 +98,7 @@ export function Step3Summary({
       {/* Counter cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <PromoCounterCard count={stats.promoted} label={t.promoted} tone="success" />
-        <PromoCounterCard count={stats.exceptions} label={t.exceptions} tone="warning" />
+        <PromoCounterCard count={stats.repeating} label={t.repeating} tone="warning" />
         <PromoCounterCard count={stats.unenrolled} label={t.unenrolled} tone="destructive" />
       </div>
 
@@ -144,7 +162,7 @@ export function Step3Summary({
       <Card className="border-destructive/50 bg-destructive/5 p-4 sm:p-6">
         <p className="text-sm font-semibold text-foreground">{t.confirmTitle}</p>
         <p className="mt-2 text-xs text-muted-foreground">
-          {t.confirmText(oldYearLabel, newYearLabel, stats.promoted)}
+          {t.confirmText(oldYearLabel, newYearLabel, stats.promoted, stats.repeating)}
         </p>
 
         <div className="mt-4">
@@ -175,6 +193,10 @@ export function Step3Summary({
           </Button>
         </div>
       </Card>
+
+      <Button variant="outline" className="w-fit" onClick={onPrev} disabled={isLoading}>
+        {t.previousStep}
+      </Button>
     </div>
   );
 }

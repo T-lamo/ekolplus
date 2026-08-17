@@ -36,13 +36,17 @@ export interface RolloverDraft {
   createdBy: string;
 }
 
+/** Summary counters (wizard Step 4) — derived client-side from each
+ * student's outcome (student-decisions.ts): `promoted` = destination of a
+ * higher level, `repeating` = destination of the same level (individual or
+ * collective repeat year), `unenrolled` = not carried into the new year. */
 export interface PromotionStats {
   promoted: number;
-  exceptions: number;
+  repeating: number;
   unenrolled: number;
 }
 
-export type WizardStep = 1 | 2 | 3;
+export type WizardStep = 1 | 2 | 3 | 4;
 
 export interface ClassForPromotion {
   id: string;

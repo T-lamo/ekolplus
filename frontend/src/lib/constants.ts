@@ -528,34 +528,60 @@ export const ACADEMIC_YEAR_ROLLOVER = {
       "Aucune classe à pré-remplir : toutes sont déjà décidées, ou leur niveau n'est pas dans le catalogue, ou aucune classe existante ne correspond au niveau suivant.",
     step3Preview: "Aperçu — Étape 3 (Disponible après validation de l'étape 2)",
     previousStep: 'Étape précédente',
-    nextStep: 'Étape suivante — Récapitulatif',
+    nextStep: 'Étape suivante — Décisions par élève',
   },
 
   step3: {
+    title: 'Décisions par élève',
+    help: 'Par défaut, chaque élève suit la destination de sa classe (étape 2). Indique ici les cas particuliers : redoublement, autre classe, ou élève qui ne se réinscrit pas.',
+    searchPlaceholder: 'Rechercher un élève...',
+    allClasses: 'Toutes les classes',
+    student: 'Élève',
+    currentClass: 'Classe actuelle',
+    decision: 'Décision',
+    destination: 'Destination',
+    followClass: (dest: string) => `Comme la classe → ${dest}`,
+    followClassUnenrolled: 'Comme la classe → non réinscrit',
+    repeat: (currentClass: string) => `Redouble → ${currentClass}`,
+    leave: 'Non réinscrit',
+    otherClass: (name: string, level: string) => `Autre classe → ${name} (${level})`,
+    noDestination: '—',
+    unenrolled: 'Non réinscrit',
+    summary: (total: number, promoted: number, repeating: number, unenrolled: number) =>
+      `${total} élève${total > 1 ? 's' : ''} · ${promoted} passe${promoted > 1 ? 'nt' : ''} · ${repeating} redouble${repeating > 1 ? 'nt' : ''} · ${unenrolled} non réinscrit${unenrolled > 1 ? 's' : ''}`,
+    noResults: 'Aucun élève ne correspond à la recherche.',
+    noStudents: "Aucun élève inscrit dans l'année en cours.",
+    demotionHint: (name: string, level: string) =>
+      `Rétrogradation impossible vers ${name} (${level}) — choisis un niveau égal ou supérieur.`,
+    previousStep: 'Étape précédente',
+    saveAsDraft: 'Sauvegarder le brouillon',
+    nextStep: 'Étape suivante — Récapitulatif',
+  },
+
+  step4: {
     title: 'Récapitulatif',
     promoted: 'Élèves promus',
-    exceptions: 'Exceptions',
+    repeating: 'Redoublants',
     unenrolled: 'Non réinscrits',
     students: 'Élèves',
     allStudents: (count: number) => `Voir tous les élèves (${count}) →`,
     confirmTitle: "Confirmer le passage à l'année suivante",
-    confirmText: (oldYear: string, newYear: string, promotedCount: number) =>
-      `La confirmation créera l'année scolaire ${newYear}, promouvra ${promotedCount} élèves et archivera l'année ${oldYear}. Cette action ne peut pas être annulée.`,
+    confirmText: (
+      oldYear: string,
+      newYear: string,
+      promotedCount: number,
+      repeatingCount: number,
+    ) =>
+      `La confirmation créera l'année scolaire ${newYear}, promouvra ${promotedCount} élève${promotedCount > 1 ? 's' : ''}${repeatingCount > 0 ? ` (${repeatingCount} redoublant${repeatingCount > 1 ? 's' : ''})` : ''} et archivera l'année ${oldYear}. Cette action ne peut pas être annulée.`,
     typeToConfirm: 'Tapez le nom de votre école pour confirmer',
     confirmButton: 'Confirmer',
-    previousStep: 'Étape précédente',
+    previousStep: 'Étape précédente — Modifier les décisions',
   },
 
   studentStatus: {
     promoted: 'Promu',
-    exception: 'Exception',
+    repeating: 'Redoublant',
     unenrolled: 'Non réinscrit',
-  },
-
-  actions: {
-    editDestination: 'Modifier destination',
-    dontEnroll: 'Ne pas réinscrire',
-    undo: 'Annuler',
   },
 
   emptyState: "Aucune classe dans l'année en cours — configure d'abord des classes.",

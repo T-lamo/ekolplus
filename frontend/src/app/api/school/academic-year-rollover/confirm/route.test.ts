@@ -87,7 +87,7 @@ const draftRow = {
   newYearLabel: '2026-2027',
   newYearStartDate: new Date('2026-09-01T00:00:00Z'),
   newYearEndDate: new Date('2027-06-30T00:00:00Z'),
-  classMapping: { old_class_1: { destClassId: 'new_class_1' } },
+  classMapping: { old_class_1: { destClassId: 'old_class_1' } },
   studentExceptions: {},
   createdAt: new Date('2026-08-01T00:00:00Z'),
   updatedAt: new Date('2026-08-01T00:00:00Z'),
@@ -275,7 +275,7 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
       const body = (await res.json()) as { error: string };
       expect(body.error).toBe('INVALID_MAPPING');
       expect(prismaMock.class.count).toHaveBeenCalledWith({
-        where: { id: { in: ['new_class_1'] }, schoolId: 'school_1' },
+        where: { id: { in: ['old_class_1'] }, schoolId: 'school_1' },
       });
       expect(mockExecuteRollover).not.toHaveBeenCalled();
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
@@ -314,7 +314,7 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
       const res = await POST(makeReq(validBody));
       expect(res.status).toBe(201);
       expect(prismaMock.class.count).toHaveBeenCalledWith({
-        where: { id: { in: ['new_class_1'] }, schoolId: 'school_1' },
+        where: { id: { in: ['old_class_1'] }, schoolId: 'school_1' },
       });
       expect(mockExecuteRollover).toHaveBeenCalled();
     });
@@ -352,10 +352,70 @@ describe('POST /api/school/academic-year-rollover/confirm', () => {
       prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
         ...draftRow,
         classMapping: {
-          old_class_1: { destClassId: 'new_class_1' },
+          old_class_1: { destClassId: 'old_class_1' },
           old_class_2: { unenroll: true },
         },
       } as never);
+      prismaMock.class.findMany.mockResolvedValueOnce([
+        { id: 'old_class_1' },
+        { id: 'old_class_2' },
+      ] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(201);
+      expect(mockExecuteRollover).toHaveBeenCalled();
+    });
+  });
+
+  describe('stale destination guard (per-student decisions + class mappings)', () => {
+    it('a per-student decision pointing at a class that no longer exists → 400 MAPPING_STALE, no transaction', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        studentExceptions: { stu_1: { destClassId: 'deleted_class' } },
+      } as never);
+      // Ownership passes (count matches) — the class simply isn't in the
+      // active year any more (deleted, or another year's id).
+      prismaMock.class.count.mockResolvedValue(2);
+      prismaMock.class.findMany.mockResolvedValueOnce([{ id: 'old_class_1' }] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string; message: string };
+      expect(body.error).toBe('MAPPING_STALE');
+      expect(body.message).toContain('étape 3');
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('a class mapping pointing at a class that no longer exists → 400 MAPPING_STALE', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: { old_class_1: { destClassId: 'deleted_class' } },
+      } as never);
+      prismaMock.class.findMany.mockResolvedValueOnce([{ id: 'old_class_1' }] as never);
+
+      const res = await POST(makeReq(validBody));
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string; message: string };
+      expect(body.error).toBe('MAPPING_STALE');
+      expect(body.message).toContain('étape 2');
+      expect(mockExecuteRollover).not.toHaveBeenCalled();
+    });
+
+    it('decisions on current classes (redouble / other class / skip) pass the guard', async () => {
+      prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValue({
+        ...draftRow,
+        classMapping: {
+          old_class_1: { destClassId: 'old_class_2' },
+          old_class_2: { unenroll: true },
+        },
+        studentExceptions: {
+          stu_1: { destClassId: 'old_class_1' }, // redouble
+          stu_2: { destClassId: 'old_class_2' }, // other class
+          stu_3: { skip: true }, // non réinscrit
+        },
+      } as never);
+      prismaMock.class.count.mockResolvedValue(2);
       prismaMock.class.findMany.mockResolvedValueOnce([
         { id: 'old_class_1' },
         { id: 'old_class_2' },

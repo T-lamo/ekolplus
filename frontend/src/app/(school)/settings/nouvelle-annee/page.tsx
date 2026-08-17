@@ -1,10 +1,10 @@
 'use client';
 
-// Orchestrator for the 3-step "nouvelle année" (academic-year rollover)
+// Orchestrator for the 4-step "nouvelle année" (academic-year rollover)
 // wizard. OWNER-only, self-gated (see the role check below) since this
 // route can be navigated to directly. Wires Step1NewYear / Step2Promotion /
-// Step3Summary to the draft CRUD + confirm API routes, autosaving each
-// step's data into the single per-school
+// Step3Decisions / Step4Summary to the draft CRUD + confirm API routes,
+// autosaving each step's data into the single per-school
 // AcademicYearRolloverDraft as the user progresses.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -17,8 +17,10 @@ import { Button } from '@/components/ui/Button';
 import { FormStepsBar, type FormStep } from '@/components/school/FormStepsBar';
 import { Step1NewYear } from './Step1NewYear';
 import { Step2Promotion } from './Step2Promotion';
-import { Step3Summary } from './Step3Summary';
+import { Step3Decisions } from './Step3Decisions';
+import { Step4Summary, type SummaryStudent } from './Step4Summary';
 import type { GradeLevelOption } from './suggest-promotions';
+import { deriveOutcome, summarizeOutcomes } from './student-decisions';
 import { ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { SchoolResponse } from '../types';
 import type {
@@ -28,7 +30,6 @@ import type {
   StudentForPromotion,
   ClassMappingEntry,
   StudentExceptionEntry,
-  PromotionStats,
 } from './types';
 
 /** Wire shape of the `draft` field returned by GET/POST/PATCH
@@ -61,68 +62,40 @@ const WIZARD_STEPS: FormStep[] = [
   { id: 'step1', label: ACADEMIC_YEAR_ROLLOVER.step1.title },
   { id: 'step2', label: ACADEMIC_YEAR_ROLLOVER.step2.title },
   { id: 'step3', label: ACADEMIC_YEAR_ROLLOVER.step3.title },
+  { id: 'step4', label: ACADEMIC_YEAR_ROLLOVER.step4.title },
 ];
 
-interface Step3StudentView {
-  id: string;
-  firstName: string;
-  lastName: string;
-  status: 'promu' | 'exception' | 'nonreinscrit';
-  destClassName?: string;
-}
-
-/** Mirrors `computeStats`'s exception > class-mapping > unenrolled
- * precedence exactly — see `computeStats` in
- * frontend/src/lib/server/academic-year-rollover.ts, which is the
- * authoritative source of truth but can't be imported here (`server-only`).
- * Keep this in sync if that precedence ever changes. */
-function deriveStep3Students(
+/** Summary rows — one outcome per student, following executeRollover's
+ * exception > class-mapping > unenrolled precedence (`deriveOutcome`, shared
+ * with Step 3 so both screens always agree). */
+function deriveSummaryStudents(
   students: StudentForPromotion[],
   classMapping: Record<string, ClassMappingEntry>,
   studentExceptions: Record<string, StudentExceptionEntry>,
   classes: ClassForPromotion[],
-): Step3StudentView[] {
-  return students.map((student) => {
-    const base = { id: student.id, firstName: student.firstName, lastName: student.lastName };
-    const exception = studentExceptions[student.id];
-
-    if (exception?.skip) {
-      return { ...base, status: 'nonreinscrit' as const };
-    }
-    if (exception?.destClassId) {
-      const destClassName =
-        classes.find((c) => c.id === exception.destClassId)?.name ?? exception.destClassId;
-      return { ...base, status: 'exception' as const, destClassName };
-    }
-
-    const mapping = classMapping[student.classId];
-    // `unenroll: true` (explicit "Fin de cursus") falls through to
-    // 'nonreinscrit' below — same outcome as executeRollover.
-    if (mapping?.destClassId || (mapping?.isNew && mapping?.newClass)) {
-      const destClassName =
-        mapping.newClass?.name ?? classes.find((c) => c.id === mapping.destClassId)?.name;
-      // `exactOptionalPropertyTypes` — only set the key when it has a
-      // value; an explicit `destClassName: undefined` is rejected.
-      return {
-        ...base,
-        status: 'promu' as const,
-        ...(destClassName !== undefined ? { destClassName } : {}),
-      };
-    }
-
-    return { ...base, status: 'nonreinscrit' as const };
-  });
-}
-
-function deriveStats(students: Step3StudentView[]): PromotionStats {
-  return students.reduce(
-    (acc, s) => {
-      if (s.status === 'promu') acc.promoted += 1;
-      else if (s.status === 'exception') acc.exceptions += 1;
-      else acc.unenrolled += 1;
-      return acc;
-    },
-    { promoted: 0, exceptions: 0, unenrolled: 0 },
+): SummaryStudent[] {
+  const classById = new Map(classes.map((c) => [c.id, c]));
+  const classOrder = new Map(classes.map((c, i) => [c.id, i]));
+  return (
+    [...students]
+      // Same order as Step 3: by current class, then name.
+      .sort(
+        (a, b) =>
+          (classOrder.get(a.classId) ?? 0) - (classOrder.get(b.classId) ?? 0) ||
+          a.lastName.localeCompare(b.lastName, 'fr') ||
+          a.firstName.localeCompare(b.firstName, 'fr'),
+      )
+      .map((student) => {
+        const outcome = deriveOutcome(student, classMapping, studentExceptions, classById);
+        return {
+          id: student.id,
+          firstName: student.firstName,
+          lastName: student.lastName,
+          status: outcome.status,
+          // `exactOptionalPropertyTypes` — only set the key when it has a value.
+          ...(outcome.destClassName !== undefined ? { destClassName: outcome.destClassName } : {}),
+        };
+      })
   );
 }
 
@@ -217,11 +190,11 @@ export default function AcademicYearWizardPage() {
     };
   }, [user, router, applyDraft]);
 
-  const step3Students = useMemo(
-    () => deriveStep3Students(students, classMapping, studentExceptions, classes),
+  const summaryStudents = useMemo(
+    () => deriveSummaryStudents(students, classMapping, studentExceptions, classes),
     [students, classMapping, studentExceptions, classes],
   );
-  const stats = useMemo(() => deriveStats(step3Students), [step3Students]);
+  const stats = useMemo(() => summarizeOutcomes(summaryStudents), [summaryStudents]);
 
   function goToStep(next: WizardStep) {
     setStep(next);
@@ -262,6 +235,33 @@ export default function AcademicYearWizardPage() {
 
   function handleMappingChange(classId: string, mapping: ClassMappingEntry) {
     setClassMapping((prev) => ({ ...prev, [classId]: mapping }));
+  }
+
+  async function handleStep3Save(exceptions: Record<string, StudentExceptionEntry>) {
+    if (!schoolData) return;
+    setIsLoading(true);
+    try {
+      const response = await api<{ draft: DraftPayload }>('/api/school/academic-year-rollover', {
+        method: 'PATCH',
+        body: { studentExceptions: exceptions },
+      });
+      applyDraft(response.draft, schoolData.school.id);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  /** `null` = the student follows their class again (entry removed). */
+  function handleExceptionChange(studentId: string, entry: StudentExceptionEntry | null) {
+    setStudentExceptions((prev) => {
+      if (entry === null) {
+        if (!(studentId in prev)) return prev;
+        const rest = { ...prev };
+        delete rest[studentId];
+        return rest;
+      }
+      return { ...prev, [studentId]: entry };
+    });
   }
 
   async function handleConfirm(confirmName: string) {
@@ -358,13 +358,28 @@ export default function AcademicYearWizardPage() {
           />
         )}
         {step === 3 && (
-          <Step3Summary
+          <Step3Decisions
+            classes={classes}
+            students={students}
+            gradeLevels={gradeLevels}
+            classMapping={classMapping}
+            studentExceptions={studentExceptions}
+            onExceptionChange={handleExceptionChange}
+            onSave={handleStep3Save}
+            onPrev={() => setStep(2)}
+            onNext={() => goToStep(4)}
+            isLoading={isLoading}
+          />
+        )}
+        {step === 4 && (
+          <Step4Summary
             stats={stats}
-            students={step3Students}
+            students={summaryStudents}
             oldYearLabel={activeYear.label}
             newYearLabel={draftFields?.newYearLabel ?? ''}
             schoolName={schoolData.school.name}
             onConfirm={handleConfirm}
+            onPrev={() => setStep(3)}
             isLoading={isLoading}
           />
         )}

@@ -147,6 +147,39 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Stale-destination guard: every destClassId (class mapping or
+    // per-student decision) is a TEMPLATE that must be one of the active
+    // year's classes — `executeRollover` resolves an unknown template to
+    // "no destination" and would silently NOT re-enroll those students.
+    // Refuse instead and point at the step where it can be fixed.
+    const currentClassIds = new Set(currentClasses.map((c) => c.id));
+    const staleMapping = Object.values(classMapping).some(
+      (m) => m?.destClassId && !currentClassIds.has(m.destClassId),
+    );
+    if (staleMapping) {
+      return NextResponse.json(
+        {
+          error: 'MAPPING_STALE',
+          message:
+            "Une classe de destination n'existe plus dans l'année en cours. Merci de revenir à l'étape 2 pour la remplacer.",
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+    const staleDecisions = Object.values(studentExceptions).some(
+      (e) => e?.destClassId && !e.skip && !currentClassIds.has(e.destClassId),
+    );
+    if (staleDecisions) {
+      return NextResponse.json(
+        {
+          error: 'MAPPING_STALE',
+          message:
+            "La classe de destination d'un élève n'existe plus dans l'année en cours. Merci de revenir à l'étape 3 pour revoir sa décision.",
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     // No-demotion rule (defense in depth — PATCH already enforces it, but
     // the catalog or the classes may have changed since the draft was saved).
     const gradeLevels = await prisma.gradeLevel.findMany({

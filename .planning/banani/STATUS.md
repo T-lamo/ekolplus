@@ -5,7 +5,7 @@ Last updated: 2026-08-17 (add-class ; grade-level ordering + promotion auto-sugg
 Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/AcademicYear/Term/Enrollment as first-class models). All 6 open questions decided and locked 2026-08-11.
 
 ## Done
-- [x] `add-class` (`WSAJOFgz4ml5`, flow `2oB_n5kLBeuy`) — plan: `add-class.md` — DONE 2026-08-17 — commit: see git log (`feat(banani): add-class`)
+- [x] `add-class` (`WSAJOFgz4ml5`, flow `2oB_n5kLBeuy`) — plan: `add-class.md` — DONE 2026-08-17 — commit `06946ea`
   - Routes : `/configuration/classes/nouvelle` (création pleine page) + `/configuration/classes/[id]` (édition, même formulaire) — `ClassFormModal` supprimé ; la liste navigue vers ces routes (titre de carte cliquable). Chrome partagé avec la fiche matière : `PageHeaderCard` + `PageTabsBar` (extraits de `SubjectPageShell`/`SubjectTabsBar`, badges ✓ « done »), onglets = **ancres** (scroll-spy) vers les 4 cartes du mock, colonne droite `ASIDE_GRID`.
   - Décision utilisateur : **couleur d'identification à droite** (carte « Apparence » : pastilles partagées `SUBJECT_COLORS` + « Aperçu de la carte » vivant), comme pour les matières.
   - Modèle : migration `24_class_identity` — `Class` + `color`, `track` (filière/série). API : `GET /api/school/classes` (+color/track), `POST` (+color/track/`subjectIds` → pivots dans la même tx), **nouveau `GET /[id]`** (subjectIds, lockedSubjectIds, classSubjectIdBySubject, studentCount), `PATCH` (+color/track) ; garde `DELETE /api/school/class-subjects/[id]` → 409 `CLASS_SUBJECT_HAS_EVALUATIONS` (la suppression du pivot cascadait sur les notes). +9 tests.

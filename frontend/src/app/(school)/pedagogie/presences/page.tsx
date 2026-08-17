@@ -31,6 +31,7 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { Tabs } from '@/components/ui/Tabs';
+import { PageNumbers } from '@/components/ui/Pager';
 import { BarChart } from '@/components/admin/charts/BarChart';
 import { exportToCsv } from '@/lib/csv-export';
 import { AttendanceEditModal } from './AttendanceEditModal';
@@ -557,15 +558,7 @@ export default function PresencesPage() {
                         </strong>
                       </span>
                       <div className="flex items-center gap-1">
-                        {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p)}
-                            className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                          >
-                            {p}
-                          </button>
-                        ))}
+                        <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />
                       </div>
                     </div>
                   </>

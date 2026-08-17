@@ -23,6 +23,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PageNumbers } from '@/components/ui/Pager';
 
 interface EvaluationDetail {
   id: string;
@@ -480,15 +481,7 @@ export default function GradeEntryPage() {
           </div>
           {pageCount > 1 && (
             <div className="flex items-center gap-1">
-              {Array.from({ length: pageCount }, (_, idx) => idx + 1).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                >
-                  {p}
-                </button>
-              ))}
+              <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />
             </div>
           )}
         </div>

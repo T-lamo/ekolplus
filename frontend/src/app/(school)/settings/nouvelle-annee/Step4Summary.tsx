@@ -5,6 +5,7 @@ import { ApiError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { Pager } from '@/components/ui/Pager';
 import {
   StudentStatusBadge,
   type StudentRolloverStatus,
@@ -132,26 +133,14 @@ export function Step4Summary({
         )}
 
         {students.length > PAGE_SIZE && (
-          <div className="mt-4 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={currentPage === 0}
-              className="text-sm font-medium text-primary disabled:cursor-not-allowed disabled:text-muted-foreground"
-            >
-              Précédent
-            </button>
-            <span className="text-xs text-muted-foreground">
-              Page {currentPage + 1} sur {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={currentPage >= totalPages - 1}
-              className="text-sm font-medium text-primary disabled:cursor-not-allowed disabled:text-muted-foreground"
-            >
-              Suivant
-            </button>
+          <div className="mt-2">
+            <Pager
+              page={currentPage + 1}
+              pageSize={PAGE_SIZE}
+              total={students.length}
+              onChange={(p) => setPage(p - 1)}
+              centered
+            />
           </div>
         )}
       </Card>

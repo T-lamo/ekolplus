@@ -29,8 +29,8 @@ import { SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
-import type { ClassSubjectOption } from '../carnet-de-notes/types';
 import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
 import { ParMatiereTab } from './ParMatiereTab';
 import { StatistiquesTab } from './StatistiquesTab';
@@ -71,7 +71,10 @@ export default function AppreciationsListPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
-  const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
+  // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
+  // the classes that happen to have subject affectations — a brand-new class
+  // must show up here immediately, and archived-year classes never.
+  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
   const [terms, setTerms] = useState<TermOption[]>([]);
@@ -84,10 +87,10 @@ export default function AppreciationsListPage() {
 
   useEffect(() => {
     if (!user) return;
-    api<{ classSubjects: ClassSubjectOption[] }>('/api/school/class-subjects')
-      .then((cs) => {
-        setClassSubjects(cs.classSubjects);
-        if (cs.classSubjects[0]) setClassId(cs.classSubjects[0].classId);
+    api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes')
+      .then((res) => {
+        setClasses(res.classes.map((c) => ({ id: c.id, name: c.name })));
+        if (res.classes[0]) setClassId(res.classes[0].id);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -110,12 +113,6 @@ export default function AppreciationsListPage() {
       })
       .catch(() => setError('Impossible de charger les appréciations.'));
   }, [classId, termId]);
-
-  const classes = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const cs of classSubjects) seen.set(cs.classId, cs.class.name);
-    return [...seen.entries()].map(([id, name]) => ({ id, name }));
-  }, [classSubjects]);
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];
@@ -246,7 +243,7 @@ export default function AppreciationsListPage() {
         </p>
       )}
 
-      {classSubjects.length === 0 ? (
+      {classes.length === 0 ? (
         <Card className="items-center gap-2 p-10 text-center">
           <Star size={28} className="text-muted-foreground" />
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -527,15 +524,7 @@ export default function AppreciationsListPage() {
                   , {data.totalCount - data.saisieCount} en attente
                 </span>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                  <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />
                 </div>
               </div>
             </Card>

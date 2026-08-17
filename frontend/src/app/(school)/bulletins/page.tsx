@@ -28,7 +28,6 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
-import type { ClassSubjectOption } from '../pedagogie/carnet-de-notes/types';
 import type { BulletinsListData, ListStudentRow } from './types';
 
 function fmt(n: number | null): string {
@@ -50,7 +49,10 @@ function moyToneClass(avg: number | null): string {
 export default function BulletinsListPage() {
   const user = useUser();
   const router = useRouter();
-  const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
+  // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
+  // the classes that happen to have subject affectations — a brand-new class
+  // must show up here immediately, and archived-year classes never.
+  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
   const [data, setData] = useState<BulletinsListData | null>(null);
@@ -59,10 +61,10 @@ export default function BulletinsListPage() {
 
   useEffect(() => {
     if (!user) return;
-    api<{ classSubjects: ClassSubjectOption[] }>('/api/school/class-subjects')
-      .then((cs) => {
-        setClassSubjects(cs.classSubjects);
-        if (cs.classSubjects[0]) setClassId(cs.classSubjects[0].classId);
+    api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes')
+      .then((res) => {
+        setClasses(res.classes.map((c) => ({ id: c.id, name: c.name })));
+        if (res.classes[0]) setClassId(res.classes[0].id);
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -83,12 +85,6 @@ export default function BulletinsListPage() {
       })
       .catch(() => setError('Impossible de charger les bulletins.'));
   }, [classId, termId]);
-
-  const classes = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const cs of classSubjects) seen.set(cs.classId, cs.class.name);
-    return [...seen.entries()].map(([id, name]) => ({ id, name }));
-  }, [classSubjects]);
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];

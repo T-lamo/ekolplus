@@ -1,9 +1,10 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-// Windowed page numbers: all of them up to 7 pages, then first/last/
-// current±1 with "…" gaps so the row never overflows on long lists.
-function pageItems(page: number, totalPages: number): (number | '…')[] {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+// Windowed page numbers — app-wide rule (user decision 2026-08-17): up to
+// 3 pages list them all; beyond that show first / current±1 / last with "…"
+// gaps, so no pagination anywhere in the app ever lists every number.
+export function pageItems(page: number, totalPages: number): (number | '…')[] {
+  if (totalPages <= 3) return Array.from({ length: totalPages }, (_, i) => i + 1);
   const wanted = [...new Set([1, page - 1, page, page + 1, totalPages])]
     .filter((p) => p >= 1 && p <= totalPages)
     .sort((a, b) => a - b);
@@ -15,6 +16,42 @@ function pageItems(page: number, totalPages: number): (number | '…')[] {
     prev = p;
   }
   return out;
+}
+
+/** The numbered page buttons alone (windowed via `pageItems`) — for screens
+ * that keep their own footer text (carnet de notes, appréciations,
+ * présences, saisie de notes) but must paginate like everywhere else. */
+export function PageNumbers({
+  page,
+  totalPages,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  onChange: (page: number) => void;
+}) {
+  return (
+    <>
+      {pageItems(page, totalPages).map((it, i) =>
+        it === '…' ? (
+          <span key={`gap-${i}`} className="px-0.5 text-xs text-muted-foreground">
+            …
+          </span>
+        ) : (
+          <button
+            key={it}
+            type="button"
+            onClick={() => onChange(it)}
+            aria-label={`Page ${it}`}
+            aria-current={it === page ? 'page' : undefined}
+            className={`flex h-8 min-w-8 items-center justify-center rounded-md px-1 text-xs font-semibold ${it === page ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-muted'}`}
+          >
+            {it}
+          </button>
+        ),
+      )}
+    </>
+  );
 }
 
 // Prev/next pager for server-paginated tables. Started life in
@@ -60,24 +97,7 @@ export function Pager({
         >
           <ChevronLeft size={14} />
         </button>
-        {pageItems(page, totalPages).map((it, i) =>
-          it === '…' ? (
-            <span key={`gap-${i}`} className="px-0.5 text-xs text-muted-foreground">
-              …
-            </span>
-          ) : (
-            <button
-              key={it}
-              type="button"
-              onClick={() => onChange(it)}
-              aria-label={`Page ${it}`}
-              aria-current={it === page ? 'page' : undefined}
-              className={`flex h-8 min-w-8 items-center justify-center rounded-md px-1 text-xs font-semibold ${it === page ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-muted'}`}
-            >
-              {it}
-            </button>
-          ),
-        )}
+        <PageNumbers page={page} totalPages={totalPages} onChange={onChange} />
         <button
           type="button"
           disabled={page >= totalPages}

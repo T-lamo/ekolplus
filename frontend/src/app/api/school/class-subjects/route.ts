@@ -10,10 +10,11 @@ export const runtime = 'nodejs';
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { resolveMySchool, hasMinRole, resolveActiveAcademicYear } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const INCLUDE = {
@@ -47,11 +48,27 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    const rows = await prisma.classSubject.findMany({
-      where: classId ? { classId } : { class: { schoolId: mySchool.schoolId } },
-      orderBy: [{ class: { name: 'asc' } }, { subject: { name: 'asc' } }],
-      include: INCLUDE,
-    });
+    // The school-wide list feeds the class/subject pickers of carnet de
+    // notes, appréciations, bulletins, affectations, coefficients — scope it
+    // to the ACTIVE year, or the archived year's pivots resurface old
+    // classes (same names) after a rollover. An explicit `?classId=` keeps
+    // working for any class of the school (the id is already specific).
+    let where: Prisma.ClassSubjectWhereInput | null = null;
+    if (classId) {
+      where = { classId };
+    } else {
+      const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
+      if (activeYear) {
+        where = { class: { schoolId: mySchool.schoolId, academicYearId: activeYear.id } };
+      }
+    }
+    const rows = where
+      ? await prisma.classSubject.findMany({
+          where,
+          orderBy: [{ class: { name: 'asc' } }, { subject: { name: 'asc' } }],
+          include: INCLUDE,
+        })
+      : [];
 
     return NextResponse.json(
       { classSubjects: rows },

@@ -27,20 +27,21 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const [classes, activeYear] = await Promise.all([
-      prisma.class.findMany({
-        where: { schoolId: mySchool.schoolId },
-        orderBy: { name: 'asc' },
-        include: {
-          homeroomTeacher: { select: { id: true, name: true } },
-          _count: { select: { classSubjects: true, enrollments: true } },
-        },
-      }),
-      prisma.academicYear.findFirst({
-        where: { schoolId: mySchool.schoolId, isActive: true },
-        select: { label: true },
-      }),
-    ]);
+    // Classes are per-year rows: after a rollover the old year's classes
+    // still exist (archived), so every list/picker in the app must be scoped
+    // to the ACTIVE year — otherwise old and new classes (same names) show
+    // up side by side. No active year → nothing to list.
+    const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
+    const classes = activeYear
+      ? await prisma.class.findMany({
+          where: { schoolId: mySchool.schoolId, academicYearId: activeYear.id },
+          orderBy: { name: 'asc' },
+          include: {
+            homeroomTeacher: { select: { id: true, name: true } },
+            _count: { select: { classSubjects: true, enrollments: true } },
+          },
+        })
+      : [];
 
     return NextResponse.json(
       {

@@ -18,7 +18,7 @@ vi.mock('@/lib/server/school', async () => {
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
-import { POST } from './route';
+import { GET, POST } from './route';
 import { GET as GET_ONE, PATCH } from './[id]/route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
@@ -64,6 +64,39 @@ beforeEach(() => {
       return (cb as (tx: typeof prismaMock) => unknown)(prismaMock) as Promise<unknown>;
     }
     return Promise.resolve(cb);
+  });
+});
+
+describe('GET /api/school/classes (active-year scope)', () => {
+  it("lists only the ACTIVE year's classes — old-year classes never leak into pickers", async () => {
+    prismaMock.class.findMany.mockResolvedValue([
+      {
+        ...createdClass,
+        _count: { classSubjects: 2, enrollments: 25 },
+      },
+    ] as never);
+
+    const res = await GET(req('GET', '/api/school/classes'));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { activeYearLabel: string | null; classes: unknown[] };
+    expect(body.activeYearLabel).toBe('2024-2025');
+    expect(body.classes).toHaveLength(1);
+    expect(prismaMock.class.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { schoolId: 'school_1', academicYearId: 'year_1' },
+      }),
+    );
+  });
+
+  it('no active year → empty list (classes always belong to a year), label null', async () => {
+    mockResolveYear.mockResolvedValue(null);
+
+    const res = await GET(req('GET', '/api/school/classes'));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { activeYearLabel: string | null; classes: unknown[] };
+    expect(body.activeYearLabel).toBeNull();
+    expect(body.classes).toEqual([]);
+    expect(prismaMock.class.findMany).not.toHaveBeenCalled();
   });
 });
 

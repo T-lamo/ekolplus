@@ -30,6 +30,7 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { NewEvaluationModal } from './NewEvaluationModal';
 import { StatistiquesTab } from './StatistiquesTab';
@@ -167,6 +168,11 @@ export default function GradeNotebookPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
+  // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
+  // just the classes that have subject affectations — a brand-new class must
+  // show up here immediately (its notebook is simply empty until subjects
+  // are assigned), and archived-year classes never.
+  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
   const [terms, setTerms] = useState<TermOption[]>([]);
   const [classId, setClassId] = useState('');
   const [subjectValue, setSubjectValue] = useState(''); // classSubjectId, or 'ALL' for combined view
@@ -181,15 +187,19 @@ export default function GradeNotebookPage() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
+      api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes'),
       api<{ classSubjects: ClassSubjectOption[] }>('/api/school/class-subjects'),
       api<{ academicYear: { terms: TermOption[] } | null }>('/api/school'),
     ])
-      .then(([cs, school]) => {
+      .then(([cl, cs, school]) => {
+        setClasses(cl.classes.map((c) => ({ id: c.id, name: c.name })));
         setClassSubjects(cs.classSubjects);
         setTerms(school.academicYear?.terms ?? []);
-        if (cs.classSubjects[0]) {
-          setClassId(cs.classSubjects[0].classId);
-          setSubjectValue(cs.classSubjects[0].id);
+        const firstClass = cl.classes[0];
+        if (firstClass) {
+          setClassId(firstClass.id);
+          const firstSubject = cs.classSubjects.find((x) => x.classId === firstClass.id);
+          setSubjectValue(firstSubject ? firstSubject.id : 'ALL');
         }
       })
       .catch((err) => {
@@ -220,12 +230,6 @@ export default function GradeNotebookPage() {
       })
       .catch(() => setError('Impossible de charger le carnet de notes.'));
   }, [classId, subjectValue, termId]);
-
-  const classes = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const cs of classSubjects) seen.set(cs.classId, cs.class.name);
-    return [...seen.entries()].map(([id, name]) => ({ id, name }));
-  }, [classSubjects]);
 
   const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
   const combined = subjectValue === 'ALL';
@@ -428,7 +432,7 @@ export default function GradeNotebookPage() {
         </p>
       )}
 
-      {classSubjects.length === 0 ? (
+      {classes.length === 0 ? (
         <Card className="items-center gap-2 p-10 text-center">
           <NotebookPen size={28} className="text-muted-foreground" />
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -810,15 +814,7 @@ export default function GradeNotebookPage() {
                   <strong className="text-foreground">{fmt(unified.classAverage)}/20</strong>
                 </span>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium ${p === page ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                  <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />
                 </div>
               </div>
             </Card>

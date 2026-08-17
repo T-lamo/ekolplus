@@ -39,20 +39,20 @@ describe('layout consistency: right-hand column width is shared', () => {
   }
 });
 
-// Garde-fou : la grille de cartes est plafonnée à 5 colonnes (décision
-// utilisateur 2026-08-17 « cinq éléments sur la ligne ») et suit la largeur du
+// Garde-fou : la grille de cartes est plafonnée à 4 colonnes (décision
+// utilisateur 2026-08-17 « quatre éléments par ligne ») et suit la largeur du
 // contenu via des container queries nommées — le wrapper `<CardGrid>` porte
 // le conteneur, jamais `<main>` (les modales `fixed` seraient confinées).
 describe('layout consistency: list-card grid', () => {
-  it('CARD_GRID caps at 5 columns and never lists more', () => {
-    expect(CARD_GRID).toMatch(/grid-cols-5/);
-    expect(CARD_GRID).not.toMatch(/grid-cols-[6-9]/);
+  it('CARD_GRID caps at 4 columns and never lists more', () => {
+    expect(CARD_GRID).toMatch(/grid-cols-4/);
+    expect(CARD_GRID).not.toMatch(/grid-cols-[5-9]/);
     expect(CARD_GRID).not.toMatch(/auto-fill/);
   });
   it('CARD_GRID queries the named `cards` container declared by CARD_GRID_CONTAINER', () => {
     expect(CARD_GRID_CONTAINER).toBe('@container/cards');
     expect(CARD_GRID).toMatch(/@min-\[\d+px\]\/cards:grid-cols-2/);
-    expect(CARD_GRID).toMatch(/@min-\[\d+px\]\/cards:grid-cols-5/);
+    expect(CARD_GRID).toMatch(/@min-\[\d+px\]\/cards:grid-cols-4/);
   });
   it('the school layout <main> is not a container (would confine fixed modals)', () => {
     const src = readFileSync(resolve(ROOT, 'src/app/(school)/layout.tsx'), 'utf8');

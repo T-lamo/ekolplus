@@ -32,7 +32,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { StudentFormModal } from './StudentFormModal';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',

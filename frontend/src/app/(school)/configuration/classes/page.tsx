@@ -40,7 +40,7 @@ import { getClassDotColor, tintOf } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { ClassData } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 interface SchoolInfo {
   academicYear: { label: string } | null;

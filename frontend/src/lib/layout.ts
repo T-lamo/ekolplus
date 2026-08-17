@@ -15,12 +15,11 @@ export const ASIDE_GRID =
 
 // Grille des cartes de liste (`ListCard`) — via `<CardGrid>`
 // (src/components/school/CardGrid.tsx). Décision utilisateur 2026-08-17 :
-// « cinq éléments sur la ligne », cartes un peu plus grandes → colonnes
-// plafonnées à 5, carte ≥ ~277 px, et le nombre de colonnes suit la LARGEUR
-// DU CONTENU (container query sur le wrapper `CARD_GRID_CONTAINER`, pas la
-// fenêtre : sidebar dépliée/repliée = 240 px de différence). Repères : 1440
-// sidebar ouverte → 4 ; 1920 → 5 (ouverte ou repliée) ; 2560 → 5.
+// « quatre éléments par ligne » → colonnes plafonnées à 4, carte ≥ ~277 px, et
+// le nombre de colonnes suit la LARGEUR DU CONTENU (container query sur le
+// wrapper `CARD_GRID_CONTAINER`, pas la fenêtre : sidebar dépliée/repliée =
+// 240 px de différence). Repères : 1280 → 3 ; 1440 et au-delà → 4.
 // `content-start` : les lignes ne s'étirent pas quand il y a peu de résultats.
 export const CARD_GRID_CONTAINER = '@container/cards';
 export const CARD_GRID =
-  'grid grid-cols-1 content-start gap-3 @min-[566px]/cards:grid-cols-2 @min-[855px]/cards:grid-cols-3 @min-[1144px]/cards:grid-cols-4 @min-[1433px]/cards:grid-cols-5';
+  'grid grid-cols-1 content-start gap-3 @min-[566px]/cards:grid-cols-2 @min-[855px]/cards:grid-cols-3 @min-[1144px]/cards:grid-cols-4';

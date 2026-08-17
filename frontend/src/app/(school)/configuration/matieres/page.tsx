@@ -44,7 +44,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { SUBJECT_STATUS_LABEL } from './subject-form.constants';
 import type { SubjectData } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 

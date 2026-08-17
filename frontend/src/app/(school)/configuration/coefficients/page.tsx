@@ -17,7 +17,7 @@ import { getSubjectVisual } from '@/lib/subject-visuals';
 import { CoefficientStepper } from './CoefficientStepper';
 import type { ClassOption, ClassSubjectRow, SubjectOption } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 function CoefficientsPageInner() {
   const user = useUser();

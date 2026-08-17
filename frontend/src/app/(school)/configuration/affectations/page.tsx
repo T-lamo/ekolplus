@@ -40,7 +40,7 @@ import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 

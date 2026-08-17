@@ -34,7 +34,7 @@ import { getSubjectVisual } from '@/lib/subject-visuals';
 import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 interface SubjectOption {
   id: string;

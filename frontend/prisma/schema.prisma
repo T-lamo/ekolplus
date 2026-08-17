@@ -207,20 +207,20 @@ model AcademicYear {
 }
 
 model AcademicYearRolloverDraft {
-  id                String   @id @default(cuid())
-  schoolId          String
-  school            School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  newYearLabel      String
-  newYearStartDate  DateTime
-  newYearEndDate    DateTime
+  newYearLabel     String
+  newYearStartDate DateTime
+  newYearEndDate   DateTime
 
-  classMapping      Json     @default("{}")
-  studentExceptions Json     @default("{}")
+  classMapping      Json @default("{}")
+  studentExceptions Json @default("{}")
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  createdBy         String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
 
   @@unique([schoolId])
 }
@@ -247,6 +247,7 @@ model Term {
   evaluations   Evaluation[]
   goals         Goal[]
   appreciations Appreciation[]
+  chapters      SubjectChapter[]
 
   @@index([academicYearId, order])
 }
@@ -276,37 +277,92 @@ model OrganizationMember {
 // pivot table instead of two independent ones.
 // ───────────────────────────────────────────────────────────────────────
 model Subject {
-  id        String   @id @default(cuid())
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  name      String
-  code      String?
-  domain    String? // free text ("Sciences", "Lettres & Langues", ...) — no fixed catalog yet
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  schoolId             String
+  school               School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name                 String
+  code                 String?
+  domain               String? // free text ("Sciences", "Lettres & Langues", ...) — no fixed catalog yet
+  // Kept for the dashboard count + list filters; always derived from `status`
+  // (`status !== 'ARCHIVED'`) by the subjects routes — never written directly.
+  isActive             Boolean  @default(true)
+  // ACTIVE | DRAFT | ARCHIVED — "Statut de publication" on the subject form
+  // (add-matiere.md). DRAFT stays visible in the Matières list only; the
+  // subjects GET excludes it by default so pickers never offer it.
+  status               String   @default("ACTIVE")
+  // Subject profile (add-matiere.md). Free-text catalogs live client-side
+  // in subject-form.constants.ts — no lookup tables, same convention as
+  // Class.level / Term.type.
+  abbreviation         String?
+  level                String? // "3ème / 4ème" — free text picked from the school's class levels
+  kind                 String   @default("REQUIRED") // REQUIRED | ELECTIVE | OPTIONAL
+  description          String?
+  defaultCoefficient   Int? // pre-fills ClassSubject.coefficient when a class is attached
+  maxScore             Int      @default(20)
+  passingScore         Int      @default(10)
+  totalHours           Int?
+  hoursCM              Int?
+  hoursTD              Int?
+  hoursTP              Int?
+  evaluationType       String?
+  maxCapacity          Int?
+  includeInAverage     Boolean  @default(true)
+  showOnBulletin       Boolean  @default(true)
+  room                 String?
+  eliminatoryScore     Int?
+  icon                 String? // lucide icon name from the form's fixed catalog
+  color                String? // hex from the form's fixed swatch catalog
+  responsibleTeacherId String?
+  responsibleTeacher   Teacher? @relation("SubjectResponsible", fields: [responsibleTeacherId], references: [id], onDelete: SetNull)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   classSubjects ClassSubject[]
   goals         Goal[]
   appreciations Appreciation[]
+  chapters      SubjectChapter[]
+  // Implicit self m2m: subjects that must be validated before this one.
+  prerequisites Subject[]        @relation("SubjectPrerequisites")
+  requiredBy    Subject[]        @relation("SubjectPrerequisites")
 
   @@index([schoolId])
+}
+
+// One row per chapter of a subject's annual programme, grouped by Term
+// (programme-annuel.md). `order` is per (subjectId, termId); the reorder
+// route rewrites the whole sequence in one transaction.
+model SubjectChapter {
+  id         String   @id @default(cuid())
+  subjectId  String
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  termId     String
+  term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  order      Int
+  title      String
+  objectives String?
+  hours      Float?
+  reference  String? // "Manuel ch. 1-2"
+  competence String? // badge shown on the chapter row
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([subjectId, termId, order])
 }
 
 // Minimal stub — full profile/CRUD is Epic 5's `teachers-list` screen. V1
 // only needs enough to populate ClassSubject.teacherId and Class.homeroomTeacherId.
 model Teacher {
-  id        String   @id @default(cuid())
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  name      String
-  email     String?
-  phone     String?
-  photoUrl  String? // Cloudinary secure_url — public, see /api/upload docs
-  isActive  Boolean  @default(true)
+  id                String    @id @default(cuid())
+  schoolId          String
+  school            School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name              String
+  email             String?
+  phone             String?
+  photoUrl          String? // Cloudinary secure_url — public, see /api/upload docs
+  isActive          Boolean   @default(true)
   // Employment status shown on the Teachers List — separate from `isActive`
   // (which only gates visibility in assignment pickers, see epic-5-data-model.md).
-  status    String   @default("ACTIVE") // ACTIVE | ON_LEAVE | INACTIVE
+  status            String    @default("ACTIVE") // ACTIVE | ON_LEAVE | INACTIVE
   // Profile fields from the Banani Add Teacher form (add-teacher.md).
   // `name` stays canonical (lists/bulletins/assignments consume it); the
   // form composes it from civility/firstName/lastName when they are set.
@@ -324,11 +380,12 @@ model Teacher {
   // Contractual hours target — distinct from the hours computed from real
   // ClassSubject assignments shown on the Teachers list.
   weeklyHoursTarget Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  classSubjects   ClassSubject[]
-  homeroomClasses Class[]        @relation("HomeroomTeacher")
+  classSubjects       ClassSubject[]
+  homeroomClasses     Class[]        @relation("HomeroomTeacher")
+  responsibleSubjects Subject[]      @relation("SubjectResponsible")
 
   @@index([schoolId])
 }
@@ -384,20 +441,20 @@ model ClassSubject {
 // See .planning/banani/epic-5-data-model.md.
 // ───────────────────────────────────────────────────────────────────────
 model Student {
-  id            String   @id @default(cuid())
-  schoolId      String
-  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  studentNumber String // "EL-2024-001" — generated at creation, sequential per school
-  firstName     String
-  lastName      String
-  photoUrl      String? // Cloudinary secure_url — public, see /api/upload docs
-  dateOfBirth   DateTime
-  placeOfBirth  String?
-  gender        String? // free text, no fixed catalog yet
-  nationality   String?
-  address       String?
-  enrolledAt    DateTime @default(now())
-  status        String   @default("ENROLLED") // ENROLLED | REPEATED_ABSENCES | SUSPENDED
+  id             String   @id @default(cuid())
+  schoolId       String
+  school         School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentNumber  String // "EL-2024-001" — generated at creation, sequential per school
+  firstName      String
+  lastName       String
+  photoUrl       String? // Cloudinary secure_url — public, see /api/upload docs
+  dateOfBirth    DateTime
+  placeOfBirth   String?
+  gender         String? // free text, no fixed catalog yet
+  nationality    String?
+  address        String?
+  enrolledAt     DateTime @default(now())
+  status         String   @default("ENROLLED") // ENROLLED | REPEATED_ABSENCES | SUSPENDED
   // Profile fields from the Banani Add Student form (add-student.md).
   motherTongue   String?
   phone          String? // the student's own phone — guardians have theirs
@@ -407,8 +464,8 @@ model Student {
   transferNumber String?
   notes          String? // internal observations, staff-only
   scholarship    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   guardians       Guardian[]
   enrollments     Enrollment[]

@@ -131,7 +131,8 @@ export async function getSchoolDashboard(schoolId: string): Promise<DashboardDat
       orderBy: { name: 'asc' },
     }),
     prisma.teacher.count({ where: { schoolId, isActive: true } }),
-    prisma.subject.count({ where: { schoolId, isActive: true } }),
+    // Drafts are still being configured — only published subjects count.
+    prisma.subject.count({ where: { schoolId, status: 'ACTIVE' } }),
     prisma.enrollment.findMany({
       where: { academicYearId: year.id },
       select: { studentId: true, classId: true, enrolledAt: true },

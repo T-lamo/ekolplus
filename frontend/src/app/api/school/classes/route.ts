@@ -33,7 +33,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         orderBy: { name: 'asc' },
         include: {
           homeroomTeacher: { select: { id: true, name: true } },
-          _count: { select: { classSubjects: true } },
+          _count: { select: { classSubjects: true, enrollments: true } },
         },
       }),
       prisma.academicYear.findFirst({
@@ -53,6 +53,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           capacity: c.capacity,
           homeroomTeacher: c.homeroomTeacher,
           subjectCount: c._count.classSubjects,
+          studentCount: c._count.enrollments,
         })),
       },
       { headers: { 'x-request-id': ctx.requestId } },

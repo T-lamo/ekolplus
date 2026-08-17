@@ -39,7 +39,7 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
-import { SubjectFormModal } from './SubjectFormModal';
+import { SUBJECT_STATUS_LABEL } from './subject-form.constants';
 import type { SubjectData } from './types';
 
 const PAGE_SIZE = 10;
@@ -64,11 +64,10 @@ export default function MatieresPage() {
   const [status, setStatus] = useState<StatusFilter>('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<SubjectData | 'new' | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    api<{ subjects: SubjectData[] }>('/api/school/subjects')
+    api<{ subjects: SubjectData[] }>('/api/school/subjects?includeDrafts=1')
       .then((res) => setSubjects(res.subjects))
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -124,16 +123,20 @@ export default function MatieresPage() {
 
   async function onToggleArchive(subject: SubjectData) {
     try {
-      const res = await api<{ subject: { isActive: boolean } }>(
+      const res = await api<{ subject: { isActive: boolean; status: SubjectData['status'] } }>(
         `/api/school/subjects/${subject.id}`,
         {
           method: 'PATCH',
-          body: { isActive: !subject.isActive },
+          body: { status: subject.isActive ? 'ARCHIVED' : 'ACTIVE' },
         },
       );
       setSubjects((prev) =>
         prev
-          ? prev.map((s) => (s.id === subject.id ? { ...s, isActive: res.subject.isActive } : s))
+          ? prev.map((s) =>
+              s.id === subject.id
+                ? { ...s, isActive: res.subject.isActive, status: res.subject.status }
+                : s,
+            )
           : prev,
       );
       toast(res.subject.isActive ? 'Matière désarchivée.' : 'Matière archivée.', 'success');
@@ -153,24 +156,36 @@ export default function MatieresPage() {
         coefficientLabel(s.coefficients),
         s.teacherNames.join('; '),
         s.classes.map((c) => c.name).join('; '),
-        !s.isActive ? 'Archivée' : s.classes.length > 0 ? 'Active' : 'Non affectée',
+        s.status !== 'ACTIVE'
+          ? SUBJECT_STATUS_LABEL[s.status]
+          : s.classes.length > 0
+            ? 'Active'
+            : 'Non affectée',
       ]),
     );
   }
 
   function menuItemsFor(s: SubjectData) {
     return [
-      { label: 'Voir les détails', icon: <Eye size={14} />, onClick: () => setEditing(s) },
-      { label: 'Modifier la matière', icon: <Pencil size={14} />, onClick: () => setEditing(s) },
+      {
+        label: 'Voir les détails',
+        icon: <Eye size={14} />,
+        onClick: () => router.push(`/configuration/matieres/${s.id}`),
+      },
+      {
+        label: 'Modifier la matière',
+        icon: <Pencil size={14} />,
+        onClick: () => router.push(`/configuration/matieres/${s.id}`),
+      },
       {
         label: 'Assigner un enseignant',
         icon: <UserPlus size={14} />,
-        onClick: () => router.push('/configuration/affectations'),
+        onClick: () => router.push(`/configuration/matieres/${s.id}?tab=affectations`),
       },
       {
         label: 'Gérer les affectations',
         icon: <LinkIcon size={14} />,
-        onClick: () => router.push('/configuration/affectations'),
+        onClick: () => router.push(`/configuration/matieres/${s.id}?tab=affectations`),
       },
       {
         label: 'Modifier le coefficient',
@@ -217,7 +232,7 @@ export default function MatieresPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
+          <Button className="w-fit" onClick={() => router.push('/configuration/matieres/nouvelle')}>
             <Plus size={14} />
             Ajouter une matière
           </Button>
@@ -298,7 +313,7 @@ export default function MatieresPage() {
           ) : view === 'grid' ? (
             <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {paged.map((s) => {
-                const visual = getSubjectVisual(s.name);
+                const visual = getSubjectVisual(s.name, { icon: s.icon, color: s.color });
                 return (
                   <Card key={s.id} className="gap-3 p-4">
                     <div className="flex items-start justify-between">
@@ -325,7 +340,9 @@ export default function MatieresPage() {
                           {s.domain}
                         </span>
                       )}
-                      {!s.isActive ? (
+                      {s.status === 'DRAFT' ? (
+                        <Badge>Brouillon</Badge>
+                      ) : !s.isActive ? (
                         <Badge>Archivée</Badge>
                       ) : s.classes.length > 0 ? (
                         <Badge tone="success">Active</Badge>
@@ -382,7 +399,7 @@ export default function MatieresPage() {
                   </thead>
                   <tbody>
                     {paged.map((s) => {
-                      const visual = getSubjectVisual(s.name);
+                      const visual = getSubjectVisual(s.name, { icon: s.icon, color: s.color });
                       return (
                         <tr key={s.id} className="border-b border-border last:border-none">
                           <td className="px-3.5 py-2.5">
@@ -439,7 +456,9 @@ export default function MatieresPage() {
                           </td>
                           <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                           <td className="px-3.5 py-2.5">
-                            {!s.isActive ? (
+                            {s.status === 'DRAFT' ? (
+                              <Badge>Brouillon</Badge>
+                            ) : !s.isActive ? (
                               <Badge>Archivée</Badge>
                             ) : s.classes.length > 0 ? (
                               <Badge tone="success">Active</Badge>
@@ -475,20 +494,6 @@ export default function MatieresPage() {
             />
           )}
         </>
-      )}
-
-      {editing && (
-        <SubjectFormModal
-          subject={editing === 'new' ? null : editing}
-          onClose={() => setEditing(null)}
-          onSaved={(saved) =>
-            setSubjects((prev) => {
-              if (!prev) return prev;
-              const exists = prev.some((s) => s.id === saved.id);
-              return exists ? prev.map((s) => (s.id === saved.id ? saved : s)) : [...prev, saved];
-            })
-          }
-        />
       )}
     </div>
   );

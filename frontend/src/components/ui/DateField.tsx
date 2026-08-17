@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { DayPicker, type ChevronProps } from 'react-day-picker';
 import { fr } from 'react-day-picker/locale';
@@ -22,14 +22,32 @@ export function DateField({
   disabled,
   id,
   name,
+  compact = false,
+  icon,
+  hint,
+  minDate,
+  maxDate,
+  weekday = false,
 }: {
-  label: string;
+  label: ReactNode;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
   disabled?: boolean;
   id?: string;
   name?: string;
+  /** 36px / 13px trigger matching the subject & timetable form controls
+   * (default is the 40px / 14px generic field). */
+  compact?: boolean;
+  /** Leading icon override (default: calendar). */
+  icon?: ReactNode;
+  /** Small muted line under the trigger. */
+  hint?: string;
+  /** Inclusive bounds ('YYYY-MM-DD') — days outside are disabled. */
+  minDate?: string;
+  maxDate?: string;
+  /** Show the weekday too — « Lundi 16 juin 2025 ». */
+  weekday?: boolean;
 }) {
   const autoId = useId();
   const inputId = id ?? name ?? autoId;
@@ -37,6 +55,12 @@ export function DateField({
 
   const parsed = value ? parseISO(value) : undefined;
   const selected = parsed && isValid(parsed) ? parsed : undefined;
+  const min = minDate ? parseISO(minDate) : undefined;
+  const max = maxDate ? parseISO(maxDate) : undefined;
+  const disabledDays = [
+    ...(min && isValid(min) ? [{ before: min }] : []),
+    ...(max && isValid(max) ? [{ after: max }] : []),
+  ];
 
   return (
     <label htmlFor={inputId} className="flex flex-col gap-1.5 text-sm">
@@ -47,11 +71,18 @@ export function DateField({
           type="button"
           disabled={disabled}
           aria-required={required}
-          className="flex h-10 w-full items-center gap-2 rounded-md border border-border bg-input px-3 text-left text-sm outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-50 data-[state=open]:border-primary"
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md border border-border bg-input px-3 text-left outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-50 data-[state=open]:border-primary',
+            compact ? 'h-9 text-caption' : 'h-10 text-sm',
+          )}
         >
-          <Calendar size={15} className="shrink-0 text-muted-foreground" />
+          {icon ?? <Calendar size={15} className="shrink-0 text-muted-foreground" />}
           <span className={cn('flex-1', selected ? 'text-foreground' : 'text-muted-foreground')}>
-            {selected ? format(selected, 'd MMMM yyyy', { locale: fr }) : 'Sélectionner...'}
+            {selected
+              ? weekday
+                ? capitalize(format(selected, 'EEEE d MMMM yyyy', { locale: fr }))
+                : format(selected, 'd MMMM yyyy', { locale: fr })
+              : 'Sélectionner...'}
           </span>
         </Popover.Trigger>
         <Popover.Portal>
@@ -68,6 +99,7 @@ export function DateField({
                 onChange(date ? format(date, 'yyyy-MM-dd') : '');
                 setOpen(false);
               }}
+              {...(disabledDays.length > 0 ? { disabled: disabledDays } : {})}
               captionLayout="dropdown"
               showOutsideDays
               components={{ Chevron: CalendarChevron }}
@@ -104,9 +136,12 @@ export function DateField({
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
+      {hint && <span className="text-2xs text-muted-foreground">{hint}</span>}
     </label>
   );
 }
+
+const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 function CalendarChevron({ orientation, className }: ChevronProps) {
   if (orientation === 'right') return <ChevronRight className={className} size={16} />;

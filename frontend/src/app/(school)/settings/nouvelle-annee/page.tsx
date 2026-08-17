@@ -17,6 +17,7 @@ import { FormStepsBar, type FormStep } from '@/components/school/FormStepsBar';
 import { Step1NewYear } from './Step1NewYear';
 import { Step2Promotion } from './Step2Promotion';
 import { Step3Summary } from './Step3Summary';
+import type { GradeLevelOption } from './suggest-promotions';
 import { ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { SchoolResponse } from '../types';
 import type {
@@ -47,6 +48,7 @@ interface RolloverGetResponse {
   activeYear: { id: string; label: string };
   classes: ClassForPromotion[];
   students: StudentForPromotion[];
+  gradeLevels: GradeLevelOption[];
 }
 
 /** Shape Step1NewYear's `draft` prop expects. */
@@ -131,6 +133,7 @@ export default function AcademicYearWizardPage() {
   const [activeYear, setActiveYear] = useState<{ id: string; label: string } | null>(null);
   const [classes, setClasses] = useState<ClassForPromotion[]>([]);
   const [students, setStudents] = useState<StudentForPromotion[]>([]);
+  const [gradeLevels, setGradeLevels] = useState<GradeLevelOption[]>([]);
 
   const [draftId, setDraftId] = useState<string | null>(null);
   const [draftFields, setDraftFields] = useState<Step1DraftProp | null>(null);
@@ -186,6 +189,7 @@ export default function AcademicYearWizardPage() {
         setActiveYear(rollover.activeYear);
         setClasses(rollover.classes);
         setStudents(rollover.students);
+        setGradeLevels(rollover.gradeLevels ?? []);
         if (rollover.draft) {
           // A draft already exists — resume at step 1 regardless of prior
           // progress. There's no persisted "current step" field on the
@@ -334,6 +338,7 @@ export default function AcademicYearWizardPage() {
         {step === 2 && (
           <Step2Promotion
             classes={classes}
+            gradeLevels={gradeLevels}
             // The new AcademicYear (and therefore any real destination
             // `Class` rows) doesn't exist until confirm runs
             // `executeRollover` — so at Step 2 editing time there are no

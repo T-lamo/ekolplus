@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Wand2 } from 'lucide-react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -9,11 +10,15 @@ import { Modal } from '@/components/ui/Modal';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { ClassForPromotion, ClassMappingEntry } from './types';
+import { hasDestination, suggestPromotions, type GradeLevelOption } from './suggest-promotions';
 
 type NewClassPayload = NonNullable<ClassMappingEntry['newClass']>;
 
 interface Step2PromotionProps {
   classes: ClassForPromotion[];
+  /** School's ordered level catalog (Configuration → Niveaux). Empty →
+   * the suggest button is a no-op and a hint points to the config page. */
+  gradeLevels: GradeLevelOption[];
   allClasses: ClassForPromotion[];
   activeMapping: Record<string, ClassMappingEntry>;
   onMappingChange: (classId: string, mapping: ClassMappingEntry) => void;
@@ -122,6 +127,7 @@ function CreateClassModal({
 
 export function Step2Promotion({
   classes,
+  gradeLevels,
   allClasses,
   activeMapping,
   onMappingChange,
@@ -135,6 +141,18 @@ export function Step2Promotion({
   // when closed. Re-opening on a row that already has an `isNew` mapping
   // prefills the form so "Créer nouvelle" doubles as "modifier".
   const [creatingForClassId, setCreatingForClassId] = useState<string | null>(null);
+  // Feedback line under the suggest button ("N classes pré-remplies" /
+  // "aucune…"). Cleared on the next click.
+  const [suggestNotice, setSuggestNotice] = useState<string | null>(null);
+
+  const handleSuggestAll = () => {
+    setError('');
+    const suggestions = suggestPromotions(classes, gradeLevels, activeMapping);
+    // `onMappingChange` is a functional setState in the parent, so a burst
+    // of calls in one tick doesn't clobber itself.
+    for (const s of suggestions) onMappingChange(s.classId, s.entry);
+    setSuggestNotice(suggestions.length > 0 ? t.suggestApplied(suggestions.length) : t.suggestNone);
+  };
 
   const handleProceed = async () => {
     setError('');
@@ -144,11 +162,9 @@ export function Step2Promotion({
     // academic-year-rollover.ts): an `isNew: true` mapping only counts as a
     // valid destination when `newClass` is also present — otherwise it
     // silently produces zero enrollments for that class server-side.
+    // (`hasDestination` in ./suggest-promotions.ts is that exact rule.)
     for (const cls of classes) {
-      const mapping = activeMapping[cls.id];
-      const hasDestination =
-        Boolean(mapping?.destClassId) || Boolean(mapping?.isNew && mapping?.newClass);
-      if (!hasDestination) {
+      if (!hasDestination(activeMapping[cls.id])) {
         setError(`${cls.name} n'a pas de classe de destination`);
         return;
       }
@@ -177,8 +193,36 @@ export function Step2Promotion({
 
   return (
     <div className="space-y-4">
-      <Card className="p-4 sm:p-6">
-        <p className="text-sm text-muted-foreground">{t.help}</p>
+      <Card className="gap-3 p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">{t.help}</p>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-fit shrink-0"
+            onClick={handleSuggestAll}
+            disabled={isLoading || classes.length === 0}
+          >
+            <Wand2 size={14} />
+            {t.suggestAll}
+          </Button>
+        </div>
+        {gradeLevels.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            {t.suggestHint}{' '}
+            <Link
+              href="/configuration/niveaux"
+              className="font-medium text-primary hover:underline"
+            >
+              Ouvrir Configuration &gt; Niveaux
+            </Link>
+          </p>
+        )}
+        {suggestNotice && (
+          <p role="status" className="text-xs text-muted-foreground">
+            {suggestNotice}
+          </p>
+        )}
       </Card>
 
       <Card className="overflow-x-auto p-4 sm:p-6">

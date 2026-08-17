@@ -513,6 +513,15 @@ export const ACADEMIC_YEAR_ROLLOVER = {
     destClass: 'Classe de destination',
     createNew: 'Créer nouvelle',
     help: 'Sélectionnez la classe de destination pour chaque classe actuelle en créant une nouvelle classe.',
+    suggestAll: 'Suggérer toutes les promotions',
+    suggestHint:
+      "Configure l'ordre des niveaux dans Configuration > Niveaux pour activer les suggestions automatiques.",
+    suggestApplied: (n: number) =>
+      n === 1
+        ? '1 classe pré-remplie — vérifie et ajuste si besoin.'
+        : `${n} classes pré-remplies — vérifie et ajuste si besoin.`,
+    suggestNone:
+      "Aucune classe à pré-remplir : toutes ont déjà une destination, ou leur niveau n'est pas dans le catalogue (ou est le dernier).",
     noExistingClasses: 'Aucune classe existante disponible — créez-en une nouvelle.',
     step3Preview: "Aperçu — Étape 3 (Disponible après validation de l'étape 2)",
     previousStep: 'Étape précédente',

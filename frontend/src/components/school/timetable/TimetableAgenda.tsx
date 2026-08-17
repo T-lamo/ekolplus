@@ -41,7 +41,7 @@ export function TimetableAgenda({
     );
   }
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
+    <div className="min-h-0 overflow-auto rounded-lg border border-border bg-card">
       {days.map((day) => {
         const list = sessionsOn(sessions, day);
         if (list.length === 0) return null;
@@ -50,7 +50,7 @@ export function TimetableAgenda({
           <section key={day} className="border-b border-border last:border-b-0">
             <h3
               className={cn(
-                'flex items-baseline gap-2 border-b border-border px-4 py-2',
+                'sticky top-0 z-20 flex items-baseline gap-2 border-b border-border px-4 py-2',
                 isToday ? 'bg-secondary' : 'bg-muted',
               )}
             >

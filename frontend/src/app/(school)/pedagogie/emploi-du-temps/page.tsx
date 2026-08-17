@@ -24,6 +24,7 @@ import {
 import { api, ApiError } from '@/lib/api';
 import { exportToCsv } from '@/lib/csv-export';
 import { cn } from '@/lib/utils';
+import { LIST_PAGE } from '@/lib/layout';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -262,7 +263,7 @@ export default function EmploiDuTempsPage() {
   const rooms = data?.rooms ?? [];
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className={LIST_PAGE}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -437,7 +438,14 @@ export default function EmploiDuTempsPage() {
           ))}
         </div>
       ) : (
-        <div className={cn('transition-opacity', loading && 'opacity-60')} aria-busy={loading}>
+        // Shrinkable (min-h-0, no flex-1): the timetable takes at most the
+        // room left under the header and scrolls inside — the page itself
+        // never scrolls, header + filters + legend stay visible (user
+        // decision 2026-08-17, same rule as the list pages).
+        <div
+          className={cn('flex min-h-0 flex-col transition-opacity', loading && 'opacity-60')}
+          aria-busy={loading}
+        >
           {view === 'agenda' ? (
             <TimetableAgenda
               days={days}

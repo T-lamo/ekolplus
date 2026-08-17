@@ -45,10 +45,12 @@ export function TimetableGrid({
   const single = days.length === 1;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className={cn('overflow-x-auto', !single && 'min-w-0')}>
+    // Shrinkable card: the rows scroll inside (x and y) while the day header
+    // stays pinned — the page around never scrolls.
+    <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card">
+      <div className={cn('min-h-0 overflow-auto', !single && 'min-w-0')}>
         <div className={cn(!single && 'min-w-[640px]')}>
-          <div className={cn('grid border-b border-border', cols)}>
+          <div className={cn('sticky top-0 z-20 grid border-b border-border bg-card', cols)}>
             <div className="flex items-center justify-center border-r border-border bg-muted px-2 py-2.5">
               <Clock size={13} className="text-muted-foreground" aria-hidden />
             </div>

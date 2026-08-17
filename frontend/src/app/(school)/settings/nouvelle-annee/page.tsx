@@ -310,7 +310,10 @@ export default function AcademicYearWizardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    // Same width as the settings page it belongs to (`max-w-4xl` in
+    // settings/page.tsx) — a settings screen doesn't span the full width
+    // (user decision 2026-08-17).
+    <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-extrabold tracking-tight text-foreground">
           {ACADEMIC_YEAR_ROLLOVER.title}

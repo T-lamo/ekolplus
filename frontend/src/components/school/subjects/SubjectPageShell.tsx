@@ -1,10 +1,10 @@
 'use client';
 
 // Shared chrome of the subject pages (add-matiere.md / programme-annuel.md /
-// affectations-classes.md): white sub-header bled to the content edges
-// (« ← Retour » · icon chip · title/meta · actions), the tabs bar, the page
-// body, and a sticky white footer. The (school) layout's <main> owns the
-// padding, hence the negative margins that mirror it exactly.
+// affectations-classes.md): a white header card (« ← Retour » · icon chip ·
+// title/meta · actions + the tabs bar) inside the page padding — like every
+// other page title in the app, not flush against the sidebar/topbar — then
+// the page body. Tabs render their own footer card at the end.
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -15,8 +15,6 @@ import {
   type SubjectStatus,
 } from '@/app/(school)/configuration/matieres/subject-form.constants';
 import { SubjectTabsBar, type SubjectTab } from './SubjectTabsBar';
-
-const BLEED_X = '-mx-4 sm:-mx-6 lg:-mx-7';
 
 export const STATUS_TONE: Record<SubjectStatus, BadgeTone> = {
   ACTIVE: 'success',
@@ -81,8 +79,8 @@ export function SubjectPageShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className={`${BLEED_X} -mt-5 border-b border-border bg-card sm:-mt-6 lg:-mt-7`}>
-        <div className="flex flex-col gap-3 px-4 pt-3 pb-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-6">
+      <header className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex flex-col gap-3 px-4 pt-3.5 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <Link
               href="/configuration/matieres"
@@ -121,13 +119,13 @@ export function SubjectPageShell({
         />
       </header>
 
-      <div className="flex flex-1 flex-col pt-5">{children}</div>
+      <div className="flex flex-1 flex-col pt-4">{children}</div>
     </div>
   );
 }
 
 /**
- * White footer bar (`.form-footer` / `.page-footer`), rendered by each tab as
+ * White footer card (`.form-footer` / `.page-footer`), rendered by each tab as
  * its last child. Sits in the normal flow at the end of the content (pushed
  * to the bottom when the tab is short) — deliberately not sticky, so nothing
  * slides underneath it while scrolling. `left` = status line, `right` =
@@ -135,9 +133,7 @@ export function SubjectPageShell({
  */
 export function SubjectPageFooter({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
-    <footer
-      className={`${BLEED_X} mt-auto -mb-5 flex flex-col gap-2 border-t border-border bg-card px-4 py-3 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:-mb-7`}
-    >
+    <footer className="mt-auto flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">{left}</div>
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">{right}</div>
     </footer>

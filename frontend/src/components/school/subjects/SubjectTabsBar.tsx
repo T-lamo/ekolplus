@@ -31,7 +31,7 @@ export function SubjectTabsBar({
   return (
     <div
       role="tablist"
-      className="flex items-center overflow-x-auto border-t border-border px-2 sm:px-4 lg:px-6"
+      className="flex items-center overflow-x-auto border-t border-border px-2 sm:px-3"
     >
       {TABS.map(({ key, label, Icon }) => {
         const isActive = key === active;

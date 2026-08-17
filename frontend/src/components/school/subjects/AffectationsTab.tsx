@@ -193,8 +193,8 @@ export function AffectationsTab({
 
   return (
     <>
-      <div className="pb-5">
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_260px] lg:gap-[18px]">
+      <div className="pb-4">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_300px] lg:gap-[18px] xl:grid-cols-[1fr_320px]">
           {/* ── LEFT ─────────────────────────────────────────────── */}
           <div className="flex min-w-0 flex-col gap-[18px]">
             {/* KPI row */}

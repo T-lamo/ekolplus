@@ -130,7 +130,7 @@ export default function NouvelleMatierePage() {
           {error}
         </p>
       ) : subjects === null ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_370px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_420px]">
           <div className="flex flex-col gap-3.5">
             <Skeleton className="h-64 rounded-lg" />
             <Skeleton className="h-72 rounded-lg" />
@@ -138,7 +138,7 @@ export default function NouvelleMatierePage() {
           <Skeleton className="h-96 rounded-lg" />
         </div>
       ) : (
-        <div className="pb-5">
+        <div className="pb-4">
           <SubjectForm form={form} mode="create" options={options} />
         </div>
       )}

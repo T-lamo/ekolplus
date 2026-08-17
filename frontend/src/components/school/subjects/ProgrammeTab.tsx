@@ -307,7 +307,7 @@ export function ProgrammeTab({
   if (terms === null) {
     return (
       <>
-        <div className="grid grid-cols-1 gap-4 pb-5 lg:grid-cols-[1fr_240px]">
+        <div className="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
           <div className="flex flex-col gap-3">
             <Skeleton className="h-40 rounded-lg" />
             <Skeleton className="h-40 rounded-lg" />
@@ -321,7 +321,7 @@ export function ProgrammeTab({
 
   return (
     <>
-      <div className="pb-5">
+      <div className="pb-4">
         {/* Toolbar */}
         <div className="mb-3.5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -355,7 +355,7 @@ export function ProgrammeTab({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_240px]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
           {/* LEFT: terms */}
           <div className="min-w-0">
             {terms.length === 0 ? (

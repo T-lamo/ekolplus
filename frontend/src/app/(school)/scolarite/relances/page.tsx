@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { FEES } from '@/lib/constants';
-import { ASIDE_GRID } from '@/lib/layout';
+import { ASIDE_GRID, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { fmtMoney, fmtDate } from '@/lib/fees-format';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
 import { FeeKpiRow } from '@/components/school/fees/FeeKpiRow';
@@ -242,7 +242,7 @@ export default function OverdueFeesPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
@@ -306,8 +306,8 @@ export default function OverdueFeesPage() {
             ]}
           />
 
-          <div className={ASIDE_GRID}>
-            <div className="flex min-w-0 flex-col gap-3.5">
+          <div className={`${ASIDE_GRID} min-h-0 flex-1 lg:grid-rows-[minmax(0,1fr)]`}>
+            <div className="flex min-h-0 min-w-0 flex-col gap-3.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <SearchInput
                   value={search}
@@ -335,10 +335,10 @@ export default function OverdueFeesPage() {
                   <p className="p-5 text-sm text-muted-foreground">Aucun retard de paiement.</p>
                 </Card>
               ) : (
-                <Card className="flex-1">
-                  <div className="flex-1 overflow-x-auto">
+                <Card className="min-h-0 flex-1">
+                  <div className={TABLE_SCROLL}>
                     <table className="w-full min-w-[920px] border-collapse text-sm">
-                      <thead>
+                      <thead className={STICKY_THEAD}>
                         <tr className="border-b border-border">
                           <Th className="w-10">
                             <input
@@ -420,7 +420,7 @@ export default function OverdueFeesPage() {
               )}
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex min-h-0 flex-col gap-5 lg:overflow-y-auto">
               <Card className="gap-3.5 p-4">
                 <div>
                   <h2 className="text-sm font-bold text-foreground">{t.automationTitle}</h2>

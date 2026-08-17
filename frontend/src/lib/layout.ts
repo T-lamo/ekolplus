@@ -23,3 +23,21 @@ export const ASIDE_GRID =
 export const CARD_GRID_CONTAINER = '@container/cards';
 export const CARD_GRID =
   'grid grid-cols-1 content-start gap-3 @min-[566px]/cards:grid-cols-2 @min-[855px]/cards:grid-cols-3 @min-[1144px]/cards:grid-cols-4';
+
+// Pages « liste » (élèves, enseignants, classes, matières, affectations,
+// paiements, relances, présences, appréciations, carnet…) — décision
+// utilisateur 2026-08-17 : la page ne défile JAMAIS dans son ensemble ; le
+// tableau (ou la grille de cartes) défile dans sa propre zone, l'en-tête, la
+// recherche et les filtres restent visibles. Recette :
+//   racine  `flex h-full min-h-0 flex-col …`  (LIST_PAGE : hauteur = <main>)
+//   carte   `<Card className="min-h-0 flex-1">`
+//   zone    `<div className={TABLE_SCROLL}>` autour du <table> (défile en x et y)
+//   en-tête `<thead className={STICKY_THEAD}>` (reste visible en défilant)
+//   grille  `<CardGrid className={GRID_SCROLL}>` en vue cartes
+export const LIST_PAGE = 'flex h-full min-h-0 flex-col';
+export const TABLE_SCROLL = 'min-h-0 flex-1 overflow-auto';
+export const GRID_SCROLL = 'min-h-0 flex-1 overflow-y-auto';
+// Le filet sous l'en-tête est une ombre interne : en `border-collapse` la
+// bordure du <tr> ne suit pas l'en-tête collant.
+export const STICKY_THEAD =
+  'sticky top-0 z-10 bg-card [&_th]:shadow-[inset_0_-1px_0_0_var(--color-border)]';

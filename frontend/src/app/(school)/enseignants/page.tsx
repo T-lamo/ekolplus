@@ -31,6 +31,7 @@ import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
+import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
@@ -190,7 +191,7 @@ export default function TeachersPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Enseignants</h1>
@@ -273,7 +274,7 @@ export default function TeachersPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <CardGrid className="flex-1">
+            <CardGrid className={GRID_SCROLL}>
               {paged.map((t) => (
                 <ListCard
                   key={t.id}
@@ -312,10 +313,10 @@ export default function TeachersPage() {
               ))}
             </CardGrid>
           ) : (
-            <Card className="flex-1">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1">
+              <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[960px] border-collapse text-sm">
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <Th>Enseignant</Th>
                       <Th>Matière(s)</Th>

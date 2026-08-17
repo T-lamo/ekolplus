@@ -37,6 +37,7 @@ import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
+import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
 
@@ -192,7 +193,7 @@ export default function AffectationsPage() {
   const canCreate = classes.length > 0 && subjects.length > 0;
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Affectations</h1>
@@ -300,7 +301,7 @@ export default function AffectationsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <CardGrid className="flex-1">
+            <CardGrid className={GRID_SCROLL}>
               {paged.map((r) => {
                 const visual = getSubjectVisual(r.subject.name);
                 return (
@@ -338,10 +339,10 @@ export default function AffectationsPage() {
               })}
             </CardGrid>
           ) : (
-            <Card className="flex-1">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1">
+              <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[960px] border-collapse text-sm">
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <Th>Matière</Th>
                       <Th>Enseignant</Th>

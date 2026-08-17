@@ -28,6 +28,7 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import type { BulletinsListData, ListStudentRow } from './types';
 
 function fmt(n: number | null): string {
@@ -141,7 +142,7 @@ export default function BulletinsListPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground">Bulletins</h1>
@@ -221,10 +222,10 @@ export default function BulletinsListPage() {
         </span>
       </Card>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card className="min-h-0 flex-1 overflow-hidden">
+        <div className={TABLE_SCROLL}>
           <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead>
+            <thead className={STICKY_THEAD}>
               <tr className="border-b border-border">
                 <Th>Élève</Th>
                 <Th>Moyenne générale</Th>

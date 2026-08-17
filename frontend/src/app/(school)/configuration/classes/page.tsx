@@ -38,6 +38,7 @@ import { Pager } from '@/components/ui/Pager';
 import { CardGrid } from '@/components/school/CardGrid';
 import { getClassDotColor, tintOf } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
+import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import type { ClassData } from './types';
 
 const PAGE_SIZE = 20;
@@ -184,7 +185,7 @@ export default function ClassesPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Classes</h1>
@@ -280,7 +281,7 @@ export default function ClassesPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <CardGrid className="flex-1">
+            <CardGrid className={GRID_SCROLL}>
               {paged.map((c) => (
                 <ListCard
                   key={c.id}
@@ -323,10 +324,10 @@ export default function ClassesPage() {
               ))}
             </CardGrid>
           ) : (
-            <Card className="flex-1">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1">
+              <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[920px] border-collapse text-sm">
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <Th>Classe</Th>
                       <Th>Niveau</Th>

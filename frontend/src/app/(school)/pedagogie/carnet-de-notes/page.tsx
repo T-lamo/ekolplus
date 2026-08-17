@@ -32,6 +32,7 @@ import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { NewEvaluationModal } from './NewEvaluationModal';
 import { StatistiquesTab } from './StatistiquesTab';
 import { ParEvaluationTab } from './ParEvaluationTab';
@@ -402,7 +403,7 @@ export default function GradeNotebookPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-foreground">Carnet de notes</h1>
@@ -595,8 +596,8 @@ export default function GradeNotebookPage() {
           ) : view === 'byEval' ? (
             <ParEvaluationTab unified={unified} />
           ) : (
-            <Card className="flex-1 gap-0 overflow-visible">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1 gap-0 overflow-visible">
+              <div className={TABLE_SCROLL}>
                 <table
                   style={{ width: '100%', minWidth: tableWidth, tableLayout: 'fixed' }}
                   className="border-collapse text-sm"
@@ -624,7 +625,7 @@ export default function GradeNotebookPage() {
                     <col style={{ width: RANG_W }} />
                     <col style={{ width: KEBAB_W }} />
                   </colgroup>
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     {unified.combined && (
                       <tr className="border-b border-border">
                         <th

@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 
 interface EvaluationDetail {
   id: string;
@@ -264,7 +265,7 @@ export default function GradeEntryPage() {
   const pageStudents = notebook.students.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Link
@@ -305,7 +306,7 @@ export default function GradeEntryPage() {
         {evaluation.status === 'DRAFT' && <Badge warning>Brouillon</Badge>}
       </Card>
 
-      <Card className="flex-1 gap-0 overflow-visible">
+      <Card className="min-h-0 flex-1 gap-0 overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-foreground">
@@ -343,9 +344,9 @@ export default function GradeEntryPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-x-auto">
+        <div className={TABLE_SCROLL}>
           <table className="w-full min-w-[760px] border-collapse text-sm">
-            <thead>
+            <thead className={STICKY_THEAD}>
               <tr className="border-b border-border">
                 <th className="w-9 py-2.5 pl-4 text-left text-2xs font-semibold text-muted-foreground">
                   #

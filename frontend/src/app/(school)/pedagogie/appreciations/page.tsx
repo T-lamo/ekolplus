@@ -31,6 +31,7 @@ import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
 import { ParMatiereTab } from './ParMatiereTab';
 import { StatistiquesTab } from './StatistiquesTab';
@@ -208,7 +209,7 @@ export default function AppreciationsListPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-foreground">Appréciations</h1>
@@ -418,10 +419,10 @@ export default function AppreciationsListPage() {
               </p>
             </Card>
           ) : (
-            <Card className="flex-1 gap-0 overflow-visible">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1 gap-0 overflow-visible">
+              <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[900px] border-collapse text-sm">
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Élève

@@ -34,6 +34,7 @@ import { Tabs } from '@/components/ui/Tabs';
 import { PageNumbers } from '@/components/ui/Pager';
 import { BarChart } from '@/components/admin/charts/BarChart';
 import { exportToCsv } from '@/lib/csv-export';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { AttendanceEditModal } from './AttendanceEditModal';
 import type {
   AttendanceDay,
@@ -301,7 +302,7 @@ export default function PresencesPage() {
   const s = data?.summary;
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">Présences</h1>
@@ -476,7 +477,7 @@ export default function PresencesPage() {
                 </div>
               </div>
 
-              <Card className="flex-1">
+              <Card className="min-h-0 flex-1">
                 {filtered.length === 0 ? (
                   <p className="p-5 text-sm text-muted-foreground">
                     {data.students.length === 0
@@ -485,12 +486,12 @@ export default function PresencesPage() {
                   </p>
                 ) : (
                   <>
-                    <div className="flex-1 overflow-x-auto">
+                    <div className={TABLE_SCROLL}>
                       <table
                         className="w-full border-collapse text-sm"
                         style={{ minWidth: `${280 + data.days.length * 44}px` }}
                       >
-                        <thead>
+                        <thead className={STICKY_THEAD}>
                           <tr className="border-b border-border">
                             <Th className="sticky left-0 z-10 bg-card">Élève</Th>
                             {data.days.map((d) => (

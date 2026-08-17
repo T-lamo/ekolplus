@@ -38,6 +38,7 @@ import { StudentStatusBadge, type StudentFeeStatus } from '@/components/school/f
 import { PaymentRegistrationModal } from '@/components/school/fees/PaymentRegistrationModal';
 import { FeeHistoryModal } from '@/components/school/fees/FeeHistoryModal';
 import { Pager } from '@/components/school/fees/Pager';
+import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 
 interface StudentRow {
   studentId: string;
@@ -248,7 +249,7 @@ export default function FeeManagementPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-5">
+    <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
@@ -376,10 +377,10 @@ export default function FeeManagementPage() {
               <p className="p-5 text-sm text-muted-foreground">Aucun résultat.</p>
             </Card>
           ) : (
-            <Card className="flex-1">
-              <div className="flex-1 overflow-x-auto">
+            <Card className="min-h-0 flex-1">
+              <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[900px] border-collapse text-sm">
-                  <thead>
+                  <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <Th>{t.columns.student}</Th>
                       <Th>{t.columns.class}</Th>

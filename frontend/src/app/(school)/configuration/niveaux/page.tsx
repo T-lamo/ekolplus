@@ -146,8 +146,15 @@ function SortableLevelRow({
   onRename: () => void;
   onDelete: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
-    useSortable({ id: level.id, disabled });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: level.id, disabled });
 
   return (
     <li
@@ -330,7 +337,10 @@ export default function NiveauxPage() {
               modifiers={[restrictToVerticalAxis, restrictToParentElement]}
               onDragEnd={handleDragEnd}
             >
-              <SortableContext items={levels.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={levels.map((l) => l.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <ol className="flex flex-col divide-y divide-border">
                   {levels.map((level, index) => (
                     <SortableLevelRow

@@ -1,7 +1,7 @@
 # Grade Level Ordering & Promotion Auto-Suggest — Design Spec
 
 Date: 2026-08-17
-Status: Implemented 2026-08-17 — plan: docs/superpowers/plans/2026-08-17-grade-level-ordering.md
+Status: Implemented 2026-08-17 — plan: docs/superpowers/plans/2026-08-17-grade-level-ordering.md — **revised the same day, see « Revision 2026-08-17 (user feedback) » at the end.**
 
 ## Problem
 
@@ -206,3 +206,55 @@ optimistically updates), a rename (pencil) icon, and a delete icon.
 - Manual verification in dev: configure a level sequence, run the wizard,
   click "Suggérer toutes les promotions", confirm names/levels prefill
   correctly including the substring-fallback and last-level-skip cases.
+
+## Revision 2026-08-17 (user feedback, after the first ship)
+
+Three product decisions from the user, applied the same day (commits on
+`develop` after `4d80fa8`):
+
+1. **Niveaux page — reorder by drag & drop, add via a modal.** The ↑/↓
+   buttons are replaced by a sortable list (`@dnd-kit/core` + `sortable` +
+   `modifiers` + `utilities`, new dependencies): grip handle per row,
+   pointer/touch/keyboard sensors, drop → `POST /reorder` (optimistic,
+   reverted on error). "Ajouter un niveau" is a header button opening a
+   `Modal` (shared `LevelNameModal` with rename). API unchanged.
+
+2. **Wizard Step 2 — pick the destination among EXISTING classes; no
+   « Créer nouvelle ».** The destination cell is a `FilterSelect` listing
+   the school's current-year classes (`name (level)`) plus one extra
+   option **« Fin de cursus — non réinscrits »**. The create-new column,
+   its modal and the `allClasses` prop are gone from the UI.
+
+   *Semantics (the one open interpretation, decided as follows):* a
+   `destClassId` is a **current-year class used as a template**. At
+   confirm, `executeRollover` **clones** it into the new year (name,
+   level, room, capacity, homeroom teacher), once per name — two sources
+   pointing at the same template share one clone, and a template clone
+   and a legacy `isNew` entry with the same name land on the same class —
+   then enrolls the source class's students in the clone. Mapping a class
+   onto itself is a collective repeat year. A `destClassId` that is not
+   one of the old year's classes resolves to nothing (students not
+   enrolled). Student-exception `destClassId`s resolve the same way.
+   Before this revision the `destClassId` path (dead in v1) would have
+   enrolled new-year students into an old-year class row.
+
+   *New `ClassMappingEntry.unenroll: true`* ("Fin de cursus"): an explicit
+   decision that the class's students leave the school. Step 2 now
+   requires every class to be **decided** (destination OR unenroll —
+   `isDecided()`), which is what makes a school with a terminal level
+   (Terminale/3ème…) able to pass Step 2 at all. The PATCH schema accepts
+   it; `computeStats`/Step 3 treat it as `unenrolled` (unchanged code
+   path). Legacy `isNew`/`newClass` entries are still honoured server-side
+   and shown as a note under the select.
+
+   *Auto-suggest* now emits `{ destClassId }`: the class named like the
+   source with the level substring swapped ("6ème A" → "5ème A"), else the
+   only class at the next level, else nothing; and `{ unenroll: true }`
+   for classes at the LAST catalog level. Rows already decided are never
+   overwritten.
+
+3. **Where "Niveaux" lives:** kept under Configuration (next to Classes /
+   Matières / Coefficients) — it is a structural catalog like those, and
+   the wizard's hint links there. Moving it under Paramètres → Année
+   scolaire was considered and rejected: the catalog is year-independent.
+

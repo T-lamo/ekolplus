@@ -44,7 +44,7 @@ import type {
   UnifiedStudentRow,
 } from './types';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 // table-layout: fixed drives column sizing instead of the browser
 // auto-sizing to content. Élève/Moyenne/Rang/kebab get an EXPLICIT pixel

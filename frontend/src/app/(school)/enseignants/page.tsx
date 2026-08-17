@@ -29,13 +29,12 @@ import { OverflowTags } from '@/components/ui/OverflowTags';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
-import { CARD_GRID } from '@/lib/layout';
+import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
-import { cn } from '@/lib/utils';
 import { TeacherFormModal } from './TeacherFormModal';
 import type { TeacherListItem, TeacherStatus } from './types';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 interface SubjectOption {
   id: string;
@@ -274,7 +273,7 @@ export default function TeachersPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className={cn(CARD_GRID, 'flex-1')}>
+            <CardGrid className="flex-1">
               {paged.map((t) => (
                 <ListCard
                   key={t.id}
@@ -311,7 +310,7 @@ export default function TeachersPage() {
                   }
                 />
               ))}
-            </div>
+            </CardGrid>
           ) : (
             <Card className="flex-1">
               <div className="flex-1 overflow-x-auto">

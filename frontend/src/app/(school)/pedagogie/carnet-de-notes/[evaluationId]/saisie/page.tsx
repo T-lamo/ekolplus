@@ -63,7 +63,7 @@ interface RowState {
   comment: string;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 function tone(avg: number | null): 'excellent' | 'good' | 'average' | 'poor' | 'neutral' {
   if (avg == null) return 'neutral';

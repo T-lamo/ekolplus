@@ -39,7 +39,7 @@ interface Step4SummaryProps {
   isLoading?: boolean;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 /** `ApiError.message` is the stable code; the server's French text
  * (MAPPING_STALE → "revenir à l'étape 3…", DEMOTION_NOT_ALLOWED, …) lives in

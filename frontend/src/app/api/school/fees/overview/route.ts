@@ -14,7 +14,7 @@ import { getFeeLedgerRows, rowProgress } from '@/lib/server/fees/rows';
 import { studentFeeStatus, type StudentFeeStatus } from '@/lib/server/fees';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);

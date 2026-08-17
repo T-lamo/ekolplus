@@ -35,13 +35,12 @@ import {
 } from '@/components/ui/Skeleton';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
-import { CARD_GRID } from '@/lib/layout';
+import { CardGrid } from '@/components/school/CardGrid';
 import { getClassDotColor, tintOf } from '@/lib/subject-visuals';
-import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import type { ClassData } from './types';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 interface SchoolInfo {
   academicYear: { label: string } | null;
@@ -281,7 +280,7 @@ export default function ClassesPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className={cn(CARD_GRID, 'flex-1')}>
+            <CardGrid className="flex-1">
               {paged.map((c) => (
                 <ListCard
                   key={c.id}
@@ -322,7 +321,7 @@ export default function ClassesPage() {
                   }
                 />
               ))}
-            </div>
+            </CardGrid>
           ) : (
             <Card className="flex-1">
               <div className="flex-1 overflow-x-auto">

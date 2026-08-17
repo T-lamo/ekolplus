@@ -15,8 +15,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { CARD_GRID } from '@/lib/layout';
-import { cn } from '@/lib/utils';
+import { CardGrid } from '@/components/school/CardGrid';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -33,7 +32,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { StudentFormModal } from './StudentFormModal';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 const STATUS_LABEL: Record<StudentStatus, string> = {
   ENROLLED: 'Inscrit(e)',
@@ -268,7 +267,7 @@ export default function StudentsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className={cn(CARD_GRID, 'flex-1')}>
+            <CardGrid className="flex-1">
               {paged.map((s) => (
                 <ListCard
                   key={s.id}
@@ -295,7 +294,7 @@ export default function StudentsPage() {
                   }
                 />
               ))}
-            </div>
+            </CardGrid>
           ) : (
             <Card className="flex-1">
               <div className="flex-1 overflow-x-auto">

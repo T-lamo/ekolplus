@@ -33,15 +33,14 @@ import {
 } from '@/components/ui/Skeleton';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
-import { CARD_GRID } from '@/lib/layout';
+import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
-import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import type { TeacherOption } from '@/components/school/TeacherPicker';
 import { AssignmentFormModal } from './AssignmentFormModal';
 import type { AssignmentRow, ClassOption, SubjectOption } from './types';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 
@@ -301,7 +300,7 @@ export default function AffectationsPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className={cn(CARD_GRID, 'flex-1')}>
+            <CardGrid className="flex-1">
               {paged.map((r) => {
                 const visual = getSubjectVisual(r.subject.name);
                 return (
@@ -337,7 +336,7 @@ export default function AffectationsPage() {
                   />
                 );
               })}
-            </div>
+            </CardGrid>
           ) : (
             <Card className="flex-1">
               <div className="flex-1 overflow-x-auto">

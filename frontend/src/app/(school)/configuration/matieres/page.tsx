@@ -38,14 +38,13 @@ import {
 import { OverflowTags } from '@/components/ui/OverflowTags';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
-import { CARD_GRID } from '@/lib/layout';
+import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
-import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
 import { SUBJECT_STATUS_LABEL } from './subject-form.constants';
 import type { SubjectData } from './types';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 type StatusFilter = '' | 'active' | 'unassigned' | 'archived';
 
@@ -314,7 +313,7 @@ export default function MatieresPage() {
               </p>
             </Card>
           ) : view === 'grid' ? (
-            <div className={cn(CARD_GRID, 'flex-1')}>
+            <CardGrid className="flex-1">
               {paged.map((s) => {
                 const visual = getSubjectVisual(s.name, { icon: s.icon, color: s.color });
                 const status =
@@ -367,7 +366,7 @@ export default function MatieresPage() {
                   />
                 );
               })}
-            </div>
+            </CardGrid>
           ) : (
             <Card className="flex-1">
               <div className="flex-1 overflow-x-auto">

@@ -43,7 +43,7 @@ import type {
   AttendanceStudentRow,
 } from './types';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 const STATUS_META: Record<
   AttendanceStatus,

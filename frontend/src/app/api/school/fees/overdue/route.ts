@@ -13,7 +13,7 @@ import { resolveMySchool } from '@/lib/server/school';
 import { getFeeLedgerRows } from '@/lib/server/fees/rows';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 const CRITICAL_DAYS = 30;
 const RECENT_DAYS = 14;
 

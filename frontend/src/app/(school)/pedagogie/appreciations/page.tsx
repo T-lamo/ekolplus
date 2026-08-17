@@ -35,7 +35,7 @@ import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOptio
 import { ParMatiereTab } from './ParMatiereTab';
 import { StatistiquesTab } from './StatistiquesTab';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 function mentionClass(m: Mention | null): string {
   switch (m) {

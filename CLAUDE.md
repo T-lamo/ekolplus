@@ -32,6 +32,7 @@ pnpm workspace — run from repo root unless noted. The root `package.json` is a
 | Migration status | `pnpm db:migrate:status` |
 | Open Prisma Studio (:5555) | `pnpm db:studio` |
 | Bootstrap first SUPERADMIN | `pnpm db:make-superadmin <email>` |
+| Dev dataset — école complète + comptes de test (`--reset` pour repartir de zéro) | `pnpm seed:dev-school` |
 | Unit tests (Vitest) | `pnpm test` |
 | Single test file | `pnpm --filter frontend exec vitest run src/lib/server/<file>.test.ts` |
 | Single test by name | `pnpm --filter frontend exec vitest run -t "<test name>"` |

@@ -23,6 +23,7 @@
     "db:backfill-bulletin-content-layout": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-content-layout.ts",
     "db:backfill-bulletin-density-typography": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-density-typography.ts",
     "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",
+    "seed:dev-school": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev-school.ts",
     "smoke:auth": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/smoke-auth.ts",
     "dev:drain-emails": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/drain-email-queue.ts",
     "lighthouse": "node scripts/lighthouse.mjs",

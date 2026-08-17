@@ -13,10 +13,10 @@ export interface TeacherOption {
   phone: string | null;
 }
 
-// Shared by the fiche classe (homeroom teacher) and AssignmentFormModal
-// (subject teacher) — Epic 5's teachers-list screen owns full Teacher
-// profile/CRUD; this only needs enough to populate a foreign key inline
-// without leaving the current form. See .planning/banani/epic-4-data-model.md.
+// Inline teacher picker (pick-or-quick-create) for a foreign-key field —
+// Epic 5's teachers-list screen owns full Teacher profile/CRUD, this only
+// needs enough to populate a select without leaving the current form.
+// See .planning/banani/epic-4-data-model.md.
 export function TeacherPicker({
   label,
   teachers,

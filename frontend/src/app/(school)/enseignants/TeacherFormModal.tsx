@@ -492,11 +492,8 @@ export function TeacherFormModal({
                     <p className="mt-1.5 flex items-center gap-1 text-2xs text-muted-foreground">
                       <LinkIcon size={11} />
                       Les matières et classes se configurent depuis la page{' '}
-                      <Link
-                        href="/configuration/affectations"
-                        className="font-semibold text-primary"
-                      >
-                        Affectations
+                      <Link href="/configuration/matieres" className="font-semibold text-primary">
+                        Matières
                       </Link>
                       .
                     </p>

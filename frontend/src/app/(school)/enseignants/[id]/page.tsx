@@ -158,7 +158,7 @@ export default function TeacherProfilePage() {
         </Link>
         <div className="flex items-center gap-2">
           <Link
-            href="/configuration/affectations"
+            href="/configuration/matieres"
             className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
           >
             <LinkIcon size={14} />
@@ -324,15 +324,15 @@ export default function TeacherProfilePage() {
               <BookOpen size={14} className="text-primary" />
               Matières & Classes assignées
             </div>
-            <Link href="/configuration/affectations" className="text-xs font-medium text-primary">
+            <Link href="/configuration/matieres" className="text-xs font-medium text-primary">
               Gérer
             </Link>
           </div>
           {teacher.assignments.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Aucune affectation pour l'instant — elles se configurent depuis la page{' '}
-              <Link href="/configuration/affectations" className="font-semibold text-primary">
-                Affectations
+              <Link href="/configuration/matieres" className="font-semibold text-primary">
+                Matières
               </Link>
               .
             </p>

@@ -155,7 +155,7 @@ export default function TeachersPage() {
       {
         label: 'Gérer les affectations',
         icon: <LinkIcon size={14} />,
-        onClick: () => router.push('/configuration/affectations'),
+        onClick: () => router.push('/configuration/matieres'),
       },
       {
         label: 'Voir les présences',

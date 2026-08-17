@@ -665,7 +665,11 @@ export function ClassForm({
               <NextStep n={1} href="/eleves" title="Inscrire les élèves">
                 Ajouter ou importer les élèves
               </NextStep>
-              <NextStep n={2} href="/configuration/affectations" title="Affecter les enseignants">
+              <NextStep
+                n={2}
+                href={`#${CLASS_SECTION_IDS.subjects}`}
+                title="Affecter les enseignants"
+              >
                 Associer un enseignant par matière
               </NextStep>
               <NextStep n={3} href="/scolarite/configuration" title="Configurer la scolarité">

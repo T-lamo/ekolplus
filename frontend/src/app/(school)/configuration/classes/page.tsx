@@ -154,12 +154,12 @@ export default function ClassesPage() {
       {
         label: 'Affecter enseignants',
         icon: <UserPlus size={14} />,
-        onClick: () => router.push('/configuration/affectations'),
+        onClick: () => router.push(`/configuration/classes/${c.id}#card-matieres`),
       },
       {
         label: 'Voir les matières',
         icon: <BookOpen size={14} />,
-        onClick: () => router.push(`/configuration/coefficients?classId=${c.id}`),
+        onClick: () => router.push(`/configuration/classes/${c.id}#card-matieres`),
       },
       {
         label: 'Bulletins de la classe',
@@ -308,7 +308,7 @@ export default function ClassesPage() {
                   metaRight={<Badge>{c.level}</Badge>}
                   footerLeft={
                     <Link
-                      href={`/configuration/coefficients?classId=${c.id}`}
+                      href={`/configuration/classes/${c.id}#card-matieres`}
                       className="font-semibold text-primary hover:underline"
                     >
                       {c.subjectCount} matières
@@ -379,7 +379,7 @@ export default function ClassesPage() {
                         </td>
                         <td className="px-3.5 py-2.5">
                           <Link
-                            href={`/configuration/coefficients?classId=${c.id}`}
+                            href={`/configuration/classes/${c.id}#card-matieres`}
                             className="font-semibold text-primary hover:underline"
                           >
                             {c.subjectCount}

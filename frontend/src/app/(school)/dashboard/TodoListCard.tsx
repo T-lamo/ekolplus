@@ -42,7 +42,7 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
     },
     {
       key: 'teachers',
-      href: '/configuration/affectations',
+      href: '/configuration/matieres',
       icon: UserX,
       iconBg: 'bg-secondary',
       iconFg: 'text-primary',

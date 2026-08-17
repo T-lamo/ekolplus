@@ -193,7 +193,7 @@ export default function MatieresPage() {
       {
         label: 'Modifier le coefficient',
         icon: <Percent size={14} />,
-        onClick: () => router.push('/configuration/coefficients'),
+        onClick: () => router.push(`/configuration/matieres/${s.id}`),
       },
       {
         label: 'Dupliquer',

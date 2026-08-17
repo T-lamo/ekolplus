@@ -19,6 +19,7 @@ import {
   UserCheck,
   Users,
   Wallet,
+  CalendarDays,
 } from 'lucide-react';
 import { Sidebar } from './sidebar/Sidebar';
 import type { NavSection } from './sidebar/types';
@@ -38,6 +39,7 @@ export const SCHOOL_SECTIONS: NavSection[] = [
     items: [
       { label: 'Carnet de notes', href: '/pedagogie/carnet-de-notes', icon: NotebookPen },
       { label: 'Présences', href: '/pedagogie/presences', icon: CalendarCheck },
+      { label: 'Emploi du temps', href: '/pedagogie/emploi-du-temps', icon: CalendarDays },
       { label: 'Bulletins', href: '/bulletins', icon: FileText },
       { label: 'Appréciations', href: '/pedagogie/appreciations', icon: Star },
     ],

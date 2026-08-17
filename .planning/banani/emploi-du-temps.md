@@ -42,11 +42,16 @@ model TimetableSession {
 - lg : mock.
 
 ## Checklist
-- [ ] Modèle + migration + 4 routes + tests (POST expand récurrence, conflit 409, DELETE series)
-- [ ] Sidebar : « Emploi du temps »
-- [ ] Page (view tabs, filter bar, grille semaine/jour, agenda, mois, légende, export CSV) + `SessionFormModal` (create/edit, récurrence, durée/volume, conflit)
-- [ ] 375 / 1280 / 1440 ; E2E création (POST 201 + N occurrences), édition, suppression série
-- [ ] format / lint / typecheck / test
+- [x] Modèle + migration + 4 routes + tests (POST expand récurrence, conflit 409, DELETE series) — `lib/server/timetable.ts` (règles pures) + `timetable-route-helpers.ts` (include / sérialisation / `findConflicts`) + `api/school/timetable/{route,[id]/route}.ts`, 18 tests
+- [x] Sidebar : « Emploi du temps » (`CalendarDays`, après Présences)
+- [x] Page `(school)/pedagogie/emploi-du-temps/page.tsx` + `components/school/timetable/*` (`TimetableGrid`, `CourseCard`, `TimetableAgenda`, `TimetableMonth`, `TimetableLegend`, `TimetableFilterSelect`, `SessionFormModal`, `timetable-utils` + 8 tests) ; `Modal` + `subtitle`/`medium`/`bodyClassName`/`footerClassName` ; `DateField` + `compact`/`icon`/`hint`/`minDate`/`maxDate`/`weekday`
+- [x] 375 / 1280 / 1440 ; E2E création (POST 201 + 2 occurrences → colonne Samedi), édition série (PATCH scope=series), conflit 409 inline, suppression série (DELETE scope=series) — `scratchpad/e2e-tt.mjs`
+- [x] format / lint / typecheck / test
+
+## Notes d'implémentation
+- La plage visible est mise en cache côté client par `from_to` (vidée après chaque mutation) : changer de vue ou revenir sur une semaine déjà vue est instantané, et la grille précédente reste affichée (opacité 60 %) pendant le chargement au lieu d'un squelette.
+- La colonne « Samedi » n'apparaît que si une séance filtrée tombe un samedi ; le formulaire propose Sa dans les pastilles de récurrence.
+- Volume hebdomadaire = séances chargées de la classe × matière dans la semaine ISO de la date (+ la séance en cours de saisie) — indicatif, pas la cible `ClassSubject.weeklyHours`.
 
 ## Écarts assumés vs mock
 - Pauses dérivées des trous entre séances (pas de configuration des pauses).

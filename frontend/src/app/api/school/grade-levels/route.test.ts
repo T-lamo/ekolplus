@@ -21,6 +21,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
 import { GET, POST } from './route';
+import { PATCH, DELETE } from './[id]/route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
 const mockVerifyCsrf = vi.mocked(verifyCsrf);
@@ -154,5 +155,124 @@ describe('POST /api/school/grade-levels', () => {
     expect(prismaMock.gradeLevel.create).toHaveBeenCalledWith({
       data: { schoolId: 'school_1', name: '6ème', order: 0 },
     });
+  });
+});
+
+const params = (id: string) => ({ params: Promise.resolve({ id }) });
+
+describe('PATCH /api/school/grade-levels/[id]', () => {
+  it('missing CSRF → 403', async () => {
+    mockVerifyCsrf.mockReturnValueOnce(
+      NextResponse.json({ error: 'CSRF_INVALID' }, { status: 403 }),
+    );
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { name: '6e' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+    mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { name: '6e' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(403);
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it("unknown id or another school's level → 404 NOT_FOUND", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce(null);
+    let res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/nope', { name: '6e' }),
+      params('nope'),
+    );
+    expect(res.status).toBe(404);
+
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce({
+      ...row('lx', '6ème', 0),
+      schoolId: 'school_OTHER',
+    } as never);
+    res = await PATCH(req('PATCH', '/api/school/grade-levels/lx', { name: '6e' }), params('lx'));
+    expect(res.status).toBe(404);
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it('invalid body → 400 VALIDATION_FAILED', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { name: '' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('renaming to a name used by ANOTHER level → 409 LEVEL_NAME_TAKEN', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.gradeLevel.findFirst.mockResolvedValue(row('l2', '5ème', 1) as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { name: '5ème' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(409);
+    expect(prismaMock.gradeLevel.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { schoolId: 'school_1', name: '5ème', NOT: { id: 'l1' } },
+      }),
+    );
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it('renames → 200 { level }', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.gradeLevel.findFirst.mockResolvedValue(null);
+    prismaMock.gradeLevel.update.mockResolvedValue(row('l1', 'Sixième', 0) as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { name: '  Sixième ' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()) as unknown).toEqual({
+      level: { id: 'l1', name: 'Sixième', order: 0 },
+    });
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'l1' }, data: { name: 'Sixième' } }),
+    );
+  });
+});
+
+describe('DELETE /api/school/grade-levels/[id]', () => {
+  it('missing CSRF → 403', async () => {
+    mockVerifyCsrf.mockReturnValueOnce(
+      NextResponse.json({ error: 'CSRF_INVALID' }, { status: 403 }),
+    );
+    const res = await DELETE(req('DELETE', '/api/school/grade-levels/l1'), params('l1'));
+    expect(res.status).toBe(403);
+  });
+
+  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+    mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    const res = await DELETE(req('DELETE', '/api/school/grade-levels/l1'), params('l1'));
+    expect(res.status).toBe(403);
+    expect(prismaMock.gradeLevel.delete).not.toHaveBeenCalled();
+  });
+
+  it("another school's level → 404 NOT_FOUND", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce({
+      ...row('lx', '6ème', 0),
+      schoolId: 'school_OTHER',
+    } as never);
+    const res = await DELETE(req('DELETE', '/api/school/grade-levels/lx'), params('lx'));
+    expect(res.status).toBe(404);
+    expect(prismaMock.gradeLevel.delete).not.toHaveBeenCalled();
+  });
+
+  it('deletes → 204', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.gradeLevel.delete.mockResolvedValue(row('l1', '6ème', 0) as never);
+    const res = await DELETE(req('DELETE', '/api/school/grade-levels/l1'), params('l1'));
+    expect(res.status).toBe(204);
+    expect(prismaMock.gradeLevel.delete).toHaveBeenCalledWith({ where: { id: 'l1' } });
   });
 });

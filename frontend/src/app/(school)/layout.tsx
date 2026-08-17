@@ -34,7 +34,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className="relative z-50 flex h-full w-[195px]">
+          <div className="relative z-50 flex h-full w-[220px]">
             <SchoolSidebar onNavigate={() => setDrawerOpen(false)} />
             <button
               type="button"

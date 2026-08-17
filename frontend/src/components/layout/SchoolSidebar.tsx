@@ -79,7 +79,7 @@ export function SchoolSidebar({
     <Sidebar
       sections={SCHOOL_SECTIONS}
       variant="light"
-      width={195}
+      width={220}
       brandIcon={<GraduationCap size={15} className="text-white" />}
       brandText={<span className="text-[15px] font-bold text-foreground">Schoolgesti</span>}
       roleLabel="Administratrice"

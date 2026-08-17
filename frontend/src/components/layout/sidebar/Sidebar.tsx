@@ -63,29 +63,31 @@ export function Sidebar({
         transition={{ duration: 0.2, ease: 'easeInOut' }}
         className={`flex h-full shrink-0 flex-col overflow-hidden border-r ${borderClass} ${bgClass}`}
       >
+        {/* Same h-13 as the topbar so both bottom borders sit on one line. */}
         <div
-          className={`flex shrink-0 border-b ${borderClass} ${
-            collapsed
-              ? 'flex-col items-center gap-2 py-3'
-              : 'items-center justify-between gap-2 px-4 pt-[18px] pb-3.5'
+          className={`flex h-13 shrink-0 items-center border-b ${borderClass} ${
+            collapsed ? 'justify-center' : 'justify-between gap-2 px-4'
           }`}
         >
-          <div
-            className={collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center gap-2'}
-          >
+          <div className="flex items-center gap-2">
             <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md bg-primary">
               {brandIcon}
             </div>
             {!collapsed && brandText}
           </div>
-          {onToggleCollapse && (
+          {!collapsed && onToggleCollapse && (
             <SidebarCollapseToggle
-              collapsed={collapsed}
+              collapsed={false}
               onToggle={onToggleCollapse}
               variant={variant}
             />
           )}
         </div>
+        {collapsed && onToggleCollapse && (
+          <div className="flex shrink-0 justify-center pt-2 pb-0.5">
+            <SidebarCollapseToggle collapsed onToggle={onToggleCollapse} variant={variant} />
+          </div>
+        )}
 
         <nav className="flex-1 overflow-y-auto">
           {collapsed ? (

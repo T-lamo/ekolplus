@@ -94,6 +94,8 @@ beforeEach(() => {
   // to simulate a cross-tenant reference.
   prismaMock.class.count.mockResolvedValue(1);
   prismaMock.teacher.count.mockResolvedValue(1);
+  // GET also returns the school's grade-level catalog; default to none.
+  prismaMock.gradeLevel.findMany.mockResolvedValue([]);
 });
 
 describe('GET /api/school/academic-year-rollover', () => {
@@ -205,6 +207,35 @@ describe('GET /api/school/academic-year-rollover', () => {
     expect(body.students).toHaveLength(1);
     expect(mockGetPromotionData).toHaveBeenCalledWith('school_1', 'ay_1');
     expect(mockResolveActiveAcademicYear).toHaveBeenCalledWith('school_1');
+  });
+
+  it("includes the school's gradeLevels ordered by `order asc` (id/name/order only)", async () => {
+    prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(null);
+    mockResolveActiveAcademicYear.mockResolvedValueOnce({
+      id: 'ay_1',
+      label: '2025-2026',
+      startDate: new Date('2025-09-01T00:00:00Z'),
+    });
+    mockGetPromotionData.mockResolvedValueOnce({ classes: [], students: [] });
+    prismaMock.gradeLevel.findMany.mockResolvedValueOnce([
+      { id: 'l1', name: '6ème', order: 0 },
+      { id: 'l2', name: '5ème', order: 1 },
+    ] as never);
+
+    const res = await GET(makeReq('GET', URL));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { gradeLevels: unknown[] };
+    expect(body.gradeLevels).toEqual([
+      { id: 'l1', name: '6ème', order: 0 },
+      { id: 'l2', name: '5ème', order: 1 },
+    ]);
+    expect(prismaMock.gradeLevel.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { schoolId: 'school_1' },
+        orderBy: { order: 'asc' },
+        select: { id: true, name: true, order: true },
+      }),
+    );
   });
 
   it('existing draft + no active year → 424 NO_ACTIVE_YEAR (activeYear check still applies)', async () => {

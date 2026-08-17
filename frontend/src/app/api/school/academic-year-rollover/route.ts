@@ -2,7 +2,8 @@
 //
 // Backs the "nouvelle année" wizard's autosave: GET loads the in-progress
 // draft (or, when none exists yet, a fresh-start payload built from the
-// currently active AcademicYear via `getPromotionData`); POST creates the
+// currently active AcademicYear via `getPromotionData`) — plus the school's
+// ordered `gradeLevels` for Step 2's auto-suggest; POST creates the
 // one-per-school draft; PATCH autosaves wizard steps into it; DELETE clears
 // it (e.g. "recommencer" / abandon). The atomic commit that actually creates
 // the new AcademicYear lives in a sibling confirm route (Task 5) and calls
@@ -111,7 +112,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { classes, students } = await getPromotionData(mySchool.schoolId, activeYear.id);
+    // `gradeLevels` feeds Step 2's "Suggérer toutes les promotions" — the
+    // school's ordered level catalog (Configuration → Niveaux). One extra
+    // query in the same request; empty array when the school hasn't
+    // configured any (the button then no-ops with a hint).
+    const [{ classes, students }, gradeLevels] = await Promise.all([
+      getPromotionData(mySchool.schoolId, activeYear.id),
+      prisma.gradeLevel.findMany({
+        where: { schoolId: mySchool.schoolId },
+        orderBy: { order: 'asc' },
+        select: { id: true, name: true, order: true },
+      }),
+    ]);
 
     return NextResponse.json(
       {
@@ -119,6 +131,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         activeYear: { id: activeYear.id, label: activeYear.label },
         classes,
         students,
+        gradeLevels,
       },
       { headers: { 'x-request-id': ctx.requestId } },
     );

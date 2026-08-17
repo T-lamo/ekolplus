@@ -10,12 +10,17 @@ import { api, ApiError } from '@/lib/api';
 import type { ClassData, ClassDetail } from '@/app/(school)/configuration/classes/types';
 
 export const OTHER_LEVEL = '__other__';
+/** Sentinel of the room select: free-text location instead of a catalogue room. */
+export const OTHER_ROOM = '__other__';
 
 export interface ClassFormValues {
   name: string;
   /** Catalog value, or OTHER_LEVEL when typed freely. */
   level: string;
   levelOther: string;
+  /** Catalogue room id, OTHER_ROOM for a free-text place, '' for none. */
+  roomId: string;
+  /** Free-text place (used when roomId === OTHER_ROOM or without catalogue). */
   room: string;
   capacity: string;
   track: string;
@@ -45,14 +50,23 @@ export interface ClassPivot {
   locked: boolean;
 }
 
-function initialValues(cls: ClassDetail | null | undefined, catalog: string[]): ClassFormValues {
+function initialValues(
+  cls: ClassDetail | null | undefined,
+  catalog: string[],
+  roomIds: string[],
+): ClassFormValues {
   const level = cls?.level ?? '';
   const inCatalog = level !== '' && catalog.includes(level);
+  const room = cls?.room ?? '';
+  const catalogRoomId = cls?.roomId && roomIds.includes(cls.roomId) ? cls.roomId : null;
   return {
     name: cls?.name ?? '',
     level: level === '' ? '' : inCatalog || catalog.length === 0 ? level : OTHER_LEVEL,
     levelOther: level !== '' && !inCatalog && catalog.length > 0 ? level : '',
-    room: cls?.room ?? '',
+    // Catalogue room → its id ; free-text room with a catalogue → « Autre lieu… » ;
+    // no catalogue → plain text field.
+    roomId: catalogRoomId ?? (room !== '' && roomIds.length > 0 ? OTHER_ROOM : ''),
+    room: catalogRoomId ? '' : room,
     capacity: cls?.capacity != null ? String(cls.capacity) : '',
     track: cls?.track ?? '',
     homeroomTeacherId: cls?.homeroomTeacher?.id ?? null,
@@ -63,6 +77,14 @@ function initialValues(cls: ClassDetail | null | undefined, catalog: string[]): 
 
 export function effectiveLevel(v: ClassFormValues): string {
   return (v.level === OTHER_LEVEL ? v.levelOther : v.level).trim();
+}
+
+/** Displayed room label: catalogue name, or the free-text place. */
+export function effectiveRoom(v: ClassFormValues, rooms: { id: string; name: string }[]): string {
+  if (v.roomId && v.roomId !== OTHER_ROOM) {
+    return rooms.find((r) => r.id === v.roomId)?.name ?? '';
+  }
+  return v.room.trim();
 }
 
 export function validate(v: ClassFormValues): ClassFormErrors {
@@ -80,17 +102,22 @@ export function validate(v: ClassFormValues): ClassFormErrors {
 export function useClassForm({
   cls,
   levelCatalog,
+  roomIds,
   subjects,
   onSaved,
 }: {
   /** null/undefined = create mode. */
   cls?: ClassDetail | null;
   levelCatalog: string[];
+  /** Ids of the catalogue rooms offered by the form (configuration/salles). */
+  roomIds: string[];
   subjects: ClassFormSubject[];
   onSaved: (cls: ClassData) => void;
 }) {
   const mode: 'create' | 'edit' = cls ? 'edit' : 'create';
-  const [values, setValues] = useState<ClassFormValues>(() => initialValues(cls, levelCatalog));
+  const [values, setValues] = useState<ClassFormValues>(() =>
+    initialValues(cls, levelCatalog, roomIds),
+  );
   const [errors, setErrors] = useState<ClassFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -105,9 +132,9 @@ export function useClassForm({
 
   // Re-seed only when the entity (or the catalog it depends on) changes.
   const clsId = cls?.id ?? null;
-  const catalogKey = levelCatalog.join('|');
+  const catalogKey = `${levelCatalog.join('|')}#${roomIds.join('|')}`;
   useEffect(() => {
-    setValues(initialValues(cls, levelCatalog));
+    setValues(initialValues(cls, levelCatalog, roomIds));
     setPivotBySubject(cls?.classSubjectIdBySubject ?? {});
     setPivots(Object.fromEntries((cls?.classSubjects ?? []).map((p) => [p.subjectId, p])));
     setErrors({});
@@ -259,7 +286,10 @@ export function useClassForm({
       const body = {
         name: values.name.trim(),
         level: effectiveLevel(values),
-        room: values.room.trim() || null,
+        // Catalogue room → roomId (the API copies its name into `room`) ;
+        // « Autre lieu… » / no catalogue → free text, roomId cleared.
+        roomId: values.roomId && values.roomId !== OTHER_ROOM ? values.roomId : null,
+        room: values.roomId && values.roomId !== OTHER_ROOM ? null : values.room.trim() || null,
         capacity: Number(values.capacity),
         track: values.track.trim() || null,
         homeroomTeacherId: values.homeroomTeacherId,

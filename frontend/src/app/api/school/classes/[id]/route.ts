@@ -15,11 +15,13 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, hasMinRole } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { findSchoolRoom } from '@/lib/server/rooms';
 
 const UpdateClassBody = z.object({
   name: z.string().trim().min(1).max(40).optional(),
   level: z.string().trim().min(1).max(40).optional(),
   room: z.string().trim().max(40).nullable().optional(),
+  roomId: z.string().min(1).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
   color: z
@@ -86,6 +88,7 @@ export async function GET(
           name: cls.name,
           level: cls.level,
           room: cls.room,
+          roomId: cls.roomId,
           capacity: cls.capacity,
           color: cls.color,
           track: cls.track,
@@ -169,6 +172,17 @@ export async function PATCH(
     }
 
     const data = Object.fromEntries(Object.entries(parsed.data).filter(([, v]) => v !== undefined));
+    // Catalogue des salles : un roomId impose le libellé de la salle.
+    if (parsed.data.roomId) {
+      const room = await findSchoolRoom(prisma, parsed.data.roomId, mySchool.schoolId);
+      if (!room) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid roomId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      data.room = room.name;
+    }
     const updated = await prisma.class.update({
       where: { id },
       data,

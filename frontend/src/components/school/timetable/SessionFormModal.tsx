@@ -8,6 +8,7 @@
 // series and delete « cette séance » or « toute la série ». 409
 // TIMETABLE_CONFLICT is surfaced inline with the offending slot.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import {
   AlertTriangle,
@@ -22,6 +23,7 @@ import {
   Video,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { type RoomRow } from '@/lib/rooms';
 import { SUBJECT_COLORS } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
@@ -107,7 +109,7 @@ export function SessionFormModal({
   classes: ClassOption[];
   teachers: TeacherOption[];
   subjects: SubjectOption[];
-  rooms: string[];
+  rooms: RoomRow[];
   links: ClassSubjectLink[];
   /** Currently loaded sessions — weekly volume hint. */
   sessions: TimetableSession[];
@@ -117,12 +119,6 @@ export function SessionFormModal({
 }) {
   const editing = initial.session ?? null;
   const mode = editing ? 'edit' : 'create';
-  const knownRooms = useMemo(() => {
-    const set = new Set(rooms);
-    for (const c of classes) if (c.room) set.add(c.room);
-    if (editing?.room) set.add(editing.room);
-    return [...set].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
-  }, [rooms, classes, editing]);
 
   const [subjectId, setSubjectId] = useState(editing?.subjectId ?? '');
   const [color, setColor] = useState<string | null>(editing?.color ?? null);
@@ -134,12 +130,20 @@ export function SessionFormModal({
   );
   const [teacherId, setTeacherId] = useState(editing?.teacherId ?? '');
   const [teacherTouched, setTeacherTouched] = useState(!!editing);
-  const [roomChoice, setRoomChoice] = useState<string>(() => {
-    if (editing?.room) return editing.room;
+  const [roomId, setRoomId] = useState<string>(() => {
+    if (editing?.roomId) return editing.roomId;
+    if (editing?.room) return OTHER_ROOM;
     return '';
   });
-  const [customRoom, setCustomRoom] = useState('');
+  const [customRoom, setCustomRoom] = useState(editing?.roomId ? '' : (editing?.room ?? ''));
   const [roomTouched, setRoomTouched] = useState(!!editing);
+  // Active catalogue rooms + the one already attached (even if deactivated
+  // since — editing shouldn't silently drop it from the list).
+  const roomOptions = useMemo(
+    () => rooms.filter((r) => r.isActive || r.id === roomId),
+    [rooms, roomId],
+  );
+  const selectedRoom = roomOptions.find((r) => r.id === roomId) ?? null;
   const [classId, setClassId] = useState(editing?.classId ?? initial.classId ?? '');
   const [date, setDate] = useState(editing?.date ?? initial.day ?? todayDay());
   const [startMinutes, setStartMinutes] = useState(
@@ -170,7 +174,7 @@ export function SessionFormModal({
 
   const subject = subjects.find((s) => s.id === subjectId) ?? null;
   const effectiveColor = colorTouched ? color : (subject?.color ?? null);
-  const room = roomChoice === OTHER_ROOM ? customRoom.trim() : roomChoice;
+  const room = roomId && roomId !== OTHER_ROOM ? (selectedRoom?.name ?? '') : customRoom.trim();
 
   // Defaults that follow the class × subject assignment until the user
   // overrides them: teacher from the pivot, room from the class.
@@ -182,7 +186,13 @@ export function SessionFormModal({
   useEffect(() => {
     if (roomTouched || !classId) return;
     const cls = classes.find((c) => c.id === classId);
-    if (cls?.room) setRoomChoice(cls.room);
+    if (cls?.roomId) {
+      setRoomId(cls.roomId);
+      setCustomRoom('');
+    } else if (cls?.room) {
+      setRoomId(OTHER_ROOM);
+      setCustomRoom(cls.room);
+    }
   }, [classId, classes, roomTouched]);
   // Keep the base weekday selected when the date moves (create mode).
   useEffect(() => {
@@ -260,6 +270,7 @@ export function SessionFormModal({
       subjectId,
       teacherId: teacherId || null,
       room: room || null,
+      roomId: roomId && roomId !== OTHER_ROOM ? roomId : null,
       type,
       color: colorTouched ? color : null,
       date,
@@ -573,31 +584,59 @@ export function SessionFormModal({
                 htmlFor="tt-room"
                 className="flex-1"
               >
-                <IconSelect
-                  id="tt-room"
-                  value={roomChoice}
-                  onValueChange={(v) => {
-                    setRoomChoice(v);
-                    setRoomTouched(true);
-                  }}
-                  placeholder="Choisir une salle"
-                  icon={<DoorOpen size={13} className="text-muted-foreground" />}
-                >
-                  {knownRooms.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
-                </IconSelect>
-                {roomChoice === OTHER_ROOM && (
-                  <TextInput
-                    aria-label="Autre lieu"
-                    placeholder="Ex. Bibliothèque, Cour…"
-                    value={customRoom}
-                    onChange={(e) => setCustomRoom(e.target.value)}
-                    autoFocus
-                  />
+                {roomOptions.length > 0 ? (
+                  <>
+                    <IconSelect
+                      id="tt-room"
+                      value={roomId}
+                      onValueChange={(v) => {
+                        setRoomId(v);
+                        setRoomTouched(true);
+                      }}
+                      placeholder="Choisir une salle"
+                      icon={<DoorOpen size={13} className="text-muted-foreground" />}
+                    >
+                      {roomOptions.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.name}
+                          {r.capacity != null ? ` · ${r.capacity} pl.` : ''}
+                          {!r.isActive ? ' · inactive' : ''}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
+                    </IconSelect>
+                    {roomId === OTHER_ROOM && (
+                      <TextInput
+                        aria-label="Autre lieu"
+                        placeholder="Ex. Bibliothèque, Cour…"
+                        value={customRoom}
+                        onChange={(e) => setCustomRoom(e.target.value)}
+                        autoFocus
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <TextInput
+                      id="tt-room"
+                      aria-label="Salle ou lieu"
+                      placeholder="Ex. Salle 12, Cour…"
+                      value={customRoom}
+                      onChange={(e) => {
+                        setCustomRoom(e.target.value);
+                        setRoomTouched(true);
+                      }}
+                    />
+                    <span className="text-2xs text-muted-foreground">
+                      Aucun catalogue de salles —{' '}
+                      <Link
+                        href="/configuration/salles"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        définir les salles de l&apos;école
+                      </Link>
+                    </span>
+                  </div>
                 )}
               </FormGroup>
             </div>

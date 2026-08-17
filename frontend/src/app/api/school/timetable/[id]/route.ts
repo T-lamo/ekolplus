@@ -15,6 +15,7 @@ import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, hasMinRole } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { parseDay } from '@/lib/server/timetable';
+import { findSchoolRoom } from '@/lib/server/rooms';
 import {
   SESSION_INCLUDE,
   SessionFieldsSchema,
@@ -31,6 +32,7 @@ const PatchBody = z
     subjectId: SessionFieldsSchema.subjectId.optional(),
     teacherId: SessionFieldsSchema.teacherId,
     room: SessionFieldsSchema.room,
+    roomId: SessionFieldsSchema.roomId,
     type: SessionFieldsSchema.type.optional(),
     color: SessionFieldsSchema.color,
     date: SessionFieldsSchema.date.optional(),
@@ -150,11 +152,25 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
             },
           ];
 
+    let catalogRoomName: string | null = null;
+    if (body.roomId) {
+      const catalogRoom = await findSchoolRoom(prisma, body.roomId, mySchool.schoolId);
+      if (!catalogRoom) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid roomId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      catalogRoomName = catalogRoom.name;
+    }
     const next = {
       classId: body.classId ?? session.classId,
       subjectId: body.subjectId ?? session.subjectId,
       teacherId: body.teacherId === undefined ? session.teacherId : body.teacherId,
-      room: body.room === undefined ? session.room : body.room?.trim() ? body.room.trim() : null,
+      roomId: body.roomId === undefined ? session.roomId : body.roomId,
+      room:
+        catalogRoomName ??
+        (body.room === undefined ? session.room : body.room?.trim() ? body.room.trim() : null),
       type: body.type ?? session.type,
       color: body.color === undefined ? session.color : body.color,
       startMinutes: body.startMinutes ?? session.startMinutes,

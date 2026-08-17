@@ -494,6 +494,117 @@ export interface ClassSeed {
   students: number;
   annualFee: number; // HTG
 }
+// ─── Rooms catalogue (configuration/salles) ────────────────────────────────
+// One row per distinct room name used below (7 homeroom classrooms + the
+// 4 specialised rooms shared across subjects) — created before classes /
+// timetable sessions so both can be linked by roomId, not just by label.
+export interface RoomSeed {
+  name: string;
+  type: 'CLASSROOM' | 'LAB' | 'COMPUTER' | 'SPORTS' | 'ARTS' | 'OTHER';
+  capacity: number | null;
+  building: string | null;
+  floor: string | null;
+  equipment: string | null;
+}
+export const ROOMS: RoomSeed[] = [
+  {
+    name: 'Salle 101',
+    type: 'CLASSROOM',
+    capacity: 35,
+    building: 'Bâtiment A',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Tableau blanc',
+  },
+  {
+    name: 'Salle 102',
+    type: 'CLASSROOM',
+    capacity: 35,
+    building: 'Bâtiment A',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Tableau blanc',
+  },
+  {
+    name: 'Salle 103',
+    type: 'CLASSROOM',
+    capacity: 35,
+    building: 'Bâtiment A',
+    floor: '1er étage',
+    equipment: 'Tableau blanc',
+  },
+  {
+    name: 'Salle 104',
+    type: 'CLASSROOM',
+    capacity: 35,
+    building: 'Bâtiment A',
+    floor: '1er étage',
+    equipment: 'Tableau blanc',
+  },
+  {
+    name: 'Salle 201',
+    type: 'CLASSROOM',
+    capacity: 30,
+    building: 'Bâtiment B',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Tableau blanc, vidéoprojecteur',
+  },
+  {
+    name: 'Salle 202',
+    type: 'CLASSROOM',
+    capacity: 30,
+    building: 'Bâtiment B',
+    floor: '1er étage',
+    equipment: 'Tableau blanc, vidéoprojecteur',
+  },
+  {
+    name: 'Salle 203',
+    type: 'CLASSROOM',
+    capacity: 30,
+    building: 'Bâtiment B',
+    floor: '1er étage',
+    equipment: 'Tableau blanc, vidéoprojecteur',
+  },
+  {
+    name: 'Laboratoire de physique-chimie',
+    type: 'LAB',
+    capacity: 32,
+    building: 'Bâtiment B',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Paillasses, hotte, matériel de manipulation',
+  },
+  {
+    name: 'Laboratoire de SVT',
+    type: 'LAB',
+    capacity: 32,
+    building: 'Bâtiment B',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Paillasses, microscopes',
+  },
+  {
+    name: 'Salle informatique',
+    type: 'COMPUTER',
+    capacity: 24,
+    building: 'Bâtiment A',
+    floor: '2e étage',
+    equipment: '24 postes, vidéoprojecteur',
+  },
+  {
+    name: 'Terrain de sport',
+    type: 'SPORTS',
+    capacity: null,
+    building: null,
+    floor: null,
+    equipment: 'Terrain multisport, buts, filets',
+  },
+  {
+    name: 'Salle des arts',
+    type: 'ARTS',
+    capacity: 30,
+    building: 'Bâtiment A',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Instruments, matériel de dessin',
+  },
+];
+
 export const CLASSES: ClassSeed[] = [
   {
     level: '6ème',
@@ -870,6 +981,26 @@ async function seedEtoiles(
     data: LEVELS.map((name, i) => ({ schoolId, name, order: i + 1 })),
   });
 
+  // Rooms catalogue — created before classes / timetable sessions so both
+  // link by roomId (the class-form / session-form catalogue selects).
+  const roomId = new Map<string, string>();
+  for (const r of ROOMS) {
+    const row = await prisma.room.create({
+      data: {
+        schoolId,
+        name: r.name,
+        type: r.type,
+        capacity: r.capacity,
+        building: r.building,
+        floor: r.floor,
+        equipment: r.equipment,
+      },
+      select: { id: true },
+    });
+    roomId.set(r.name, row.id);
+  }
+  console.log(`  ${roomId.size} salles`);
+
   // Teachers.
   const teacherId = new Map<string, string>();
   for (const t of TEACHERS) {
@@ -1011,6 +1142,7 @@ async function seedEtoiles(
         name: c.name,
         level: c.level,
         room: c.room,
+        roomId: roomId.get(c.room) ?? null,
         capacity: c.capacity,
         color: c.color,
         track: c.track,
@@ -1541,6 +1673,7 @@ async function seedEtoiles(
       yearEnd: cal.end,
       sid,
       tid,
+      rid: (name) => roomId.get(name),
     },
   );
   for (let i = 0; i < sessions.length; i += 500) {
@@ -1572,6 +1705,8 @@ interface TimetableCtx {
   yearEnd: Date;
   sid: (key: string) => string;
   tid: (key: string) => string;
+  /** Catalogue room id for a room label — undefined for a free-text place. */
+  rid?: (name: string) => string | undefined;
 }
 
 // Exported for the companion test (pure — no DB).
@@ -1657,6 +1792,7 @@ export function buildTimetable(
             subjectId: ctx.sid(cs.key),
             teacherId: ctx.tid(cs.teacherKey),
             room,
+            roomId: ctx.rid?.(room) ?? null,
             type,
             color: subject.color,
             date,

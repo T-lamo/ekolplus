@@ -3,6 +3,8 @@ export interface ClassData {
   name: string;
   level: string;
   room: string | null;
+  /** Salle du catalogue (configuration/salles) — null = lieu libre / aucune. */
+  roomId: string | null;
   capacity: number | null;
   /** Couleur d'identification (#rrggbb) — fiche classe (add-class.md). */
   color: string | null;

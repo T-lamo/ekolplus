@@ -3,7 +3,7 @@
 // /configuration/classes/[id] — fiche classe en édition (add-class.md) : même
 // formulaire que la création ; les matières se basculent à la volée, le reste
 // s'enregistre avec « Enregistrer ».
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Save } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
@@ -65,9 +65,11 @@ export default function ClassDetailPage() {
     [toast, loadDetail],
   );
 
+  const roomIds = useMemo(() => (options?.rooms ?? []).map((r) => r.id), [options?.rooms]);
   const form = useClassForm({
     cls,
     levelCatalog: options?.levelCatalog ?? [],
+    roomIds,
     subjects: options?.subjects ?? [],
     onSaved,
   });

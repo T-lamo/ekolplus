@@ -32,6 +32,7 @@ function session(
     teacherId: 't1',
     teacher: { id: 't1', name: 'M. Jean', photoUrl: null },
     room: 'Salle 12',
+    roomId: null,
     type: 'CM',
     color: '#2563eb',
     description: null,

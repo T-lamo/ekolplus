@@ -2,6 +2,7 @@
 'use client';
 
 import {
+  DoorOpen,
   BookOpen,
   CalendarCheck,
   CreditCard,
@@ -53,6 +54,7 @@ export const SCHOOL_SECTIONS: NavSection[] = [
     items: [
       { label: 'Classes', href: '/configuration/classes', icon: SchoolIcon },
       { label: 'Niveaux', href: '/configuration/niveaux', icon: ListOrdered },
+      { label: 'Salles', href: '/configuration/salles', icon: DoorOpen },
       { label: 'Matières', href: '/configuration/matieres', icon: BookOpen },
       { label: 'Affectations', href: '/configuration/affectations', icon: LinkIcon },
       { label: 'Coefficients', href: '/configuration/coefficients', icon: Percent },

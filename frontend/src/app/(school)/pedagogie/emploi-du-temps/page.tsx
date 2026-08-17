@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { exportToCsv } from '@/lib/csv-export';
+import type { RoomRow } from '@/lib/rooms';
 import { cn } from '@/lib/utils';
 import { LIST_PAGE } from '@/lib/layout';
 import { useToast } from '@/contexts/ToastContext';
@@ -80,6 +81,8 @@ interface Meta {
   teachers: TeacherOption[];
   subjects: SubjectOption[];
   links: ClassSubjectLink[];
+  /** Catalogue des salles (configuration/salles) — champ « Salle / Lieu » de la modale. */
+  rooms: RoomRow[];
 }
 
 export default function EmploiDuTempsPage() {
@@ -114,7 +117,7 @@ export default function EmploiDuTempsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [school, classes, teachers, subjects, links] = await Promise.all([
+        const [school, classes, teachers, subjects, links, roomCatalog] = await Promise.all([
           api<{
             academicYear: { id: string; label: string; startDate: string; endDate: string } | null;
           }>('/api/school'),
@@ -122,6 +125,7 @@ export default function EmploiDuTempsPage() {
           api<{ teachers: TeacherOption[] }>('/api/school/teachers'),
           api<{ subjects: SubjectOption[] }>('/api/school/subjects'),
           api<{ classSubjects: ClassSubjectLink[] }>('/api/school/class-subjects'),
+          api<{ rooms: RoomRow[] }>('/api/school/rooms'),
         ]);
         if (cancelled) return;
         setMeta({
@@ -138,6 +142,7 @@ export default function EmploiDuTempsPage() {
             name: c.name,
             color: c.color ?? null,
             room: c.room ?? null,
+            roomId: c.roomId ?? null,
           })),
           teachers: teachers.teachers.map((t) => ({
             id: t.id,
@@ -156,6 +161,7 @@ export default function EmploiDuTempsPage() {
             teacherId: l.teacherId ?? null,
             weeklyHours: l.weeklyHours ?? null,
           })),
+          rooms: roomCatalog.rooms,
         });
       } catch (err) {
         if (!cancelled) {
@@ -493,7 +499,7 @@ export default function EmploiDuTempsPage() {
           classes={meta.classes}
           teachers={meta.teachers}
           subjects={meta.subjects}
-          rooms={rooms}
+          rooms={meta.rooms}
           links={meta.links}
           sessions={data?.sessions ?? []}
           academicYear={

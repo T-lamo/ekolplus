@@ -11,6 +11,7 @@ import {
   schoolCalendar,
   buildTimetable,
   CLASSES,
+  ROOMS,
   SUBJECTS,
   teacherKeyFor,
 } from './seed-dev-school';
@@ -80,6 +81,7 @@ describe('scripts/seed-dev-school', () => {
       yearEnd: cal.end,
       sid: (k) => `subject-${k}`,
       tid: (k) => `teacher-${k}`,
+      rid: (name) => (ROOMS.some((r) => r.name === name) ? `room-${name}` : undefined),
     });
 
     it('never overlaps a class, a teacher or a room', () => {
@@ -103,6 +105,13 @@ describe('scripts/seed-dev-school', () => {
       expect(overlaps((s) => s.classId)).toBe(0);
       expect(overlaps((s) => s.teacherId)).toBe(0);
       expect(overlaps((s) => s.room)).toBe(0);
+      expect(overlaps((s) => s.roomId)).toBe(0);
+    });
+
+    it('resolves roomId for every session (every room label is in the catalogue)', () => {
+      expect(
+        sessions.every((s) => typeof s.roomId === 'string' && s.roomId.startsWith('room-')),
+      ).toBe(true);
     });
 
     it('stays inside the school year, on weekdays, within 08:00–15:00', () => {

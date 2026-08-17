@@ -9,6 +9,7 @@
 import Link from 'next/link';
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRightCircle,
   BookOpen,
   CheckCircle2,
@@ -26,6 +27,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { ASIDE_GRID } from '@/lib/layout';
+import { roomLocation, roomTypeLabel, type RoomRow } from '@/lib/rooms';
 import { SUBJECT_COLORS } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import {
@@ -38,7 +40,9 @@ import {
 } from '@/components/school/subjects/form-primitives';
 import {
   effectiveLevel,
+  effectiveRoom,
   OTHER_LEVEL,
+  OTHER_ROOM,
   validate,
   type ClassFormController,
   type ClassFormSubject,
@@ -63,6 +67,8 @@ export interface ClassFormOptions {
   teachers: ClassFormTeacher[];
   subjects: ClassFormSubject[];
   levelCatalog: string[];
+  /** Catalogue des salles (configuration/salles) — actives + celle déjà attitrée. */
+  rooms: RoomRow[];
   yearLabel: string | null;
   /** Read-only « Configuration des notes » — inherited school settings. */
   grading: {
@@ -131,7 +137,31 @@ export function ClassForm({
   const done = classSectionsDone(form);
   const color = v.color ?? 'var(--color-primary)';
   const levelLabel = effectiveLevel(v);
-  const previewSub = [v.room.trim() || null, levelLabel || null].filter(Boolean).join(' · ');
+  // Room catalogue: active rooms + the one already attached (even inactive).
+  const roomOptions = useMemo(
+    () => options.rooms.filter((r) => r.isActive || r.id === v.roomId),
+    [options.rooms, v.roomId],
+  );
+  const selectedRoom = roomOptions.find((r) => r.id === v.roomId) ?? null;
+  const roomLabel = effectiveRoom(v, options.rooms);
+  const capacityNum = Number(v.capacity);
+  const roomTooSmall =
+    selectedRoom?.capacity != null &&
+    Number.isInteger(capacityNum) &&
+    capacityNum > selectedRoom.capacity
+      ? selectedRoom.capacity
+      : null;
+  // Under the room select: the room's identity line (type · places · lieu).
+  const roomHint = selectedRoom
+    ? [
+        roomTypeLabel(selectedRoom.type),
+        selectedRoom.capacity != null ? `${selectedRoom.capacity} places` : null,
+        roomLocation(selectedRoom) || null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
+  const previewSub = [roomLabel || null, levelLabel || null].filter(Boolean).join(' · ');
 
   return (
     <div className="flex flex-col gap-3">
@@ -227,14 +257,69 @@ export function ClassForm({
                   </>
                 )}
               </FormGroup>
-              <FormGroup label="Salle de cours" optional htmlFor="class-room">
-                <TextInput
-                  id="class-room"
-                  value={v.room}
-                  onChange={(e) => setField('room', e.target.value)}
-                  placeholder="Salle 12 — Bât. B"
-                  maxLength={40}
-                />
+              <FormGroup
+                label="Salle de cours"
+                optional
+                htmlFor="class-room"
+                {...(roomHint ? { hint: roomHint } : {})}
+              >
+                {roomOptions.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <BareSelect
+                      id="class-room"
+                      value={v.roomId}
+                      onValueChange={(val) => setField('roomId', val)}
+                      placeholder="Aucune salle attitrée"
+                    >
+                      <SelectItem value="">Aucune salle attitrée</SelectItem>
+                      {roomOptions.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.name}
+                          {r.capacity != null ? ` · ${r.capacity} pl.` : ''}
+                          {!r.isActive ? ' · inactive' : ''}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
+                    </BareSelect>
+                    {v.roomId === OTHER_ROOM && (
+                      <TextInput
+                        value={v.room}
+                        onChange={(e) => setField('room', e.target.value)}
+                        placeholder="Saisir le lieu (ex. Préau, Salle paroissiale)"
+                        maxLength={40}
+                        aria-label="Salle (autre lieu)"
+                      />
+                    )}
+                    {roomTooSmall !== null && (
+                      <span
+                        role="status"
+                        className="flex items-center gap-1 text-2xs font-medium text-warning-foreground"
+                      >
+                        <AlertTriangle size={11} aria-hidden />
+                        Cette salle n’a que {roomTooSmall} places pour {capacityNum} élèves.
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <TextInput
+                      id="class-room"
+                      value={v.room}
+                      onChange={(e) => setField('room', e.target.value)}
+                      placeholder="Salle 12 — Bât. B"
+                      maxLength={40}
+                    />
+                    <span className="text-2xs text-muted-foreground">
+                      Aucun catalogue de salles —{' '}
+                      <Link
+                        href="/configuration/salles"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        définir les salles de l&apos;école
+                      </Link>
+                    </span>
+                  </>
+                )}
               </FormGroup>
               <FormGroup
                 label="Capacité maximale"
@@ -504,7 +589,7 @@ export function ClassForm({
           <FormCard id="card-recap" icon={<Info size={15} />} title="Récapitulatif">
             <InfoRow label="Nom" value={v.name.trim() || '—'} />
             <InfoRow label="Niveau" value={levelLabel || '—'} />
-            <InfoRow label="Salle" value={v.room.trim() || '—'} />
+            <InfoRow label="Salle" value={roomLabel || '—'} />
             <InfoRow
               label="Capacité"
               value={v.capacity.trim() ? `${v.capacity.trim()} places` : '—'}

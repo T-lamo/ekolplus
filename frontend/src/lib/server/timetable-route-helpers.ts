@@ -36,6 +36,7 @@ export function serializeSession(s: SessionRow, seriesCount = 1) {
     teacherId: s.teacherId,
     teacher: s.teacher,
     room: s.room,
+    roomId: s.roomId,
     type: s.type,
     // Effective colour: explicit override, else the subject's identity colour.
     color: s.color ?? s.subject.color,
@@ -75,6 +76,8 @@ export const SessionFieldsSchema = {
   subjectId: z.string().min(1),
   teacherId: z.string().min(1).nullable().optional(),
   room: z.string().trim().max(80).nullable().optional(),
+  // Catalogue des salles : `roomId` impose le libellé `room` (nom de la salle).
+  roomId: z.string().min(1).nullable().optional(),
   type: z.enum(SESSION_TYPES),
   color: z.string().regex(COLOR_RE).nullable().optional(),
   date: z.string().regex(DAY_RE),

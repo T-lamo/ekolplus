@@ -11,6 +11,8 @@ export interface TimetableSession {
   teacherId: string | null;
   teacher: { id: string; name: string; photoUrl: string | null } | null;
   room: string | null;
+  /** Catalogue room (configuration/salles) — null for a free-text place. */
+  roomId: string | null;
   type: string;
   /** Effective colour (override or the subject's) — may be null for a
    * subject without identity colour; the UI then falls back to primary. */
@@ -44,6 +46,7 @@ export interface ClassOption {
   name: string;
   color: string | null;
   room: string | null;
+  roomId: string | null;
 }
 export interface TeacherOption {
   id: string;

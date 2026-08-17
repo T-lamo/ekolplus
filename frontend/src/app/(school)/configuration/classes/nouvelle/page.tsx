@@ -3,7 +3,7 @@
 // /configuration/classes/nouvelle — Banani « Add Class » (add-class.md).
 // Full-page create form in the shared class shell; on success the user lands
 // on the new class's page (edit mode, « Navigation rapide » active).
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
@@ -40,9 +40,11 @@ export default function NouvelleClassePage() {
     [router, toast],
   );
 
+  const roomIds = useMemo(() => (options?.rooms ?? []).map((r) => r.id), [options?.rooms]);
   const form = useClassForm({
     cls: null,
     levelCatalog: options?.levelCatalog ?? [],
+    roomIds,
     subjects: options?.subjects ?? [],
     onSaved,
   });

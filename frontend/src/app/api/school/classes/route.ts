@@ -12,6 +12,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { findSchoolRoom } from '@/lib/server/rooms';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           name: c.name,
           level: c.level,
           room: c.room,
+          roomId: c.roomId,
           capacity: c.capacity,
           color: c.color,
           track: c.track,
@@ -71,6 +73,9 @@ const CreateClassBody = z.object({
   name: z.string().trim().min(1).max(40),
   level: z.string().trim().min(1).max(40),
   room: z.string().trim().max(40).nullable().optional(),
+  // Catalogue des salles : quand `roomId` est fourni, `room` prend le nom de
+  // la salle (libellé affiché) ; `roomId: null` + `room` = lieu libre.
+  roomId: z.string().min(1).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
   color: z.string().regex(CLASS_COLOR_REGEX).nullable().optional(),
@@ -135,6 +140,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    let roomLabel = parsed.data.room ?? null;
+    if (parsed.data.roomId) {
+      const room = await findSchoolRoom(prisma, parsed.data.roomId, mySchool.schoolId);
+      if (!room) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid roomId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      roomLabel = room.name;
+    }
+
     const subjectIds = [...new Set(parsed.data.subjectIds ?? [])];
     let subjects: { id: string; defaultCoefficient: number | null }[] = [];
     if (subjectIds.length > 0) {
@@ -157,7 +174,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           academicYearId: activeYear.id,
           name: parsed.data.name,
           level: parsed.data.level,
-          room: parsed.data.room ?? null,
+          room: roomLabel,
+          roomId: parsed.data.roomId ?? null,
           capacity: parsed.data.capacity ?? null,
           homeroomTeacherId: parsed.data.homeroomTeacherId ?? null,
           color: parsed.data.color ?? null,

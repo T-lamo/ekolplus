@@ -2,11 +2,13 @@
 
 // Loads everything the fiche classe needs besides the class itself: active
 // subjects (checkbox list), teachers (homeroom picker + their subjects),
-// the school's grade-level catalog, the active year (label / grading scale /
-// terms) and the active bulletin template. One hook for create + edit.
+// the school's grade-level catalog, the rooms catalogue, the active year
+// (label / grading scale / terms) and the active bulletin template. One hook
+// for create + edit.
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import type { GradeLevelRow } from '@/app/(school)/configuration/classes/types';
+import type { RoomRow } from '@/lib/rooms';
 import type { ClassFormOptions, ClassFormTeacher } from './ClassForm';
 import type { ClassFormSubject } from './useClassForm';
 
@@ -55,8 +57,9 @@ export function useClassFormData(enabled: boolean) {
       api<{ levels: GradeLevelRow[] }>('/api/school/grade-levels'),
       api<SchoolPayload>('/api/school'),
       api<{ personal: TemplateRow[]; global: TemplateRow[] }>('/api/school/bulletin-templates'),
+      api<{ rooms: RoomRow[] }>('/api/school/rooms'),
     ])
-      .then(([s, t, g, school, tpl]) => {
+      .then(([s, t, g, school, tpl, rm]) => {
         if (cancelled) return;
         const subjects: ClassFormSubject[] = s.subjects
           .filter((row) => row.status === 'ACTIVE' && row.isActive)
@@ -80,6 +83,7 @@ export function useClassFormData(enabled: boolean) {
           })),
           subjects,
           levelCatalog: [...g.levels].sort((a, b) => a.order - b.order).map((l) => l.name),
+          rooms: rm.rooms,
           yearLabel: year?.label ?? null,
           grading: {
             scale: year?.gradingScale ?? null,

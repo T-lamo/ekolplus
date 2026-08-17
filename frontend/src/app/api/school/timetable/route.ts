@@ -25,6 +25,7 @@ import {
   serializeSession,
   seriesCounts,
 } from '@/lib/server/timetable-route-helpers';
+import { findSchoolRoom } from '@/lib/server/rooms';
 
 const MAX_RANGE_DAYS = 62;
 
@@ -233,7 +234,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const room = body.room?.trim() ? body.room.trim() : null;
+    let room = body.room?.trim() ? body.room.trim() : null;
+    const roomId = body.roomId ?? null;
+    if (roomId) {
+      const catalogRoom = await findSchoolRoom(prisma, roomId, mySchool.schoolId);
+      if (!catalogRoom) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid roomId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      room = catalogRoom.name;
+    }
     const teacherId = body.teacherId ?? null;
 
     const result = await prisma.$transaction(async (tx) => {
@@ -257,6 +269,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           subjectId: body.subjectId,
           teacherId,
           room,
+          roomId,
           type: body.type,
           color: body.color ?? null,
           date,

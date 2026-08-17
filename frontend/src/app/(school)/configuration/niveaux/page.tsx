@@ -2,16 +2,38 @@
 
 // Configuration → Niveaux — the school's ordered grade-level catalog
 // ("6ème" → "5ème" → … → "Terminale"). Feeds the rollover wizard's
-// "Suggérer toutes les promotions" (Step 2). ↑/↓ reorder (no DnD dep),
-// pencil → rename Modal (project rule: edit icons open modals), trash →
-// window.confirm (matches classes/matières delete pattern). The API enforces
-// ADMIN on mutations; a MEMBER just gets the 403 message as a toast.
+// "Suggérer toutes les promotions" (Step 2). Reorder by drag & drop
+// (@dnd-kit/sortable — pointer, touch and keyboard sensors; user decision
+// 2026-08-17, replacing the ↑/↓ buttons), add via a header button → Modal
+// (same decision), pencil → rename Modal (project rule: edit icons open
+// modals), trash → window.confirm (matches classes/matières delete pattern).
+// The API enforces ADMIN on mutations; a MEMBER just gets the 403 as a toast.
 // Spec: docs/superpowers/specs/2026-08-17-grade-level-ordering-design.md
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { api, ApiError } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -44,21 +66,25 @@ function errorMessage(err: unknown): string {
   }
 }
 
-function RenameLevelModal({
-  level,
-  onRenamed,
+/** Shared name form for the add + rename modals. */
+function LevelNameModal({
+  title,
+  submitLabel,
+  initialName,
+  onSubmit,
   onClose,
 }: {
-  level: GradeLevel;
-  onRenamed: (level: GradeLevel) => void;
+  title: string;
+  submitLabel: string;
+  initialName: string;
+  onSubmit: (name: string) => Promise<void>;
   onClose: () => void;
 }) {
-  const { toast } = useToast();
-  const [value, setValue] = useState(level.name);
+  const [value, setValue] = useState(initialName);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     const name = value.trim();
@@ -68,12 +94,7 @@ function RenameLevelModal({
     }
     setSubmitting(true);
     try {
-      const res = await api<{ level: GradeLevel }>(`/api/school/grade-levels/${level.id}`, {
-        method: 'PATCH',
-        body: { name },
-      });
-      onRenamed(res.level);
-      toast('Niveau renommé.', 'success');
+      await onSubmit(name);
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -83,12 +104,14 @@ function RenameLevelModal({
   }
 
   return (
-    <Modal title="Renommer le niveau" onClose={onClose}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+    <Modal title={title} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <Field
           label="Nom du niveau"
+          name="levelName"
           autoFocus
           maxLength={40}
+          placeholder="Ex. 6ème"
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
@@ -102,11 +125,78 @@ function RenameLevelModal({
             Annuler
           </Button>
           <Button type="submit" loading={submitting} className="w-fit">
-            Enregistrer
+            {submitLabel}
           </Button>
         </div>
       </form>
     </Modal>
+  );
+}
+
+function SortableLevelRow({
+  level,
+  index,
+  disabled,
+  onRename,
+  onDelete,
+}: {
+  level: GradeLevel;
+  index: number;
+  disabled: boolean;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id: level.id, disabled });
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        'flex items-center gap-2 bg-card py-2',
+        isDragging && 'relative z-10 rounded-md shadow-md ring-1 ring-border',
+      )}
+    >
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        aria-label={`Réordonner ${level.name}`}
+        className={cn(
+          'flex h-8 w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none active:cursor-grabbing',
+          disabled && 'cursor-not-allowed opacity-50',
+        )}
+        disabled={disabled}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={16} />
+      </button>
+      <span className="w-6 text-right text-xs font-semibold text-muted-foreground">
+        {index + 1}
+      </span>
+      <span className="flex-1 truncate text-sm font-medium text-foreground">{level.name}</span>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-fit px-2"
+          aria-label={`Renommer ${level.name}`}
+          onClick={onRename}
+        >
+          <Pencil size={14} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-fit px-2 text-destructive-foreground hover:text-destructive-foreground"
+          aria-label={`Supprimer ${level.name}`}
+          onClick={onDelete}
+        >
+          <Trash2 size={14} />
+        </Button>
+      </div>
+    </li>
   );
 }
 
@@ -117,10 +207,17 @@ export default function NiveauxPage() {
 
   const [levels, setLevels] = useState<GradeLevel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [newName, setNewName] = useState('');
+  const [saving, setSaving] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [moving, setMoving] = useState(false);
   const [renaming, setRenaming] = useState<GradeLevel | null>(null);
+
+  const sensors = useSensors(
+    // Small activation distance so a plain click on the handle doesn't start
+    // a drag, and the row's own buttons stay clickable.
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -135,38 +232,36 @@ export default function NiveauxPage() {
       });
   }, [user, router]);
 
-  async function onAdd(e: FormEvent) {
-    e.preventDefault();
-    const name = newName.trim();
-    if (!name) return;
-    setAdding(true);
-    try {
-      const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
-        method: 'POST',
-        body: { name },
-      });
-      setLevels((prev) => [...(prev ?? []), res.level]);
-      setNewName('');
-      toast('Niveau ajouté.', 'success');
-    } catch (err) {
-      toast(errorMessage(err), 'error');
-    } finally {
-      setAdding(false);
-    }
+  async function addLevel(name: string) {
+    const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
+      method: 'POST',
+      body: { name },
+    });
+    setLevels((prev) => [...(prev ?? []), res.level]);
+    toast('Niveau ajouté.', 'success');
   }
 
-  async function onMove(index: number, delta: -1 | 1) {
-    if (!levels) return;
-    const target = index + delta;
-    if (target < 0 || target >= levels.length) return;
+  async function renameLevel(level: GradeLevel, name: string) {
+    const res = await api<{ level: GradeLevel }>(`/api/school/grade-levels/${level.id}`, {
+      method: 'PATCH',
+      body: { name },
+    });
+    setLevels((prev) => (prev ? prev.map((l) => (l.id === res.level.id ? res.level : l)) : prev));
+    toast('Niveau renommé.', 'success');
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!levels || !over || active.id === over.id) return;
+    const from = levels.findIndex((l) => l.id === active.id);
+    const to = levels.findIndex((l) => l.id === over.id);
+    if (from < 0 || to < 0) return;
+
     const previous = levels;
-    const next = [...levels];
-    const [moved] = next.splice(index, 1);
-    if (!moved) return;
-    next.splice(target, 0, moved);
+    const next = arrayMove(levels, from, to).map((l, order) => ({ ...l, order }));
     // Optimistic — orders are re-derived from the server response below.
-    setLevels(next.map((l, order) => ({ ...l, order })));
-    setMoving(true);
+    setLevels(next);
+    setSaving(true);
     try {
       const res = await api<{ levels: GradeLevel[] }>('/api/school/grade-levels/reorder', {
         method: 'POST',
@@ -177,7 +272,7 @@ export default function NiveauxPage() {
       setLevels(previous);
       toast(errorMessage(err), 'error');
     } finally {
-      setMoving(false);
+      setSaving(false);
     }
   }
 
@@ -194,12 +289,18 @@ export default function NiveauxPage() {
 
   return (
     <div className="flex min-h-full flex-col gap-5">
-      <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-foreground">Niveaux</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Ordre des niveaux scolaires, du premier au dernier — utilisé pour suggérer les promotions
-          lors du passage à l&apos;année suivante.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Niveaux</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Ordre des niveaux scolaires, du premier au dernier — glisse une ligne pour réordonner.
+            Utilisé pour suggérer les promotions lors du passage à l&apos;année suivante.
+          </p>
+        </div>
+        <Button className="w-fit" onClick={() => setAdding(true)}>
+          <Plus size={14} />
+          Ajouter un niveau
+        </Button>
       </div>
 
       {error && (
@@ -217,93 +318,53 @@ export default function NiveauxPage() {
       )}
 
       {levels !== null && (
-        <Card className="max-w-2xl gap-4 p-4 sm:p-6">
+        <Card className="max-w-2xl p-4 sm:p-6">
           {levels.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Aucun niveau configuré — ajoute ton premier niveau ci-dessous.
+              Aucun niveau configuré — ajoute ton premier niveau avec le bouton ci-dessus.
             </p>
           ) : (
-            <ol className="flex flex-col divide-y divide-border">
-              {levels.map((level, index) => (
-                <li key={level.id} className="flex items-center gap-3 py-2">
-                  <span className="w-6 text-right text-xs font-semibold text-muted-foreground">
-                    {index + 1}
-                  </span>
-                  <span className="flex-1 truncate text-sm font-medium text-foreground">
-                    {level.name}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit px-2"
-                      aria-label={`Monter ${level.name}`}
-                      disabled={moving || index === 0}
-                      onClick={() => onMove(index, -1)}
-                    >
-                      <ArrowUp size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit px-2"
-                      aria-label={`Descendre ${level.name}`}
-                      disabled={moving || index === levels.length - 1}
-                      onClick={() => onMove(index, 1)}
-                    >
-                      <ArrowDown size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit px-2"
-                      aria-label={`Renommer ${level.name}`}
-                      onClick={() => setRenaming(level)}
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit px-2 text-destructive-foreground hover:text-destructive-foreground"
-                      aria-label={`Supprimer ${level.name}`}
-                      onClick={() => onDelete(level)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={levels.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+                <ol className="flex flex-col divide-y divide-border">
+                  {levels.map((level, index) => (
+                    <SortableLevelRow
+                      key={level.id}
+                      level={level}
+                      index={index}
+                      disabled={saving}
+                      onRename={() => setRenaming(level)}
+                      onDelete={() => onDelete(level)}
+                    />
+                  ))}
+                </ol>
+              </SortableContext>
+            </DndContext>
           )}
-
-          <form onSubmit={onAdd} className="flex items-end gap-2 border-t border-border pt-4">
-            <div className="flex-1">
-              <Field
-                label="Nouveau niveau"
-                name="newLevel"
-                placeholder="Ex. 6ème"
-                maxLength={40}
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-fit" loading={adding} disabled={!newName.trim()}>
-              <Plus size={14} />
-              Ajouter
-            </Button>
-          </form>
         </Card>
       )}
 
+      {adding && (
+        <LevelNameModal
+          title="Ajouter un niveau"
+          submitLabel="Ajouter"
+          initialName=""
+          onSubmit={addLevel}
+          onClose={() => setAdding(false)}
+        />
+      )}
+
       {renaming && (
-        <RenameLevelModal
-          level={renaming}
-          onRenamed={(updated) =>
-            setLevels((prev) =>
-              prev ? prev.map((l) => (l.id === updated.id ? updated : l)) : prev,
-            )
-          }
+        <LevelNameModal
+          title="Renommer le niveau"
+          submitLabel="Enregistrer"
+          initialName={renaming.name}
+          onSubmit={(name) => renameLevel(renaming, name)}
           onClose={() => setRenaming(null)}
         />
       )}

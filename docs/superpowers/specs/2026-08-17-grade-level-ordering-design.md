@@ -289,3 +289,58 @@ Three product decisions from the user, applied the same day (commits on
    shared page-header typography (`text-xl font-extrabold tracking-tight` /
    `text-xs`).
 
+
+## Revision 3 — 2026-08-17 (user feedback: per-student decisions)
+
+User feedback (transcribed): « ce n'est pas tous les élèves qui vont pouvoir
+passer à une année supérieure … un élève qui n'a pas validé l'année va
+peut-être redoubler … il faut ajouter une étape dans laquelle on pourra
+prendre une décision pour chaque élève … j'arrive sur la page récapitulatif,
+je n'ai pas la possibilité d'éditer ». Decisions:
+
+1. **New wizard Step 3 « Décisions par élève »** (`Step3Decisions.tsx`),
+   between « Promotion des élèves » and « Récapitulatif » (now Step 4,
+   `Step4Summary.tsx`; `WizardStep = 1 | 2 | 3 | 4`). One row per enrolled
+   student — *Élève | Classe actuelle | Décision | Destination* — with a
+   class filter, a name search and a live summary line (« 12 élèves ·
+   7 passent · 2 redoublent · 3 non réinscrits »). The Décision select
+   offers: « Comme la classe → <destination de l'étape 2> » (default),
+   « Redouble → <classe actuelle> », « Non réinscrit », then « Autre classe
+   → X (niveau) » for every class of **equal or higher level** (no-demotion
+   rule, `promotion-rules.ts`). Options that coincide with the class default
+   are hidden (e.g. « Redouble » when the class already maps onto itself,
+   « Non réinscrit » when the class is « Fin de cursus »). « Sauvegarder le
+   brouillon » / « Étape précédente » / « Étape suivante — Récapitulatif ».
+2. **No new storage, no new route.** Decisions persist in the draft's
+   existing `studentExceptions` map (`student-decisions.ts`, pure, tested):
+   « Comme la classe » = no entry; « Redouble » = `{ destClassId: <own
+   class> }` (the own class is the clone template → same-named class in the
+   new year); « Autre classe » = `{ destClassId }`; « Non réinscrit » =
+   `{ skip: true }`. `PATCH` already validates ownership + demotions for
+   exceptions; `executeRollover` already applies them (exception > class
+   mapping > unenrolled).
+3. **Outcome vocabulary** shown in Step 3 and the summary: `promu`
+   (destination of a higher level), `redoublant` (destination of the **same
+   level** — individually or the whole class mapped onto its level),
+   `nonreinscrit`. Replaces the technical « Exception » badge/counter;
+   `PromotionStats` = `{ promoted, repeating, unenrolled }` (client-side;
+   the server's `computeStats` audit counters are unchanged). Summary rows
+   are sorted by class then name like Step 3, and « Étape précédente —
+   Modifier les décisions » is offered under the confirm zone.
+4. **Server hardening (`POST …/confirm`)**: a `destClassId` (class mapping
+   or per-student decision) that is no longer one of the active year's
+   classes is refused with 400 `MAPPING_STALE` (message pointing to step 2
+   or 3) instead of silently not re-enrolling those students
+   (`executeRollover` resolves an unknown template to "no destination").
+   Confirm errors now surface the server's French `body.message`.
+
+Verified: 965/965 unit tests (14 new for `student-decisions`, 3 new for the
+confirm guard), lint + typecheck, and a Playwright pass on the dev server:
+Step 3 reached from Step 2, options for a « Fin de cursus » 3ème class =
+« Comme la classe → non réinscrit | Redouble → 3ème A | Autre classe →
+3ème B (3ème) », redouble/autre → badge « Redoublant », summary line
+updates live, class filter + search, draft `PATCH` body =
+`{ studentExceptions: { <id>: { destClassId } … } }` → 200, Step 4 counters
+7 / 2 / 3 with « Redoublant » badges and « promouvra 7 élèves
+(2 redoublants) », decisions persisted across reload, no page overflow at
+375 px.

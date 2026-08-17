@@ -12,7 +12,6 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import {
   AlertTriangle,
   CalendarX,
-  Check,
   ChevronDown,
   Clock,
   DoorOpen,
@@ -27,6 +26,8 @@ import { SUBJECT_COLORS } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { FormStepsBar } from '@/components/school/FormStepsBar';
+import { WizardNav } from '@/components/school/WizardNav';
 import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { SelectItem } from '@/components/ui/Select';
@@ -55,6 +56,25 @@ import {
   todayDay,
   weeklyVolume,
 } from './timetable-utils';
+
+const FORM_ID = 'tt-session-form';
+const STEPS = [
+  { id: 'cours', label: 'Cours' },
+  { id: 'horaire', label: 'Intervenant & horaire' },
+  { id: 'options', label: 'Options' },
+];
+/** Which step shows each validated field — used to jump to the offending
+ * step on submit and to validate only the current step on « Suivant ». */
+const STEP_OF_FIELD: Record<string, number> = {
+  subjectId: 0,
+  classId: 0,
+  teacherId: 1,
+  room: 1,
+  date: 1,
+  time: 1,
+  until: 1,
+  meetingUrl: 2,
+};
 
 const OTHER_ROOM = '__other__';
 const TYPE_LABELS: Record<SessionType, string> = {
@@ -143,6 +163,10 @@ export function SessionFormModal({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Wizard steps (user decision 2026-08-17: the one-page form was too long).
+  // Editing an existing session unlocks every step at once.
+  const [stepIndex, setStepIndex] = useState(0);
+  const [maxReached, setMaxReached] = useState(editing ? STEPS.length - 1 : 0);
 
   const subject = subjects.find((s) => s.id === subjectId) ?? null;
   const effectiveColor = colorTouched ? color : (subject?.color ?? null);
@@ -174,7 +198,7 @@ export function SessionFormModal({
       : duration;
   const occurrences = recurring ? countOccurrences(date, days, until) : 1;
 
-  function validate(): boolean {
+  function computeErrors(): Record<string, string> {
     const errs: Record<string, string> = {};
     if (!subjectId) errs.subjectId = 'Choisis une matière.';
     if (!classId) errs.classId = 'Choisis une classe.';
@@ -189,8 +213,41 @@ export function SessionFormModal({
     if (meetingUrl.trim() && !/^https?:\/\//i.test(meetingUrl.trim())) {
       errs.meetingUrl = 'Le lien doit commencer par http:// ou https://.';
     }
+    return errs;
+  }
+
+  /** Full validation (submit) — on failure, jump to the first step that
+   * holds an error so the message is visible. */
+  function validate(): boolean {
+    const errs = computeErrors();
     setFieldErrors(errs);
-    return Object.keys(errs).length === 0;
+    const keys = Object.keys(errs);
+    if (keys.length === 0) return true;
+    const firstStep = Math.min(...keys.map((k) => STEP_OF_FIELD[k] ?? 0));
+    if (firstStep !== stepIndex) goTo(firstStep);
+    return false;
+  }
+
+  /** Validation limited to the fields of one step (Suivant). */
+  function validateStep(index: number): boolean {
+    const errs = computeErrors();
+    const own = Object.fromEntries(
+      Object.entries(errs).filter(([k]) => (STEP_OF_FIELD[k] ?? 0) === index),
+    );
+    setFieldErrors(own);
+    return Object.keys(own).length === 0;
+  }
+
+  function goTo(index: number) {
+    setStepIndex(index);
+    setMaxReached((m) => Math.max(m, index));
+    setError(null);
+    setConflicts([]);
+  }
+
+  function goNext() {
+    if (!validateStep(stepIndex)) return;
+    if (stepIndex < STEPS.length - 1) goTo(stepIndex + 1);
   }
 
   async function submit() {
@@ -259,14 +316,14 @@ export function SessionFormModal({
     }
   }
 
-  const footer = (
-    <div className="flex flex-wrap items-center justify-end gap-2.5">
+  const deleteRow = (
+    <div className="flex flex-wrap items-center gap-2.5">
       {editing && !confirmDelete && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="mr-auto w-fit text-destructive-foreground hover:bg-destructive"
+          className="w-fit text-destructive-foreground hover:bg-destructive"
           onClick={() => setConfirmDelete(true)}
         >
           <Trash2 size={14} />
@@ -274,7 +331,7 @@ export function SessionFormModal({
         </Button>
       )}
       {editing && confirmDelete && (
-        <div className="mr-auto flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-foreground">Supprimer :</span>
           <Button
             type="button"
@@ -307,13 +364,24 @@ export function SessionFormModal({
           </button>
         </div>
       )}
-      <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-        Annuler
-      </Button>
-      <Button type="button" className="w-fit" loading={submitting} onClick={submit}>
-        <Check size={14} />
-        Enregistrer la séance
-      </Button>
+    </div>
+  );
+  // Same footer as the student/teacher wizards: Annuler left, Précédent /
+  // Suivant (or Enregistrer on the last step) right; the delete controls
+  // (edit mode) sit on their own line above.
+  const footer = (
+    <div className="flex flex-col gap-2.5">
+      {editing && deleteRow}
+      <WizardNav
+        stepIndex={stepIndex}
+        stepCount={STEPS.length}
+        submitting={submitting}
+        submitLabel="Enregistrer la séance"
+        formId={FORM_ID}
+        onCancel={onClose}
+        onPrev={() => goTo(Math.max(0, stepIndex - 1))}
+        onNext={goNext}
+      />
     </div>
   );
 
@@ -329,400 +397,436 @@ export function SessionFormModal({
       bodyClassName="px-6 py-5"
       footerClassName="px-6 py-3.5"
       onClose={onClose}
+      header={
+        <FormStepsBar
+          steps={STEPS}
+          activeIndex={stepIndex}
+          maxReachedIndex={maxReached}
+          onStepSelect={goTo}
+        />
+      }
       footer={footer}
     >
-      <div className="flex flex-col gap-4">
-        {/* ── Cours ─────────────────────────────────────────────── */}
-        <SectionLabel>Cours</SectionLabel>
-        <FormGroup label="Matière" required error={fieldErrors.subjectId} htmlFor="tt-subject">
-          <IconSelect
-            id="tt-subject"
-            value={subjectId}
-            onValueChange={(v) => {
-              setSubjectId(v);
-              setTeacherTouched(false);
-            }}
-            placeholder="Choisir une matière"
-            // The selected item already renders its swatch through Radix's
-            // <Value>; only the placeholder state needs the leading dot.
-            icon={
-              subjectId ? null : (
-                <span
-                  aria-hidden
-                  className="h-3 w-3 shrink-0 rounded-[3px] bg-muted-foreground/30"
-                />
-              )
-            }
-          >
-            {subjects.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                <span className="inline-flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="h-3 w-3 shrink-0 rounded-[3px]"
-                    style={{ background: s.color ?? DEFAULT_SESSION_COLOR }}
-                  />
-                  {s.name}
-                </span>
-              </SelectItem>
-            ))}
-          </IconSelect>
-        </FormGroup>
+      <form
+        id={FORM_ID}
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          // Enter in a field advances on middle steps, saves on the last.
+          if (stepIndex < STEPS.length - 1) goNext();
+          else void submit();
+        }}
+      >
+        {stepIndex === 0 && (
+          <>
+            {/* ── Cours ─────────────────────────────────────────────── */}
+            <SectionLabel>Cours</SectionLabel>
+            <FormGroup label="Matière" required error={fieldErrors.subjectId} htmlFor="tt-subject">
+              <IconSelect
+                id="tt-subject"
+                value={subjectId}
+                onValueChange={(v) => {
+                  setSubjectId(v);
+                  setTeacherTouched(false);
+                }}
+                placeholder="Choisir une matière"
+                // The selected item already renders its swatch through Radix's
+                // <Value>; only the placeholder state needs the leading dot.
+                icon={
+                  subjectId ? null : (
+                    <span
+                      aria-hidden
+                      className="h-3 w-3 shrink-0 rounded-[3px] bg-muted-foreground/30"
+                    />
+                  )
+                }
+              >
+                {subjects.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        aria-hidden
+                        className="h-3 w-3 shrink-0 rounded-[3px]"
+                        style={{ background: s.color ?? DEFAULT_SESSION_COLOR }}
+                      />
+                      {s.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </IconSelect>
+            </FormGroup>
 
-        <div className="flex flex-col gap-[5px]">
-          <span className="text-xs font-semibold text-foreground">Couleur de la séance</span>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Couleur">
-              {SUBJECT_COLORS.map((hex) => {
-                const selected = (effectiveColor ?? DEFAULT_SESSION_COLOR) === hex;
-                return (
+            <div className="flex flex-col gap-[5px]">
+              <span className="text-xs font-semibold text-foreground">Couleur de la séance</span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Couleur">
+                  {SUBJECT_COLORS.map((hex) => {
+                    const selected = (effectiveColor ?? DEFAULT_SESSION_COLOR) === hex;
+                    return (
+                      <button
+                        key={hex}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        aria-label={hex}
+                        onClick={() => {
+                          setColorTouched(true);
+                          setColor(hex);
+                        }}
+                        style={{ background: hex }}
+                        className={cn(
+                          'h-5 w-5 shrink-0 rounded-[5px] transition-[outline]',
+                          selected && 'outline outline-[2.5px] outline-offset-2 outline-foreground',
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+                <span className="text-2xs text-muted-foreground">
+                  Identifie rapidement la matière sur la grille
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-[5px]">
+              <span className="text-xs font-semibold text-foreground">
+                Type de séance<span className="ml-0.5 text-destructive-foreground">*</span>
+              </span>
+              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Type de séance">
+                {SESSION_TYPES.map((t) => (
                   <button
-                    key={hex}
+                    key={t}
                     type="button"
                     role="radio"
-                    aria-checked={selected}
-                    aria-label={hex}
-                    onClick={() => {
-                      setColorTouched(true);
-                      setColor(hex);
-                    }}
-                    style={{ background: hex }}
+                    aria-checked={type === t}
+                    onClick={() => setType(t)}
                     className={cn(
-                      'h-5 w-5 shrink-0 rounded-[5px] transition-[outline]',
-                      selected && 'outline outline-[2.5px] outline-offset-2 outline-foreground',
+                      'rounded-xl border-[1.5px] px-3.5 py-[5px] text-xs font-semibold whitespace-nowrap transition-colors',
+                      type === t
+                        ? TYPE_META[t].active
+                        : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
                     )}
-                  />
-                );
-              })}
-            </div>
-            <span className="text-2xs text-muted-foreground">
-              Identifie rapidement la matière sur la grille
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-[5px]">
-          <span className="text-xs font-semibold text-foreground">
-            Type de séance<span className="ml-0.5 text-destructive-foreground">*</span>
-          </span>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Type de séance">
-            {SESSION_TYPES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                role="radio"
-                aria-checked={type === t}
-                onClick={() => setType(t)}
-                className={cn(
-                  'rounded-xl border-[1.5px] px-3.5 py-[5px] text-xs font-semibold whitespace-nowrap transition-colors',
-                  type === t
-                    ? TYPE_META[t].active
-                    : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
-                )}
-              >
-                {TYPE_LABELS[t]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Intervenants & Lieu ───────────────────────────────── */}
-        <SectionLabel className="mt-1">Intervenants &amp; Lieu</SectionLabel>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <FormGroup
-            label="Enseignant"
-            required
-            error={fieldErrors.teacherId}
-            htmlFor="tt-teacher"
-            className="flex-1"
-          >
-            <IconSelect
-              id="tt-teacher"
-              value={teacherId}
-              onValueChange={(v) => {
-                setTeacherId(v);
-                setTeacherTouched(true);
-              }}
-              placeholder="Choisir un enseignant"
-              icon={null}
-            >
-              {teachers.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  <span className="inline-flex items-center gap-[7px]">
-                    <Avatar name={t.name} src={t.photoUrl} size={20} />
-                    {t.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </IconSelect>
-          </FormGroup>
-          <FormGroup
-            label="Salle / Lieu"
-            required
-            error={fieldErrors.room}
-            htmlFor="tt-room"
-            className="flex-1"
-          >
-            <IconSelect
-              id="tt-room"
-              value={roomChoice}
-              onValueChange={(v) => {
-                setRoomChoice(v);
-                setRoomTouched(true);
-              }}
-              placeholder="Choisir une salle"
-              icon={<DoorOpen size={13} className="text-muted-foreground" />}
-            >
-              {knownRooms.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r}
-                </SelectItem>
-              ))}
-              <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
-            </IconSelect>
-            {roomChoice === OTHER_ROOM && (
-              <TextInput
-                aria-label="Autre lieu"
-                placeholder="Ex. Bibliothèque, Cour…"
-                value={customRoom}
-                onChange={(e) => setCustomRoom(e.target.value)}
-                autoFocus
-              />
-            )}
-          </FormGroup>
-        </div>
-        <FormGroup label="Classe" required error={fieldErrors.classId} htmlFor="tt-class">
-          <IconSelect
-            id="tt-class"
-            value={classId}
-            onValueChange={(v) => {
-              setClassId(v);
-              setTeacherTouched(false);
-              setRoomTouched(false);
-            }}
-            placeholder="Choisir une classe"
-            icon={<School size={13} className="text-muted-foreground" />}
-          >
-            {classes.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </IconSelect>
-        </FormGroup>
-
-        {/* ── Horaire ───────────────────────────────────────────── */}
-        <SectionLabel className="mt-1">Horaire</SectionLabel>
-        <div data-field-error={fieldErrors.date ? 'true' : undefined}>
-          <DateField
-            label={
-              <>
-                Date<span className="ml-0.5 text-destructive-foreground">*</span>
-              </>
-            }
-            id="tt-date"
-            value={date}
-            onChange={setDate}
-            compact
-            weekday
-            required
-            disabled={!!editing && applyToSeries && editing.seriesCount > 1}
-          />
-          {fieldErrors.date && (
-            <span role="alert" className="mt-1 block text-2xs text-destructive-foreground">
-              {fieldErrors.date}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <FormGroup label="Heure de début" required htmlFor="tt-start" className="flex-1">
-            <TimeSelect
-              id="tt-start"
-              value={startMinutes}
-              onValueChange={(m) => {
-                setStartMinutes(m);
-                if (endMinutes <= m) setEndMinutes(Math.min(m + 60, 19 * 60));
-              }}
-              options={TIME_OPTIONS.filter((m) => m < 19 * 60)}
-            />
-          </FormGroup>
-          <FormGroup
-            label="Heure de fin"
-            required
-            htmlFor="tt-end"
-            error={fieldErrors.time}
-            className="flex-1"
-          >
-            <TimeSelect
-              id="tt-end"
-              value={endMinutes}
-              onValueChange={setEndMinutes}
-              options={TIME_OPTIONS.filter((m) => m > startMinutes)}
-            />
-          </FormGroup>
-        </div>
-        <div className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-[7px]">
-          <Timer size={13} className="shrink-0 text-primary" aria-hidden />
-          <span className="text-xs font-medium text-primary">
-            Durée : {formatDuration(duration)} · Volume hebdomadaire : {formatDuration(weekly)}
-            /semaine
-          </span>
-        </div>
-
-        {/* ── Récurrence ────────────────────────────────────────── */}
-        {mode === 'create' ? (
-          <>
-            <SectionLabel className="mt-1">Récurrence</SectionLabel>
-            <div className="overflow-hidden rounded-md border border-border">
-              <div className="flex items-center justify-between gap-3 bg-muted px-3.5 py-2.5">
-                <div>
-                  <div className="text-caption font-semibold text-foreground">
-                    Répétition du cours
-                  </div>
-                  <div className="mt-px text-2xs text-muted-foreground">
-                    Définir une récurrence hebdomadaire
-                  </div>
-                </div>
-                <Toggle checked={recurring} onChange={setRecurring} label="Répétition du cours" />
+                  >
+                    {TYPE_LABELS[t]}
+                  </button>
+                ))}
               </div>
-              {recurring && (
-                <div className="flex flex-col gap-3 bg-card p-3.5">
-                  <div className="flex flex-col gap-[5px]">
-                    <span className="text-xs font-semibold text-foreground">
-                      Jours de répétition
-                    </span>
-                    <div className="flex gap-1.5" role="group" aria-label="Jours de répétition">
-                      {RECURRENCE_DAYS.map((d) => {
-                        const on = days.includes(d.value);
-                        return (
-                          <button
-                            key={d.value}
-                            type="button"
-                            aria-pressed={on}
-                            aria-label={d.plural}
-                            onClick={() =>
-                              setDays((prev) =>
-                                on ? prev.filter((v) => v !== d.value) : [...prev, d.value].sort(),
-                              )
-                            }
-                            className={cn(
-                              'flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] text-2xs font-semibold transition-colors',
-                              on
-                                ? 'border-primary bg-secondary text-primary'
-                                : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
-                            )}
-                          >
-                            {d.short}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <span className="text-2xs text-muted-foreground">
-                      Le cours se répètera chaque semaine les jours sélectionnés
-                    </span>
-                  </div>
-                  <div data-field-error={fieldErrors.until ? 'true' : undefined}>
-                    <DateField
-                      label={
-                        <>
-                          Fin de la récurrence
-                          <span className="ml-0.5 text-destructive-foreground">*</span>
-                        </>
-                      }
-                      id="tt-until"
-                      value={until}
-                      onChange={setUntil}
-                      compact
-                      required
-                      minDate={date}
-                      icon={<CalendarX size={14} className="shrink-0 text-muted-foreground" />}
-                      {...(academicYear && until === academicYear.endDate
-                        ? { hint: `Correspond à la fin de l’année scolaire ${academicYear.label}` }
-                        : {})}
-                    />
-                    {fieldErrors.until && (
-                      <span
-                        role="alert"
-                        className="mt-1 block text-2xs text-destructive-foreground"
-                      >
-                        {fieldErrors.until}
+            </div>
+
+            <FormGroup label="Classe" required error={fieldErrors.classId} htmlFor="tt-class">
+              <IconSelect
+                id="tt-class"
+                value={classId}
+                onValueChange={(v) => {
+                  setClassId(v);
+                  setTeacherTouched(false);
+                  setRoomTouched(false);
+                }}
+                placeholder="Choisir une classe"
+                icon={<School size={13} className="text-muted-foreground" />}
+              >
+                {classes.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </IconSelect>
+            </FormGroup>
+          </>
+        )}
+        {stepIndex === 1 && (
+          <>
+            {/* ── Intervenants & Lieu ───────────────────────────────── */}
+            <SectionLabel className="mt-1">Intervenants &amp; Lieu</SectionLabel>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <FormGroup
+                label="Enseignant"
+                required
+                error={fieldErrors.teacherId}
+                htmlFor="tt-teacher"
+                className="flex-1"
+              >
+                <IconSelect
+                  id="tt-teacher"
+                  value={teacherId}
+                  onValueChange={(v) => {
+                    setTeacherId(v);
+                    setTeacherTouched(true);
+                  }}
+                  placeholder="Choisir un enseignant"
+                  icon={null}
+                >
+                  {teachers.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <span className="inline-flex items-center gap-[7px]">
+                        <Avatar name={t.name} src={t.photoUrl} size={20} />
+                        {t.name}
                       </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-[7px] rounded-md bg-muted px-3 py-2">
-                    <Repeat size={13} className="shrink-0 text-muted-foreground" aria-hidden />
-                    <span className="text-xs text-muted-foreground">
-                      Tous les{' '}
-                      <strong className="font-semibold text-foreground">
-                        {recurrenceDaysLabel(days)}
-                      </strong>{' '}
-                      de {minutesToHHMM(startMinutes)} à {minutesToHHMM(endMinutes)}
-                      {until ? ` · jusqu’au ${formatLong(until).replace(/^\S+ /, '')}` : ''} —{' '}
-                      <strong className="font-semibold text-foreground">
-                        {occurrences} occurrence{occurrences > 1 ? 's' : ''}
-                      </strong>
-                    </span>
-                  </div>
-                </div>
+                    </SelectItem>
+                  ))}
+                </IconSelect>
+              </FormGroup>
+              <FormGroup
+                label="Salle / Lieu"
+                required
+                error={fieldErrors.room}
+                htmlFor="tt-room"
+                className="flex-1"
+              >
+                <IconSelect
+                  id="tt-room"
+                  value={roomChoice}
+                  onValueChange={(v) => {
+                    setRoomChoice(v);
+                    setRoomTouched(true);
+                  }}
+                  placeholder="Choisir une salle"
+                  icon={<DoorOpen size={13} className="text-muted-foreground" />}
+                >
+                  {knownRooms.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
+                </IconSelect>
+                {roomChoice === OTHER_ROOM && (
+                  <TextInput
+                    aria-label="Autre lieu"
+                    placeholder="Ex. Bibliothèque, Cour…"
+                    value={customRoom}
+                    onChange={(e) => setCustomRoom(e.target.value)}
+                    autoFocus
+                  />
+                )}
+              </FormGroup>
+            </div>
+            {/* ── Horaire ───────────────────────────────────────────── */}
+            <SectionLabel className="mt-1">Horaire</SectionLabel>
+            <div data-field-error={fieldErrors.date ? 'true' : undefined}>
+              <DateField
+                label={
+                  <>
+                    Date<span className="ml-0.5 text-destructive-foreground">*</span>
+                  </>
+                }
+                id="tt-date"
+                value={date}
+                onChange={setDate}
+                compact
+                weekday
+                required
+                disabled={!!editing && applyToSeries && editing.seriesCount > 1}
+              />
+              {fieldErrors.date && (
+                <span role="alert" className="mt-1 block text-2xs text-destructive-foreground">
+                  {fieldErrors.date}
+                </span>
               )}
             </div>
-          </>
-        ) : (
-          editing &&
-          editing.seriesCount > 1 && (
-            <>
-              <SectionLabel className="mt-1">Série</SectionLabel>
-              <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted px-3.5 py-2.5">
-                <div>
-                  <div className="text-caption font-semibold text-foreground">
-                    Appliquer à toute la série
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <FormGroup label="Heure de début" required htmlFor="tt-start" className="flex-1">
+                <TimeSelect
+                  id="tt-start"
+                  value={startMinutes}
+                  onValueChange={(m) => {
+                    setStartMinutes(m);
+                    if (endMinutes <= m) setEndMinutes(Math.min(m + 60, 19 * 60));
+                  }}
+                  options={TIME_OPTIONS.filter((m) => m < 19 * 60)}
+                />
+              </FormGroup>
+              <FormGroup
+                label="Heure de fin"
+                required
+                htmlFor="tt-end"
+                error={fieldErrors.time}
+                className="flex-1"
+              >
+                <TimeSelect
+                  id="tt-end"
+                  value={endMinutes}
+                  onValueChange={setEndMinutes}
+                  options={TIME_OPTIONS.filter((m) => m > startMinutes)}
+                />
+              </FormGroup>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-[7px]">
+              <Timer size={13} className="shrink-0 text-primary" aria-hidden />
+              <span className="text-xs font-medium text-primary">
+                Durée : {formatDuration(duration)} · Volume hebdomadaire : {formatDuration(weekly)}
+                /semaine
+              </span>
+            </div>
+
+            {/* ── Récurrence ────────────────────────────────────────── */}
+            {mode === 'create' ? (
+              <>
+                <SectionLabel className="mt-1">Récurrence</SectionLabel>
+                <div className="overflow-hidden rounded-md border border-border">
+                  <div className="flex items-center justify-between gap-3 bg-muted px-3.5 py-2.5">
+                    <div>
+                      <div className="text-caption font-semibold text-foreground">
+                        Répétition du cours
+                      </div>
+                      <div className="mt-px text-2xs text-muted-foreground">
+                        Définir une récurrence hebdomadaire
+                      </div>
+                    </div>
+                    <Toggle
+                      checked={recurring}
+                      onChange={setRecurring}
+                      label="Répétition du cours"
+                    />
                   </div>
-                  <div className="mt-px text-2xs text-muted-foreground">
-                    Cette séance fait partie d’une série de {editing.seriesCount} séances — la date
-                    reste propre à chaque occurrence.
-                  </div>
+                  {recurring && (
+                    <div className="flex flex-col gap-3 bg-card p-3.5">
+                      <div className="flex flex-col gap-[5px]">
+                        <span className="text-xs font-semibold text-foreground">
+                          Jours de répétition
+                        </span>
+                        <div className="flex gap-1.5" role="group" aria-label="Jours de répétition">
+                          {RECURRENCE_DAYS.map((d) => {
+                            const on = days.includes(d.value);
+                            return (
+                              <button
+                                key={d.value}
+                                type="button"
+                                aria-pressed={on}
+                                aria-label={d.plural}
+                                onClick={() =>
+                                  setDays((prev) =>
+                                    on
+                                      ? prev.filter((v) => v !== d.value)
+                                      : [...prev, d.value].sort(),
+                                  )
+                                }
+                                className={cn(
+                                  'flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] text-2xs font-semibold transition-colors',
+                                  on
+                                    ? 'border-primary bg-secondary text-primary'
+                                    : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
+                                )}
+                              >
+                                {d.short}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <span className="text-2xs text-muted-foreground">
+                          Le cours se répètera chaque semaine les jours sélectionnés
+                        </span>
+                      </div>
+                      <div data-field-error={fieldErrors.until ? 'true' : undefined}>
+                        <DateField
+                          label={
+                            <>
+                              Fin de la récurrence
+                              <span className="ml-0.5 text-destructive-foreground">*</span>
+                            </>
+                          }
+                          id="tt-until"
+                          value={until}
+                          onChange={setUntil}
+                          compact
+                          required
+                          minDate={date}
+                          icon={<CalendarX size={14} className="shrink-0 text-muted-foreground" />}
+                          {...(academicYear && until === academicYear.endDate
+                            ? {
+                                hint: `Correspond à la fin de l’année scolaire ${academicYear.label}`,
+                              }
+                            : {})}
+                        />
+                        {fieldErrors.until && (
+                          <span
+                            role="alert"
+                            className="mt-1 block text-2xs text-destructive-foreground"
+                          >
+                            {fieldErrors.until}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-[7px] rounded-md bg-muted px-3 py-2">
+                        <Repeat size={13} className="shrink-0 text-muted-foreground" aria-hidden />
+                        <span className="text-xs text-muted-foreground">
+                          Tous les{' '}
+                          <strong className="font-semibold text-foreground">
+                            {recurrenceDaysLabel(days)}
+                          </strong>{' '}
+                          de {minutesToHHMM(startMinutes)} à {minutesToHHMM(endMinutes)}
+                          {until
+                            ? ` · jusqu’au ${formatLong(until).replace(/^\S+ /, '')}`
+                            : ''} —{' '}
+                          <strong className="font-semibold text-foreground">
+                            {occurrences} occurrence{occurrences > 1 ? 's' : ''}
+                          </strong>
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <Toggle
-                  checked={applyToSeries}
-                  onChange={setApplyToSeries}
-                  label="Appliquer à toute la série"
+              </>
+            ) : (
+              editing &&
+              editing.seriesCount > 1 && (
+                <>
+                  <SectionLabel className="mt-1">Série</SectionLabel>
+                  <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted px-3.5 py-2.5">
+                    <div>
+                      <div className="text-caption font-semibold text-foreground">
+                        Appliquer à toute la série
+                      </div>
+                      <div className="mt-px text-2xs text-muted-foreground">
+                        Cette séance fait partie d’une série de {editing.seriesCount} séances — la
+                        date reste propre à chaque occurrence.
+                      </div>
+                    </div>
+                    <Toggle
+                      checked={applyToSeries}
+                      onChange={setApplyToSeries}
+                      label="Appliquer à toute la série"
+                    />
+                  </div>
+                </>
+              )
+            )}
+          </>
+        )}
+        {stepIndex === 2 && (
+          <>
+            {/* ── Options ───────────────────────────────────────────── */}
+            <SectionLabel className="mt-1">Options</SectionLabel>
+            <FormGroup label="Description" optional htmlFor="tt-description">
+              <TextArea
+                id="tt-description"
+                className="min-h-14"
+                placeholder="Ajouter des notes, objectifs ou remarques pour cette séance…"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup
+              label="Lien de visioconférence"
+              optional
+              htmlFor="tt-meeting"
+              error={fieldErrors.meetingUrl}
+            >
+              <div className="flex items-center gap-2 rounded-md border border-border bg-input px-2.5 focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/10">
+                <Video size={14} className="shrink-0 text-muted-foreground" aria-hidden />
+                <input
+                  id="tt-meeting"
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://meet.google.com/..."
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  className="min-w-0 flex-1 bg-transparent py-2 text-caption text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-            </>
-          )
+            </FormGroup>
+          </>
         )}
-
-        {/* ── Options ───────────────────────────────────────────── */}
-        <SectionLabel className="mt-1">Options</SectionLabel>
-        <FormGroup label="Description" optional htmlFor="tt-description">
-          <TextArea
-            id="tt-description"
-            className="min-h-14"
-            placeholder="Ajouter des notes, objectifs ou remarques pour cette séance…"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup
-          label="Lien de visioconférence"
-          optional
-          htmlFor="tt-meeting"
-          error={fieldErrors.meetingUrl}
-        >
-          <div className="flex items-center gap-2 rounded-md border border-border bg-input px-2.5 focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/10">
-            <Video size={14} className="shrink-0 text-muted-foreground" aria-hidden />
-            <input
-              id="tt-meeting"
-              type="url"
-              inputMode="url"
-              placeholder="https://meet.google.com/..."
-              value={meetingUrl}
-              onChange={(e) => setMeetingUrl(e.target.value)}
-              className="min-w-0 flex-1 bg-transparent py-2 text-caption text-foreground outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-        </FormGroup>
-
         {(error || conflicts.length > 0) && (
           <div
             role="alert"
@@ -745,7 +849,7 @@ export function SessionFormModal({
             </div>
           </div>
         )}
-      </div>
+      </form>
     </Modal>
   );
 }

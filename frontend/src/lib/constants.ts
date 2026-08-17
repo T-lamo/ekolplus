@@ -529,6 +529,18 @@ export const ACADEMIC_YEAR_ROLLOVER = {
     step3Preview: "Aperçu — Étape 3 (Disponible après validation de l'étape 2)",
     previousStep: 'Étape précédente',
     nextStep: 'Étape suivante — Décisions par élève',
+    // « classe par classe » — user decision 2026-08-17: for a school with
+    // many classes, deciding all of them in one big table can take a long
+    // time; offer a focused one-class-at-a-time flow as an alternative.
+    viewTable: 'Tableau',
+    viewPerClass: 'Classe par classe',
+    goToClass: 'Aller à une classe',
+    classProgress: (current: number, total: number) => `Classe ${current} sur ${total}`,
+    decidedCount: (n: number, total: number) =>
+      `${n} classe${n > 1 ? 's' : ''} décidée${n > 1 ? 's' : ''} sur ${total}`,
+    decidedBadge: 'Décidée',
+    prevClass: 'Classe précédente',
+    nextClass: 'Classe suivante',
   },
 
   step3: {

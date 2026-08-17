@@ -43,6 +43,7 @@ const NewClassSchema = z.object({
 const ClassMappingEntrySchema = z
   .object({
     destClassId: z.string().optional(),
+    unenroll: z.boolean().optional(),
     isNew: z.boolean().optional(),
     newClass: NewClassSchema.optional(),
   })

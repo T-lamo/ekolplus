@@ -511,8 +511,10 @@ export const ACADEMIC_YEAR_ROLLOVER = {
     studentCount: 'Élèves',
     currentLevel: 'Niveau actuel',
     destClass: 'Classe de destination',
-    createNew: 'Créer nouvelle',
-    help: 'Sélectionnez la classe de destination pour chaque classe actuelle en créant une nouvelle classe.',
+    help: "Choisis, pour chaque classe actuelle, la classe de destination parmi les classes de l'école (elle sera recréée dans la nouvelle année avec les mêmes réglages), ou marque-la « Fin de cursus » si ses élèves quittent l'établissement.",
+    pickDestination: '— Choisir une classe —',
+    endOfCursus: 'Fin de cursus — non réinscrits',
+    legacyNewClass: (name: string) => `Nouvelle classe « ${name} » (brouillon précédent)`,
     suggestAll: 'Suggérer toutes les promotions',
     suggestHint:
       "Configure l'ordre des niveaux dans Configuration > Niveaux pour activer les suggestions automatiques.",
@@ -521,8 +523,7 @@ export const ACADEMIC_YEAR_ROLLOVER = {
         ? '1 classe pré-remplie — vérifie et ajuste si besoin.'
         : `${n} classes pré-remplies — vérifie et ajuste si besoin.`,
     suggestNone:
-      "Aucune classe à pré-remplir : toutes ont déjà une destination, ou leur niveau n'est pas dans le catalogue (ou est le dernier).",
-    noExistingClasses: 'Aucune classe existante disponible — créez-en une nouvelle.',
+      "Aucune classe à pré-remplir : toutes sont déjà décidées, ou leur niveau n'est pas dans le catalogue, ou aucune classe existante ne correspond au niveau suivant.",
     step3Preview: "Aperçu — Étape 3 (Disponible après validation de l'étape 2)",
     previousStep: 'Étape précédente',
     nextStep: 'Étape suivante — Récapitulatif',
@@ -541,17 +542,6 @@ export const ACADEMIC_YEAR_ROLLOVER = {
     typeToConfirm: 'Tapez le nom de votre école pour confirmer',
     confirmButton: 'Confirmer',
     previousStep: 'Étape précédente',
-  },
-
-  createNewClass: {
-    title: 'Créer une nouvelle classe',
-    name: 'Nom de la classe',
-    level: 'Niveau',
-    room: 'Salle (optionnel)',
-    capacity: 'Capacité (optionnel)',
-    homeroomTeacher: 'Professeur principal (optionnel)',
-    create: 'Créer',
-    cancel: 'Annuler',
   },
 
   studentStatus: {

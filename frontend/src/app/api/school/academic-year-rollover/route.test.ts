@@ -368,6 +368,17 @@ describe('PATCH /api/school/academic-year-rollover', () => {
     expect(prismaMock.academicYearRolloverDraft.update).toHaveBeenCalled();
   });
 
+  it('accepts a classMapping entry marked "Fin de cursus" (unenroll: true)', async () => {
+    prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
+    prismaMock.academicYearRolloverDraft.update.mockResolvedValueOnce(draftRow as never);
+
+    const res = await PATCH(
+      makeReq('PATCH', URL, { classMapping: { old_class_1: { unenroll: true } } }),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.academicYearRolloverDraft.update).toHaveBeenCalled();
+  });
+
   it('accepts a well-formed classMapping (isNew=true WITH newClass)', async () => {
     prismaMock.academicYearRolloverDraft.findUnique.mockResolvedValueOnce(draftRow as never);
     prismaMock.academicYearRolloverDraft.update.mockResolvedValueOnce(draftRow as never);

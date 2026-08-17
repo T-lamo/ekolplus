@@ -1,5 +1,13 @@
 export interface ClassMappingEntry {
+  /** A CURRENT-year class used as the template the rollover clones into the
+   * new year (see `executeRollover` step 4). */
   destClassId?: string;
+  /** Explicit "fin de cursus": the class's students are deliberately not
+   * re-enrolled. Distinct from "no decision yet" (empty entry), which Step 2
+   * refuses to proceed with. */
+  unenroll?: boolean;
+  /** Legacy "Créer nouvelle" path — still honoured server-side for drafts
+   * saved before the destination picker; the UI no longer produces it. */
   isNew?: boolean;
   newClass?: {
     name: string;

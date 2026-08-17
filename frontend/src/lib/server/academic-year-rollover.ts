@@ -199,46 +199,76 @@ export async function executeRollover(
     select: { studentId: true, classId: true },
   });
 
-  // 4. Create/reuse destination classes per the mapping (oldClassId -> newClassId).
-  const newClassMap = new Map<string, string>();
-  // Dedup "Créer nouvelle" classes by name within this execution. Two old
-  // classes can legitimately map to the same new-class name (merging two
-  // classes into one — the only way to express a merge in v1, since
-  // `allClasses=[]` means there's no existing-class picker yet). Without
-  // this, the second `tx.class.create` would hit the
-  // `@@unique([academicYearId, name])` constraint and roll back the whole
-  // transaction with an unhandled 500.
+  // 4. Resolve destination classes in the NEW year (oldClassId -> newClassId).
+  //
+  // A `destClassId` is a class of the OLD (current) year chosen as a
+  // TEMPLATE — "6ème A → 5ème A" means "create 5ème A in the new year,
+  // cloned from this year's 5ème A (name/level/room/capacity/homeroom
+  // teacher), and enroll 6ème A's students there". Classes are per-year
+  // rows, so the new year's classes don't exist before this commit; the
+  // clone is what makes the destination real. Mapping a class onto itself is
+  // a collective repeat year. A `destClassId` that isn't one of the old
+  // year's classes (cross-year/stale) resolves to nothing → not enrolled.
+  //
+  // Clones are deduped by name (`createdClassIdByName`): two old classes
+  // pointing at the same template share one clone, and a template clone and
+  // a legacy `isNew` entry with the same name land on the same class — the
+  // second `tx.class.create` would otherwise hit
+  // `@@unique([academicYearId, name])` and roll back the transaction.
+  const oldClassById = new Map(oldClasses.map((c) => [c.id, c]));
   const createdClassIdByName = new Map<string, string>();
 
+  async function ensureNewClass(spec: {
+    name: string;
+    level: string;
+    room: string | null;
+    capacity: number | null;
+    homeroomTeacherId: string | null;
+  }): Promise<string> {
+    const existing = createdClassIdByName.get(spec.name);
+    if (existing) return existing;
+    const created = await tx.class.create({
+      data: {
+        schoolId,
+        academicYearId: newYear.id,
+        name: spec.name,
+        level: spec.level,
+        room: spec.room,
+        capacity: spec.capacity,
+        homeroomTeacherId: spec.homeroomTeacherId,
+      },
+    });
+    createdClassIdByName.set(spec.name, created.id);
+    return created.id;
+  }
+
+  /** Template (old-year class id) → its new-year clone id, or null when the
+   * id isn't an old-year class. Memoised through `createdClassIdByName`. */
+  async function resolveTemplate(templateId: string): Promise<string | null> {
+    const template = oldClassById.get(templateId);
+    if (!template) return null;
+    return ensureNewClass(template);
+  }
+
+  const newClassMap = new Map<string, string>();
   for (const oldClass of oldClasses) {
     const mapping = rolloverData.classMapping[oldClass.id];
     if (!mapping) continue;
 
     if (mapping.destClassId) {
-      // Reuse an existing class.
-      newClassMap.set(oldClass.id, mapping.destClassId);
+      const cloneId = await resolveTemplate(mapping.destClassId);
+      if (cloneId) newClassMap.set(oldClass.id, cloneId);
     } else if (mapping.isNew && mapping.newClass) {
-      const alreadyCreatedId = createdClassIdByName.get(mapping.newClass.name);
-      if (alreadyCreatedId) {
-        // Same name already created earlier in this loop — reuse it instead
-        // of creating a duplicate.
-        newClassMap.set(oldClass.id, alreadyCreatedId);
-      } else {
-        // Create a brand-new class in the new year.
-        const newClass = await tx.class.create({
-          data: {
-            schoolId,
-            academicYearId: newYear.id,
-            name: mapping.newClass.name,
-            level: mapping.newClass.level,
-            room: mapping.newClass.room ?? null,
-            capacity: mapping.newClass.capacity ?? null,
-            homeroomTeacherId: mapping.newClass.homeroomTeacherId ?? null,
-          },
-        });
-        createdClassIdByName.set(mapping.newClass.name, newClass.id);
-        newClassMap.set(oldClass.id, newClass.id);
-      }
+      // Legacy "Créer nouvelle" entry (drafts saved before the destination
+      // picker) — still honoured server-side.
+      const cloneId = await ensureNewClass({
+        name: mapping.newClass.name,
+        level: mapping.newClass.level,
+        room: mapping.newClass.room ?? null,
+        capacity: mapping.newClass.capacity ?? null,
+        homeroomTeacherId: mapping.newClass.homeroomTeacherId ?? null,
+      });
+      newClassMap.set(oldClass.id, cloneId);
     }
   }
 
@@ -250,7 +280,10 @@ export async function executeRollover(
       continue;
     }
 
-    const destClassId = exception?.destClassId ?? newClassMap.get(oldEnroll.classId);
+    // An exception's destClassId is a template too (same picker semantics).
+    const destClassId = exception?.destClassId
+      ? await resolveTemplate(exception.destClassId)
+      : newClassMap.get(oldEnroll.classId);
 
     if (destClassId) {
       await tx.enrollment.create({

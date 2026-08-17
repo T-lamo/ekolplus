@@ -165,8 +165,25 @@ describe('computeStats', () => {
 describe('executeRollover', () => {
   const tx = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
 
-  function oldClass(id: string, name: string) {
-    return { id, name, level: '6ème', room: null, capacity: null, homeroomTeacherId: null };
+  function oldClass(
+    id: string,
+    name: string,
+    extra: Partial<{
+      level: string;
+      room: string | null;
+      capacity: number | null;
+      homeroomTeacherId: string | null;
+    }> = {},
+  ) {
+    return {
+      id,
+      name,
+      level: '6ème',
+      room: null,
+      capacity: null,
+      homeroomTeacherId: null,
+      ...extra,
+    };
   }
 
   beforeEach(() => {
@@ -207,26 +224,139 @@ describe('executeRollover', () => {
     });
   });
 
-  it('(a) destClassId reuse: an existing class as destination gets the enrollment', async () => {
-    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+  it('(a) destClassId = a current-year class → cloned into the new year (name/level/room/capacity/homeroom), enrollment goes to the clone', async () => {
+    tx.class.findMany.mockResolvedValue([
+      oldClass('old_c1', '6ème A'),
+      oldClass('old_c2', '5ème A', {
+        level: '5ème',
+        room: 'B12',
+        capacity: 30,
+        homeroomTeacherId: 't_9',
+      }),
+    ] as never);
     tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.class.create.mockResolvedValue({ id: 'clone_5A' } as never);
     tx.enrollment.create.mockResolvedValue({} as never);
 
     await executeRollover(tx, 'school_1', 'ay_old', {
       ...baseRolloverData,
-      classMapping: { old_c1: { destClassId: 'existing_c1' } },
+      classMapping: { old_c1: { destClassId: 'old_c2' } },
       studentExceptions: {},
     });
 
-    expect(tx.class.create).not.toHaveBeenCalled();
+    expect(tx.class.create).toHaveBeenCalledTimes(1);
+    expect(tx.class.create).toHaveBeenCalledWith({
+      data: {
+        schoolId: 'school_1',
+        academicYearId: 'new_year_1',
+        name: '5ème A',
+        level: '5ème',
+        room: 'B12',
+        capacity: 30,
+        homeroomTeacherId: 't_9',
+      },
+    });
     expect(tx.enrollment.create).toHaveBeenCalledWith({
       data: {
         studentId: 's1',
-        classId: 'existing_c1',
+        classId: 'clone_5A',
         academicYearId: 'new_year_1',
         enrolledAt: expect.any(Date),
       },
     });
+  });
+
+  it('(a2) two old classes pointing at the same destClassId share ONE clone', async () => {
+    tx.class.findMany.mockResolvedValue([
+      oldClass('old_c1', '6ème A'),
+      oldClass('old_c2', '6ème B'),
+      oldClass('old_c3', '5ème A', { level: '5ème' }),
+    ] as never);
+    tx.enrollment.findMany.mockResolvedValue([
+      { studentId: 's1', classId: 'old_c1' },
+      { studentId: 's2', classId: 'old_c2' },
+    ] as never);
+    tx.class.create.mockResolvedValue({ id: 'clone_5A' } as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'old_c3' }, old_c2: { destClassId: 'old_c3' } },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).toHaveBeenCalledTimes(1);
+    expect(tx.enrollment.create).toHaveBeenCalledTimes(2);
+    for (const studentId of ['s1', 's2']) {
+      expect(tx.enrollment.create).toHaveBeenCalledWith({
+        data: {
+          studentId,
+          classId: 'clone_5A',
+          academicYearId: 'new_year_1',
+          enrolledAt: expect.any(Date),
+        },
+      });
+    }
+  });
+
+  it('(a3) a class mapped onto ITSELF is cloned too (collective repeat year)', async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.class.create.mockResolvedValue({ id: 'clone_6A' } as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'old_c1' } },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ academicYearId: 'new_year_1', name: '6ème A' }),
+    });
+    expect(tx.enrollment.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ studentId: 's1', classId: 'clone_6A' }),
+    });
+  });
+
+  it("(a4) destClassId that is not one of the old year's classes → nothing created, students not enrolled", async () => {
+    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+    tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: { old_c1: { destClassId: 'from_another_year' } },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).not.toHaveBeenCalled();
+    expect(tx.enrollment.create).not.toHaveBeenCalled();
+  });
+
+  it('(a5) a template clone and an isNew of the SAME name dedupe onto one class', async () => {
+    tx.class.findMany.mockResolvedValue([
+      oldClass('old_c1', '6ème A'),
+      oldClass('old_c2', '6ème B'),
+      oldClass('old_c3', '5ème A', { level: '5ème' }),
+    ] as never);
+    tx.enrollment.findMany.mockResolvedValue([
+      { studentId: 's1', classId: 'old_c1' },
+      { studentId: 's2', classId: 'old_c2' },
+    ] as never);
+    tx.class.create.mockResolvedValue({ id: 'only_one' } as never);
+    tx.enrollment.create.mockResolvedValue({} as never);
+
+    await executeRollover(tx, 'school_1', 'ay_old', {
+      ...baseRolloverData,
+      classMapping: {
+        old_c1: { destClassId: 'old_c3' },
+        old_c2: { isNew: true, newClass: { name: '5ème A', level: '5ème' } },
+      },
+      studentExceptions: {},
+    });
+
+    expect(tx.class.create).toHaveBeenCalledTimes(1);
+    expect(tx.enrollment.create).toHaveBeenCalledTimes(2);
   });
 
   it('(b) isNew: true + newClass present creates a new class and enrolls into it', async () => {
@@ -278,22 +408,29 @@ describe('executeRollover', () => {
     expect(tx.enrollment.create).not.toHaveBeenCalled();
   });
 
-  it('(d) a studentExceptions destClassId overrides the class-level mapping', async () => {
-    tx.class.findMany.mockResolvedValue([oldClass('old_c1', '6ème A')] as never);
+  it('(d) a studentExceptions destClassId overrides the class-level mapping (and is cloned the same way)', async () => {
+    tx.class.findMany.mockResolvedValue([
+      oldClass('old_c1', '6ème A'),
+      oldClass('old_c2', '5ème A', { level: '5ème' }),
+      oldClass('old_c3', '5ème B', { level: '5ème' }),
+    ] as never);
     tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
+    tx.class.create
+      .mockResolvedValueOnce({ id: 'clone_5A' } as never)
+      .mockResolvedValueOnce({ id: 'clone_5B' } as never);
     tx.enrollment.create.mockResolvedValue({} as never);
 
     await executeRollover(tx, 'school_1', 'ay_old', {
       ...baseRolloverData,
-      classMapping: { old_c1: { destClassId: 'class-mapped-dest' } },
-      studentExceptions: { s1: { destClassId: 'exception-dest' } },
+      classMapping: { old_c1: { destClassId: 'old_c2' } },
+      studentExceptions: { s1: { destClassId: 'old_c3' } },
     });
 
     expect(tx.enrollment.create).toHaveBeenCalledTimes(1);
     expect(tx.enrollment.create).toHaveBeenCalledWith({
       data: {
         studentId: 's1',
-        classId: 'exception-dest',
+        classId: 'clone_5B',
         academicYearId: 'new_year_1',
         enrolledAt: expect.any(Date),
       },

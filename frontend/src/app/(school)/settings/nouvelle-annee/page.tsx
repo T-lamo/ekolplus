@@ -95,6 +95,8 @@ function deriveStep3Students(
     }
 
     const mapping = classMapping[student.classId];
+    // `unenroll: true` (explicit "Fin de cursus") falls through to
+    // 'nonreinscrit' below — same outcome as executeRollover.
     if (mapping?.destClassId || (mapping?.isNew && mapping?.newClass)) {
       const destClassName =
         mapping.newClass?.name ?? classes.find((c) => c.id === mapping.destClassId)?.name;
@@ -339,14 +341,6 @@ export default function AcademicYearWizardPage() {
           <Step2Promotion
             classes={classes}
             gradeLevels={gradeLevels}
-            // The new AcademicYear (and therefore any real destination
-            // `Class` rows) doesn't exist until confirm runs
-            // `executeRollover` — so at Step 2 editing time there are no
-            // valid pre-existing destination classes to offer. "Créer
-            // nouvelle" is the only real path in v1. Passing the source
-            // `classes` list here instead would let a class be "promoted"
-            // into itself.
-            allClasses={[]}
             activeMapping={classMapping}
             onMappingChange={handleMappingChange}
             onSave={handleStep2Save}

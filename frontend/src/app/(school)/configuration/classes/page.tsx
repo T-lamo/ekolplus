@@ -36,11 +36,9 @@ import {
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { CARD_GRID } from '@/lib/layout';
-import { getClassDotColor } from '@/lib/subject-visuals';
+import { getClassDotColor, tintOf } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import { exportToCsv } from '@/lib/csv-export';
-import type { TeacherOption } from '@/components/school/TeacherPicker';
-import { ClassFormModal } from './ClassFormModal';
 import type { ClassData } from './types';
 
 const PAGE_SIZE = 10;
@@ -54,25 +52,21 @@ export default function ClassesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [classes, setClasses] = useState<ClassData[] | null>(null);
-  const [teachers, setTeachers] = useState<TeacherOption[]>([]);
   const [school, setSchool] = useState<SchoolInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<ClassData | 'new' | null>(null);
 
   useEffect(() => {
     if (!user) return;
     Promise.all([
       api<{ classes: ClassData[] }>('/api/school/classes'),
-      api<{ teachers: TeacherOption[] }>('/api/school/teachers'),
       api<SchoolInfo>('/api/school'),
     ])
-      .then(([c, t, s]) => {
+      .then(([c, s]) => {
         setClasses(c.classes);
-        setTeachers(t.teachers);
         setSchool(s);
       })
       .catch((err) => {
@@ -145,15 +139,23 @@ export default function ClassesPage() {
       {
         label: 'Voir la classe',
         icon: <Eye size={14} />,
-        onClick: () => toast('Fiche classe détaillée — disponible avec Epic 5 (Élèves).', 'info'),
+        onClick: () => router.push(`/configuration/classes/${c.id}`),
       },
-      { label: 'Modifier', icon: <Pencil size={14} />, onClick: () => setEditing(c) },
+      {
+        label: 'Modifier',
+        icon: <Pencil size={14} />,
+        onClick: () => router.push(`/configuration/classes/${c.id}`),
+      },
       {
         label: 'Gérer les élèves',
         icon: <Users size={14} />,
         onClick: () => toast('Disponible avec Epic 5 (Élèves).', 'info'),
       },
-      { label: 'Affecter enseignants', icon: <UserPlus size={14} />, onClick: () => setEditing(c) },
+      {
+        label: 'Affecter enseignants',
+        icon: <UserPlus size={14} />,
+        onClick: () => router.push('/configuration/affectations'),
+      },
       {
         label: 'Voir les matières',
         icon: <BookOpen size={14} />,
@@ -196,7 +198,7 @@ export default function ClassesPage() {
             <Download size={14} />
             Exporter
           </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
+          <Button className="w-fit" onClick={() => router.push('/configuration/classes/nouvelle')}>
             <Plus size={14} />
             Ajouter une classe
           </Button>
@@ -284,12 +286,17 @@ export default function ClassesPage() {
                 <ListCard
                   key={c.id}
                   tile={
-                    <ListCardTile className="bg-secondary text-primary">
+                    <ListCardTile
+                      {...(c.color
+                        ? { style: { background: tintOf(c.color), color: c.color } }
+                        : { className: 'bg-secondary text-primary' })}
+                    >
                       <SchoolIcon size={18} />
                     </ListCardTile>
                   }
                   title={c.name}
-                  subtitle={c.room ?? 'Salle non renseignée'}
+                  href={`/configuration/classes/${c.id}`}
+                  subtitle={[c.room ?? 'Salle non renseignée', c.track].filter(Boolean).join(' · ')}
                   menu={<ActionMenu items={menuItemsFor(c)} />}
                   metaLeft={
                     <ListCardPerson
@@ -340,7 +347,7 @@ export default function ClassesPage() {
                             <span
                               aria-hidden
                               className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: getClassDotColor(c.id) }}
+                              style={{ background: c.color ?? getClassDotColor(c.id) }}
                             />
                             <div>
                               <div className="font-semibold text-foreground">{c.name}</div>
@@ -409,21 +416,6 @@ export default function ClassesPage() {
             />
           )}
         </>
-      )}
-
-      {editing && (
-        <ClassFormModal
-          cls={editing === 'new' ? null : editing}
-          teachers={teachers}
-          onClose={() => setEditing(null)}
-          onSaved={(saved) =>
-            setClasses((prev) => {
-              if (!prev) return prev;
-              const exists = prev.some((c) => c.id === saved.id);
-              return exists ? prev.map((c) => (c.id === saved.id ? saved : c)) : [...prev, saved];
-            })
-          }
-        />
       )}
     </div>
   );

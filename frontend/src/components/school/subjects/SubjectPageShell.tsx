@@ -5,9 +5,8 @@
 // title/meta · actions + the tabs bar) inside the page padding — like every
 // other page title in the app, not flush against the sidebar/topbar — then
 // the page body. Tabs render their own footer card at the end.
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { PageHeaderCard } from '@/components/school/PageHeaderCard';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import {
@@ -79,45 +78,31 @@ export function SubjectPageShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="overflow-hidden rounded-xl border border-border bg-card">
-        <div className="flex flex-col gap-3 px-4 pt-3.5 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <Link
-              href="/configuration/matieres"
-              className="flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-[7px] text-caption font-medium text-muted-foreground hover:bg-muted"
+      <PageHeaderCard
+        backHref="/configuration/matieres"
+        chip={
+          visual ? (
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+              style={{ background: visual.iconBg, color: visual.iconFg }}
             >
-              <ArrowLeft size={15} />
-              Retour
-            </Link>
-            <div className="flex min-w-0 items-center gap-2.5">
-              {visual && (
-                <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-                  style={{ background: visual.iconBg, color: visual.iconFg }}
-                >
-                  <visual.Icon size={18} />
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="truncate text-[17px] leading-tight font-bold text-foreground">
-                  {mode === 'create' ? 'Ajouter une matière' : (subject?.name ?? '…')}
-                </div>
-                <div className="truncate text-xs text-muted-foreground">{meta}</div>
-              </div>
+              <visual.Icon size={18} />
             </div>
-          </div>
-          {actions && (
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
-          )}
-        </div>
-        <SubjectTabsBar
-          active={activeTab}
-          onChange={onTabChange}
-          {...(counts ? { counts } : {})}
-          disabledTabs={mode === 'create' ? ['programme', 'affectations'] : []}
-          disabledHint="Enregistre la matière pour continuer"
-        />
-      </header>
+          ) : undefined
+        }
+        title={mode === 'create' ? 'Ajouter une matière' : (subject?.name ?? '…')}
+        meta={meta}
+        actions={actions}
+        tabs={
+          <SubjectTabsBar
+            active={activeTab}
+            onChange={onTabChange}
+            {...(counts ? { counts } : {})}
+            disabledTabs={mode === 'create' ? ['programme', 'affectations'] : []}
+            disabledHint="Enregistre la matière pour continuer"
+          />
+        }
+      />
 
       <div className="flex flex-1 flex-col pt-4">{children}</div>
     </div>

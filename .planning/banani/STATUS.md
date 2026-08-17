@@ -1,10 +1,16 @@
 # Banani implementation status
 
-Last updated: 2026-08-17 (grade-level ordering + promotion auto-suggest; subject detail — add-matiere / programme-annuel / affectations-classes)
+Last updated: 2026-08-17 (add-class ; grade-level ordering + promotion auto-suggest; subject detail — add-matiere / programme-annuel / affectations-classes)
 
 Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/AcademicYear/Term/Enrollment as first-class models). All 6 open questions decided and locked 2026-08-11.
 
 ## Done
+- [x] `add-class` (`WSAJOFgz4ml5`, flow `2oB_n5kLBeuy`) — plan: `add-class.md` — DONE 2026-08-17 — commit: see git log (`feat(banani): add-class`)
+  - Routes : `/configuration/classes/nouvelle` (création pleine page) + `/configuration/classes/[id]` (édition, même formulaire) — `ClassFormModal` supprimé ; la liste navigue vers ces routes (titre de carte cliquable). Chrome partagé avec la fiche matière : `PageHeaderCard` + `PageTabsBar` (extraits de `SubjectPageShell`/`SubjectTabsBar`, badges ✓ « done »), onglets = **ancres** (scroll-spy) vers les 4 cartes du mock, colonne droite `ASIDE_GRID`.
+  - Décision utilisateur : **couleur d'identification à droite** (carte « Apparence » : pastilles partagées `SUBJECT_COLORS` + « Aperçu de la carte » vivant), comme pour les matières.
+  - Modèle : migration `24_class_identity` — `Class` + `color`, `track` (filière/série). API : `GET /api/school/classes` (+color/track), `POST` (+color/track/`subjectIds` → pivots dans la même tx), **nouveau `GET /[id]`** (subjectIds, lockedSubjectIds, classSubjectIdBySubject, studentCount), `PATCH` (+color/track) ; garde `DELETE /api/school/class-subjects/[id]` → 409 `CLASS_SUBJECT_HAS_EVALUATIONS` (la suppression du pivot cascadait sur les notes). +9 tests.
+  - Écarts assumés : actions du bas retirées (une seule action, en-tête) ; « Matière principale » → matières du prof en lecture seule ; « Configuration des notes » en lecture seule (barème / périodes / calcul / modèle actif — hérités, liens « Gérer »). Niveau = catalogue `grade-levels` + « Autre… » (saisie libre si catalogue vide).
+  - Verified : lint/typecheck/tests verts ; **E2E navigateur** : création complète via l'UI (niveau du catalogue, couleur, prof principal, 3 matières) → POST 201 + 3 pivots, atterrissage sur la fiche, décochage à la volée → DELETE 204, liste avec la couleur, nettoyage. 1440 / 1280 / 375 sans débordement.
 - [x] `add-matiere` (`mQobMt0qZhgH`) + `programme-annuel` (`2jFhG8pLw1l_`) + `affectations-classes` (`FMTCFae5gsD6`) — flow `2oB_n5kLBeuy` — plans: `add-matiere.md` / `programme-annuel.md` / `affectations-classes.md` — DONE 2026-08-17 — commit `20b928d`
   - Routes : `/configuration/matieres/nouvelle` (création pleine page) + `/configuration/matieres/[id]?tab=info|programme|affectations` (fiche matière, shell partagé `SubjectPageShell` : sous-en-tête bled + `SubjectTabsBar` 3 onglets + `SubjectPageFooter` collant). `SubjectFormModal` supprimé ; la liste navigue vers ces routes et affiche le badge Brouillon.
   - 4 questions produit tranchées par l'utilisateur (toutes « Recommandé ») : page vs modale → page ; Compétences/Évaluations → masqués ; Brouillon → visible liste seulement, exclu des sélecteurs + dashboard ; Département → catalogue + existants + « Autre… ».

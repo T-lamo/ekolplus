@@ -423,6 +423,10 @@ model Class {
   capacity          Int?
   homeroomTeacherId String?
   homeroomTeacher   Teacher?     @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
+  // Fiche classe (add-class.md) — couleur d'identification (#rrggbb, palette
+  // partagée avec les matières) et filière / série (texte libre, optionnel).
+  color             String?
+  track             String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

@@ -1,0 +1,142 @@
+'use client';
+
+// /configuration/classes/[id] — fiche classe en édition (add-class.md) : même
+// formulaire que la création ; les matières se basculent à la volée, le reste
+// s'enregistre avec « Enregistrer ».
+import { useCallback, useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Save } from 'lucide-react';
+import { api, ApiError } from '@/lib/api';
+import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { ASIDE_GRID } from '@/lib/layout';
+import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { ClassPageShell } from '@/components/school/classes/ClassPageShell';
+import {
+  ClassForm,
+  classSectionsDone,
+  doneSectionKeys,
+} from '@/components/school/classes/ClassForm';
+import { useClassForm } from '@/components/school/classes/useClassForm';
+import { useClassFormData } from '@/components/school/classes/useClassFormData';
+import type { ClassData, ClassDetail } from '../types';
+
+export default function ClassDetailPage() {
+  const user = useUser();
+  const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const classId = params.id;
+  const { toast } = useToast();
+  const { options, error: optionsError, noSchool } = useClassFormData(!!user);
+  const [cls, setCls] = useState<ClassDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadDetail = useCallback(async () => {
+    try {
+      const res = await api<{ class: ClassDetail }>(`/api/school/classes/${classId}`);
+      setCls(res.class);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        setError('Classe introuvable.');
+        return;
+      }
+      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+    }
+  }, [classId]);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadDetail();
+  }, [user, loadDetail]);
+
+  useEffect(() => {
+    if (noSchool) router.replace('/');
+  }, [noSchool, router]);
+
+  const onSaved = useCallback(
+    (saved: ClassData) => {
+      toast('Classe mise à jour.', 'success');
+      setCls((prev) =>
+        prev ? { ...prev, ...saved, homeroomTeacher: prev.homeroomTeacher } : prev,
+      );
+      void loadDetail();
+    },
+    [toast, loadDetail],
+  );
+
+  const form = useClassForm({
+    cls,
+    levelCatalog: options?.levelCatalog ?? [],
+    subjects: options?.subjects ?? [],
+    onSaved,
+  });
+
+  const done = classSectionsDone(form);
+  const doneKeys = doneSectionKeys(done);
+  const meta = [
+    cls?.level,
+    cls?.room,
+    cls?.academicYear?.label ? `Année ${cls.academicYear.label}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  return (
+    <ClassPageShell
+      mode="edit"
+      name={cls?.name ?? ''}
+      color={form.values.color}
+      meta={meta}
+      done={doneKeys}
+      ready={!!options && !!cls}
+      counts={
+        form.values.subjectIds.length > 0 && !done.subjects
+          ? { subjects: form.values.subjectIds.length }
+          : {}
+      }
+      actions={
+        <>
+          <Button
+            variant="outline"
+            className="w-fit"
+            onClick={() => router.push('/configuration/classes')}
+          >
+            Annuler
+          </Button>
+          <Button
+            className="w-fit"
+            loading={form.submitting}
+            disabled={!cls}
+            onClick={() => void form.submit()}
+          >
+            <Save size={14} />
+            Enregistrer
+          </Button>
+        </>
+      }
+    >
+      {error || optionsError ? (
+        <p role="alert" className="text-sm text-destructive-foreground">
+          {error ?? optionsError}
+        </p>
+      ) : !options || !cls ? (
+        <div className={ASIDE_GRID}>
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-64 rounded-lg" />
+            <Skeleton className="h-40 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
+          </div>
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-56 rounded-lg" />
+            <Skeleton className="h-48 rounded-lg" />
+          </div>
+        </div>
+      ) : (
+        <div className="pb-4">
+          <ClassForm form={form} options={{ ...options, studentCount: cls.studentCount }} />
+        </div>
+      )}
+    </ClassPageShell>
+  );
+}

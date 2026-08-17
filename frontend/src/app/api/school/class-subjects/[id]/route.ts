@@ -43,6 +43,19 @@ export async function DELETE(
       );
     }
 
+    // Deleting the pivot cascades on its evaluations (grades) — refuse when
+    // any exist so a class/subject page toggle can never wipe a gradebook.
+    const evaluationCount = await prisma.evaluation.count({ where: { classSubjectId: id } });
+    if (evaluationCount > 0) {
+      return NextResponse.json(
+        {
+          error: 'CLASS_SUBJECT_HAS_EVALUATIONS',
+          message: 'Des notes existent pour cette matière dans cette classe.',
+        },
+        { status: 409, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     await prisma.classSubject.delete({ where: { id } });
     return new NextResponse(null, { status: 204, headers: { 'x-request-id': ctx.requestId } });
   });

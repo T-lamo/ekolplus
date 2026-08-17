@@ -51,6 +51,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           level: c.level,
           room: c.room,
           capacity: c.capacity,
+          color: c.color,
+          track: c.track,
           homeroomTeacher: c.homeroomTeacher,
           subjectCount: c._count.classSubjects,
           studentCount: c._count.enrollments,
@@ -61,12 +63,20 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   });
 }
 
+// Route modules may only export handlers/segment config — keep this local.
+const CLASS_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+
 const CreateClassBody = z.object({
   name: z.string().trim().min(1).max(40),
   level: z.string().trim().min(1).max(40),
   room: z.string().trim().max(40).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
+  color: z.string().regex(CLASS_COLOR_REGEX).nullable().optional(),
+  track: z.string().trim().max(60).nullable().optional(),
+  // Fiche classe (add-class.md) : matières cochées à la création → pivots
+  // ClassSubject créés dans la même transaction (coefficient = défaut matière).
+  subjectIds: z.array(z.string()).max(100).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -124,21 +134,51 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    const created = await prisma.class.create({
-      data: {
-        schoolId: mySchool.schoolId,
-        academicYearId: activeYear.id,
-        name: parsed.data.name,
-        level: parsed.data.level,
-        room: parsed.data.room ?? null,
-        capacity: parsed.data.capacity ?? null,
-        homeroomTeacherId: parsed.data.homeroomTeacherId ?? null,
-      },
-      include: { homeroomTeacher: { select: { id: true, name: true } } },
+    const subjectIds = [...new Set(parsed.data.subjectIds ?? [])];
+    let subjects: { id: string; defaultCoefficient: number | null }[] = [];
+    if (subjectIds.length > 0) {
+      subjects = await prisma.subject.findMany({
+        where: { id: { in: subjectIds }, schoolId: mySchool.schoolId },
+        select: { id: true, defaultCoefficient: true },
+      });
+      if (subjects.length !== subjectIds.length) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid subjectIds' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+    }
+
+    const created = await prisma.$transaction(async (tx) => {
+      const cls = await tx.class.create({
+        data: {
+          schoolId: mySchool.schoolId,
+          academicYearId: activeYear.id,
+          name: parsed.data.name,
+          level: parsed.data.level,
+          room: parsed.data.room ?? null,
+          capacity: parsed.data.capacity ?? null,
+          homeroomTeacherId: parsed.data.homeroomTeacherId ?? null,
+          color: parsed.data.color ?? null,
+          track: parsed.data.track ?? null,
+        },
+        include: { homeroomTeacher: { select: { id: true, name: true } } },
+      });
+      if (subjects.length > 0) {
+        await tx.classSubject.createMany({
+          data: subjects.map((s) => ({
+            classId: cls.id,
+            subjectId: s.id,
+            coefficient: s.defaultCoefficient,
+          })),
+          skipDuplicates: true,
+        });
+      }
+      return cls;
     });
 
     return NextResponse.json(
-      { class: created },
+      { class: { ...created, subjectCount: subjects.length, studentCount: 0 } },
       { status: 201, headers: { 'x-request-id': ctx.requestId } },
     );
   });

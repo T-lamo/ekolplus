@@ -1,4 +1,7 @@
-// PATCH /api/school/classes/[id] — update a class.
+// GET /api/school/classes/[id] — class detail for the fiche classe
+// (add-class.md): profile + subjectIds + lockedSubjectIds (pivots that already
+// carry evaluations) + studentCount. Any school member can read.
+// PATCH /api/school/classes/[id] — update a class (ADMIN).
 // DELETE /api/school/classes/[id] — delete, blocked (409) if it still has
 // ClassSubject rows. See .planning/banani/classes-config.md.
 export const runtime = 'nodejs';
@@ -18,12 +21,84 @@ const UpdateClassBody = z.object({
   room: z.string().trim().max(40).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .nullable()
+    .optional(),
+  track: z.string().trim().max(60).nullable().optional(),
 });
 
 async function assertOwnedClass(id: string, schoolId: string) {
   const cls = await prisma.class.findUnique({ where: { id } });
   if (!cls || cls.schoolId !== schoolId) return null;
   return cls;
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
+    const mySchool = await resolveMySchool(auth.user.sub);
+    if (!mySchool) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'Not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const { id } = await params;
+    const cls = await prisma.class.findUnique({
+      where: { id },
+      include: {
+        homeroomTeacher: { select: { id: true, name: true, photoUrl: true } },
+        academicYear: { select: { id: true, label: true } },
+        classSubjects: {
+          select: { id: true, subjectId: true, _count: { select: { evaluations: true } } },
+        },
+        _count: { select: { enrollments: true } },
+      },
+    });
+    if (!cls || cls.schoolId !== mySchool.schoolId) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'Class not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        class: {
+          id: cls.id,
+          name: cls.name,
+          level: cls.level,
+          room: cls.room,
+          capacity: cls.capacity,
+          color: cls.color,
+          track: cls.track,
+          homeroomTeacher: cls.homeroomTeacher,
+          academicYear: cls.academicYear,
+          subjectCount: cls.classSubjects.length,
+          studentCount: cls._count.enrollments,
+          subjectIds: cls.classSubjects.map((cs) => cs.subjectId),
+          // Pivots that already carry grades — deleting them cascades on the
+          // evaluations, so the UI locks the checkbox and the DELETE refuses.
+          lockedSubjectIds: cls.classSubjects
+            .filter((cs) => cs._count.evaluations > 0)
+            .map((cs) => cs.subjectId),
+          classSubjectIdBySubject: Object.fromEntries(
+            cls.classSubjects.map((cs) => [cs.subjectId, cs.id]),
+          ),
+        },
+      },
+      { headers: { 'x-request-id': ctx.requestId } },
+    );
+  });
 }
 
 export async function PATCH(

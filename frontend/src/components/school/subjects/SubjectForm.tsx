@@ -516,7 +516,13 @@ export function SubjectForm({
         >
           <div className="mb-3.5 flex flex-col gap-[7px]">
             <span className="text-xs font-semibold text-foreground">Icône</span>
-            <div className="grid grid-cols-8 gap-[5px]" role="radiogroup" aria-label="Icône">
+            {/* Tiles fill their cell (min 34px, square) instead of a fixed 36px —
+                Banani's 8×36px row is wider than its own 260px card. */}
+            <div
+              className="grid grid-cols-[repeat(auto-fill,minmax(34px,1fr))] gap-[5px]"
+              role="radiogroup"
+              aria-label="Icône"
+            >
               {SUBJECT_ICONS.map(({ key, Icon }) => {
                 const selected = v.icon === key;
                 return (
@@ -528,7 +534,7 @@ export function SubjectForm({
                     aria-label={key}
                     onClick={() => setField('icon', selected ? null : key)}
                     className={cn(
-                      'flex h-9 w-9 items-center justify-center rounded-md border-2',
+                      'flex aspect-square w-full items-center justify-center rounded-md border-2',
                       selected
                         ? 'border-primary bg-secondary text-primary'
                         : 'border-transparent bg-muted text-muted-foreground',

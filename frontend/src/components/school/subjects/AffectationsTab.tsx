@@ -34,6 +34,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { exportToCsv } from '@/lib/csv-export';
+import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import type {
@@ -194,9 +195,9 @@ export function AffectationsTab({
   return (
     <>
       <div className="pb-4">
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_300px] lg:gap-[18px] xl:grid-cols-[1fr_320px]">
+        <div className={cn(ASIDE_GRID, 'items-start')}>
           {/* ── LEFT ─────────────────────────────────────────────── */}
-          <div className="flex min-w-0 flex-col gap-[18px]">
+          <div className="flex min-w-0 flex-col gap-4">
             {/* KPI row */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <Kpi value={rows.length} label="Classes affectées" tone="text-primary" />
@@ -245,7 +246,7 @@ export function AffectationsTab({
                 <>
                   {/* md+: table */}
                   <div className="hidden overflow-x-auto md:block">
-                    <table className="w-full min-w-[820px] border-collapse">
+                    <table className="w-full min-w-[690px] border-collapse">
                       <thead>
                         <tr>
                           {[
@@ -253,18 +254,17 @@ export function AffectationsTab({
                             'Niveau',
                             'Enseignant assigné',
                             'Coeff.',
-                            'Élèves',
                             'Heures/sem.',
                             'Statut',
                           ].map((h) => (
                             <th
                               key={h}
-                              className="border-b border-border px-3.5 pt-3 pb-2.5 text-left text-2xs font-semibold tracking-[0.6px] text-muted-foreground uppercase"
+                              className="border-b border-border px-2.5 pt-3 pb-2.5 text-left text-2xs font-semibold tracking-[0.6px] text-muted-foreground uppercase"
                             >
                               {h}
                             </th>
                           ))}
-                          <th className="border-b border-border px-3.5 pt-3 pb-2.5 text-right text-2xs font-semibold tracking-[0.6px] text-muted-foreground uppercase">
+                          <th className="border-b border-border px-2.5 pt-3 pb-2.5 text-right text-2xs font-semibold tracking-[0.6px] text-muted-foreground uppercase">
                             Actions
                           </th>
                         </tr>
@@ -276,20 +276,20 @@ export function AffectationsTab({
                             className={cn(selectedRow === row.classId && 'bg-[#f7f5ff]')}
                             onClick={() => setSelectedRow(row.classId)}
                           >
-                            <td className="border-b border-border px-3.5 py-3 align-middle whitespace-nowrap">
+                            <td className="border-b border-border px-2.5 py-3 align-middle whitespace-nowrap">
                               <div className="text-caption font-semibold text-foreground">
                                 {row.class.name}
                               </div>
                               <div className="mt-px text-xs text-muted-foreground">
-                                {subject.code ?? '—'}
+                                {plural(row.class.studentCount, 'élève')}
                               </div>
                             </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle">
+                            <td className="border-b border-border px-2.5 py-3 align-middle">
                               <Badge className="bg-info text-info-foreground">
                                 {row.class.level}
                               </Badge>
                             </td>
-                            <td className="min-w-[230px] border-b border-border px-3.5 py-3 align-middle">
+                            <td className="min-w-[200px] border-b border-border px-2.5 py-3 align-middle">
                               <TeacherCell
                                 row={row}
                                 teachers={teachers}
@@ -298,7 +298,7 @@ export function AffectationsTab({
                                 onChange={(id) => void upsert(row.classId, { teacherId: id })}
                               />
                             </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle">
+                            <td className="border-b border-border px-2.5 py-3 align-middle">
                               <NumberCell
                                 value={row.coefficient}
                                 min={1}
@@ -309,10 +309,7 @@ export function AffectationsTab({
                                 onCommit={(v) => void upsert(row.classId, { coefficient: v })}
                               />
                             </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle text-caption font-semibold text-foreground">
-                              {row.class.studentCount}
-                            </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle">
+                            <td className="border-b border-border px-2.5 py-3 align-middle">
                               <span className="flex items-center gap-1 text-caption text-foreground">
                                 <NumberCell
                                   value={row.weeklyHours}
@@ -326,14 +323,14 @@ export function AffectationsTab({
                                 h
                               </span>
                             </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle whitespace-nowrap">
+                            <td className="border-b border-border px-2.5 py-3 align-middle whitespace-nowrap">
                               {row.teacherId ? (
                                 <Badge tone="success">Active</Badge>
                               ) : (
                                 <Badge tone="warning">Sans prof.</Badge>
                               )}
                             </td>
-                            <td className="border-b border-border px-3.5 py-3 align-middle">
+                            <td className="border-b border-border px-2.5 py-3 align-middle">
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   type="button"
@@ -540,7 +537,7 @@ export function AffectationsTab({
           </div>
 
           {/* ── RIGHT ────────────────────────────────────────────── */}
-          <div className="flex min-w-0 flex-col gap-3.5">
+          <div className="flex min-w-0 flex-col gap-4">
             <SideCard icon={<Info size={15} className="text-primary" />} title="Matière">
               <div className="mb-2.5 flex items-center gap-2.5 rounded-md bg-background px-3 py-2.5">
                 <div

@@ -45,3 +45,5 @@
 - Toute modification est persistée à la volée ; « Enregistrer les affectations » confirme (toast) et « Annuler les modifications » recharge.
 - Sous 1280 px avec la sidebar dépliée la table (min 820 px) défile horizontalement dans sa carte — le mock est à 1440.
 - « Chargé » = charge hebdo réelle ≥ `weeklyHoursTarget` (ou ≥ 18 h sans cible).
+- Colonne droite = `ASIDE_GRID` (360 px lg / 420 px xl, `src/lib/layout.ts`) au lieu de 260 px, gaps 16 px — largeur unique dans toute l'app école (retour utilisateur 2026-08-17).
+- Conséquence : la colonne gauche fait ~708 px à 1440 (sidebar dépliée) ; pour garder toutes les informations visibles sans défilement, la colonne « Élèves » est fusionnée dans la cellule Classe (sous-ligne « 12 élèves » à la place du code matière, identique sur toutes les lignes donc redondant), cellules `px-2.5`, table `min-w 690`. Sous ~1366 px sidebar dépliée, la table défile dans sa carte.

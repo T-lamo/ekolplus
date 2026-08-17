@@ -103,11 +103,16 @@ model Subject {
 Toutes les chaînes FR ci-dessus, dans `src/app/(school)/configuration/matieres/subject-form.constants.ts` (catalogues : KIND, EVALUATION_TYPES, ROOM_TYPES, DOMAINS, ICONS, COLORS).
 
 ## Checklist
-- [ ] Migration 22 + routes (POST/PATCH étendus, GET [id])
-- [ ] `SubjectPageShell` + `SubjectTabsBar` + `SubjectForm` (mobile-first)
-- [ ] Liste : bouton/actions → routes ; badge Brouillon ; suppression de `SubjectFormModal`
-- [ ] 375 / 768 / 1280 vérifiés en navigateur
-- [ ] format / lint / typecheck / test
+- [x] Migration 22 + routes (POST/PATCH étendus, GET [id])
+- [x] `SubjectPageShell` + `SubjectTabsBar` + `SubjectForm` (mobile-first)
+- [x] Liste : bouton/actions → routes ; badge Brouillon ; suppression de `SubjectFormModal`
+- [x] 375 / 768 / 1280 vérifiés en navigateur
+- [x] format / lint / typecheck / test
+
+## Écarts assumés vs mock
+- **Colonne droite 360 px (lg) / 420 px (xl)** au lieu de 300 px — retour utilisateur 2026-08-17 (« doit occuper beaucoup plus d'espace ») ; c'est devenu la largeur de référence de toute l'app école via `ASIDE_GRID` (`src/lib/layout.ts`, garde-fou `layout.test.ts`).
+- En-tête (Retour · titre · actions · onglets) et footers rendus en cartes arrondies dans la marge de la page (ne collent plus à la sidebar / topbar) ; « champs obligatoires » au-dessus de la grille pour aligner Identité et Apparence.
+- Actions uniquement dans l'en-tête (pas de footer dupliqué) ; « Archivée » masqué en création ; grille d'icônes 8 colonnes fluides.
 
 ## Open questions for user
 Voir message batché du 2026-08-17 (page vs modale, onglets Compétences/Évaluations, sémantique Brouillon, catalogue Département).

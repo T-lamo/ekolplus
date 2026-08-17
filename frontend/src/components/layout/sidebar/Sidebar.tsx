@@ -10,13 +10,14 @@ import { SidebarCollapseToggle } from './SidebarCollapseToggle';
 import { SidebarSection } from './SidebarSection';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import type { NavSection } from './types';
+import { SIDEBAR_WIDTH } from './width';
 
 const COLLAPSED_WIDTH = 72;
 
 interface SidebarProps {
   sections: NavSection[];
   variant: 'light' | 'dark';
-  width: number;
+  width?: number;
   brandIcon: ReactNode;
   brandText: ReactNode;
   roleLabel: string;
@@ -30,7 +31,7 @@ interface SidebarProps {
 export function Sidebar({
   sections,
   variant,
-  width,
+  width = SIDEBAR_WIDTH,
   brandIcon,
   brandText,
   roleLabel,

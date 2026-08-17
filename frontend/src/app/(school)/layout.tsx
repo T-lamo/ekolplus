@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
+import { SIDEBAR_WIDTH_CLASS } from '@/components/layout/sidebar/width';
 import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -34,7 +35,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className="relative z-50 flex h-full w-[220px]">
+          <div className={`relative z-50 flex h-full ${SIDEBAR_WIDTH_CLASS}`}>
             <SchoolSidebar onNavigate={() => setDrawerOpen(false)} />
             <button
               type="button"

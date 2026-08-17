@@ -8,6 +8,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
@@ -201,7 +202,7 @@ function SubjectDetailContent() {
           {error}
         </p>
       ) : !subject ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_420px]">
+        <div className={ASIDE_GRID}>
           <div className="flex flex-col gap-3.5">
             <Skeleton className="h-64 rounded-lg" />
             <Skeleton className="h-72 rounded-lg" />

@@ -31,6 +31,7 @@ import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
+import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import type {
@@ -307,7 +308,7 @@ export function ProgrammeTab({
   if (terms === null) {
     return (
       <>
-        <div className="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
+        <div className={cn(ASIDE_GRID, 'pb-4')}>
           <div className="flex flex-col gap-3">
             <Skeleton className="h-40 rounded-lg" />
             <Skeleton className="h-40 rounded-lg" />
@@ -355,7 +356,7 @@ export function ProgrammeTab({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
+        <div className={cn(ASIDE_GRID, 'items-start')}>
           {/* LEFT: terms */}
           <div className="min-w-0">
             {terms.length === 0 ? (
@@ -460,7 +461,7 @@ export function ProgrammeTab({
           </div>
 
           {/* RIGHT: sticky summary */}
-          <div className="flex flex-col gap-3 lg:sticky lg:top-0">
+          <div className="flex flex-col gap-4 lg:sticky lg:top-0">
             <InfoCard icon={<BarChart2 size={14} />} title="Résumé du programme">
               <StatRow label="Total chapitres" value={String(sortedChapters.length)} />
               <StatRow label="Heures totales" value={fmtHours(totalHours)} />

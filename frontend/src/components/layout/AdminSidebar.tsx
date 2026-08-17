@@ -70,7 +70,6 @@ export function AdminSidebar({
     <Sidebar
       sections={ADMIN_SECTIONS}
       variant="dark"
-      width={220}
       brandIcon={<GraduationCap size={15} className="text-white" />}
       brandText={
         <div className="flex flex-col gap-px">

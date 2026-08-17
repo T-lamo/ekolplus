@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useAdminUser } from '@/contexts/AuthContext';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminTopbar } from '@/components/layout/AdminTopbar';
+import { SIDEBAR_WIDTH_CLASS } from '@/components/layout/sidebar/width';
 import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -31,7 +32,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className="relative z-50 flex h-full w-[220px]">
+          <div className={`relative z-50 flex h-full ${SIDEBAR_WIDTH_CLASS}`}>
             <AdminSidebar onNavigate={() => setDrawerOpen(false)} />
             <button
               type="button"

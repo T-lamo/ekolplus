@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { FEES } from '@/lib/constants';
+import { ASIDE_GRID } from '@/lib/layout';
 import { fmtMoney, fmtDate } from '@/lib/fees-format';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
 import { FeeKpiRow } from '@/components/school/fees/FeeKpiRow';
@@ -305,7 +306,7 @@ export default function OverdueFeesPage() {
             ]}
           />
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
+          <div className={ASIDE_GRID}>
             <div className="flex min-w-0 flex-col gap-3.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <SearchInput

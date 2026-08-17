@@ -71,3 +71,4 @@ model SubjectChapter {
 - « Exporter PDF » → **Exporter CSV** (réel, `exportToCsv`) ; pas de rendu PDF serveur pour ce tableau.
 - Les actions du header (Exporter / Enregistrer) vivent dans le footer de l'onglet (le mock les duplique) — le header ne garde que le badge statut.
 - Palette T1/T2/T3 = tokens `secondary/primary`, `success`, `warning` (cycle au-delà de 3 périodes).
+- Colonne droite = `ASIDE_GRID` (360 px lg / 420 px xl, `src/lib/layout.ts`) au lieu de 240 px — largeur unique dans toute l'app école (retour utilisateur 2026-08-17).

@@ -18,6 +18,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual, SUBJECT_COLORS, SUBJECT_ICONS, tintOf } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import {
@@ -104,7 +105,7 @@ export function SubjectForm({
           {serverError}
         </p>
       )}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_420px]">
+      <div className={cn(ASIDE_GRID, 'items-start')}>
         {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
         <div className="flex min-w-0 flex-col gap-4">
           <FormCard

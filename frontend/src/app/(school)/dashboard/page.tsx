@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton, SkeletonStatCards } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { DASHBOARD } from '@/lib/constants';
+import { ASIDE_GRID } from '@/lib/layout';
 import { KpiRow } from './KpiRow';
 import { AveragesTrendCard } from './AveragesTrendCard';
 import { LevelDistributionCard } from './LevelDistributionCard';
@@ -104,9 +105,9 @@ export default function DashboardPage() {
       )}
 
       {!data && !error && (
-        <div className="flex flex-col gap-3.5">
+        <div className="flex flex-col gap-4">
           <SkeletonStatCards count={5} />
-          <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1fr_290px]">
+          <div className={ASIDE_GRID}>
             <Skeleton className="h-[220px] w-full" />
             <Skeleton className="h-[220px] w-full" />
           </div>
@@ -122,19 +123,19 @@ export default function DashboardPage() {
         <>
           <KpiRow kpis={data.kpis} />
 
-          <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1fr_290px]">
+          <div className={ASIDE_GRID}>
             <AveragesTrendCard yearLabel={data.academicYear.label} data={data.averagesTrend} />
             <LevelDistributionCard levels={data.levelDistribution} />
           </div>
 
           <FeesSummaryRow fees={data.fees} />
 
-          <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1fr_290px]">
+          <div className={ASIDE_GRID}>
             <AttendanceByClassCard classes={data.attendanceByClass} />
             <SubjectPerformanceCard subjects={data.subjectPerformance} />
           </div>
 
-          <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <TodoListCard todos={data.todos} />
             <RecentActivityCard activity={data.recentActivity} />
           </div>

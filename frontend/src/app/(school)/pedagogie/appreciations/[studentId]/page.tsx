@@ -24,6 +24,7 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -243,7 +244,7 @@ export default function AppreciationDetailPage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+      <div className={ASIDE_GRID}>
         <div className="flex flex-col gap-4">
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">

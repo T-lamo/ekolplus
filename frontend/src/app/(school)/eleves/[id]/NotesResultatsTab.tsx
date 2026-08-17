@@ -13,6 +13,7 @@ import {
   ListChecks,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { ASIDE_GRID } from '@/lib/layout';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
@@ -230,7 +231,7 @@ export function NotesResultatsTab({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
+          <div className={ASIDE_GRID}>
             {/* Left column */}
             <div className="flex flex-col gap-4">
               <Card className="gap-3.5 p-4.5">

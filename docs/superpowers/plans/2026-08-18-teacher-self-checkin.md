@@ -2,6 +2,18 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Post-implementation amendment (2026-08-18):** the final whole-branch
+> review found that granting invited teachers an `OrganizationMember` row
+> (as this plan describes, including Task 4's code below) hands every
+> teacher account read access to the whole school back-office. The shipped
+> code does **not** create an `OrganizationMember` row for teachers — every
+> `OrganizationMember`/`organizationMember`/`organization.findFirst`
+> reference below is historical intent, not shipped behavior. See
+> `frontend/src/app/api/auth/teacher-invite/[token]/accept/route.ts` at
+> HEAD for the real implementation, and the SDD ledger
+> (`.superpowers/sdd/2026-08-18-teacher-self-checkin/progress.md`, Final
+> review section) for full rationale.
+
 **Goal:** Let a teacher sign into a minimal portal and check in to their own timetable sessions, with a read-only admin history view.
 
 **Architecture:** A teacher account is an ordinary `User` + `OrganizationMember(role: MEMBER)`, created via an admin-issued, e-mail-delivered, one-time invite link — reusing every existing auth primitive untouched. A new minimal route group (`/enseignant`) is the teacher-facing portal (today's sessions + a check-in button per session); the existing Teachers list/profile pages gain the admin-facing wiring (an "Inviter" action and a read-only "Présences" tab).

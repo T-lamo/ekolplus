@@ -3,6 +3,18 @@
 Date: 2026-08-18
 Status: Approved by user 2026-08-18 — pending plan + implementation.
 
+> **Post-implementation amendment (2026-08-18):** the final whole-branch
+> review found that granting invited teachers an `OrganizationMember` row
+> (as this spec describes throughout) hands every teacher account read
+> access to the whole school back-office, since most `/api/school/*` GET
+> routes gate on membership existing, not on role. The shipped
+> implementation does **not** create an `OrganizationMember` row for
+> teacher accounts — identity resolves via `Teacher.userId` alone (see
+> `resolveMyTeacherProfile`). Every `OrganizationMember` reference below is
+> historical intent, not shipped behavior. Full rationale: SDD ledger,
+> `.superpowers/sdd/2026-08-18-teacher-self-checkin/progress.md`, Final
+> review section.
+
 ## Problem
 
 The Teachers list's row menu (`Enseignants` page) has two actions that are

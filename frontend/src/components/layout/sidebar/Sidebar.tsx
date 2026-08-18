@@ -55,13 +55,16 @@ export function Sidebar({
     variant === 'light'
       ? 'bg-sidebar-light text-sidebar-light-foreground'
       : 'bg-sidebar-dark text-sidebar-dark-foreground';
-  // Light shell: the sidebar is a rounded white card floating on the page
-  // background, twin of the content panel (see (school)/layout.tsx) — no inner
-  // hairlines. Dark shell keeps its flush column + hairlines.
+  // Light shell: the sidebar merges with the topbar into one flat surface on
+  // the page background (no hairlines) and the rounded content panel nests in
+  // that L (see (school)/layout.tsx); the profile block at the bottom is a
+  // small white card. Dark shell keeps its flush column + hairlines.
   const light = variant === 'light';
-  const edgeClass = light ? 'rounded-3xl border border-border' : 'border-r border-white/[0.07]';
+  const edgeClass = light ? '' : 'border-r border-white/[0.07]';
   const brandEdgeClass = light ? '' : 'border-b border-white/[0.07]';
-  const footerEdgeClass = light ? '' : 'border-t border-white/[0.07]';
+  const footerClass = light
+    ? 'm-2.5 rounded-2xl border border-border bg-card p-1.5'
+    : 'border-t border-white/[0.07] p-2.5';
 
   return (
     <Tooltip.Provider delayDuration={300}>
@@ -131,7 +134,7 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className={`${footerEdgeClass} p-2.5`}>
+        <div className={footerClass}>
           {!collapsed && footer}
           <SidebarUserProfile
             variant={variant}

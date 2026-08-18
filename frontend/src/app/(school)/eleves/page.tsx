@@ -156,12 +156,12 @@ export default function StudentsPage() {
       {
         label: 'Voir le bulletin',
         icon: <FileText size={14} />,
-        onClick: () => toast('Disponible avec Epic 7 (Bulletins).', 'info'),
+        onClick: () => router.push(`/eleves/${s.id}?tab=bulletins`),
       },
       {
         label: 'Présences',
         icon: <CalendarCheck size={14} />,
-        onClick: () => toast('Disponible avec Epic 8 (Présences).', 'info'),
+        onClick: () => router.push(`/eleves/${s.id}?tab=attendance`),
       },
       {
         label: 'Suspendre',

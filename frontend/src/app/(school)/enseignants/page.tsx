@@ -125,6 +125,25 @@ export default function TeachersPage() {
     }
   }
 
+  async function onSendWhatsapp(t: TeacherListItem) {
+    try {
+      await api(`/api/school/teachers/${t.id}/send-whatsapp`, { method: 'POST' });
+      toast('Message WhatsApp envoyé.', 'success');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.code === 'NO_TEACHER_PHONE') {
+          toast('Aucun numéro de téléphone renseigné pour cet enseignant.', 'error');
+          return;
+        }
+        if (err.code === 'NOT_CONFIGURED') {
+          toast("L'envoi WhatsApp n'est pas encore configuré.", 'error');
+          return;
+        }
+      }
+      toast('Envoi WhatsApp impossible. Réessaie.', 'error');
+    }
+  }
+
   function onExport() {
     exportToCsv(
       'enseignants.csv',
@@ -163,9 +182,9 @@ export default function TeachersPage() {
         onClick: () => toast('Disponible avec Epic 8 (Présences).', 'info'),
       },
       {
-        label: 'Envoyer un message',
+        label: 'Envoyer un message WhatsApp',
         icon: <Mail size={14} />,
-        onClick: () => toast('Aucun système de messagerie pour le moment.', 'info'),
+        onClick: () => onSendWhatsapp(t),
       },
       {
         label: 'Désactiver',

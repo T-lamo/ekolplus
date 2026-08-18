@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Pencil,
@@ -15,7 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -68,15 +68,31 @@ const TABS = [
 ] as const;
 
 export default function StudentProfilePage() {
+  return (
+    <Suspense fallback={null}>
+      <StudentProfile />
+    </Suspense>
+  );
+}
+
+const TAB_KEYS = TABS.map((t) => t.key);
+
+function StudentProfile() {
   const user = useUser();
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab');
   const { toast } = useToast();
   const [student, setStudent] = useState<StudentDetail | null>(null);
   const [results, setResults] = useState<StudentResults | null>(null);
   const [attendance, setAttendance] = useState<StudentAttendanceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
+  const [tab, setTab] = useState<(typeof TABS)[number]['key']>(
+    initialTab && TAB_KEYS.some((k) => k === initialTab)
+      ? (initialTab as (typeof TABS)[number]['key'])
+      : 'info',
+  );
   const [editing, setEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 

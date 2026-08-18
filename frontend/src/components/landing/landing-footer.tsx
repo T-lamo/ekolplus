@@ -4,9 +4,9 @@ const COLUMNS = [
   {
     title: 'Produit',
     links: [
-      { label: 'Gestion', href: '#features' },
-      { label: 'LMS', href: '#lms-section' },
-      { label: 'Finance', href: '#finance-section' },
+      { label: 'Fonctionnalités', href: '#features' },
+      { label: 'Frais & paiements', href: '#frais-section' },
+      { label: 'Tarifs', href: '#pricing' },
     ],
   },
   {
@@ -46,8 +46,8 @@ export function LandingFooter() {
             Schoolgesti
           </div>
           <p className="text-sm leading-relaxed text-slate-400">
-            L&apos;excellence de la gestion scolaire moderne — nativement digitale et centrée sur
-            l&apos;humain.
+            Le système d&apos;information scolaire des établissements qui veulent un dossier de
+            scolarité fiable, du premier jour au diplôme.
           </p>
         </div>
         {COLUMNS.map((col) => (

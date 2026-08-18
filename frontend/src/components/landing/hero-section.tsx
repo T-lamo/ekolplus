@@ -12,14 +12,17 @@ export function HeroSection() {
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-md border border-violet-600/10 bg-violet-50 px-3 py-1 text-2xs font-semibold uppercase tracking-wider text-violet-600">
-            <Zap className="h-3.5 w-3.5" aria-hidden="true" /> Nouveau : IA Tuteur Intégrée
+            <Zap className="h-3.5 w-3.5" aria-hidden="true" /> SIS, système d&apos;information
+            scolaire
           </div>
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-800 sm:text-5xl">
-            La plateforme tout-en-un qui modernise la gestion scolaire.
+            Le dossier de scolarité de chaque élève, du premier jour au diplôme.
           </h1>
           <p className="max-w-xl text-lg text-slate-500">
-            Une solution nativement mobile et offline-first intégrant SIS, LMS et Finance pour une
-            école sans limites de connectivité.
+            Inscriptions, notes et bulletins officiels, présences, emploi du temps, frais de
+            scolarité. Schoolgesti centralise l&apos;administratif de votre établissement pour le
+            secrétariat, la direction, les enseignants et les familles. Nativement mobile et hors
+            connexion, pour une école sans limites de connectivité.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <CtaLink href="#contact-demo" className="px-10 py-4 text-base">

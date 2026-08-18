@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { BarChart3, SquarePen, Users, GraduationCap, type LucideIcon } from 'lucide-react';
+import { BarChart3, ClipboardList, SquarePen, Users, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Role {
@@ -14,38 +14,43 @@ interface Role {
   icon: LucideIcon;
 }
 
+// The SIS audiences: direction · secrétariat/scolarité · enseignants, plus
+// the family-facing read of the same record (parents & élèves).
 const ROLES: Role[] = [
   {
     key: 'director',
-    tab: 'Directeurs',
-    title: 'Pilotage stratégique à 360°',
-    desc: 'Supervisez la santé financière et académique depuis un tableau de bord unifié. Conçu pour la prise de décision rapide.',
-    features: ['Analytique de performance consolidée', 'Gestion optimisée des effectifs'],
+    tab: 'Direction',
+    title: 'Pilotage à 360°',
+    desc: 'Effectifs, résultats, assiduité et encaissements sur un tableau de bord unifié : décidez avec des chiffres à jour, pas avec des classeurs.',
+    features: [
+      'Tableau de bord effectifs & paiements',
+      'Passage d’année et historique de scolarité',
+    ],
     icon: BarChart3,
+  },
+  {
+    key: 'registrar',
+    tab: 'Secrétariat & scolarité',
+    title: 'Le dossier administratif, sans paperasse',
+    desc: 'Inscriptions, fiches élèves, frais et reçus, relances des retardataires : tout le quotidien du secrétariat en quelques clics, avec un historique fiable.',
+    features: ['Inscriptions & fiches élèves', 'Frais, paiements, reçus & relances'],
+    icon: ClipboardList,
   },
   {
     key: 'teacher',
     tab: 'Enseignants',
-    title: 'Outils pédagogiques performants',
-    desc: "Saisie de notes, cahier de texte et appréciation assistée par IA pour se concentrer sur l'essentiel : vos élèves.",
-    features: ['Saisie rapide des notes', 'Gestion simplifiée des absences'],
+    title: 'Notes et présences en un clin d’œil',
+    desc: 'Carnet de notes, appréciations, appel quotidien et emploi du temps sans double saisie : les bulletins se remplissent tout seuls.',
+    features: ['Saisie rapide des notes & appréciations', 'Appel & suivi des absences'],
     icon: SquarePen,
   },
   {
-    key: 'parent',
-    tab: 'Parents',
-    title: 'Suivez le parcours de votre enfant',
-    desc: "Accédez aux résultats, absences et paiements en temps réel depuis votre mobile. Gardez le contact avec l'école.",
-    features: ['Notifications instantanées', 'Paiements sécurisés'],
+    key: 'family',
+    tab: 'Parents & élèves',
+    title: 'Suivre la scolarité depuis un mobile',
+    desc: 'Résultats, absences et situation des frais consultables en temps réel par les familles, avec la même donnée que l’école, sans appel au secrétariat.',
+    features: ['Bulletins & notes en ligne', 'Situation des frais de scolarité'],
     icon: Users,
-  },
-  {
-    key: 'student',
-    tab: 'Élèves',
-    title: "Espace d'apprentissage numérique",
-    desc: 'Retrouvez vos cours, rendez vos devoirs et interagissez avec votre école. Tout est centralisé pour votre réussite.',
-    features: ['Accès aux ressources 24/7', 'Messagerie pédagogique'],
-    icon: GraduationCap,
   },
 ];
 
@@ -57,11 +62,14 @@ export function RolePortalsSection() {
   const Icon = active.icon;
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16">
+    <section id="roles" className="mx-auto max-w-7xl scroll-mt-20 px-6 py-16">
       <div className="mb-16 text-center">
         <h2 className="text-3xl font-bold text-slate-800">
           Expérience sur-mesure pour chaque rôle
         </h2>
+        <p className="mt-2 text-lg text-slate-500">
+          Secrétariat, direction, enseignants et familles lisent le même dossier.
+        </p>
       </div>
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
         <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-100/50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

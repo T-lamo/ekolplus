@@ -1,7 +1,7 @@
 const STATS = [
   { value: '+98%', label: 'Précision Offline' },
   { value: '100%', label: 'Digitalisé' },
-  { value: '-50%', label: 'Retards Paiement' },
+  { value: '-50%', label: 'Retards de paiement' },
   { value: '24/7', label: 'Disponibilité' },
 ];
 

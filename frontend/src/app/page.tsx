@@ -3,7 +3,6 @@ import { LandingHeader } from '@/components/landing/landing-header';
 import { HeroSection } from '@/components/landing/hero-section';
 import { StatsSection } from '@/components/landing/stats-section';
 import { PillarsSection } from '@/components/landing/pillars-section';
-import { AiSection } from '@/components/landing/ai-section';
 import { RolePortalsSection } from '@/components/landing/role-portals-section';
 import { HowItWorksSection } from '@/components/landing/how-it-works-section';
 import { PricingSection } from '@/components/landing/pricing-section';
@@ -12,9 +11,9 @@ import { FaqSection } from '@/components/landing/faq-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
 import { RevealObserver } from '@/components/landing/reveal-observer';
 
-const TITLE = 'Schoolgesti — La plateforme tout-en-un de gestion scolaire';
+const TITLE = 'Schoolgesti, le système d’information scolaire (SIS) tout-en-un';
 const DESCRIPTION =
-  'Solution nativement mobile et offline-first intégrant SIS, LMS et Finance pour une école sans limites de connectivité.';
+  'Dossiers élèves, inscriptions, notes et bulletins officiels, présences, emploi du temps, frais de scolarité et paiements : le SIS qui centralise l’administratif de votre école.';
 const OG_IMAGE = { url: '/images/hero-dashboard.jpg', width: 512, height: 286 };
 
 export const metadata: Metadata = {
@@ -24,8 +23,10 @@ export const metadata: Metadata = {
     'gestion scolaire',
     'logiciel école',
     'SIS',
+    'système d’information scolaire',
     'bulletin scolaire',
     'gestion des notes',
+    'frais de scolarité',
     'école Haïti',
   ],
   // Public marketing page — the root layout defaults every other route to
@@ -105,9 +106,6 @@ export default function LandingPage() {
         </div>
         <div className="reveal-up">
           <PillarsSection />
-        </div>
-        <div className="reveal-up">
-          <AiSection />
         </div>
         <div className="reveal-up">
           <RolePortalsSection />

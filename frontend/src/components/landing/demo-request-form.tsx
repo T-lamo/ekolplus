@@ -130,7 +130,7 @@ export function DemoRequestForm() {
             <span className="text-sm font-bold text-slate-500">Estimation plan Pro</span>
             {estimate === null ? (
               <span className="text-sm font-semibold text-violet-600">
-                Tarif entreprise — sur devis
+                Tarif entreprise, sur devis
               </span>
             ) : (
               <span className="text-xl font-bold text-violet-600">

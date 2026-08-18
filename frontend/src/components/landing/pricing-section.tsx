@@ -13,6 +13,10 @@ interface Plan {
   featured?: boolean;
 }
 
+// Mirrors src/lib/billing-plans.ts PLAN_FEATURES (what the app really
+// gates): every SIS module — incl. the parent/student portal (v1) — is on
+// every plan; the tiers differ by the student cap, the billing model and
+// support.
 const PLANS: Plan[] = [
   {
     name: 'Starter',
@@ -20,11 +24,13 @@ const PLANS: Plan[] = [
     price: 'Gratuit',
     priceNote: "jusqu'à 50 élèves",
     features: [
-      { label: 'Gestion des élèves & classes' },
-      { label: 'Notes & bulletins PDF' },
-      { label: 'Présences (appel) hors-ligne' },
+      { label: 'Dossiers élèves, classes & enseignants' },
+      { label: 'Notes, appréciations & bulletins PDF' },
+      { label: 'Présences & emploi du temps' },
+      { label: 'Frais de scolarité, paiements & relances' },
       { label: 'Portail parents & élèves' },
-      { label: 'Comptes multi-rôles' },
+      { label: 'Passage d’année assisté' },
+      { label: 'Sans carte bancaire' },
       { label: 'Support communauté' },
     ],
     cta: 'Commencer gratuitement',
@@ -38,12 +44,11 @@ const PLANS: Plan[] = [
     features: [
       { label: 'Tout du plan Starter', strong: true },
       { label: "Jusqu'à 1000 élèves" },
-      { label: 'Gestion complète des notes, coefficients & filières' },
-      { label: 'Bulletins avancés + impression par lot' },
-      { label: 'Tableaux de bord & analytics par rôle' },
-      { label: 'Provisioning & réinitialisation des comptes' },
+      { label: 'Sièges facturés = effectifs réels' },
+      { label: 'Sans engagement, résiliable à tout moment' },
+      { label: 'Essai gratuit 30 jours' },
+      { label: 'Factures & reçus en ligne (Stripe)' },
       { label: 'Support prioritaire' },
-      { label: 'LMS, IA & Finance', soon: true },
     ],
     cta: 'Essai gratuit 30 jours',
     featured: true,
@@ -56,10 +61,10 @@ const PLANS: Plan[] = [
     features: [
       { label: 'Tout du plan Pro', strong: true },
       { label: 'Élèves illimités, tarif dégressif' },
-      { label: 'Multi-écoles (réseau)' },
-      { label: 'API & SSO' },
-      { label: 'Marque blanche' },
-      { label: 'SLA & support dédié' },
+      { label: 'Multi-établissements (réseau)' },
+      { label: 'Tableau de bord réseau' },
+      { label: 'API & intégrations' },
+      { label: 'Onboarding dédié & support 24/7' },
     ],
     cta: 'Contactez-nous',
   },
@@ -72,7 +77,8 @@ export function PricingSection() {
         <div className="mb-16 text-center">
           <h2 className="text-3xl font-bold text-slate-800">Tarification transparente</h2>
           <p className="text-lg text-slate-500">
-            Moins de 1 $ par élève et par mois — un plan adapté à la taille de votre école.
+            Moins de 1 $ par élève et par mois, toutes les fonctionnalités sur tous les plans : seul
+            l&apos;effectif change.
           </p>
         </div>
         <div className="grid items-stretch gap-6 md:grid-cols-3">

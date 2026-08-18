@@ -4,7 +4,11 @@ import { ChevronDown } from 'lucide-react';
 const FAQS = [
   {
     q: 'Ça marche même sans Internet ?',
-    a: "Oui. Vous pouvez faire l'appel même sans connexion : tout se met à jour automatiquement dès que le réseau revient — idéal là où Internet est instable.",
+    a: "Oui. Vous pouvez faire l'appel même sans connexion. Tout se met à jour automatiquement dès que le réseau revient, ce qui est utile là où Internet est instable.",
+  },
+  {
+    q: 'Est-ce un LMS (cours en ligne) ?',
+    a: "Non. Schoolgesti est un système d'information scolaire (SIS) : il gère le dossier administratif et le cursus (inscriptions, frais de scolarité, présences, notes et bulletins officiels), pas le contenu des cours. Il se combine très bien avec un LMS si vous en utilisez un.",
   },
   {
     q: 'Mes données sont-elles bien protégées ?',
@@ -16,7 +20,7 @@ const FAQS = [
   },
   {
     q: 'Tout est-il déjà disponible ?',
-    a: "Toute la gestion scolaire est prête dès aujourd'hui : notes, bulletins, présences, et un espace pour les parents et les élèves. Les cours en ligne, le paiement en ligne et l'assistant intelligent arrivent bientôt.",
+    a: "Toute la gestion administrative et pédagogique est prête dès aujourd'hui : dossiers élèves, classes, notes, appréciations, bulletins PDF, présences, emploi du temps, frais de scolarité, paiements et relances, passage d'année, et un espace pour les parents et les élèves.",
   },
 ];
 

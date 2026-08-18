@@ -1,4 +1,4 @@
-import { FileText, CreditCard, BookOpen, Check, type LucideIcon } from 'lucide-react';
+import { Users, CreditCard, NotebookPen, Check, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Pillar {
@@ -8,32 +8,39 @@ interface Pillar {
   desc: string;
   features: string[];
   featured?: boolean;
-  soon?: boolean;
 }
 
+// The three SIS pillars, mirroring the app's real modules (Élèves /
+// Configuration · Scolarité · Pédagogie). No LMS card — everything listed
+// here is part of v1.
 const PILLARS: Pillar[] = [
   {
-    icon: FileText,
-    title: 'Gestion & Présence Offline',
-    desc: 'Dossiers numériques et prise de présence sans connexion. Synchronisation intelligente.',
-    features: ['Dossiers élèves 360°', 'Bulletins instantanés'],
+    icon: Users,
+    title: 'Dossiers élèves & inscriptions',
+    desc: 'Le dossier administratif complet de chaque élève, de l’inscription au passage d’année : identité, responsables, classe, historique de scolarité.',
+    features: [
+      'Fiche élève 360°',
+      'Classes, niveaux, salles & enseignants',
+      'Passage d’année assisté (promotions, redoublements)',
+    ],
   },
   {
-    id: 'finance-section',
+    id: 'frais-section',
     icon: CreditCard,
-    title: 'Paiements & Échéanciers',
-    desc: 'Suivi des balances en temps réel et rappels WhatsApp automatiques pour les frais de scolarité.',
-    features: ['Rappels automatisés', 'Échéanciers flexibles'],
+    title: 'Frais de scolarité & paiements',
+    desc: 'Frais paramétrés par niveau, échéanciers, encaissements et soldes en temps réel, relances des retardataires. Le secrétariat sait toujours qui doit quoi.',
+    features: ['Échéanciers & soldes par élève', 'Paiements & reçus', 'Relances des retards'],
     featured: true,
-    soon: true,
   },
   {
-    id: 'lms-section',
-    icon: BookOpen,
-    title: 'Plateforme LMS Intégrée',
-    desc: 'Partage de ressources, devoirs en ligne et cahiers de textes interactifs pour profs et élèves.',
-    features: ['Cahier de texte numérique', 'Examens sécurisés'],
-    soon: true,
+    icon: NotebookPen,
+    title: 'Notes, bulletins & présences',
+    desc: 'Carnet de notes, appréciations, bulletins officiels PDF sur votre propre modèle, appel quotidien même sans connexion et emploi du temps, sans double saisie.',
+    features: [
+      'Bulletins PDF personnalisables',
+      'Appel hors-ligne, synchronisé au retour du réseau',
+      'Emploi du temps & salles',
+    ],
   },
 ];
 
@@ -42,10 +49,11 @@ export function PillarsSection() {
     <section id="features" className="mx-auto max-w-7xl scroll-mt-20 px-6 py-16">
       <div className="mb-16 text-center">
         <h2 className="mb-1 text-3xl font-bold text-slate-800">
-          Infrastructure moderne pour l&apos;éducation
+          Tout le dossier de scolarité, au même endroit
         </h2>
         <p className="text-lg text-slate-500">
-          Centralisez tout dans une interface épurée et performante.
+          Un système d&apos;information scolaire (SIS) : l&apos;administratif, la scolarité et les
+          résultats dans une interface épurée.
         </p>
       </div>
       <div className="grid gap-6 md:grid-cols-3">
@@ -64,14 +72,7 @@ export function PillarsSection() {
               <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </div>
-              <h3 className="mb-4 flex flex-wrap items-center gap-2 text-lg font-bold text-slate-800">
-                {p.title}
-                {p.soon && (
-                  <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
-                    Bientôt
-                  </span>
-                )}
-              </h3>
+              <h3 className="mb-4 text-lg font-bold text-slate-800">{p.title}</h3>
               <p className="mb-6 text-sm text-slate-500">{p.desc}</p>
               <ul className="space-y-2">
                 {p.features.map((f) => (

@@ -6,21 +6,16 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { btnPrimary } from './landing-ui';
 
-const NAV_LINKS: { href: string; label: string; soon?: boolean }[] = [
+// Schoolgesti is a SIS (student information system — the administrative
+// record and the school career), not an LMS: the nav only points at what the
+// app really does. « Frais & paiements » = the in-app « Frais & Scolarité »
+// module (fee schedules, payments, reminders).
+const NAV_LINKS: { href: string; label: string }[] = [
   { href: '#features', label: 'Fonctionnalités' },
-  { href: '#lms-section', label: 'LMS', soon: true },
-  { href: '#finance-section', label: 'Finance', soon: true },
-  { href: '#ai', label: 'IA', soon: true },
+  { href: '#frais-section', label: 'Frais & paiements' },
+  { href: '#roles', label: 'Pour qui ?' },
   { href: '#pricing', label: 'Tarifs' },
 ];
-
-function SoonBadge() {
-  return (
-    <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tight text-slate-600">
-      Bientôt
-    </span>
-  );
-}
 
 /** Fixed top navigation for the marketing landing. Mobile-first: a hamburger
  * opens a full-width panel with the links; the bar gains a stronger blurred
@@ -69,7 +64,6 @@ export function LandingHeader() {
               className="flex items-center text-sm font-semibold text-slate-500 transition-colors hover:text-violet-600"
             >
               {link.label}
-              {link.soon && <SoonBadge />}
             </a>
           ))}
         </nav>
@@ -115,7 +109,6 @@ export function LandingHeader() {
                 className="flex items-center border-b border-slate-100 py-3 text-base font-semibold text-slate-600 transition-colors hover:text-violet-600"
               >
                 {link.label}
-                {link.soon && <SoonBadge />}
               </a>
             ))}
             <Link

@@ -1365,6 +1365,7 @@ async function seedEtoiles(
   classes.forEach((c, classIdx) =>
     c.subjects.forEach((cs) => csToClass.set(cs.classSubjectId, { classIdx, subjectKey: cs.key })),
   );
+  const termsById = new Map(terms.map((t) => [t.id, t]));
   const grades: Prisma.GradeCreateManyInput[] = [];
   const termAvg = new Map<string, { sum: number; n: number }>(); // `${studentId}|${termId}`
   for (const ev of evalRows) {
@@ -1374,11 +1375,21 @@ async function seedEtoiles(
     // "en cours de saisie" states; published ones are complete.
     const draft = ev.status === 'DRAFT';
     if (draft && ev.label === 'Devoir 1') continue;
+    // Mild school-wide progression across the year (T1 slightly below
+    // baseline settling in, T3 slightly above as the cohort matures) — so
+    // the dashboard's "Évolution des moyennes" (school-wide average pooled
+    // by month) shows an actual trend instead of a flat line. "Devoir 1"
+    // lands early in its term, "Composition" late, giving 6 points across
+    // the year rather than one flat step per term.
+    const term = termsById.get(ev.termId);
+    const withinTerm = ev.label === 'Composition' ? 0.75 : 0.25;
+    const yearFrac = term ? (term.order - 1 + withinTerm) / terms.length : 0.5;
+    const trend = (yearFrac - 0.5) * 0.1;
     for (const st of students) {
       if (st.classIdx !== ref.classIdx) continue;
       if (draft && !chance(0.4)) continue;
       const absent = chance(0.03);
-      const raw = (st.ability + (st.affinity.get(ref.subjectKey) ?? 0) + gauss(0.07)) * 20;
+      const raw = (st.ability + (st.affinity.get(ref.subjectKey) ?? 0) + trend + gauss(0.07)) * 20;
       const score = absent ? null : clamp(Math.round(raw * 2) / 2, 1, 20);
       grades.push({
         evaluationId: ev.id,

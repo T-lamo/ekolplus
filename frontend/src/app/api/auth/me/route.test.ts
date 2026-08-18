@@ -92,4 +92,28 @@ describe('GET /api/auth/me', () => {
     const res = await GET(makeReq({ bearer: 'orphan-jwt' }));
     expect(res.status).toBe(401);
   });
+
+  it('Test 5: teacher-linked account — returns non-null teacherId', async () => {
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+    });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+    } as never);
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher-1' } as never);
+
+    const res = await GET(makeReq({ bearer: 'valid-access-token' }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      user: { sub: 'u1', teacherId: 'teacher-1' },
+    });
+    expect(prismaMock.teacher.findFirst).toHaveBeenCalledWith({
+      where: { userId: 'u1' },
+      select: { id: true },
+    });
+  });
 });

@@ -35,6 +35,20 @@ export function hasMinRole(role: OrgRole, min: OrgRole): boolean {
   return ORG_ROLE_RANK[role] >= ORG_ROLE_RANK[min];
 }
 
+// Teacher self-check-in — resolves which Teacher record (if any) the
+// caller's User account is linked to. Used by /api/teacher/* routes so they
+// never trust a client-supplied teacherId, only the caller's own session.
+export async function resolveMyTeacherProfile(
+  userId: string,
+): Promise<{ teacherId: string; schoolId: string } | null> {
+  const teacher = await prisma.teacher.findFirst({
+    where: { userId },
+    select: { id: true, schoolId: true },
+  });
+  if (!teacher) return null;
+  return { teacherId: teacher.id, schoolId: teacher.schoolId };
+}
+
 // Used by Epic 4 (Classes) — a Class is year-scoped, so creating one needs
 // the school's active AcademicYear. Mirrors the query in /api/school GET.
 // `startDate` is also used by Epic 5 (Students) to derive the studentNumber

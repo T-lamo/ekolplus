@@ -31,15 +31,14 @@ export function LandingFooter() {
     <footer className="mt-16 border-t border-white/10 bg-slate-900 py-16 text-slate-400">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-4">
         <div className="md:col-span-1">
-          <div className="mb-6 flex items-center gap-2 text-xl font-bold text-violet-400">
+          <div className="mb-6 flex items-center">
             <Image
-              src="/logos/schoolgesti-monogramme-blanc.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8"
+              src="/logos/schoolgesti-lockup-blanc.svg"
+              alt="Schoolgesti"
+              width={150}
+              height={44}
+              className="h-9 w-auto"
             />
-            Schoolgesti
           </div>
           <p className="text-sm leading-relaxed text-slate-400">
             Le système d&apos;information scolaire des établissements qui veulent un dossier de

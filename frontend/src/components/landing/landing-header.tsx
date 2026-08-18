@@ -40,20 +40,15 @@ export function LandingHeader() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-xl font-bold tracking-tight text-violet-600"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
           <Image
-            src="/logos/schoolgesti-monogramme.svg"
-            alt=""
-            width={32}
-            height={32}
-            className="h-8 w-8"
+            src="/logos/schoolgesti-lockup.svg"
+            alt="Schoolgesti"
+            width={150}
+            height={44}
+            className="h-9 w-auto"
             priority
           />
-          Schoolgesti
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">

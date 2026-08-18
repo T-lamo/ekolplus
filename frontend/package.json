@@ -26,6 +26,9 @@
     "db:make-superadmin": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/make-superadmin.ts",
     "db:seed-bulletin-templates": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-bulletin-templates.ts",
     "db:seed-plans": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-subscription-plans.ts",
+    "stripe:setup-prices": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-setup-prices.ts",
+    "stripe:doctor": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-doctor.ts",
+    "stripe:doctor:live": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-doctor.ts --live",
     "db:backfill-bulletin-content-layout": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-content-layout.ts",
     "db:backfill-bulletin-density-typography": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-density-typography.ts",
     "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",
@@ -69,6 +72,7 @@
     "react-dom": "^19.2.3",
     "resend": "^6.12.2",
     "server-only": "^0.0.1",
+    "stripe": "^22.5.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },

@@ -33,6 +33,8 @@
     "db:make-superadmin": "pnpm --filter frontend run db:make-superadmin",
     "seed:dev": "pnpm --filter frontend run seed:dev",
     "seed:dev-school": "pnpm --filter frontend run seed:dev-school",
+    "stripe:doctor": "pnpm --filter frontend run stripe:doctor",
+    "stripe:doctor:live": "pnpm --filter frontend run stripe:doctor:live",
     "smoke:auth": "pnpm --filter frontend run smoke:auth",
     "prepare": "husky"
   },

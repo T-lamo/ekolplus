@@ -311,8 +311,8 @@ function SchoolsPage() {
             />
             <FilterSelect value={plan} onValueChange={setPlan} className="min-w-36">
               <SelectItem value="">{T.filters.allPlans}</SelectItem>
-              <SelectItem value="PREMIUM">Premium</SelectItem>
-              <SelectItem value="ESSENTIEL">Essentiel</SelectItem>
+              <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+              <SelectItem value="PRO">Établissement Pro</SelectItem>
               <SelectItem value="STARTER">Starter</SelectItem>
             </FilterSelect>
             <FilterSelect value={status} onValueChange={setStatus} className="min-w-36">

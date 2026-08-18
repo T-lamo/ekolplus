@@ -13,6 +13,7 @@ import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { checkStudentLimit } from '@/lib/server/billing/summary';
 
 async function nextStudentNumber(schoolId: string, year: number): Promise<string> {
   const count = await prisma.student.count({ where: { schoolId } });
@@ -137,6 +138,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         { error: 'VALIDATION_FAILED', message: 'Invalid request body' },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    // SaaS plan cap — the free Starter tier stops at 50 students (landing
+    // promise; the upgrade lever). Pro/Enterprise are never blocked here.
+    const limit = await checkStudentLimit(prisma, mySchool.schoolId);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'PLAN_LIMIT_REACHED',
+          message: `Le plan ${limit.plan === 'STARTER' ? 'Starter' : limit.plan} est limité à ${limit.limit} élèves. Passez au plan Établissement Pro pour en ajouter davantage.`,
+          plan: limit.plan,
+          limit: limit.limit,
+          studentCount: limit.studentCount,
+        },
+        { status: 402, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 

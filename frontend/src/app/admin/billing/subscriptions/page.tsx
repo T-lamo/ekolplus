@@ -51,6 +51,13 @@ interface SubRow {
   trialEndsAt: string | null;
   expiringSoon: boolean;
   coupon: { id: string; code: string } | null;
+  stripe: {
+    subscriptionId: string;
+    status: string | null;
+    interval: 'MONTH' | 'YEAR' | null;
+    cancelAtPeriodEnd: boolean;
+    billedSeats: number | null;
+  } | null;
 }
 
 interface SubsResponse {
@@ -302,8 +309,8 @@ function SubscriptionsPage() {
             />
             <FilterSelect value={plan} onValueChange={setPlan} className="min-w-36">
               <SelectItem value="">{T.filters.allPlans}</SelectItem>
-              <SelectItem value="PREMIUM">Premium</SelectItem>
-              <SelectItem value="ESSENTIEL">Essentiel</SelectItem>
+              <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+              <SelectItem value="PRO">Établissement Pro</SelectItem>
               <SelectItem value="STARTER">Starter</SelectItem>
             </FilterSelect>
             <FilterSelect value={status} onValueChange={setStatus} className="min-w-36">
@@ -377,6 +384,18 @@ function SubscriptionsPage() {
                             <div className="text-[10px] font-semibold text-primary">
                               {s.coupon.code}
                             </div>
+                          )}
+                          {s.stripe && (
+                            <a
+                              href={`https://dashboard.stripe.com/subscriptions/${s.stripe.subscriptionId}`}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="text-[10px] font-semibold text-muted-foreground hover:text-primary hover:underline"
+                              title={`Stripe · ${s.stripe.status ?? '—'}${s.stripe.interval ? ` · ${s.stripe.interval === 'YEAR' ? 'annuel' : 'mensuel'}` : ''}${s.stripe.cancelAtPeriodEnd ? ' · résiliation programmée' : ''}`}
+                            >
+                              Stripe{s.stripe.interval === 'YEAR' ? ' · annuel' : ''}
+                              {s.stripe.cancelAtPeriodEnd ? ' · résilié' : ''}
+                            </a>
                           )}
                         </td>
                         <td className={`${TD_CLASS} text-right font-semibold text-foreground`}>
@@ -506,7 +525,7 @@ function CreateModal({
   const inOneYear = new Date();
   inOneYear.setFullYear(inOneYear.getFullYear() + 1);
   const [schoolId, setSchoolId] = useState('');
-  const [planKey, setPlanKey] = useState('ESSENTIEL');
+  const [planKey, setPlanKey] = useState('PRO');
   const [status, setStatus] = useState<'TRIAL' | 'ACTIVE'>('TRIAL');
   const [renewsAt, setRenewsAt] = useState(toDateInput(inOneYear));
   const [couponCode, setCouponCode] = useState('');
@@ -549,8 +568,8 @@ function CreateModal({
           </Select>
           <Select label={T.createModal.plan} value={planKey} onValueChange={setPlanKey}>
             <FormSelectItem value="STARTER">Starter</FormSelectItem>
-            <FormSelectItem value="ESSENTIEL">Essentiel</FormSelectItem>
-            <FormSelectItem value="PREMIUM">Premium</FormSelectItem>
+            <FormSelectItem value="PRO">Établissement Pro</FormSelectItem>
+            <FormSelectItem value="ENTERPRISE">Enterprise</FormSelectItem>
           </Select>
           <Select
             label={T.createModal.status}
@@ -631,8 +650,8 @@ function ManageModal({
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
         <Select label={T.manageModal.plan} value={planKey} onValueChange={setPlanKey}>
           <FormSelectItem value="STARTER">Starter</FormSelectItem>
-          <FormSelectItem value="ESSENTIEL">Essentiel</FormSelectItem>
-          <FormSelectItem value="PREMIUM">Premium</FormSelectItem>
+          <FormSelectItem value="PRO">Établissement Pro</FormSelectItem>
+          <FormSelectItem value="ENTERPRISE">Enterprise</FormSelectItem>
         </Select>
         <Select
           label={T.manageModal.status}

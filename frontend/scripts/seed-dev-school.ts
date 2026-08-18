@@ -1603,9 +1603,11 @@ async function seedEtoiles(
     });
   }
 
-  // SaaS subscription: ESSENTIEL, ACTIVE since ~6 months, monthly invoices.
+  // SaaS subscription: PRO (Établissement Pro), ACTIVE since ~6 months,
+  // monthly invoices — a manual/back-office subscription (no Stripe ids), so
+  // the Abonnement tab renders the "Pro géré manuellement" state.
   const plan = await prisma.subscriptionPlan.findUnique({
-    where: { key: 'ESSENTIEL' },
+    where: { key: 'PRO' },
     select: { id: true, pricePerStudentCents: true },
   });
   if (plan) {

@@ -55,7 +55,7 @@ interface SettingsResponse {
     expiryReminders: boolean;
   };
   plans: { key: string; name: string; pricePerStudentCents: number; currency: string }[];
-  stripe: { configured: boolean; mode: 'live' | 'test' | null };
+  stripe: { configured: boolean; mode: 'live' | 'test' | null; missing: string[] };
   version: string;
   primaryAdminEmail: string | null;
   isSuperadmin: boolean;
@@ -405,10 +405,14 @@ export default function SystemSettingsPage() {
                   <div className="text-2xs text-muted-foreground">{T.billing.stripeHint}</div>
                 </div>
               </div>
-              <Badge tone={data.stripe.configured ? 'success' : 'muted'}>
+              <Badge
+                tone={data.stripe.configured ? 'success' : data.stripe.mode ? 'warning' : 'muted'}
+              >
                 {data.stripe.configured
                   ? `${T.billing.stripeConnected}${data.stripe.mode ? ` — ${T.billing.stripeMode[data.stripe.mode]}` : ''}`
-                  : T.billing.stripeNotConfigured}
+                  : data.stripe.mode
+                    ? T.billing.stripePartial(data.stripe.missing)
+                    : T.billing.stripeNotConfigured}
               </Badge>
             </div>
           </SettingsSection>

@@ -239,8 +239,8 @@ export default function AdminCouponsPage() {
             <FilterSelect value={plan} onValueChange={setPlan} className="min-w-36">
               <SelectItem value="">{T.filters.allPlans}</SelectItem>
               <SelectItem value="STARTER">Starter</SelectItem>
-              <SelectItem value="ESSENTIEL">Essentiel</SelectItem>
-              <SelectItem value="PREMIUM">Premium</SelectItem>
+              <SelectItem value="PRO">Établissement Pro</SelectItem>
+              <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
             </FilterSelect>
           </div>
         ) : (
@@ -608,8 +608,8 @@ function FormModal({
           <Select label={T.formModal.plan} value={planKey} onValueChange={setPlanKey}>
             <FormSelectItem value="">{T.allPlans}</FormSelectItem>
             <FormSelectItem value="STARTER">Starter</FormSelectItem>
-            <FormSelectItem value="ESSENTIEL">Essentiel</FormSelectItem>
-            <FormSelectItem value="PREMIUM">Premium</FormSelectItem>
+            <FormSelectItem value="PRO">Établissement Pro</FormSelectItem>
+            <FormSelectItem value="ENTERPRISE">Enterprise</FormSelectItem>
           </Select>
           <div>
             <Field

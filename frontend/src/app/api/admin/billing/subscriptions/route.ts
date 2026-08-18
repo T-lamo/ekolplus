@@ -165,6 +165,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           expiringSoon:
             sub.status === 'ACTIVE' && sub.renewsAt.getTime() - now.getTime() < EXPIRING_WINDOW_MS,
           coupon: sub.coupon ? { id: sub.coupon.id, code: sub.coupon.code } : null,
+          // Stripe linkage for supervision — null for manual/back-office
+          // subscriptions (Enterprise deals, bank transfers).
+          stripe: sub.stripeSubscriptionId
+            ? {
+                subscriptionId: sub.stripeSubscriptionId,
+                status: sub.stripeStatus,
+                interval: sub.billingInterval,
+                cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+                billedSeats: sub.billedSeats,
+              }
+            : null,
         })),
         total,
         page,

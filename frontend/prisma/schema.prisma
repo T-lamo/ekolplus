@@ -156,6 +156,10 @@ model School {
   // Added for bulletin PDF generation (bulletin-pdf-and-editor-design.md).
   logoUrl              String?
   directorSignatureUrl String?
+  // Stripe Customer of the school (SaaS billing, migration 28). Created
+  // lazily at first checkout; persists across subscriptions so the Customer
+  // Portal (invoices, card) stays reachable after a cancel/re-subscribe.
+  stripeCustomerId     String?      @unique
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -873,9 +877,11 @@ model FeeReminderLog {
 
 // ───────────────────────────────────────────────────────────────────────
 // EkolPlus SaaS billing — Epic 2 (.planning/banani/epic-2-admin-foundation.md).
-// V1 is managed manually by the platform SUPERADMIN; Stripe will attach to
-// these same models later (OVERVIEW decision: Stripe-only for SaaS billing).
-// All amounts are integer USD cents — never decimals.
+// Two write paths share these models: the platform SUPERADMIN's manual
+// back-office (/admin/billing/*, Enterprise deals, bank transfers) and the
+// self-service Stripe flow (migration 28 — Checkout + Customer Portal +
+// webhooks, see lib/server/billing/). All amounts are integer USD cents —
+// never decimals.
 // ───────────────────────────────────────────────────────────────────────
 
 enum SubscriptionStatus {
@@ -884,6 +890,13 @@ enum SubscriptionStatus {
   EXPIRED
   SUSPENDED
   CANCELED
+}
+
+// Stripe billing interval of a Pro subscription (two distinct Prices —
+// annual is a real −10 % Price, not a coupon). Null while on Starter.
+enum BillingInterval {
+  MONTH
+  YEAR
 }
 
 enum CouponType {
@@ -905,11 +918,14 @@ enum BillingStatus {
   REFUNDED
 }
 
-// Seeded catalog (STARTER / ESSENTIEL / PREMIUM). A school's monthly amount
-// is computed live: active enrollments × pricePerStudentCents − coupon.
+// Seeded catalog (STARTER / PRO / ENTERPRISE — src/lib/billing-plans.ts is
+// the mirror the UI reads). A school's monthly amount is computed live:
+// students × pricePerStudentCents − coupon. Only PRO is sold through Stripe
+// (Price ids live in env: STRIPE_PRICE_ID_PRO / _PRO_ANNUAL); STARTER is
+// free, ENTERPRISE is a manual quote.
 model SubscriptionPlan {
   id                   String   @id @default(cuid())
-  key                  String   @unique // STARTER | ESSENTIEL | PREMIUM
+  key                  String   @unique // STARTER | PRO | ENTERPRISE
   name                 String
   pricePerStudentCents Int
   currency             String   @default("USD")
@@ -936,6 +952,21 @@ model Subscription {
   coupon      Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
+
+  // Stripe linkage — all null for manual/back-office subscriptions (the
+  // Customer id lives on School: it outlives any single subscription). The
+  // Stripe Subscription object is the source of truth: every field below is
+  // rewritten by syncSubscriptionFromStripe() (webhooks + daily cron), never
+  // hand-edited. `stripeSubscriptionItemId` is the seat-bearing line whose
+  // quantity the cron keeps equal to the school's student count;
+  // `stripeStatus` keeps Stripe's raw status (past_due, unpaid, paused…)
+  // that our coarser enum flattens, so the UI can show a precise banner.
+  stripeSubscriptionId     String?          @unique
+  stripeSubscriptionItemId String?
+  stripeStatus             String?
+  billingInterval          BillingInterval?
+  cancelAtPeriodEnd        Boolean          @default(false)
+  billedSeats              Int?
 
   transactions  BillingTransaction[]
   statusChanges SubscriptionStatusChange[]
@@ -998,6 +1029,15 @@ model BillingTransaction {
   refundOfId     String?             @unique
   refundOf       BillingTransaction? @relation("Refund", fields: [refundOfId], references: [id], onDelete: SetNull)
   refund         BillingTransaction? @relation("Refund")
+  // Stripe linkage (method = STRIPE only). `stripeInvoiceId` is the upsert
+  // key of invoice.paid / invoice.payment_failed; `stripePaymentIntentId`
+  // is what charge.refunded correlates on (Charge → PaymentIntent — the
+  // Charge no longer carries the invoice id in current API versions).
+  // `stripeInvoiceUrl` is Stripe's hosted invoice page (with PDF download),
+  // exposed only to the school's own members via GET /api/school/billing.
+  stripeInvoiceId       String? @unique
+  stripePaymentIntentId String? @unique
+  stripeInvoiceUrl      String?
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
 

@@ -16,6 +16,7 @@ import { prisma } from '@/lib/server/prisma';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { enforceAdminRateLimit } from '@/lib/server/middleware/rate-limit-by-userid';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { stripeConfigStatus } from '@/lib/server/billing/stripe-client';
 import pkg from '../../../../../../package.json';
 
 const SETTINGS_ID = 'singleton';
@@ -33,12 +34,6 @@ const DEFAULTS = {
   weeklyReport: false,
   expiryReminders: true,
 };
-
-function stripeStatus(): { configured: boolean; mode: 'live' | 'test' | null } {
-  const key = process.env['STRIPE_SECRET_KEY'];
-  if (!key) return { configured: false, mode: null };
-  return { configured: true, mode: key.startsWith('sk_live_') ? 'live' : 'test' };
-}
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -81,7 +76,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           expiryReminders: s.expiryReminders,
         },
         plans,
-        stripe: stripeStatus(),
+        // Env presence only (never the values) — no live Stripe call on a
+        // frequently visited admin page.
+        stripe: stripeConfigStatus(),
         version: pkg.version,
         primaryAdminEmail: primaryAdmin?.email ?? null,
         isSuperadmin: auth.admin.role === 'SUPERADMIN',
@@ -107,7 +104,8 @@ const PutBody = z.object({
     .array(
       z.object({
         key: z.string().min(1),
-        pricePerStudentCents: z.number().int().positive().max(1_000_000),
+        // min(0): Starter is free (0 ¢) since migration 28_stripe_billing.
+        pricePerStudentCents: z.number().int().min(0).max(1_000_000),
       }),
     )
     .max(10)

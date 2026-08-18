@@ -633,7 +633,7 @@ export const ADMIN_SAAS = {
   },
   userStatus: { ACTIVE: 'Actif', SUSPENDED: 'Suspendu' },
   orgRole: { OWNER: 'Propriétaire', ADMIN: 'Admin', MEMBER: 'Membre' },
-  planEmoji: { PREMIUM: '⭐', ESSENTIEL: '📚', STARTER: '🚀' } as Record<string, string>,
+  planEmoji: { ENTERPRISE: '⭐', PRO: '📚', STARTER: '🚀' } as Record<string, string>,
   stub: 'Cette fonctionnalité arrive bientôt.',
 } as const;
 
@@ -1285,9 +1285,10 @@ export const ADMIN_SETTINGS = {
     stripeTitle: 'Passerelle de paiement Stripe',
     stripeConnected: 'Connecté',
     stripeNotConfigured: 'Non configuré',
+    stripePartial: (missing: string[]) => `Incomplet — manque ${missing.join(', ')}`,
     stripeMode: { live: 'Mode production', test: 'Mode test' } as Record<string, string>,
     stripeHint:
-      'État lu depuis la configuration serveur — les paiements Stripe arrivent dans une itération future.',
+      'État lu depuis la configuration serveur (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID_PRO) — les valeurs ne sont jamais affichées.',
   },
   notifications: {
     title: 'Notifications & Alertes',

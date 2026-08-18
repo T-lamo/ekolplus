@@ -32,17 +32,13 @@ export function LandingFooter() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-4">
         <div className="md:col-span-1">
           <div className="mb-6 flex items-center gap-2 text-xl font-bold text-violet-400">
-            {/* Badge clair : les tons violet foncé du logo se fondaient dans le
-						    fond sombre du footer (bg-slate-900) sans lui. */}
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-white/95 p-1">
-              <Image
-                src="/logo-schoolgesti.png"
-                alt=""
-                width={24}
-                height={24}
-                className="h-full w-full object-contain"
-              />
-            </span>
+            <Image
+              src="/logos/schoolgesti-monogramme-blanc.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
             Schoolgesti
           </div>
           <p className="text-sm leading-relaxed text-slate-400">

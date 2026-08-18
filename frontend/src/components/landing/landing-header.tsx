@@ -46,7 +46,7 @@ export function LandingHeader() {
           onClick={() => setOpen(false)}
         >
           <Image
-            src="/logo-schoolgesti.png"
+            src="/logos/schoolgesti-monogramme.svg"
             alt=""
             width={32}
             height={32}

@@ -255,7 +255,7 @@ export default function FeeManagementPage() {
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             className="w-fit"

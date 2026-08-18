@@ -199,7 +199,7 @@ export default function StudentsPage() {
             <Skeleton className="mt-1.5 h-3 w-28" />
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             className="w-fit"

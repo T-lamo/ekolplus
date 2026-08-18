@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 //   • une ligne « méta » : personne / info à gauche, statut à droite ;
 //   • pied séparé par un filet, deux extrémités ;
 //   • aucune couleur par carte — la tuile est la seule touche de couleur ;
-//   • cadre `rounded-xl border` comme partout, léger relief au survol.
+//   • cadre `rounded-2xl border` comme partout, léger relief au survol.
 // À poser dans `CARD_GRID` (src/lib/layout.ts) : grille auto-fill 270 px min,
 // `content-start` pour que les lignes ne s'étirent pas quand il y a peu de
 // résultats (le conteneur est `flex-1` pour ancrer la pagination en bas).
@@ -49,7 +49,7 @@ export function ListCard({
   return (
     <div
       className={cn(
-        'flex flex-col rounded-xl border border-border bg-card transition-[border-color,box-shadow] hover:border-primary/40 hover:shadow-sm',
+        'flex flex-col rounded-2xl border border-border bg-card transition-[border-color,box-shadow] hover:border-primary/40 hover:shadow-sm',
         className,
       )}
     >

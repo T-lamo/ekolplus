@@ -29,7 +29,7 @@ export function TimetableAgenda({
   const total = days.reduce((n, d) => n + sessionsOn(sessions, d).length, 0);
   if (total === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-lg border border-border bg-card px-4 py-10 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-10 text-center">
         <CalendarX2 size={22} className="text-muted-foreground" />
         <p className="text-caption font-semibold text-foreground">
           Aucune séance sur cette période
@@ -41,7 +41,7 @@ export function TimetableAgenda({
     );
   }
   return (
-    <div className="min-h-0 overflow-auto rounded-lg border border-border bg-card">
+    <div className="min-h-0 overflow-auto rounded-2xl border border-border bg-card">
       {days.map((day) => {
         const list = sessionsOn(sessions, day);
         if (list.length === 0) return null;

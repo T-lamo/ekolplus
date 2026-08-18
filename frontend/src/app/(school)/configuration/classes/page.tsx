@@ -193,7 +193,7 @@ export default function ClassesPage() {
             Gestion des classes de l&apos;établissement.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
             Exporter

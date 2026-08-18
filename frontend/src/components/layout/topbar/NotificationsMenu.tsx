@@ -49,11 +49,11 @@ export function NotificationsMenu() {
         <button
           type="button"
           aria-label="Notifications"
-          className="relative flex h-11 w-11 items-center justify-center text-muted-foreground"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           <Bell size={17} />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive-foreground px-1 text-[9px] font-bold text-white">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive-foreground px-1 text-[9px] font-bold text-white">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}

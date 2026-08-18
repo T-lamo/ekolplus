@@ -118,7 +118,7 @@ export function SubjectPageShell({
  */
 export function SubjectPageFooter({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
-    <footer className="mt-auto flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    <footer className="mt-auto flex flex-col gap-2 rounded-2xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">{left}</div>
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">{right}</div>
     </footer>

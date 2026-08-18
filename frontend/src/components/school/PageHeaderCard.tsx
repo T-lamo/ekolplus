@@ -26,7 +26,7 @@ export function PageHeaderCard({
   tabs?: ReactNode;
 }) {
   return (
-    <header className="overflow-hidden rounded-xl border border-border bg-card">
+    <header className="overflow-hidden rounded-2xl border border-border bg-card">
       <div className="flex flex-col gap-3 px-4 pt-3.5 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
           <Link

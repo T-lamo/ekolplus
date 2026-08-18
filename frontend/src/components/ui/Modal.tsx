@@ -70,7 +70,7 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-card ${maxWidth}`}
+        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-card ${maxWidth}`}
       >
         {subtitle ? (
           <div className="flex items-center justify-between gap-4 border-b border-border px-6 pt-5 pb-4">

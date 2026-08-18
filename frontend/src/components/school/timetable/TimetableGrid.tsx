@@ -47,7 +47,7 @@ export function TimetableGrid({
   return (
     // Shrinkable card: the rows scroll inside (x and y) while the day header
     // stays pinned — the page around never scrolls.
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card">
+    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card">
       <div className={cn('min-h-0 overflow-auto', !single && 'min-w-0')}>
         <div className={cn(!single && 'min-w-[640px]')}>
           <div className={cn('sticky top-0 z-20 grid border-b border-border bg-card', cols)}>

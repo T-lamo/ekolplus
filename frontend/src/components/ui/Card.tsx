@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('flex flex-col rounded-xl border border-border bg-card', className)}
+      className={cn('flex flex-col rounded-2xl border border-border bg-card', className)}
       {...props}
     />
   );

@@ -17,13 +17,17 @@ export function SidebarItem({ item, active, collapsed, variant, onNavigate }: Si
   const iconSize = variant === 'light' ? 15 : 14;
   const fontSizeClass = variant === 'light' ? 'text-caption' : 'text-xs';
 
+  // Light shell: the active item is a filled pill (floating-panel look);
+  // dark shell keeps its left accent bar.
+  const shapeClasses =
+    variant === 'light' ? 'rounded-lg transition-colors' : 'rounded-md border-l-2';
   const activeClasses =
     variant === 'light'
-      ? 'border-primary bg-secondary text-primary'
+      ? 'bg-primary text-primary-foreground'
       : 'border-primary bg-white/10 text-white';
   const inactiveClasses =
     variant === 'light'
-      ? 'border-transparent text-muted-foreground'
+      ? 'text-muted-foreground hover:bg-muted hover:text-foreground'
       : 'border-transparent text-white/50';
 
   const link = (
@@ -31,8 +35,8 @@ export function SidebarItem({ item, active, collapsed, variant, onNavigate }: Si
       href={item.href}
       {...(onNavigate && { onClick: onNavigate })}
       aria-label={collapsed ? item.label : undefined}
-      className={`mb-px flex min-h-11 items-center gap-2 rounded-md border-l-2 font-medium ${fontSizeClass} ${
-        collapsed ? 'justify-center px-0' : 'px-2.5'
+      className={`mb-px flex min-h-11 items-center gap-2 font-medium ${shapeClasses} ${fontSizeClass} ${
+        collapsed ? 'w-11 justify-center px-0' : 'px-2.5'
       } ${active ? activeClasses : inactiveClasses}`}
     >
       <Icon size={iconSize} className="shrink-0" />

@@ -55,8 +55,15 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <SchoolTopbar onMenuClick={() => setDrawerOpen(true)} />
-        <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
-          {children}
+        {/* "Floating panel" shell: the content is a rounded white card that
+            floats on the grey page background (sidebar/topbar are borderless
+            around it). The inner div is the scroller — the panel itself never
+            scrolls, so its rounded corners always clip the content. Pages built
+            on LIST_PAGE (h-full) size themselves against that inner div. */}
+        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-border bg-card sm:mx-4 sm:mb-4 lg:ml-2 lg:mr-5 lg:mb-5">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+            {children}
+          </div>
         </main>
       </div>
     </div>

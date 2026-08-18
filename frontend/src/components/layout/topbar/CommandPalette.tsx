@@ -31,11 +31,11 @@ export function CommandPalette({ sections }: { sections: NavSection[] }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden min-w-[180px] items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs text-muted-foreground sm:flex"
+        className="hidden h-10 min-w-[200px] items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 sm:flex"
       >
         <Search size={13} />
         <span className="flex-1 text-left">Recherche globale...</span>
-        <kbd className="rounded border border-border bg-card px-1 py-0.5 text-[10px] font-medium">
+        <kbd className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">
           ⌘K
         </kbd>
       </button>

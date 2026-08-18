@@ -318,7 +318,7 @@ export default function EmploiDuTempsPage() {
       )}
 
       {/* ── Filter bar ─────────────────────────────────────────── */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5">
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -421,14 +421,14 @@ export default function EmploiDuTempsPage() {
 
       {/* ── Body ───────────────────────────────────────────────── */}
       {noYear ? (
-        <div className="rounded-lg border border-border bg-card px-4 py-10 text-center">
+        <div className="rounded-2xl border border-border bg-card px-4 py-10 text-center">
           <p className="text-caption font-semibold text-foreground">Aucune année scolaire active</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Configure d’abord une année scolaire dans Paramètres pour planifier des cours.
           </p>
         </div>
       ) : !data ? (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="flex gap-px border-b border-border bg-muted">
             {Array.from({ length: 6 }, (_, i) => (
               <Skeleton key={i} className="h-11 flex-1 rounded-none bg-card/60" />

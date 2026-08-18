@@ -55,18 +55,25 @@ export function Sidebar({
     variant === 'light'
       ? 'bg-sidebar-light text-sidebar-light-foreground'
       : 'bg-sidebar-dark text-sidebar-dark-foreground';
-  const borderClass = variant === 'light' ? 'border-border' : 'border-white/[0.07]';
+  // Light shell is borderless: the sidebar floats on the page background next
+  // to the rounded content panel (see (school)/layout.tsx). Dark shell keeps
+  // its hairlines.
+  const light = variant === 'light';
+  const edgeClass = light ? '' : 'border-r border-white/[0.07]';
+  const brandEdgeClass = light ? '' : 'border-b border-white/[0.07]';
+  const footerEdgeClass = light ? '' : 'border-t border-white/[0.07]';
 
   return (
     <Tooltip.Provider delayDuration={300}>
       <motion.aside
         animate={{ width: collapsed ? COLLAPSED_WIDTH : width }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className={`flex h-full shrink-0 flex-col overflow-hidden border-r ${borderClass} ${bgClass}`}
+        className={`flex h-full shrink-0 flex-col overflow-hidden ${edgeClass} ${bgClass}`}
       >
-        {/* Same h-13 as the topbar so both bottom borders sit on one line. */}
+        {/* Same h-13 as the topbar so the brand row and the breadcrumbs share
+            one baseline. */}
         <div
-          className={`flex h-13 shrink-0 items-center border-b ${borderClass} ${
+          className={`flex h-13 shrink-0 items-center ${brandEdgeClass} ${
             collapsed ? 'justify-center' : 'justify-between gap-2 px-4'
           }`}
         >
@@ -124,7 +131,7 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className={`border-t ${borderClass} p-2.5`}>
+        <div className={`${footerEdgeClass} p-2.5`}>
           {!collapsed && footer}
           <SidebarUserProfile
             variant={variant}

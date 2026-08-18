@@ -19,7 +19,7 @@ export function SchoolTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const trail = getBreadcrumbTrail(pathname, SCHOOL_SECTIONS, EXTRA_LABELS);
 
   return (
-    <header className="flex h-13 shrink-0 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
+    <header className="flex h-13 shrink-0 items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -32,7 +32,7 @@ export function SchoolTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <Breadcrumbs root={<span>Schoolgesti</span>} trail={trail} />
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <CommandPalette sections={SCHOOL_SECTIONS} />
         <AcademicYearSelector />
         <NotificationsMenu />

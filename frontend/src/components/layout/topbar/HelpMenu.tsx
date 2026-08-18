@@ -10,7 +10,7 @@ export function HelpMenu() {
         <button
           type="button"
           aria-label="Aide"
-          className="hidden h-11 w-11 items-center justify-center text-muted-foreground sm:flex"
+          className="hidden h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground sm:flex"
         >
           <CircleHelp size={17} />
         </button>

@@ -203,7 +203,7 @@ export default function TeachersPage() {
             <Skeleton className="mt-1.5 h-3 w-32" />
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             className="w-fit"

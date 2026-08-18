@@ -61,7 +61,8 @@ export default function LoginPage() {
       // school users land on their dashboard. `/` stays the public
       // marketing landing — a logged-in user must never land there.
       const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
-      router.push(isPlatformStaff ? '/admin' : '/dashboard');
+      const destination = isPlatformStaff ? '/admin' : me?.teacherId ? '/enseignant' : '/dashboard';
+      router.push(destination);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

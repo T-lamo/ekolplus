@@ -61,6 +61,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       },
     });
 
+    // Non-null when this account is linked to a Teacher profile (teacher
+    // self-check-in feature) — scoped by the authenticated user's own id,
+    // never client input, so this can't be used to probe other accounts.
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId: auth.user.sub },
+      select: { id: true },
+    });
+
     const user = {
       // Keep `sub` for back-compat with the AuthContext payload contract
       // (older callers may still read it). New code should use `id`.
@@ -93,6 +101,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           : dbUser.passwordChangedAt
         : null,
       linkedProviders: (dbUser?.oauthAccounts ?? []).map((a) => a.provider),
+      teacherId: teacher?.id ?? null,
     };
 
     return NextResponse.json({ user }, { status: 200, headers: { 'x-request-id': ctx.requestId } });

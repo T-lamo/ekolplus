@@ -23,6 +23,9 @@ export interface User {
   passwordChangedAt: string | null;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */
   linkedProviders: string[];
+  /** Non-null when this account is linked to a Teacher profile (see the
+   * teacher self-check-in feature) — used to route login to /enseignant. */
+  teacherId: string | null;
 }
 
 interface AuthContextValue {

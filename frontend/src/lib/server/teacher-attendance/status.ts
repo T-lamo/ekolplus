@@ -3,6 +3,8 @@
 // two never drift (see docs/superpowers/specs/2026-08-18-teacher-self-checkin-design.md).
 import 'server-only';
 
+import { parseDay } from '@/lib/server/timetable';
+
 export type CheckInStatus = 'UPCOMING' | 'PRESENT' | 'LATE' | 'ABSENT';
 
 const LATE_THRESHOLD_MINUTES = 10;
@@ -12,7 +14,7 @@ export function computeCheckInStatus(
   checkedInAt: Date | null,
   now: Date,
 ): CheckInStatus {
-  const dayStart = new Date(`${session.date}T00:00:00`);
+  const dayStart = parseDay(session.date);
   const sessionStart = new Date(dayStart.getTime() + session.startMinutes * 60_000);
   const sessionEnd = new Date(dayStart.getTime() + session.endMinutes * 60_000);
 

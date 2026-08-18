@@ -4,7 +4,8 @@ import { computeCheckInStatus } from './status';
 const session = { date: '2026-08-18', startMinutes: 8 * 60, endMinutes: 9 * 60 }; // 08:00–09:00
 
 function at(hh: number, mm: number): Date {
-  return new Date(`2026-08-18T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00`);
+  // UTC-explicit date to match parseDay's UTC semantics (what @db.Date columns store).
+  return new Date(`2026-08-18T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00Z`);
 }
 
 describe('computeCheckInStatus', () => {
@@ -33,5 +34,17 @@ describe('computeCheckInStatus', () => {
   it('a past check-in stays PRESENT/LATE regardless of "now"', () => {
     expect(computeCheckInStatus(session, at(8, 5), at(23, 0))).toBe('PRESENT');
     expect(computeCheckInStatus(session, at(8, 20), at(23, 0))).toBe('LATE');
+  });
+
+  it('works correctly with explicit UTC dates (parseDay-style)', () => {
+    // Regression test: prove the function uses UTC-midnight (parseDay style)
+    // and doesn't depend on local timezone. Use explicit Z-suffixed ISO strings.
+    const utcSession = { date: '2026-08-18', startMinutes: 8 * 60, endMinutes: 9 * 60 };
+    const nowUtc = new Date('2026-08-18T08:00:00Z'); // exactly session start, UTC
+    const checkedInUtc = new Date('2026-08-18T08:05:00Z'); // 5 min late, UTC
+    const nowAfterUtc = new Date('2026-08-18T09:30:00Z'); // after session end, UTC
+
+    expect(computeCheckInStatus(utcSession, checkedInUtc, nowUtc)).toBe('PRESENT');
+    expect(computeCheckInStatus(utcSession, null, nowAfterUtc)).toBe('ABSENT');
   });
 });

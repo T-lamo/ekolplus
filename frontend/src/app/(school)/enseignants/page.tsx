@@ -179,7 +179,7 @@ export default function TeachersPage() {
       {
         label: 'Voir les présences',
         icon: <CalendarCheck size={14} />,
-        onClick: () => toast('Disponible avec Epic 8 (Présences).', 'info'),
+        onClick: () => router.push(`/enseignants/${t.id}?tab=attendance`),
       },
       {
         label: 'Envoyer un message WhatsApp',

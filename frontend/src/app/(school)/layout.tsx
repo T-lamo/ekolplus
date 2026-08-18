@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/AuthContext';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
@@ -15,8 +16,13 @@ import { Skeleton } from '@/components/ui/Skeleton';
 // .planning/banani/school-settings.md.
 export default function SchoolLayout({ children }: { children: ReactNode }) {
   const user = useUser();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, toggleCollapsed] = useSidebarCollapse();
+
+  useEffect(() => {
+    if (user?.teacherId) router.replace('/enseignant');
+  }, [user, router]);
 
   if (!user) {
     return (

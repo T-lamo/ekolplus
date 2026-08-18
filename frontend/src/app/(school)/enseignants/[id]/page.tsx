@@ -6,12 +6,13 @@
 // grid of InfoRow cards. Stats and the Matières & Classes tab are real,
 // derived from ClassSubject assignments — never fabricated numbers.
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   BookOpen,
   Briefcase,
   Calendar,
+  CalendarCheck,
   Hash,
   Link as LinkIcon,
   Mail,
@@ -20,7 +21,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -53,18 +54,47 @@ function fmtDate(d: string): string {
 const TABS = [
   { key: 'info', label: 'Informations', icon: UserCheck },
   { key: 'assignments', label: 'Matières & Classes', icon: BookOpen },
+  { key: 'attendance', label: 'Présences', icon: CalendarCheck },
 ] as const;
 
+interface CheckInRow {
+  id: string;
+  date: string;
+  subjectName: string;
+  className: string;
+  startMinutes: number;
+  endMinutes: number;
+  status: 'UPCOMING' | 'PRESENT' | 'LATE' | 'ABSENT';
+  checkedInAt: string | null;
+}
+
 export default function TeacherProfilePage() {
+  return (
+    <Suspense fallback={null}>
+      <TeacherProfile />
+    </Suspense>
+  );
+}
+
+const TAB_KEYS = TABS.map((t) => t.key);
+
+function TeacherProfile() {
   const user = useUser();
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab');
   const { toast } = useToast();
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
+  const [tab, setTab] = useState<(typeof TABS)[number]['key']>(
+    initialTab && TAB_KEYS.some((k) => k === initialTab)
+      ? (initialTab as (typeof TABS)[number]['key'])
+      : 'info',
+  );
   const [editing, setEditing] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [checkIns, setCheckIns] = useState<CheckInRow[] | null>(null);
 
   const load = useCallback(() => {
     api<{ teacher: TeacherDetail }>(`/api/school/teachers/${params.id}`)
@@ -103,6 +133,13 @@ export default function TeacherProfilePage() {
     if (!user) return;
     load();
   }, [user, load]);
+
+  useEffect(() => {
+    if (!user || tab !== 'attendance' || checkIns !== null) return;
+    api<{ rows: CheckInRow[] }>(`/api/school/teachers/${params.id}/checkins`)
+      .then((res) => setCheckIns(res.rows))
+      .catch(() => setCheckIns([]));
+  }, [user, tab, checkIns, params.id]);
 
   if (!user || (teacher === null && !error)) {
     return (
@@ -391,6 +428,71 @@ export default function TeacherProfilePage() {
                       </td>
                       <td className="py-2.5 text-caption text-foreground">
                         {a.coefficient ?? '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {tab === 'attendance' && (
+        <Card className="p-5">
+          <div className="mb-3.5 flex items-center gap-2 text-caption font-semibold text-foreground">
+            <CalendarCheck size={14} className="text-primary" />
+            Historique des présences
+          </div>
+          {checkIns === null ? (
+            <Skeleton className="h-32 w-full" />
+          ) : checkIns.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucune séance enregistrée pour cet enseignant.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[520px] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-border text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    <th className="py-2 pr-3">Date</th>
+                    <th className="py-2 pr-3">Créneau</th>
+                    <th className="py-2 pr-3">Matière</th>
+                    <th className="py-2 pr-3">Classe</th>
+                    <th className="py-2">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {checkIns.map((row) => (
+                    <tr key={row.id} className="border-b border-border last:border-0">
+                      <td className="py-2.5 pr-3 text-caption text-foreground">
+                        {fmtDate(row.date)}
+                      </td>
+                      <td className="py-2.5 pr-3 text-caption text-foreground">
+                        {String(Math.floor(row.startMinutes / 60)).padStart(2, '0')}:
+                        {String(row.startMinutes % 60).padStart(2, '0')}
+                      </td>
+                      <td className="py-2.5 pr-3 text-caption font-medium text-foreground">
+                        {row.subjectName}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <span className="rounded-full bg-info px-2.5 py-1 text-xs font-semibold text-info-foreground">
+                          {row.className}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-caption">
+                        {row.status === 'PRESENT' && (
+                          <span className="text-success-foreground">Présent</span>
+                        )}
+                        {row.status === 'LATE' && (
+                          <span className="text-warning-foreground">En retard</span>
+                        )}
+                        {row.status === 'ABSENT' && (
+                          <span className="text-destructive-foreground">Absent</span>
+                        )}
+                        {row.status === 'UPCOMING' && (
+                          <span className="text-muted-foreground">À venir</span>
+                        )}
                       </td>
                     </tr>
                   ))}

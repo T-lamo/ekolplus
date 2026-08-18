@@ -7,7 +7,12 @@ export function exportToCsv(
   rows: (string | number)[][],
 ): void {
   const escape = (v: string | number) => {
-    const s = String(v ?? '');
+    let s = String(v ?? '');
+    // Formula injection (CWE-1236): a cell opening with =/+/-/@ runs as a
+    // formula when the CSV is opened in Excel/Sheets. Neutralize it with a
+    // leading apostrophe (the same "treat as text" hint spreadsheet editors
+    // themselves insert) before the normal quote-escaping below.
+    if (/^[=+\-@]/.test(s)) s = `'${s}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const csv = [headers, ...rows].map((row) => row.map(escape).join(',')).join('\n');

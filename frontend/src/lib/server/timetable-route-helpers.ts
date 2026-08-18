@@ -84,7 +84,15 @@ export const SessionFieldsSchema = {
   startMinutes: z.number().int().min(0).max(1439),
   endMinutes: z.number().int().min(1).max(1440),
   description: z.string().trim().max(1000).nullable().optional(),
-  meetingUrl: z.string().trim().url().max(500).nullable().optional(),
+  // Scheme-constrained (not just `.url()`) so a stored value can never
+  // become a `javascript:`/`data:` link if it's ever rendered as an <a href>.
+  meetingUrl: z
+    .string()
+    .trim()
+    .regex(/^https?:\/\//)
+    .max(500)
+    .nullable()
+    .optional(),
 } as const;
 
 export interface CandidateSlot {

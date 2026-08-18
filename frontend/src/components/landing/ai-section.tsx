@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Sparkles } from 'lucide-react';
 
 // Image locale (public/images) — plus de dépendance à une URL externe.
@@ -38,10 +39,13 @@ export function AiSection() {
           </div>
           <div className="relative flex justify-center">
             <div className="absolute inset-0 -z-10 scale-125 rounded-full bg-violet-500/20 blur-3xl" />
-            <img
+            <Image
               alt="Intelligence artificielle au service de la pédagogie"
               className="w-full max-w-md rounded-2xl border border-white/10 shadow-2xl"
               src={AI_IMG}
+              width={512}
+              height={512}
+              sizes="(min-width: 1024px) 448px, 90vw"
             />
           </div>
         </div>

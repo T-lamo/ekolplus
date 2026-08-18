@@ -2,6 +2,12 @@
   "name": "frontend",
   "version": "0.0.1",
   "private": true,
+  "browserslist": [
+    "chrome >= 100",
+    "edge >= 100",
+    "firefox >= 100",
+    "safari >= 15"
+  ],
   "scripts": {
     "dev": "next dev --port 3000 --turbopack",
     "build": "next build",
@@ -40,7 +46,7 @@
     "@radix-ui/react-popover": "^1.1.23",
     "@radix-ui/react-select": "^2.3.7",
     "@radix-ui/react-tooltip": "^1.2.16",
-    "@sentry/nextjs": "^10.52.0",
+    "@sentry/nextjs": "^10.70.0",
     "@sparticuz/chromium": "^149.0.0",
     "@upstash/redis": "^1.34.3",
     "@vercel/otel": "^2.1.2",

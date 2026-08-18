@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Zap, PlayCircle } from 'lucide-react';
 import { CtaLink } from './landing-ui';
 
@@ -34,10 +35,14 @@ export function HeroSection() {
           {/* Drifting violet glow — CSS approximation of the reference WebGL shader. */}
           <div className="animate-drift pointer-events-none absolute inset-0 -z-10 rounded-full bg-violet-500/10 blur-3xl" />
           <div className="animate-float w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-            <img
+            <Image
               alt="Tableau de bord Schoolgesti"
               className="h-auto w-full rounded-lg"
               src={DASHBOARD_IMG}
+              width={512}
+              height={286}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              priority
             />
           </div>
         </div>

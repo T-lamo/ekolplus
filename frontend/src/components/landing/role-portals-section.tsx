@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { BarChart3, SquarePen, Users, GraduationCap, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -96,8 +97,14 @@ export function RolePortalsSection() {
               ))}
             </ul>
           </div>
-          <div className="aspect-video overflow-hidden rounded-lg border border-slate-200">
-            <img className="h-full w-full object-cover" alt="" src={PORTAL_IMG} />
+          <div className="relative aspect-video overflow-hidden rounded-lg border border-slate-200">
+            <Image
+              className="object-cover"
+              alt=""
+              src={PORTAL_IMG}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+            />
           </div>
         </div>
       </div>

@@ -9,6 +9,11 @@ export type CheckInStatus = 'UPCOMING' | 'PRESENT' | 'LATE' | 'ABSENT';
 
 const LATE_THRESHOLD_MINUTES = 10;
 
+// Also consumed by /api/teacher/checkins (the window a check-in is still
+// accepted) — single source of truth so the "still checkable" window here
+// and the button/ABSENT-chip logic there can never disagree.
+export const GRACE_MINUTES = 15;
+
 export function computeCheckInStatus(
   session: { date: string; startMinutes: number; endMinutes: number },
   checkedInAt: Date | null,
@@ -17,11 +22,12 @@ export function computeCheckInStatus(
   const dayStart = parseDay(session.date);
   const sessionStart = new Date(dayStart.getTime() + session.startMinutes * 60_000);
   const sessionEnd = new Date(dayStart.getTime() + session.endMinutes * 60_000);
+  const absentAt = new Date(sessionEnd.getTime() + GRACE_MINUTES * 60_000);
 
   if (checkedInAt) {
     const lateByMinutes = (checkedInAt.getTime() - sessionStart.getTime()) / 60_000;
     return lateByMinutes > LATE_THRESHOLD_MINUTES ? 'LATE' : 'PRESENT';
   }
 
-  return now.getTime() >= sessionEnd.getTime() ? 'ABSENT' : 'UPCOMING';
+  return now.getTime() >= absentAt.getTime() ? 'ABSENT' : 'UPCOMING';
 }

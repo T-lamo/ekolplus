@@ -1,19 +1,32 @@
 // POST /api/auth/teacher-invite/[token]/accept — consumes a TeacherInvite
-// token and creates the teacher's login: a User row + an
-// OrganizationMember(role: MEMBER) on the school's organization + links
-// Teacher.userId. Same password-policy gates as /api/auth/signup. Issues no
-// session cookies — the teacher logs in afterward through the unmodified
-// standard /api/auth/login flow (same posture as /api/auth/reset-password).
+// token and creates the teacher's login: a User row + links Teacher.userId.
+// Deliberately grants NO OrganizationMember row — nothing in this feature
+// needs school-membership (resolveMyTeacherProfile resolves identity via
+// Teacher.userId directly), and /api/school/* routes gate reads on
+// membership existing at all, not on role, so granting one would hand every
+// invited teacher read access to the whole back-office. Same password-policy
+// gates as /api/auth/signup, but token validation runs FIRST (WR-01
+// pattern, mirrors reset-password/route.ts): the token lookup is a cheap
+// unique-indexed read that should reject a garbage/expired token before any
+// password-policy work (isBanned/isPwned) runs — otherwise an unrated,
+// pre-session route lets an attacker probe banned-list/HIBP state for free.
+// If the invite's email already belongs to an existing User, the invite is
+// rejected rather than silently overwriting that account's password (no
+// ownership proof exists that the caller is the account's real owner).
+// Issues no session cookies — the teacher logs in afterward through the
+// unmodified standard /api/auth/login flow (same posture as
+// /api/auth/reset-password).
 //
 // Race guard (mirrors WR-05 in reset-password/route.ts): the outer
 // `findUnique` check above is just an optimization to fail fast/cheaply —
 // it does NOT close the TOCTOU window between two concurrent requests for
 // the same still-valid token. The invite-consuming write below is a
 // `updateMany` with a `usedAt: null` compare-and-swap guard and runs FIRST
-// inside the transaction, before any User/OrganizationMember/Teacher write.
-// A losing racer sees count===0, throws a sentinel error, and the whole
-// transaction rolls back before touching the account — surfaced to the
-// caller as the same INVALID_OR_EXPIRED shape as an already-used invite.
+// inside the transaction, before any User/Teacher write. A losing racer (or
+// a request that loses to an email-already-in-use conflict) throws a
+// sentinel error and the whole transaction rolls back before touching any
+// account — surfaced to the caller as the same INVALID_OR_EXPIRED shape as
+// an already-used invite.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -46,28 +59,7 @@ export async function POST(
     }
     const { password } = parsed.data;
 
-    if (isBanned(password)) {
-      return NextResponse.json(
-        { error: 'PASSWORD_BANNED', message: 'This password is too common.' },
-        { status: 400, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (password.length < PASSWORD_MIN) {
-      return NextResponse.json(
-        {
-          error: 'PASSWORD_TOO_SHORT',
-          message: `Password must be at least ${PASSWORD_MIN} characters`,
-        },
-        { status: 400, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (process.env.PASSWORD_HIBP_CHECK === '1' && (await isPwned(password))) {
-      return NextResponse.json(
-        { error: 'PASSWORD_PWNED', message: 'This password appeared in a known data breach.' },
-        { status: 400, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
+    // Token validation FIRST — see WR-01 note above.
     const invite = await prisma.teacherInvite.findUnique({
       where: { token },
       select: {
@@ -92,6 +84,28 @@ export async function POST(
       );
     }
 
+    if (isBanned(password)) {
+      return NextResponse.json(
+        { error: 'PASSWORD_BANNED', message: 'This password is too common.' },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+    if (password.length < PASSWORD_MIN) {
+      return NextResponse.json(
+        {
+          error: 'PASSWORD_TOO_SHORT',
+          message: `Password must be at least ${PASSWORD_MIN} characters`,
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+    if (process.env.PASSWORD_HIBP_CHECK === '1' && (await isPwned(password))) {
+      return NextResponse.json(
+        { error: 'PASSWORD_PWNED', message: 'This password appeared in a known data breach.' },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     const passwordHash = await hashPassword(password);
 
     try {
@@ -109,33 +123,22 @@ export async function POST(
           where: { email: invite.teacher.email! },
           select: { id: true },
         });
-        const user = existingUser
-          ? await tx.user.update({
-              where: { id: existingUser.id },
-              data: { passwordHash, emailVerifiedAt: new Date() },
-              select: { id: true },
-            })
-          : await tx.user.create({
-              data: { email: invite.teacher.email!, passwordHash, emailVerifiedAt: new Date() },
-              select: { id: true },
-            });
+        if (existingUser) {
+          throw new Error('TEACHER_INVITE_EMAIL_IN_USE');
+        }
 
-        const org = await tx.organization.findFirst({
-          where: { school: { id: invite.schoolId } },
+        const user = await tx.user.create({
+          data: { email: invite.teacher.email!, passwordHash, emailVerifiedAt: new Date() },
           select: { id: true },
         });
-        if (org) {
-          await tx.organizationMember.upsert({
-            where: { organizationId_userId: { organizationId: org.id, userId: user.id } },
-            create: { organizationId: org.id, userId: user.id, role: 'MEMBER' },
-            update: {},
-          });
-        }
 
         await tx.teacher.update({ where: { id: invite.teacherId }, data: { userId: user.id } });
       });
     } catch (err) {
-      if (err instanceof Error && err.message === 'TEACHER_INVITE_RACE') {
+      if (
+        err instanceof Error &&
+        (err.message === 'TEACHER_INVITE_RACE' || err.message === 'TEACHER_INVITE_EMAIL_IN_USE')
+      ) {
         return NextResponse.json(
           { error: 'INVALID_OR_EXPIRED', message: 'Invite invalid or expired' },
           { status: 404, headers: { 'x-request-id': ctx.requestId } },

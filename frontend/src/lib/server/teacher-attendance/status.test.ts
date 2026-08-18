@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeCheckInStatus } from './status';
+import { computeCheckInStatus, GRACE_MINUTES } from './status';
 
 const session = { date: '2026-08-18', startMinutes: 8 * 60, endMinutes: 9 * 60 }; // 08:00–09:00
 
@@ -14,8 +14,14 @@ describe('computeCheckInStatus', () => {
     expect(computeCheckInStatus(session, null, at(8, 30))).toBe('UPCOMING');
   });
 
-  it('is ABSENT once the session has ended with no check-in', () => {
-    expect(computeCheckInStatus(session, null, at(9, 0))).toBe('ABSENT');
+  it('stays UPCOMING through the grace period after the session ends with no check-in', () => {
+    expect(GRACE_MINUTES).toBe(15); // the literals below are written against this window
+    expect(computeCheckInStatus(session, null, at(9, 0))).toBe('UPCOMING'); // right at the bell
+    expect(computeCheckInStatus(session, null, at(9, 14))).toBe('UPCOMING'); // 14min after end, still within the 15min grace
+  });
+
+  it('is ABSENT once the grace period has fully elapsed with no check-in', () => {
+    expect(computeCheckInStatus(session, null, at(9, 15))).toBe('ABSENT'); // exactly GRACE_MINUTES after end
     expect(computeCheckInStatus(session, null, at(9, 30))).toBe('ABSENT');
   });
 

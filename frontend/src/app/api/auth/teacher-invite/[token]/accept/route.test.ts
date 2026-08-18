@@ -4,7 +4,11 @@
 // fail-fast optimization; the real correctness guarantee is the guarded
 // `updateMany({ where: { usedAt: null } })` that runs FIRST inside the
 // transaction — this file asserts that guard actually gates the
-// User/OrganizationMember/Teacher writes.
+// User/Teacher writes. It also locks in the two security invariants from the
+// final branch review: NO OrganizationMember row is ever granted (an invited
+// teacher must not get school-wide back-office reads), and an invite whose
+// email already belongs to a User is rejected rather than silently
+// overwriting that account's password.
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -47,13 +51,11 @@ beforeEach(() => {
 });
 
 describe('POST /api/auth/teacher-invite/[token]/accept', () => {
-  it('happy path: consumes the invite (guarded updateMany), creates the User, links Teacher.userId, upserts OrganizationMember', async () => {
+  it('happy path: consumes the invite (guarded updateMany), creates the User, links Teacher.userId — no OrganizationMember granted', async () => {
     prismaMock.teacherInvite.findUnique.mockResolvedValue(baseInvite as never);
     prismaMock.teacherInvite.updateMany.mockResolvedValue({ count: 1 } as never);
     prismaMock.user.findUnique.mockResolvedValue(null);
     prismaMock.user.create.mockResolvedValue({ id: 'user1' } as never);
-    prismaMock.organization.findFirst.mockResolvedValue({ id: 'org1' } as never);
-    prismaMock.organizationMember.upsert.mockResolvedValue({} as never);
     prismaMock.teacher.update.mockResolvedValue({} as never);
 
     const { req, params } = makeReq('tok1', { password: STRONG_PW });
@@ -73,7 +75,30 @@ describe('POST /api/auth/teacher-invite/[token]/accept', () => {
       where: { id: 'teacher1' },
       data: { userId: 'user1' },
     });
-    expect(prismaMock.organizationMember.upsert).toHaveBeenCalledTimes(1);
+    // C1: an invited teacher must NOT become an OrganizationMember —
+    // /api/school/* GETs gate on membership existing at all, not on role.
+    expect(prismaMock.organizationMember.upsert).not.toHaveBeenCalled();
+  });
+
+  it('rejects with INVALID_OR_EXPIRED when the invite email already has a User account, without mutating it or granting access', async () => {
+    // C2: no ownership proof exists that whoever opened the invite link owns
+    // the pre-existing account, so the invite is refused rather than
+    // overwriting that account's passwordHash (confused-deputy takeover).
+    prismaMock.teacherInvite.findUnique.mockResolvedValue(baseInvite as never);
+    prismaMock.teacherInvite.updateMany.mockResolvedValue({ count: 1 } as never);
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'existing-user-1' } as never);
+
+    const { req, params } = makeReq('tok1', { password: STRONG_PW });
+    const res = await POST(req, { params });
+
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe('INVALID_OR_EXPIRED');
+
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
+    expect(prismaMock.teacher.update).not.toHaveBeenCalled();
+    expect(prismaMock.organizationMember.upsert).not.toHaveBeenCalled();
   });
 
   it('race guard: when the guarded updateMany returns count=0, surfaces INVALID_OR_EXPIRED and never touches User/OrganizationMember/Teacher', async () => {
@@ -110,5 +135,19 @@ describe('POST /api/auth/teacher-invite/[token]/accept', () => {
     const body = await res.json();
     expect(body.error).toBe('INVALID_OR_EXPIRED');
     expect(prismaMock.teacherInvite.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('validates the token BEFORE the password-policy gates (WR-01): a garbage token never leaks banned-list state', async () => {
+    // I5: this route is pre-session and unrated, so isBanned/isPwned must not
+    // be reachable with an unknown token — otherwise it's a free oracle.
+    prismaMock.teacherInvite.findUnique.mockResolvedValue(null);
+
+    const { req, params } = makeReq('garbage-token', { password: 'password123' });
+    const res = await POST(req, { params });
+
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe('INVALID_OR_EXPIRED'); // NOT 'PASSWORD_BANNED'
+    expect(prismaMock.teacherInvite.findUnique).toHaveBeenCalledTimes(1);
   });
 });

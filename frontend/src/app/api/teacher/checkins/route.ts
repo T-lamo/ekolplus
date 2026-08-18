@@ -9,9 +9,8 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMyTeacherProfile } from '@/lib/server/school';
+import { GRACE_MINUTES } from '@/lib/server/teacher-attendance/status';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
-
-const GRACE_MINUTES = 15;
 
 const Body = z.object({ timetableSessionId: z.string().min(1) });
 

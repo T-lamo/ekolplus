@@ -285,10 +285,10 @@ export function Step3Decisions({
         <Button variant="outline" className="w-fit" onClick={onPrev} disabled={isLoading}>
           {t.previousStep}
         </Button>
-        <Button variant="outline" className="w-fit" onClick={handleSaveDraft} disabled={isLoading}>
+        <Button variant="outline" className="w-fit" onClick={handleSaveDraft} loading={isLoading}>
           {t.saveAsDraft}
         </Button>
-        <Button className="w-fit" onClick={handleProceed} disabled={isLoading}>
+        <Button className="w-fit" onClick={handleProceed} loading={isLoading}>
           {t.nextStep}
         </Button>
       </div>

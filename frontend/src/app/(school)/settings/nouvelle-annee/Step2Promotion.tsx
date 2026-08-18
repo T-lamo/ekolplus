@@ -450,10 +450,10 @@ export function Step2Promotion({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" className="w-fit" onClick={handleSaveDraft} disabled={isLoading}>
+        <Button variant="outline" className="w-fit" onClick={handleSaveDraft} loading={isLoading}>
           {ACADEMIC_YEAR_ROLLOVER.step1.saveAsDraft}
         </Button>
-        <Button className="w-fit" onClick={handleProceed} disabled={isLoading}>
+        <Button className="w-fit" onClick={handleProceed} loading={isLoading}>
           {t.nextStep}
         </Button>
       </div>

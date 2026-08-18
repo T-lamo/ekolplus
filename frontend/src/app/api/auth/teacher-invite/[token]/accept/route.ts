@@ -4,6 +4,16 @@
 // Teacher.userId. Same password-policy gates as /api/auth/signup. Issues no
 // session cookies — the teacher logs in afterward through the unmodified
 // standard /api/auth/login flow (same posture as /api/auth/reset-password).
+//
+// Race guard (mirrors WR-05 in reset-password/route.ts): the outer
+// `findUnique` check above is just an optimization to fail fast/cheaply —
+// it does NOT close the TOCTOU window between two concurrent requests for
+// the same still-valid token. The invite-consuming write below is a
+// `updateMany` with a `usedAt: null` compare-and-swap guard and runs FIRST
+// inside the transaction, before any User/OrganizationMember/Teacher write.
+// A losing racer sees count===0, throws a sentinel error, and the whole
+// transaction rolls back before touching the account — surfaced to the
+// caller as the same INVALID_OR_EXPIRED shape as an already-used invite.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -84,37 +94,55 @@ export async function POST(
 
     const passwordHash = await hashPassword(password);
 
-    await prisma.$transaction(async (tx) => {
-      const existingUser = await tx.user.findUnique({
-        where: { email: invite.teacher.email! },
-        select: { id: true },
-      });
-      const user = existingUser
-        ? await tx.user.update({
-            where: { id: existingUser.id },
-            data: { passwordHash, emailVerifiedAt: new Date() },
-            select: { id: true },
-          })
-        : await tx.user.create({
-            data: { email: invite.teacher.email!, passwordHash, emailVerifiedAt: new Date() },
-            select: { id: true },
-          });
-
-      const org = await tx.organization.findFirst({
-        where: { school: { id: invite.schoolId } },
-        select: { id: true },
-      });
-      if (org) {
-        await tx.organizationMember.upsert({
-          where: { organizationId_userId: { organizationId: org.id, userId: user.id } },
-          create: { organizationId: org.id, userId: user.id, role: 'MEMBER' },
-          update: {},
+    try {
+      await prisma.$transaction(async (tx) => {
+        // CAS guard MUST run first — see race-guard comment above.
+        const consumed = await tx.teacherInvite.updateMany({
+          where: { id: invite.id, usedAt: null },
+          data: { usedAt: new Date() },
         });
-      }
+        if (consumed.count === 0) {
+          throw new Error('TEACHER_INVITE_RACE');
+        }
 
-      await tx.teacher.update({ where: { id: invite.teacherId }, data: { userId: user.id } });
-      await tx.teacherInvite.update({ where: { id: invite.id }, data: { usedAt: new Date() } });
-    });
+        const existingUser = await tx.user.findUnique({
+          where: { email: invite.teacher.email! },
+          select: { id: true },
+        });
+        const user = existingUser
+          ? await tx.user.update({
+              where: { id: existingUser.id },
+              data: { passwordHash, emailVerifiedAt: new Date() },
+              select: { id: true },
+            })
+          : await tx.user.create({
+              data: { email: invite.teacher.email!, passwordHash, emailVerifiedAt: new Date() },
+              select: { id: true },
+            });
+
+        const org = await tx.organization.findFirst({
+          where: { school: { id: invite.schoolId } },
+          select: { id: true },
+        });
+        if (org) {
+          await tx.organizationMember.upsert({
+            where: { organizationId_userId: { organizationId: org.id, userId: user.id } },
+            create: { organizationId: org.id, userId: user.id, role: 'MEMBER' },
+            update: {},
+          });
+        }
+
+        await tx.teacher.update({ where: { id: invite.teacherId }, data: { userId: user.id } });
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message === 'TEACHER_INVITE_RACE') {
+        return NextResponse.json(
+          { error: 'INVALID_OR_EXPIRED', message: 'Invite invalid or expired' },
+          { status: 404, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json({ ok: true }, { headers: { 'x-request-id': ctx.requestId } });
   });

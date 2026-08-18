@@ -64,6 +64,7 @@ model User {
   // on their domain models.
   ownedOrganizations Organization[]       @relation("OrgOwner")
   memberships        OrganizationMember[] @relation("OrgMembership")
+  teacherProfile     Teacher?
 
   @@index([email])
   @@index([role])
@@ -175,6 +176,8 @@ model School {
   gradeLevels           GradeLevel[]
   timetableSessions     TimetableSession[]
   rooms                 Room[]
+  teacherInvites        TeacherInvite[]
+  teacherCheckIns       TeacherCheckIn[]
 
   @@index([organizationId])
 }
@@ -407,6 +410,10 @@ model Teacher {
   // Contractual hours target — distinct from the hours computed from real
   // ClassSubject assignments shown on the Teachers list.
   weeklyHoursTarget Int?
+  // Links this contact record to a login account, created via the invite
+  // flow (see TeacherInvite). Nullable — most teachers have no account.
+  userId            String?   @unique
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -415,8 +422,38 @@ model Teacher {
   responsibleSubjects Subject[]      @relation("SubjectResponsible")
 
   timetableSessions TimetableSession[]
+  invites           TeacherInvite[]
+  checkIns          TeacherCheckIn[]
 
   @@index([schoolId])
+}
+
+model TeacherInvite {
+  id        String    @id @default(cuid())
+  schoolId  String
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherId String
+  teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([teacherId])
+}
+
+model TeacherCheckIn {
+  id                 String           @id @default(cuid())
+  schoolId           String
+  school             School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  timetableSessionId String
+  timetableSession   TimetableSession @relation(fields: [timetableSessionId], references: [id], onDelete: Cascade)
+  teacherId          String
+  teacher            Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  checkedInAt        DateTime         @default(now())
+
+  @@unique([timetableSessionId, teacherId])
+  @@index([schoolId, teacherId])
 }
 
 model Class {
@@ -1279,6 +1316,8 @@ model TimetableSession {
   seriesId       String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  checkIns TeacherCheckIn[]
 
   @@index([schoolId, classId, date])
   @@index([schoolId, teacherId, date])

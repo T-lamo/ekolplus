@@ -93,6 +93,39 @@ export const AUTH_RESET_PASSWORD = {
   },
 } as const;
 
+// French copy for the /invitation-enseignant screen — consumes a
+// TeacherInvite token created by the "Inviter à se connecter" action on the
+// teacher profile page (see /api/school/teachers/[id]/invite). Creates the
+// teacher's login on accept; does not log them in (the accept route
+// deliberately issues no cookies) — success sends them to /login.
+export const AUTH_TEACHER_INVITE = {
+  title: 'Crée ton compte enseignant',
+  subtitle: (teacherName: string, schoolName: string) =>
+    `${schoolName} t'invite, ${teacherName}, à créer ton compte pour signer ta présence à chaque cours.`,
+  passwordLabel: 'Choisis un mot de passe',
+  submit: 'Créer mon compte',
+  submitting: 'Création…',
+  invalid: {
+    title: 'Ce lien n’est plus valide',
+    subtitle:
+      'Il a peut-être déjà été utilisé ou a expiré. Demande une nouvelle invitation au secrétariat.',
+  },
+  done: {
+    title: 'Compte créé 🎉',
+    subtitle:
+      'Tu peux maintenant te connecter avec ton adresse e-mail et ton nouveau mot de passe.',
+    cta: 'Se connecter',
+  },
+  errors: {
+    INVALID_OR_EXPIRED: 'Ce lien n’est plus valide.',
+    PASSWORD_TOO_SHORT: 'Mot de passe trop court.',
+    PASSWORD_BANNED: 'Ce mot de passe est trop courant.',
+    PASSWORD_PWNED: 'Ce mot de passe est apparu dans une fuite de données connue.',
+    default: 'Une erreur est survenue. Réessaie.',
+    network: 'Erreur réseau. Réessaie.',
+  },
+};
+
 // French copy for the "Créer une école" admin modal — see
 // .planning/banani/create-school.md. Was a dedicated page, now a Modal
 // opened from /admin and /admin/schools (no more navigation away).

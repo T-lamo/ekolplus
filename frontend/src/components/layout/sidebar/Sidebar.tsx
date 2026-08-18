@@ -55,11 +55,11 @@ export function Sidebar({
     variant === 'light'
       ? 'bg-sidebar-light text-sidebar-light-foreground'
       : 'bg-sidebar-dark text-sidebar-dark-foreground';
-  // Light shell is borderless: the sidebar floats on the page background next
-  // to the rounded content panel (see (school)/layout.tsx). Dark shell keeps
-  // its hairlines.
+  // Light shell: the sidebar is a rounded white card floating on the page
+  // background, twin of the content panel (see (school)/layout.tsx) — no inner
+  // hairlines. Dark shell keeps its flush column + hairlines.
   const light = variant === 'light';
-  const edgeClass = light ? '' : 'border-r border-white/[0.07]';
+  const edgeClass = light ? 'rounded-3xl border border-border' : 'border-r border-white/[0.07]';
   const brandEdgeClass = light ? '' : 'border-b border-white/[0.07]';
   const footerEdgeClass = light ? '' : 'border-t border-white/[0.07]';
 

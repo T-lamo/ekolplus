@@ -35,7 +35,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className={`relative z-50 flex h-full ${SIDEBAR_WIDTH_CLASS}`}>
+          <div className={`relative z-50 flex h-full p-3 ${SIDEBAR_WIDTH_CLASS}`}>
             <SchoolSidebar onNavigate={() => setDrawerOpen(false)} />
             <button
               type="button"
@@ -49,18 +49,20 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <div className="hidden lg:flex">
+      {/* "Floating panel" shell: sidebar and content are two rounded white
+          cards on the grey page background, 16px gutters all around; the bare
+          topbar sits on the grey, its row aligned with the sidebar's brand row
+          (both h-13, both start 16px from the top on lg). */}
+      <div className="hidden lg:flex lg:py-4 lg:pl-4">
         <SchoolSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col lg:pt-4">
         <SchoolTopbar onMenuClick={() => setDrawerOpen(true)} />
-        {/* "Floating panel" shell: the content is a rounded white card that
-            floats on the grey page background (sidebar/topbar are borderless
-            around it). The inner div is the scroller — the panel itself never
-            scrolls, so its rounded corners always clip the content. Pages built
-            on LIST_PAGE (h-full) size themselves against that inner div. */}
-        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-border bg-card sm:mx-4 sm:mb-4 lg:ml-2 lg:mr-5 lg:mb-5">
+        {/* The inner div is the scroller — the panel itself never scrolls, so
+            its rounded corners always clip the content. Pages built on
+            LIST_PAGE (h-full) size themselves against that inner div. */}
+        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-border bg-card sm:mx-4 sm:mb-4">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
             {children}
           </div>

@@ -45,10 +45,10 @@
 
   /* Two sidebar variants: school shell is light, SaaS admin shell + login's
      branding panel are dark. Not a single reusable token (see epic-0-shell.md).
-     The light sidebar sits directly on the page background (borderless
-     "floating panel" shell: the content area is the white rounded card, the
-     sidebar/topbar float on the grey around it), so it shares --background. */
-  --color-sidebar-light: #f3f3f7;
+     "Floating panel" shell: the light sidebar and the content area are two
+     white rounded cards floating on the grey --background; the topbar sits
+     bare on the grey between them (see (school)/layout.tsx). */
+  --color-sidebar-light: #ffffff;
   --color-sidebar-light-foreground: #1a1a2e;
   --color-sidebar-dark: #16102e;
   --color-sidebar-dark-foreground: #e8e3f7;

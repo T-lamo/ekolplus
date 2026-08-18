@@ -50,6 +50,31 @@ const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'off' },
 ];
 
+// Belt-and-suspenders on top of app/robots.ts: a raw HTTP header, so it also
+// covers responses a <meta name="robots"> tag can never reach (/api/*'s
+// JSON, /print/*'s renders meant only for the internal PDF pipeline) and
+// isn't dependent on every page remembering to export the right metadata —
+// (school)/admin layouts are 'use client' and structurally can't export it.
+const NOINDEX_HEADER = [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }];
+const NOINDEX_SOURCES = [
+  '/dashboard/:path*',
+  '/configuration/:path*',
+  '/pedagogie/:path*',
+  '/eleves/:path*',
+  '/enseignants/:path*',
+  '/scolarite/:path*',
+  '/settings/:path*',
+  '/bulletins/:path*',
+  '/admin/:path*',
+  '/api/:path*',
+  '/print/:path*',
+  '/login',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/auth/:path*',
+];
+
 const config: NextConfig = {
   reactStrictMode: true,
   // Standalone output bundles a self-contained server.js + minimal node_modules
@@ -65,6 +90,7 @@ const config: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+      ...NOINDEX_SOURCES.map((source) => ({ source, headers: NOINDEX_HEADER })),
     ];
   },
 };

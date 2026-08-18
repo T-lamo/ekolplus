@@ -12,10 +12,70 @@ import { FaqSection } from '@/components/landing/faq-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
 import { RevealObserver } from '@/components/landing/reveal-observer';
 
+const TITLE = 'Schoolgesti — La plateforme tout-en-un de gestion scolaire';
+const DESCRIPTION =
+  'Solution nativement mobile et offline-first intégrant SIS, LMS et Finance pour une école sans limites de connectivité.';
+const OG_IMAGE = { url: '/images/hero-dashboard.jpg', width: 512, height: 286 };
+
 export const metadata: Metadata = {
-  title: 'Schoolgesti — La plateforme tout-en-un de gestion scolaire',
-  description:
-    'Solution nativement mobile et offline-first intégrant SIS, LMS et Finance pour une école sans limites de connectivité.',
+  title: TITLE,
+  description: DESCRIPTION,
+  keywords: [
+    'gestion scolaire',
+    'logiciel école',
+    'SIS',
+    'bulletin scolaire',
+    'gestion des notes',
+    'école Haïti',
+  ],
+  // Public marketing page — the root layout defaults every other route to
+  // noindex (auth flows with tokens, the authenticated app, back-office);
+  // this is the one page that opts back in.
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: '/',
+    siteName: 'Schoolgesti',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE.url],
+  },
+};
+
+// SoftwareApplication structured data (Google rich results) — mirrors the
+// real plans in PricingSection; Enterprise is excluded, its price is "sur
+// mesure" (custom quote), not a fixed value structured data can express.
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Schoolgesti',
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Web',
+  description: DESCRIPTION,
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Starter',
+      price: '0',
+      priceCurrency: 'USD',
+      description: "Gratuit jusqu'à 50 élèves.",
+    },
+    {
+      '@type': 'Offer',
+      name: 'Établissement Pro',
+      price: '0.60',
+      priceCurrency: 'USD',
+      description: "À partir de 0,60 $ par élève et par mois, jusqu'à 1000 élèves.",
+    },
+  ],
 };
 
 /**
@@ -28,6 +88,12 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-slate-800 antialiased">
+      {/* Static, hardcoded object above — never user/DB input — but escape
+          `<` anyway so a stray "</script>" can never break out of the tag. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, '\\u003c') }}
+      />
       <RevealObserver />
       <LandingHeader />
       <main className="pt-20">

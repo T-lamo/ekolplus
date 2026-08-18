@@ -18,7 +18,9 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Compte',
     items: [
-      { label: 'Abonnement', href: '/settings?tab=subscription', icon: Settings },
+      { label: 'Abonnement', href: '/abonnement', icon: Settings },
+      // Query-bearing shortcut into a page another item owns (mechanism kept).
+      { label: 'Année scolaire', href: '/settings?tab=annee', icon: Settings },
       { label: 'Paramètres', href: '/settings', icon: Settings },
     ],
   },
@@ -54,6 +56,11 @@ describe('findActiveItem', () => {
     const active = findActiveItem('/settings', SECTIONS);
     expect(active?.href).toBe('/settings');
     expect(active?.label).toBe('Paramètres');
+  });
+
+  it('a nested page of a top-level item highlights that item (/abonnement/paiement → Abonnement)', () => {
+    expect(findActiveItem('/abonnement/paiement', SECTIONS)?.label).toBe('Abonnement');
+    expect(findActiveItem('/abonnement', SECTIONS)?.label).toBe('Abonnement');
   });
 
   it('returns null when nothing matches', () => {

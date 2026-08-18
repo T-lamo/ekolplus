@@ -84,6 +84,25 @@ const config: NextConfig = {
   // .next/*.nft.json tracing files in the standard location, and `standalone`
   // mode moves them, causing a build-time ENOENT on next-server.js.nft.json.
   ...(process.env.VERCEL ? {} : { output: 'standalone' as const }),
+  // « Abonnement » moved out of /settings on 2026-08-18 (now /abonnement +
+  // /abonnement/paiement). Keep the old deep links alive — bookmarks, the
+  // Stripe Checkout success/cancel URLs of sessions created before the
+  // deploy, the Customer Portal return URL. Temporary (307) on purpose.
+  async redirects() {
+    return [
+      {
+        source: '/settings/abonnement/:path*',
+        destination: '/abonnement/:path*',
+        permanent: false,
+      },
+      {
+        source: '/settings',
+        has: [{ type: 'query' as const, key: 'tab', value: 'subscription' }],
+        destination: '/abonnement',
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

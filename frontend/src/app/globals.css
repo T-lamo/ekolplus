@@ -43,6 +43,19 @@
      as a literal (#a855f7) alongside --color-primary in 2+ components. */
   --color-primary-gradient-end: #a855f7;
 
+  /* « Or » = plan payant (décision utilisateur 2026-08-18) : la carte
+     Établissement Pro, le bandeau de plan dans la sidebar, l'incitation à
+     passer à Pro. Distinct de --color-warning (réservé aux alertes). Le texte
+     est toujours foncé sur or — le blanc sur or échoue WCAG AA :
+     gold-700 sur gold-100 ≈ 7:1, gold-900 sur le dégradé 300→500 ≥ 7:1. */
+  --color-gold-100: #fdf3d7;
+  --color-gold-200: #f8e3a6;
+  --color-gold-300: #f2cf6b;
+  --color-gold-400: #e6b842;
+  --color-gold-500: #d4a017;
+  --color-gold-700: #7a4f00;
+  --color-gold-900: #3b2a00;
+
   /* Two sidebar variants: school shell is light, SaaS admin shell + login's
      branding panel are dark. Not a single reusable token (see epic-0-shell.md).
      "Floating panel" shell, inverted: the light sidebar and the topbar form

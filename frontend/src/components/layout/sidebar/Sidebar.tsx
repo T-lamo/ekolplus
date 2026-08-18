@@ -24,7 +24,10 @@ interface SidebarProps {
   profileHref: string;
   collapsed?: boolean;
   onToggleCollapse?: (() => void) | undefined;
+  /** Rendered above the profile block when expanded (e.g. the school plan card). */
   footer?: ReactNode;
+  /** Icon-only counterpart of `footer` for the 72px collapsed rail. */
+  footerCollapsed?: ReactNode;
   onNavigate?: (() => void) | undefined;
 }
 
@@ -39,6 +42,7 @@ export function Sidebar({
   collapsed = false,
   onToggleCollapse,
   footer,
+  footerCollapsed,
   onNavigate,
 }: SidebarProps) {
   const pathname = usePathname();
@@ -135,7 +139,7 @@ export function Sidebar({
         </nav>
 
         <div className={footerClass}>
-          {!collapsed && footer}
+          {collapsed ? footerCollapsed : footer}
           <SidebarUserProfile
             variant={variant}
             collapsed={collapsed}

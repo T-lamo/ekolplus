@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
+import { SchoolPlanProvider } from '@/contexts/SchoolPlanContext';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
 import { SIDEBAR_WIDTH_CLASS } from '@/components/layout/sidebar/width';
@@ -33,47 +34,49 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-sidebar-light">
-      {drawerOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setDrawerOpen(false)}
-            aria-hidden
-          />
-          <div className={`relative z-50 flex h-full ${SIDEBAR_WIDTH_CLASS}`}>
-            <SchoolSidebar onNavigate={() => setDrawerOpen(false)} />
-            <button
-              type="button"
+    <SchoolPlanProvider>
+      <div className="flex h-screen overflow-hidden bg-sidebar-light">
+        {drawerOpen && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black/40"
               onClick={() => setDrawerOpen(false)}
-              aria-label="Fermer le menu"
-              className="absolute top-3 -right-11 flex h-9 w-9 items-center justify-center rounded-md bg-black/60 text-white"
-            >
-              <X size={18} />
-            </button>
+              aria-hidden
+            />
+            <div className={`relative z-50 flex h-full ${SIDEBAR_WIDTH_CLASS}`}>
+              <SchoolSidebar onNavigate={() => setDrawerOpen(false)} />
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Fermer le menu"
+                className="absolute top-3 -right-11 flex h-9 w-9 items-center justify-center rounded-md bg-black/60 text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* "Floating panel" shell, inverted: the sidebar and the topbar are one
+        {/* "Floating panel" shell, inverted: the sidebar and the topbar are one
           flat white surface (same bg, no hairlines — their h-13
           brand/breadcrumb rows share a baseline), and the content is a grey
           24px-rounded panel with a soft shadow nested in that L. */}
-      <div className="hidden lg:flex">
-        <SchoolSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
-      </div>
+        <div className="hidden lg:flex">
+          <SchoolSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+        </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <SchoolTopbar onMenuClick={() => setDrawerOpen(true)} />
-        {/* The inner div is the scroller — the panel itself never scrolls, so
+        <div className="flex min-w-0 flex-1 flex-col">
+          <SchoolTopbar onMenuClick={() => setDrawerOpen(true)} />
+          {/* The inner div is the scroller — the panel itself never scrolls, so
             its rounded corners always clip the content. Pages built on
             LIST_PAGE (h-full) size themselves against that inner div. */}
-        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(26,26,46,0.04),0_8px_28px_-10px_rgba(26,26,46,0.14)] sm:mx-4 sm:mb-4 lg:ml-3">
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
-            {children}
-          </div>
-        </main>
+          <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(26,26,46,0.04),0_8px_28px_-10px_rgba(26,26,46,0.14)] sm:mx-4 sm:mb-4 lg:ml-3">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SchoolPlanProvider>
   );
 }

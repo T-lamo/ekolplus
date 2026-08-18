@@ -1,7 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-type ButtonVariant = 'primary' | 'outline' | 'ghost';
+type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'gold';
 type ButtonSize = 'default' | 'sm';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,6 +14,9 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
   outline: 'border border-border bg-card text-foreground hover:bg-muted',
   ghost: 'bg-transparent text-muted-foreground hover:bg-muted',
+  // Upgrade / pay CTA — « or = plan payant ». Dark text on the gold gradient
+  // (white on gold fails WCAG AA); see globals.css --color-gold-*.
+  gold: 'bg-linear-to-br from-gold-300 to-gold-500 text-gold-900 hover:brightness-95',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

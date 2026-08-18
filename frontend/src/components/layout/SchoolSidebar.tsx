@@ -20,8 +20,11 @@ import {
   Wallet,
   CalendarDays,
 } from 'lucide-react';
+import { useMemo } from 'react';
+import { SidebarPlanCard } from '@/components/school/billing/SidebarPlanCard';
+import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
 import { Sidebar } from './sidebar/Sidebar';
-import type { NavSection } from './sidebar/types';
+import { filterSectionsByRole, type NavSection } from './sidebar/types';
 
 // Spec: .planning/banani/epic-0-shell.md — school shell sidebar (light).
 export const SCHOOL_SECTIONS: NavSection[] = [
@@ -60,7 +63,8 @@ export const SCHOOL_SECTIONS: NavSection[] = [
   {
     label: 'Compte',
     items: [
-      { label: 'Abonnement', href: '/settings?tab=subscription', icon: CreditCard },
+      // OWNER/ADMIN only — amounts and invoices (server: GET /api/school/billing → 403 for MEMBER).
+      { label: 'Abonnement', href: '/abonnement', icon: CreditCard, minRole: 'ADMIN' },
       { label: 'Paramètres', href: '/settings', icon: Settings },
     ],
   },
@@ -77,9 +81,11 @@ export function SchoolSidebar({
   collapsed = false,
   onToggleCollapse,
 }: SchoolSidebarProps) {
+  const { role } = useSchoolPlan();
+  const sections = useMemo(() => filterSectionsByRole(SCHOOL_SECTIONS, role), [role]);
   return (
     <Sidebar
-      sections={SCHOOL_SECTIONS}
+      sections={sections}
       variant="light"
       brandIcon={<GraduationCap size={15} className="text-white" />}
       brandText={<span className="text-[15px] font-bold text-foreground">Schoolgesti</span>}
@@ -88,6 +94,8 @@ export function SchoolSidebar({
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       onNavigate={onNavigate}
+      footer={<SidebarPlanCard onNavigate={onNavigate} />}
+      footerCollapsed={<SidebarPlanCard collapsed onNavigate={onNavigate} />}
     />
   );
 }

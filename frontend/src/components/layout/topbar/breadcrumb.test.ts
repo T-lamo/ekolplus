@@ -14,7 +14,8 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Compte',
     items: [
-      { label: 'Abonnement', href: '/settings?tab=subscription', icon: CreditCard },
+      { label: 'Abonnement', href: '/abonnement', icon: CreditCard },
+      { label: 'Année scolaire', href: '/settings?tab=annee', icon: Settings },
       { label: 'Paramètres', href: '/settings', icon: Settings },
     ],
   },
@@ -39,5 +40,9 @@ describe('getBreadcrumbTrail', () => {
 
   it('resolves the /settings query-collision to the plain Paramètres item', () => {
     expect(getBreadcrumbTrail('/settings', SECTIONS)).toEqual(['Compte', 'Paramètres']);
+  });
+
+  it('the checkout page under /abonnement stays under Compte › Abonnement', () => {
+    expect(getBreadcrumbTrail('/abonnement/paiement', SECTIONS)).toEqual(['Compte', 'Abonnement']);
   });
 });

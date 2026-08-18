@@ -11,7 +11,6 @@ import { EtablissementTab } from './EtablissementTab';
 import { AnneeScolaireTab } from './AnneeScolaireTab';
 import { AdministrateursTab } from './AdministrateursTab';
 import { NotificationsTab } from './NotificationsTab';
-import { AbonnementTab } from './AbonnementTab';
 import { ZoneDangereuseSection } from './ZoneDangereuseSection';
 import type { SchoolResponse, TermData } from './types';
 
@@ -21,8 +20,10 @@ const TABS = [
   { key: 'annee', label: 'Année scolaire' },
   { key: 'admins', label: 'Administrateurs' },
   { key: 'notifications', label: 'Notifications' },
-  { key: 'subscription', label: 'Abonnement' },
 ];
+// « Abonnement » left this page on 2026-08-18 — it is now its own screen at
+// /abonnement (sidebar Compte › Abonnement); next.config.ts redirects the
+// old ?tab=subscription deep links there.
 const TAB_KEYS = TABS.map((t) => t.key);
 
 export default function SettingsPage() {
@@ -155,7 +156,6 @@ function SettingsForm() {
           )}
           {tab === 'admins' && data && <AdministrateursTab members={data.members} />}
           {tab === 'notifications' && <NotificationsTab />}
-          {tab === 'subscription' && <AbonnementTab />}
         </>
       )}
     </div>

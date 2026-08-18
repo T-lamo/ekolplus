@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export type BadgeTone = 'success' | 'warning' | 'destructive' | 'muted' | 'primary';
+export type BadgeTone = 'success' | 'warning' | 'destructive' | 'muted' | 'primary' | 'gold';
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
   success: 'bg-success text-success-foreground',
@@ -13,6 +13,8 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
   destructive: 'bg-destructive text-destructive-foreground',
   muted: 'bg-secondary text-secondary-foreground',
   primary: 'bg-primary/10 text-primary',
+  // Paid plan (Pro / Enterprise) — see globals.css --color-gold-*.
+  gold: 'bg-gold-100 text-gold-700',
 };
 
 export function Badge({

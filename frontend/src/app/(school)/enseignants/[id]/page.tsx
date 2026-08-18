@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -58,10 +59,12 @@ export default function TeacherProfilePage() {
   const user = useUser();
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
   const [editing, setEditing] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   const load = useCallback(() => {
     api<{ teacher: TeacherDetail }>(`/api/school/teachers/${params.id}`)
@@ -78,6 +81,23 @@ export default function TeacherProfilePage() {
         setError('Impossible de charger le profil.');
       });
   }, [params.id, router]);
+
+  async function onInvite() {
+    if (!teacher) return;
+    setInviting(true);
+    try {
+      await api(`/api/school/teachers/${teacher.id}/invite`, { method: 'POST' });
+      toast('Invitation envoyée par e-mail.', 'success');
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'NO_EMAIL') {
+        toast('Ajoute une adresse e-mail avant d’inviter cet enseignant.', 'error');
+      } else {
+        toast('Impossible d’envoyer l’invitation. Réessaie.', 'error');
+      }
+    } finally {
+      setInviting(false);
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -288,6 +308,14 @@ export default function TeacherProfilePage() {
             <InfoRow label="N° d'identification" value={teacher.idNumber ?? '—'} />
             <InfoRow label="Adresse" value={teacher.address ?? '—'} />
             <InfoRow label="Statut" value={STATUS_LABEL[teacher.status]} last />
+            {!teacher.userId && (
+              <div className="mt-3.5 border-t border-border pt-3.5">
+                <Button variant="outline" className="w-fit" loading={inviting} onClick={onInvite}>
+                  <Mail size={14} />
+                  Inviter à se connecter
+                </Button>
+              </div>
+            )}
           </Card>
 
           <Card className="p-5">

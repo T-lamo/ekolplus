@@ -38,5 +38,6 @@ export interface TeacherDetail extends TeacherListItem {
   contractType: string | null;
   hiredAt: string | null;
   weeklyHoursTarget: number | null;
+  userId: string | null;
   assignments: TeacherAssignment[];
 }

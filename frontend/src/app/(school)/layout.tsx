@@ -13,6 +13,12 @@ import { Skeleton } from '@/components/ui/Skeleton';
 // checked by individual pages that need it (e.g. /settings via GET
 // /api/school's NO_SCHOOL response), not the shell. See
 // .planning/banani/school-settings.md.
+//
+// No teacher-linked auto-redirect here: it unconditionally bounced ANY
+// account with teacherId set, with no exemption for a school admin who is
+// also a teacher and no self-service way back. The one-time redirect at
+// login (see login/page.tsx) already sends pure-teacher accounts to
+// /enseignant; this shell intentionally does not re-enforce it.
 export default function SchoolLayout({ children }: { children: ReactNode }) {
   const user = useUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -27,7 +33,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-sidebar-light">
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -49,10 +55,10 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* "Floating panel" shell: the sidebar and the topbar are one flat
-          surface on the grey page background (same bg, no hairlines — their
-          h-13 brand/breadcrumb rows share a baseline), and the content is a
-          white 24px-rounded panel with a soft shadow nested in that L. */}
+      {/* "Floating panel" shell, inverted: the sidebar and the topbar are one
+          flat white surface (same bg, no hairlines — their h-13
+          brand/breadcrumb rows share a baseline), and the content is a grey
+          24px-rounded panel with a soft shadow nested in that L. */}
       <div className="hidden lg:flex">
         <SchoolSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
@@ -62,7 +68,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
         {/* The inner div is the scroller — the panel itself never scrolls, so
             its rounded corners always clip the content. Pages built on
             LIST_PAGE (h-full) size themselves against that inner div. */}
-        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-card shadow-[0_1px_2px_rgba(26,26,46,0.04),0_8px_28px_-10px_rgba(26,26,46,0.14)] sm:mx-4 sm:mb-4 lg:ml-3">
+        <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(26,26,46,0.04),0_8px_28px_-10px_rgba(26,26,46,0.14)] sm:mx-4 sm:mb-4 lg:ml-3">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
             {children}
           </div>

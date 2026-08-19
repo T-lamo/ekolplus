@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SCHOOL_SECTIONS } from './SchoolSidebar';
+import { useSchoolSections } from './SchoolSidebar';
 import { AcademicYearBadge } from './topbar/AcademicYearBadge';
 import { Breadcrumbs } from './topbar/Breadcrumbs';
 import { getBreadcrumbTrail } from './topbar/breadcrumb';
@@ -15,7 +15,8 @@ const EXTRA_LABELS: Record<string, string> = {};
 
 export function SchoolTopbar() {
   const pathname = usePathname();
-  const trail = getBreadcrumbTrail(pathname, SCHOOL_SECTIONS, EXTRA_LABELS);
+  const sections = useSchoolSections();
+  const trail = getBreadcrumbTrail(pathname, sections, EXTRA_LABELS);
   // Breadcrumbs only render from `sm` up — below that a phone gets this
   // single-line page title instead (there's no hamburger anymore, the
   // MobileBottomNav owns navigation, so the topbar's only job on a phone is
@@ -32,7 +33,7 @@ export function SchoolTopbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <CommandPalette sections={SCHOOL_SECTIONS} />
+        <CommandPalette sections={sections} />
         <AcademicYearBadge />
         <NotificationsMenu />
         <HelpMenu />

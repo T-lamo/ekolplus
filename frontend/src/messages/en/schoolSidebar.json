@@ -1,0 +1,36 @@
+{
+  "roleLabel": "Administrator",
+  "sections": {
+    "main": {
+      "label": "Main",
+      "dashboard": "Dashboard",
+      "students": "Students",
+      "teachers": "Teachers"
+    },
+    "pedagogy": {
+      "label": "Teaching",
+      "gradebook": "Gradebook",
+      "attendance": "Attendance",
+      "timetable": "Timetable",
+      "reportCards": "Report cards",
+      "assessments": "Assessments"
+    },
+    "tuition": {
+      "label": "Tuition",
+      "feesAndTuition": "Fees & Tuition"
+    },
+    "configuration": {
+      "label": "Configuration",
+      "classes": "Classes",
+      "gradeLevels": "Grade levels",
+      "rooms": "Rooms",
+      "subjects": "Subjects",
+      "reportCardTemplate": "Report card template"
+    },
+    "account": {
+      "label": "Account",
+      "subscription": "Subscription",
+      "settings": "Settings"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "roleLabel": "Administratris",
+  "sections": {
+    "main": {
+      "label": "Prensipal",
+      "dashboard": "Tablodbò",
+      "students": "Elèv",
+      "teachers": "Pwofesè"
+    },
+    "pedagogy": {
+      "label": "Pedagoji",
+      "gradebook": "Kanè nòt",
+      "attendance": "Prezans",
+      "timetable": "Orè klas",
+      "reportCards": "Bilten",
+      "assessments": "Apresyasyon"
+    },
+    "tuition": {
+      "label": "Eskolarite",
+      "feesAndTuition": "Frè & Eskolarite"
+    },
+    "configuration": {
+      "label": "Konfigirasyon",
+      "classes": "Klas",
+      "gradeLevels": "Nivo",
+      "rooms": "Sal",
+      "subjects": "Matyè",
+      "reportCardTemplate": "Modèl bilten"
+    },
+    "account": {
+      "label": "Kont",
+      "subscription": "Abònman",
+      "settings": "Paramèt"
+    }
+  }
+}

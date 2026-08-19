@@ -19,6 +19,7 @@ import {
   Wallet,
   CalendarDays,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { SidebarPlanCard } from '@/components/school/billing/SidebarPlanCard';
@@ -27,48 +28,79 @@ import { Sidebar } from './sidebar/Sidebar';
 import { filterSectionsByRole, type NavSection } from './sidebar/types';
 
 // Spec: .planning/banani/epic-0-shell.md — school shell sidebar (light).
-export const SCHOOL_SECTIONS: NavSection[] = [
-  {
-    label: 'Principal',
-    items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Élèves', href: '/eleves', icon: Users },
-      { label: 'Enseignants', href: '/enseignants', icon: UserCheck },
+// SCHOOL_SECTIONS used to be a static module-level array; translated
+// labels need next-intl's useTranslations, a hook, so this is now a hook
+// too — called by this file's own SchoolSidebar AND by SchoolTopbar.tsx
+// (breadcrumbs + command palette both need the same translated sections).
+export function useSchoolSections(): NavSection[] {
+  const t = useTranslations('SchoolSidebar.sections');
+  return useMemo<NavSection[]>(
+    () => [
+      {
+        label: t('main.label'),
+        items: [
+          { label: t('main.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+          { label: t('main.students'), href: '/eleves', icon: Users },
+          { label: t('main.teachers'), href: '/enseignants', icon: UserCheck },
+        ],
+      },
+      {
+        label: t('pedagogy.label'),
+        items: [
+          {
+            label: t('pedagogy.gradebook'),
+            href: '/pedagogie/carnet-de-notes',
+            icon: NotebookPen,
+          },
+          { label: t('pedagogy.attendance'), href: '/pedagogie/presences', icon: CalendarCheck },
+          {
+            label: t('pedagogy.timetable'),
+            href: '/pedagogie/emploi-du-temps',
+            icon: CalendarDays,
+          },
+          { label: t('pedagogy.reportCards'), href: '/bulletins', icon: FileText },
+          { label: t('pedagogy.assessments'), href: '/pedagogie/appreciations', icon: Star },
+        ],
+      },
+      {
+        label: t('tuition.label'),
+        items: [{ label: t('tuition.feesAndTuition'), href: '/scolarite', icon: Wallet }],
+      },
+      {
+        label: t('configuration.label'),
+        items: [
+          { label: t('configuration.classes'), href: '/configuration/classes', icon: SchoolIcon },
+          {
+            label: t('configuration.gradeLevels'),
+            href: '/configuration/niveaux',
+            icon: ListOrdered,
+          },
+          { label: t('configuration.rooms'), href: '/configuration/salles', icon: DoorOpen },
+          { label: t('configuration.subjects'), href: '/configuration/matieres', icon: BookOpen },
+          {
+            label: t('configuration.reportCardTemplate'),
+            href: '/configuration/modele-bulletin',
+            icon: LayoutTemplate,
+          },
+        ],
+      },
+      {
+        label: t('account.label'),
+        items: [
+          // OWNER/ADMIN only — amounts and invoices (server: GET /api/school/billing → 403 for MEMBER).
+          {
+            label: t('account.subscription'),
+            href: '/abonnement',
+            icon: CreditCard,
+            minRole: 'ADMIN',
+          },
+          { label: t('account.settings'), href: '/settings', icon: Settings },
+        ],
+      },
     ],
-  },
-  {
-    label: 'Pédagogie',
-    items: [
-      { label: 'Carnet de notes', href: '/pedagogie/carnet-de-notes', icon: NotebookPen },
-      { label: 'Présences', href: '/pedagogie/presences', icon: CalendarCheck },
-      { label: 'Emploi du temps', href: '/pedagogie/emploi-du-temps', icon: CalendarDays },
-      { label: 'Bulletins', href: '/bulletins', icon: FileText },
-      { label: 'Appréciations', href: '/pedagogie/appreciations', icon: Star },
-    ],
-  },
-  {
-    label: 'Scolarité',
-    items: [{ label: 'Frais & Scolarité', href: '/scolarite', icon: Wallet }],
-  },
-  {
-    label: 'Configuration',
-    items: [
-      { label: 'Classes', href: '/configuration/classes', icon: SchoolIcon },
-      { label: 'Niveaux', href: '/configuration/niveaux', icon: ListOrdered },
-      { label: 'Salles', href: '/configuration/salles', icon: DoorOpen },
-      { label: 'Matières', href: '/configuration/matieres', icon: BookOpen },
-      { label: 'Modèle de bulletin', href: '/configuration/modele-bulletin', icon: LayoutTemplate },
-    ],
-  },
-  {
-    label: 'Compte',
-    items: [
-      // OWNER/ADMIN only — amounts and invoices (server: GET /api/school/billing → 403 for MEMBER).
-      { label: 'Abonnement', href: '/abonnement', icon: CreditCard, minRole: 'ADMIN' },
-      { label: 'Paramètres', href: '/settings', icon: Settings },
-    ],
-  },
-];
+    [t],
+  );
+}
 
 interface SchoolSidebarProps {
   onNavigate?: (() => void) | undefined;
@@ -81,11 +113,13 @@ export function SchoolSidebar({
   collapsed = false,
   onToggleCollapse,
 }: SchoolSidebarProps) {
+  const t = useTranslations('SchoolSidebar');
   const { role } = useSchoolPlan();
-  const sections = useMemo(() => filterSectionsByRole(SCHOOL_SECTIONS, role), [role]);
+  const sections = useSchoolSections();
+  const filteredSections = useMemo(() => filterSectionsByRole(sections, role), [sections, role]);
   return (
     <Sidebar
-      sections={sections}
+      sections={filteredSections}
       variant="light"
       brand={
         <Image
@@ -100,7 +134,7 @@ export function SchoolSidebar({
       brandCollapsed={
         <Image src="/logos/schoolgesti-monogramme.svg" alt="Schoolgesti" width={34} height={34} />
       }
-      roleLabel="Administratrice"
+      roleLabel={t('roleLabel')}
       profileHref="/settings"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}

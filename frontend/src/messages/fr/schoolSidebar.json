@@ -1,0 +1,36 @@
+{
+  "roleLabel": "Administratrice",
+  "sections": {
+    "main": {
+      "label": "Principal",
+      "dashboard": "Tableau de bord",
+      "students": "Élèves",
+      "teachers": "Enseignants"
+    },
+    "pedagogy": {
+      "label": "Pédagogie",
+      "gradebook": "Carnet de notes",
+      "attendance": "Présences",
+      "timetable": "Emploi du temps",
+      "reportCards": "Bulletins",
+      "assessments": "Appréciations"
+    },
+    "tuition": {
+      "label": "Scolarité",
+      "feesAndTuition": "Frais & Scolarité"
+    },
+    "configuration": {
+      "label": "Configuration",
+      "classes": "Classes",
+      "gradeLevels": "Niveaux",
+      "rooms": "Salles",
+      "subjects": "Matières",
+      "reportCardTemplate": "Modèle de bulletin"
+    },
+    "account": {
+      "label": "Compte",
+      "subscription": "Abonnement",
+      "settings": "Paramètres"
+    }
+  }
+}

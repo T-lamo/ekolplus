@@ -53,6 +53,7 @@ export const MESSAGE_NAMESPACES = [
   'forgotPassword',
   'resetPassword',
   'verifyEmail',
+  'dashboard',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

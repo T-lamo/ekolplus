@@ -1,0 +1,103 @@
+{
+  "title": "Tableau de bord",
+  "subtitle": "Bienvenue, {name} — voici l'aperçu de l'établissement",
+  "export": "Export",
+  "academicYearBadge": "Année {label}",
+  "loadError": "Impossible de charger le tableau de bord.",
+  "emptyYear": "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",
+  "kpis": {
+    "students": "Élèves inscrits",
+    "teachers": "Enseignants",
+    "classes": "Classes actives",
+    "subjects": "Matières",
+    "attendanceRate": "Taux de présence",
+    "attendanceRateSub": "Cette semaine",
+    "thisMonth": "ce mois"
+  },
+  "averagesTrend": {
+    "title": "Évolution des moyennes",
+    "subtitle": "Année scolaire {yearLabel}",
+    "seriesLabel": "Moyenne générale",
+    "empty": "Aucune moyenne publiée sur la période.",
+    "noData": "Aucune donnée"
+  },
+  "levelDistribution": {
+    "title": "Répartition par niveau",
+    "subtitle": "Élèves inscrits",
+    "centerLabel": "élèves",
+    "empty": "Aucun élève inscrit."
+  },
+  "fees": {
+    "title": "Suivi des frais de scolarité",
+    "seeDetails": "Voir les détails →",
+    "collected": "Total Recouvré",
+    "collectedLabel": "collecté",
+    "paid": "Payé",
+    "remaining": "Restant",
+    "overdueStudents": "Élèves en Retard",
+    "overdueLabel": "en retard",
+    "upToDate": "À jour",
+    "studentsConcerned": {
+      "one": "{n} élève concerné",
+      "other": "{n} élèves concernés"
+    },
+    "nextDue": "Prochaine Échéance",
+    "daysUntil": {
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "inNDays": "Dans {n} jours"
+    },
+    "trancheProgress": "Avancement des tranches",
+    "noFeeData": "Aucune structure de frais configurée pour le moment."
+  },
+  "attendanceByClass": {
+    "title": "Taux de présence",
+    "subtitle": "Par classe — ce mois",
+    "details": "Détails →",
+    "empty": "Aucune classe configurée."
+  },
+  "subjectPerformance": {
+    "title": "Performance par matière",
+    "subtitle": "Moyenne générale toutes classes",
+    "empty": "Aucune note publiée sur la période."
+  },
+  "todos": {
+    "title": "À traiter",
+    "evaluationsToGrade": "Évaluations à corriger",
+    "evaluationsOverdueLabel": "{n} en retard",
+    "unjustifiedAbsences": "Absences non justifiées",
+    "unjustifiedAbsencesSub": "Cette semaine",
+    "teachersWithoutClass": "Enseignants sans classe assignée",
+    "teachersWithoutClassSub": "À affecter",
+    "overduePayments": "Paiements en retard",
+    "overduePaymentsSub": "Relances à envoyer"
+  },
+  "activity": {
+    "title": "Activité récente",
+    "seeAll": "Tout voir",
+    "empty": "Aucune activité récente.",
+    "relativeTime": {
+      "justNow": "à l'instant",
+      "hoursAgo": "il y a {hours}h",
+      "yesterdayAt": "Hier, {time}"
+    }
+  },
+  "activityLog": {
+    "title": "Journal d'activité",
+    "subtitle": "Historique complet des évènements de l'établissement",
+    "back": "Retour au tableau de bord",
+    "filterAll": "Tous les types",
+    "typeLabel": {
+      "grade": "Notes",
+      "absence": "Absences",
+      "payment": "Paiements",
+      "enrollment": "Inscriptions"
+    },
+    "empty": "Aucune activité pour le moment.",
+    "resultCount": {
+      "one": "{n} évènement",
+      "other": "{n} évènements"
+    },
+    "loadError": "Impossible de charger l'activité."
+  }
+}

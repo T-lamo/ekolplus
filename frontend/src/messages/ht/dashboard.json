@@ -1,0 +1,104 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Tablo debò",
+  "subtitle": "Byenveni, {name} — men apèsi sou lekòl la",
+  "export": "Ekspòte",
+  "academicYearBadge": "Ane {label}",
+  "loadError": "Nou pa ka chaje tablo debò a.",
+  "emptyYear": "Pa gen ane eskolè aktif — konfigire ane eskolè a dabò nan « Paramèt ».",
+  "kpis": {
+    "students": "Elèv enskri",
+    "teachers": "Pwofesè",
+    "classes": "Klas aktif",
+    "subjects": "Matyè",
+    "attendanceRate": "To presans",
+    "attendanceRateSub": "Semenn sa a",
+    "thisMonth": "mwa sa a"
+  },
+  "averagesTrend": {
+    "title": "Evolisyon mwayèn yo",
+    "subtitle": "Ane eskolè {yearLabel}",
+    "seriesLabel": "Mwayèn jeneral",
+    "empty": "Pa gen mwayèn pibliye pou peryòd sa a.",
+    "noData": "Pa gen done"
+  },
+  "levelDistribution": {
+    "title": "Repatisyon pa nivo",
+    "subtitle": "Elèv enskri",
+    "centerLabel": "elèv",
+    "empty": "Pa gen elèv enskri."
+  },
+  "fees": {
+    "title": "Swivi frè eskolarite",
+    "seeDetails": "Wè detay yo →",
+    "collected": "Total Kolekte",
+    "collectedLabel": "kolekte",
+    "paid": "Peye",
+    "remaining": "Rete",
+    "overdueStudents": "Elèv An Reta",
+    "overdueLabel": "an reta",
+    "upToDate": "Ajou",
+    "studentsConcerned": {
+      "one": "{n} elèv konsène",
+      "other": "{n} elèv konsène"
+    },
+    "nextDue": "Pwochen Echeyans",
+    "daysUntil": {
+      "today": "Jodi a",
+      "tomorrow": "Demen",
+      "inNDays": "Nan {n} jou"
+    },
+    "trancheProgress": "Avansman tranch yo",
+    "noFeeData": "Pa gen estrikti frè konfigire pou kounye a."
+  },
+  "attendanceByClass": {
+    "title": "To presans",
+    "subtitle": "Pa klas — mwa sa a",
+    "details": "Detay →",
+    "empty": "Pa gen klas konfigire."
+  },
+  "subjectPerformance": {
+    "title": "Pèfòmans pa matyè",
+    "subtitle": "Mwayèn jeneral tout klas",
+    "empty": "Pa gen nòt pibliye pou peryòd sa a."
+  },
+  "todos": {
+    "title": "Pou trete",
+    "evaluationsToGrade": "Evalyasyon pou korije",
+    "evaluationsOverdueLabel": "{n} an reta",
+    "unjustifiedAbsences": "Absans ki pa jistifye",
+    "unjustifiedAbsencesSub": "Semenn sa a",
+    "teachersWithoutClass": "Pwofesè san klas asiyen",
+    "teachersWithoutClassSub": "Pou asiyen",
+    "overduePayments": "Peman an reta",
+    "overduePaymentsSub": "Rapèl pou voye"
+  },
+  "activity": {
+    "title": "Aktivite resan",
+    "seeAll": "Wè tout",
+    "empty": "Pa gen aktivite resan.",
+    "relativeTime": {
+      "justNow": "kounye a",
+      "hoursAgo": "sa gen {hours}è",
+      "yesterdayAt": "Yè, {time}"
+    }
+  },
+  "activityLog": {
+    "title": "Jounal aktivite",
+    "subtitle": "Istorik konplè evènman lekòl la",
+    "back": "Retounen nan tablo debò",
+    "filterAll": "Tout kalite",
+    "typeLabel": {
+      "grade": "Nòt",
+      "absence": "Absans",
+      "payment": "Peman",
+      "enrollment": "Enskripsyon"
+    },
+    "empty": "Pa gen aktivite pou kounye a.",
+    "resultCount": {
+      "one": "{n} evènman",
+      "other": "{n} evènman"
+    },
+    "loadError": "Nou pa ka chaje aktivite a."
+  }
+}

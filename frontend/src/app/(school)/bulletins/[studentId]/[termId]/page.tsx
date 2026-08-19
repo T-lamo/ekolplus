@@ -16,6 +16,8 @@ import {
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { ASIDE_GRID } from '@/lib/layout';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -50,43 +52,45 @@ export default function BulletinViewerPage() {
 
   if (!user || (!data && !error)) {
     return (
-      <div className="flex items-start gap-5">
-        <div className="flex w-[220px] shrink-0 flex-col gap-3">
-          <Skeleton className="h-4 w-32" />
-          <div className="rounded-lg bg-card p-3.5">
-            <Skeleton className="mb-2.5 h-3 w-16" />
-            <div className="mb-2.5 flex items-center gap-2.5">
-              <Skeleton className="h-9.5 w-9.5 shrink-0 rounded-full" />
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-4 w-32" />
+        <div className={cn(ASIDE_GRID, 'items-start')}>
+          <div className="flex flex-col gap-3 lg:order-2">
+            <div className="rounded-lg bg-card p-3.5">
+              <Skeleton className="mb-2.5 h-3 w-16" />
+              <div className="mb-2.5 flex items-center gap-2.5">
+                <Skeleton className="h-9.5 w-9.5 shrink-0 rounded-full" />
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-2.5 w-16" />
+                </div>
+              </div>
               <div className="flex flex-col gap-1.5">
-                <Skeleton className="h-3.5 w-24" />
-                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-full" />
               </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-full" />
+            <div className="rounded-lg bg-card p-3.5">
+              <Skeleton className="mb-2.5 h-3 w-16" />
+              <Skeleton className="mb-1.5 h-9 w-full rounded-md" />
+              <Skeleton className="h-9 w-full rounded-md" />
             </div>
           </div>
-          <div className="rounded-lg bg-card p-3.5">
-            <Skeleton className="mb-2.5 h-3 w-16" />
-            <Skeleton className="mb-1.5 h-9 w-full rounded-md" />
-            <Skeleton className="h-9 w-full rounded-md" />
-          </div>
-        </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <Skeleton className="h-11 w-full rounded-lg" />
-          <div className="flex justify-center py-2">
-            <div className="flex w-[760px] max-w-full flex-col gap-3 rounded-md bg-card p-8">
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="h-3 w-1/2" />
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full" />
-                ))}
+          <div className="flex min-w-0 flex-col gap-3 lg:order-1">
+            <Skeleton className="h-11 w-full rounded-lg" />
+            <div className="flex justify-center py-2">
+              <div className="flex w-[760px] max-w-full flex-col gap-3 rounded-md bg-card p-8">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-4 w-full" />
+                  ))}
+                </div>
+                <Skeleton className="mt-4 h-24 w-full" />
               </div>
-              <Skeleton className="mt-4 h-24 w-full" />
             </div>
           </div>
         </div>
@@ -155,185 +159,192 @@ export default function BulletinViewerPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-5">
-      {/* Action panel — a fixed 220px column beside the canvas from `lg` up;
-          below that it stacks above the bulletin instead of squeezing it. */}
-      <div className="flex flex-col gap-3 lg:w-[220px] lg:shrink-0">
-        <Link
-          href="/bulletins"
-          className="flex items-center gap-1.5 px-1 py-1.5 text-sm text-muted-foreground"
-        >
-          <ArrowLeft size={14} />
-          Retour aux bulletins
-        </Link>
+    <div className="flex flex-col gap-4">
+      <Link
+        href="/bulletins"
+        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
+      >
+        <ArrowLeft size={14} />
+        Retour aux bulletins
+      </Link>
 
-        <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Élève
-          </div>
-          <div className="mb-2.5 flex items-center gap-2.5">
-            <Avatar name={`${data.firstName} ${data.lastName}`} size={38} />
-            <div>
-              <div className="text-caption font-bold text-foreground">
-                {data.firstName} {data.lastName}
+      <div className={cn(ASIDE_GRID, 'items-start')}>
+        {/* Élève / actions / navigation — à droite sur desktop, à la largeur
+            partagée par toutes les colonnes droites de l'app (ASIDE_GRID) ;
+            au-dessus du bulletin sur mobile au lieu de le comprimer. */}
+        <div className="flex flex-col gap-3 lg:order-2">
+          <div className="rounded-lg bg-card p-3.5">
+            <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Élève
+            </div>
+            <div className="mb-2.5 flex items-center gap-2.5">
+              <Avatar name={`${data.firstName} ${data.lastName}`} size={38} />
+              <div>
+                <div className="text-caption font-bold text-foreground">
+                  {data.firstName} {data.lastName}
+                </div>
+                <div className="text-2xs text-muted-foreground">#{data.studentNumber}</div>
               </div>
-              <div className="text-2xs text-muted-foreground">#{data.studentNumber}</div>
+            </div>
+            <div className="flex flex-col gap-1.5 text-xs">
+              <InfoItem label="Classe" value={data.className} />
+              <InfoItem label="Période" value={termLabel} />
+              <InfoItem label="Année" value={data.academicYearLabel} />
+              <div className="my-1 h-px bg-border" />
+              <InfoItem label="Modèle" value={data.template?.name ?? '—'} />
             </div>
           </div>
-          <div className="flex flex-col gap-1.5 text-xs">
-            <InfoItem label="Classe" value={data.className} />
-            <InfoItem label="Période" value={termLabel} />
-            <InfoItem label="Année" value={data.academicYearLabel} />
-            <div className="my-1 h-px bg-border" />
-            <InfoItem label="Modèle" value={data.template?.name ?? '—'} />
-          </div>
-        </div>
 
-        <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Actions
-          </div>
-          <ActionBtn icon={Printer} label="Imprimer" primary onClick={printBulletin} />
-          <a
-            href={`/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}`}
-            className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
-          >
-            <Download size={14} className="text-muted-foreground" />
-            Télécharger PDF
-          </a>
-          <Link
-            href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
-            className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
-          >
-            <Pencil size={14} className="text-muted-foreground" />
-            Modifier l&apos;appréciation
-          </Link>
-        </div>
-
-        <div className="rounded-lg bg-card p-3.5">
-          <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Navigation
-          </div>
-          <div className="flex gap-2">
-            {data.prevStudentId ? (
-              <Link
-                href={navHref(data.prevStudentId)}
-                className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
-              >
-                <ChevronLeft size={13} />
-                Précédent
-              </Link>
-            ) : (
-              <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
-                <ChevronLeft size={13} />
-                Précédent
-              </span>
-            )}
-            {data.nextStudentId ? (
-              <Link
-                href={navHref(data.nextStudentId)}
-                className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
-              >
-                Suivant
-                <ChevronRight size={13} />
-              </Link>
-            ) : (
-              <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
-                Suivant
-                <ChevronRight size={13} />
-              </span>
-            )}
-          </div>
-          <div className="mt-2 text-center text-2xs text-muted-foreground">
-            Élève {data.studentIndex ?? '—'} sur {data.classSize}
-          </div>
-        </div>
-      </div>
-
-      {/* Bulletin area */}
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-card px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setZoom((z) => Math.max(50, z - 10))}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+          <div className="rounded-lg bg-card p-3.5">
+            <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Actions
+            </div>
+            <ActionBtn icon={Printer} label="Imprimer" primary onClick={printBulletin} />
+            <a
+              href={`/api/school/students/${data.studentId}/bulletin/pdf?termId=${data.resolvedTermId ?? ''}`}
+              className="mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
             >
-              <ZoomOut size={14} />
-            </button>
-            <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
-              {zoom}%
+              <Download size={14} className="text-muted-foreground" />
+              Télécharger PDF
+            </a>
+            <Link
+              href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId ?? ''}`}
+              className="flex w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-caption font-medium text-foreground"
+            >
+              <Pencil size={14} className="text-muted-foreground" />
+              Modifier l&apos;appréciation
+            </Link>
+          </div>
+
+          <div className="rounded-lg bg-card p-3.5">
+            <div className="mb-2.5 text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Navigation
+            </div>
+            <div className="flex gap-2">
+              {data.prevStudentId ? (
+                <Link
+                  href={navHref(data.prevStudentId)}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
+                >
+                  <ChevronLeft size={13} />
+                  Précédent
+                </Link>
+              ) : (
+                <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
+                  <ChevronLeft size={13} />
+                  Précédent
+                </span>
+              )}
+              {data.nextStudentId ? (
+                <Link
+                  href={navHref(data.nextStudentId)}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground"
+                >
+                  Suivant
+                  <ChevronRight size={13} />
+                </Link>
+              ) : (
+                <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground opacity-40">
+                  Suivant
+                  <ChevronRight size={13} />
+                </span>
+              )}
+            </div>
+            <div className="mt-2 text-center text-2xs text-muted-foreground">
+              Élève {data.studentIndex ?? '—'} sur {data.classSize}
+            </div>
+          </div>
+        </div>
+
+        {/* Bulletin area */}
+        <div className="flex min-w-0 flex-col gap-3 lg:order-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-card px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.max(50, z - 10))}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+              >
+                <ZoomOut size={14} />
+              </button>
+              <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+                {zoom}%
+              </span>
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.min(150, z + 10))}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+              >
+                <ZoomIn size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => document.getElementById('bulletin-page-wrap')?.requestFullscreen?.()}
+                className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground"
+              >
+                <Maximize2 size={13} />
+                Plein écran
+              </button>
+            </div>
+            <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
+              <FileText size={13} />
+              Format :{' '}
+              {data.template
+                ? `${data.template.config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ${data.template.config.orientation === 'LANDSCAPE' ? 'paysage' : 'portrait'}`
+                : '—'}{' '}
+              — Modèle : {data.template?.name ?? '—'}
             </span>
             <button
               type="button"
-              onClick={() => setZoom((z) => Math.min(150, z + 10))}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+              onClick={printBulletin}
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
             >
-              <ZoomIn size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() => document.getElementById('bulletin-page-wrap')?.requestFullscreen?.()}
-              className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground"
-            >
-              <Maximize2 size={13} />
-              Plein écran
+              <Printer size={13} />
+              Imprimer
             </button>
           </div>
-          <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
-            <FileText size={13} />
-            Format :{' '}
-            {data.template
-              ? `${data.template.config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ${data.template.config.orientation === 'LANDSCAPE' ? 'paysage' : 'portrait'}`
-              : '—'}{' '}
-            — Modèle : {data.template?.name ?? '—'}
-          </span>
-          <button
-            type="button"
-            onClick={printBulletin}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-          >
-            <Printer size={13} />
-            Imprimer
-          </button>
-        </div>
 
-        <div id="bulletin-page-wrap" className="flex justify-center py-2">
-          {data.template ? (
-            (() => {
-              // Natural (unscaled) page size — same 96 CSS px/in convention
-              // the PDF export and template editor use. The old code
-              // hardcoded width:760 regardless of pageFormat/orientation,
-              // so a landscape template still rendered squeezed into a
-              // portrait-shaped box on screen even though the PDF (driven
-              // by @page CSS, not this box) was already correct. The outer
-              // div reserves the SCALED footprint and the inner div is the
-              // real page at its natural size with transform:scale only —
-              // same fix already applied to the template editor's preview.
-              const naturalWidth = getPageWidthPx(data.template.config);
-              const naturalHeight = getPageHeightPx(data.template.config);
-              const scaledWidth = Math.round(naturalWidth * (zoom / 100));
-              const scaledHeight = Math.round(naturalHeight * (zoom / 100));
-              return (
-                <div style={{ width: scaledWidth, height: scaledHeight }}>
-                  <div
-                    style={{
-                      width: naturalWidth,
-                      height: naturalHeight,
-                      transform: `scale(${zoom / 100})`,
-                      transformOrigin: 'top left',
-                    }}
-                  >
-                    <BulletinCanvas config={data.template.config} data={renderData} />
+          {/* `overflow-x-auto` + `mx-auto` (not flex `justify-center`): a page
+            wider than the column scrolls inside its own area instead of
+            spilling under the right panel — and a centered flex child that
+            overflows gets its left edge clipped. */}
+          <div id="bulletin-page-wrap" className="overflow-x-auto py-2">
+            {data.template ? (
+              (() => {
+                // Natural (unscaled) page size — same 96 CSS px/in convention
+                // the PDF export and template editor use. The old code
+                // hardcoded width:760 regardless of pageFormat/orientation,
+                // so a landscape template still rendered squeezed into a
+                // portrait-shaped box on screen even though the PDF (driven
+                // by @page CSS, not this box) was already correct. The outer
+                // div reserves the SCALED footprint and the inner div is the
+                // real page at its natural size with transform:scale only —
+                // same fix already applied to the template editor's preview.
+                const naturalWidth = getPageWidthPx(data.template.config);
+                const naturalHeight = getPageHeightPx(data.template.config);
+                const scaledWidth = Math.round(naturalWidth * (zoom / 100));
+                const scaledHeight = Math.round(naturalHeight * (zoom / 100));
+                return (
+                  <div className="mx-auto" style={{ width: scaledWidth, height: scaledHeight }}>
+                    <div
+                      style={{
+                        width: naturalWidth,
+                        height: naturalHeight,
+                        transform: `scale(${zoom / 100})`,
+                        transformOrigin: 'top left',
+                      }}
+                    >
+                      <BulletinCanvas config={data.template.config} data={renderData} />
+                    </div>
                   </div>
-                </div>
-              );
-            })()
-          ) : (
-            <div className="rounded-md bg-card p-10 text-center text-sm text-muted-foreground">
-              Aucun modèle de bulletin disponible.
-            </div>
-          )}
+                );
+              })()
+            ) : (
+              <div className="mx-auto w-fit rounded-md bg-card p-10 text-center text-sm text-muted-foreground">
+                Aucun modèle de bulletin disponible.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

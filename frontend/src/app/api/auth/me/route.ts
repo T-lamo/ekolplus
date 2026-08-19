@@ -15,7 +15,7 @@
 // "Change password". `linkedProviders` is a string[] of provider names
 // already wired (e.g. ['google']).
 //
-// PATCH /api/auth/me — self-service profile edit (name/phone/avatarUrl/theme).
+// PATCH /api/auth/me — self-service profile edit (name/phone/avatarUrl/theme/locale).
 // Email is not editable here (it's the login identifier — changing it belongs
 // to a dedicated, verification-gated flow that doesn't exist yet).
 //
@@ -30,10 +30,15 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { zPhone } from '@/lib/server/zod-helpers';
 import { THEME_KEYS, isThemeKey } from '@/lib/themes';
+import { LOCALE_KEYS, isLocaleKey } from '@/lib/locales';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 function resolveStoredTheme(value: string | null | undefined): string | null {
   return isThemeKey(value) ? value : null;
+}
+
+function resolveStoredLocale(value: string | null | undefined): string | null {
+  return isLocaleKey(value) ? value : null;
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -58,6 +63,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         avatarUrl: true,
         phone: true,
         theme: true,
+        locale: true,
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
@@ -80,6 +86,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       // Unknown/legacy values are normalised to null so the client never
       // receives a key it cannot render.
       theme: resolveStoredTheme(dbUser?.theme),
+      locale: resolveStoredLocale(dbUser?.locale),
       emailVerifiedAt: dbUser?.emailVerifiedAt
         ? dbUser.emailVerifiedAt instanceof Date
           ? dbUser.emailVerifiedAt.toISOString()
@@ -115,6 +122,9 @@ const UpdateMeBody = z.object({
   // Colour theme (Paramètres › Apparence) — only a known key is stored;
   // null resets to the default theme.
   theme: z.enum(THEME_KEYS).nullable().optional(),
+  // UI language (Paramètres › Langue) — only a known key is stored; null
+  // resets to the default (French).
+  locale: z.enum(LOCALE_KEYS).nullable().optional(),
 });
 
 export async function PATCH(req: NextRequest): Promise<NextResponse> {
@@ -142,7 +152,15 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     const updated = await prisma.user.update({
       where: { id: auth.user.sub },
       data,
-      select: { id: true, email: true, name: true, avatarUrl: true, phone: true, theme: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatarUrl: true,
+        phone: true,
+        theme: true,
+        locale: true,
+      },
     });
 
     return NextResponse.json(

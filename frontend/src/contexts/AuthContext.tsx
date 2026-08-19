@@ -26,6 +26,9 @@ export interface User {
   /** Colour theme key (src/lib/themes.ts) chosen in Paramètres › Apparence;
    * null = never chosen (default theme). Applied by ThemeProvider. */
   theme: string | null;
+  /** UI language key (src/lib/locales.ts) chosen in Paramètres › Langue;
+   * null = never chosen (default: French). Applied by LocaleProvider. */
+  locale: string | null;
 }
 
 interface AuthContextValue {

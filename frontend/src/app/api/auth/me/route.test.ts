@@ -174,3 +174,71 @@ describe('GET /api/auth/me — theme', () => {
     expect(await res.json()).toMatchObject({ user: { theme: null } });
   });
 });
+
+// PATCH — UI language (Paramètres › Langue). Same contract as `theme`:
+// only a known key is stored, null resets to French, anything else 400s.
+describe('PATCH /api/auth/me — locale', () => {
+  beforeEach(() => {
+    vi.mocked(verifyToken).mockResolvedValue({ sub: 'u1', email: 'a@b.com', tokenVersion: 0 });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+    } as never);
+    prismaMock.user.update.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      name: null,
+      avatarUrl: null,
+      phone: null,
+      theme: null,
+      locale: 'ht',
+    } as never);
+  });
+
+  it('stores a known locale key', async () => {
+    const res = await PATCH(makePatch({ locale: 'ht' }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'u1' }, data: { locale: 'ht' } }),
+    );
+    expect(await res.json()).toMatchObject({ user: { locale: 'ht' } });
+  });
+
+  it('null resets to the default (French)', async () => {
+    const res = await PATCH(makePatch({ locale: null }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { locale: null } }),
+    );
+  });
+
+  it('rejects an unknown locale key (400) without touching the DB', async () => {
+    const res = await PATCH(makePatch({ locale: 'es' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/auth/me — locale', () => {
+  it('exposes the stored locale, normalising unknown legacy values to null', async () => {
+    vi.mocked(verifyToken).mockResolvedValue({ sub: 'u1', email: 'a@b.com', tokenVersion: 0 });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+      locale: 'en',
+    } as never);
+    let res = await GET(makeReq({ bearer: 'valid-access-token' }));
+    expect(await res.json()).toMatchObject({ user: { locale: 'en' } });
+
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+      locale: 'legacy-value',
+    } as never);
+    res = await GET(makeReq({ bearer: 'valid-access-token' }));
+    expect(await res.json()).toMatchObject({ user: { locale: null } });
+  });
+});

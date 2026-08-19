@@ -316,7 +316,7 @@ export default function BulletinEditorPage() {
   }
   if (!data && !error) {
     return (
-      <div className="-m-6 flex h-screen flex-col overflow-hidden">
+      <div className="flex h-full flex-col overflow-hidden">
         <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-5">
           <Skeleton className="h-7 w-20 rounded-md" />
           <div className="h-5 w-px bg-border" />
@@ -387,7 +387,7 @@ export default function BulletinEditorPage() {
         </button>
       </div>
 
-      <div className="hidden -m-6 h-screen flex-col overflow-hidden lg:flex">
+      <div className="hidden h-full flex-col overflow-hidden lg:flex">
         {/* Toolbar */}
         <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-5">
           <div className="flex items-center gap-3">

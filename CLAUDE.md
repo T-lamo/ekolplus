@@ -138,6 +138,8 @@ The starter is **headless on purpose**. Touchpoints if a fork wants a specific d
 
 **No server lib reaches into the DOM.** Routes only return `NextResponse.json(...)`. The same backend feeds plain React, shadcn/ui, Mantine, a SwiftUI client, a Flutter app — pick anything.
 
+**Colour themes (Paramètres › Apparence).** Schoolgesti's UI only uses the `@theme` tokens of [globals.css](frontend/src/app/globals.css) — never hardcode a brand hex in a component (`text-primary`, `bg-secondary`, `bg-sidebar-dark`, …). A theme is a `:root[data-theme='x']` block overriding the 16 brand/tint tokens; registry + pre-paint script in [frontend/src/lib/themes.ts](frontend/src/lib/themes.ts), provider in `contexts/ThemeContext.tsx`, persisted per user (`User.theme`). [themes.test.ts](frontend/src/lib/themes.test.ts) parses the CSS and fails if any text/background pair of any theme drops under WCAG AA 4.5:1 — run it after touching a token. Status (success/warning/destructive/info/gold), chart and data colours are deliberately NOT themed. See [.planning/banani/appearance-themes.md](.planning/banani/appearance-themes.md).
+
 ### Bundled Claude Code skills (under [.claude/skills/](.claude/skills/))
 
 Two design-system skills auto-load in any Claude Code session run from the repo:

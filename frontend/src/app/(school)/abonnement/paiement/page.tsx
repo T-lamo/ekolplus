@@ -367,10 +367,10 @@ function PaiementScreen() {
                   Cartes de crédit et de débit internationales
                 </span>
               </div>
-              <div className="flex items-start gap-2 rounded-md border border-[#c4b5fd] bg-[#f5f3ff] px-3 py-2.5">
-                <ShieldCheck size={15} className="mt-px shrink-0 text-[#635bff]" />
+              <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-secondary px-3 py-2.5">
+                <ShieldCheck size={15} className="mt-px shrink-0 text-primary" />
                 <div>
-                  <div className="text-xs font-semibold text-[#635bff]">
+                  <div className="text-xs font-semibold text-primary">
                     Paiement traité par Stripe
                   </div>
                   <div className="mt-0.5 text-2xs text-muted-foreground">
@@ -487,7 +487,7 @@ function PaiementScreen() {
             et serez redirigé vers Stripe.
           </p>
 
-          <div className="flex items-center justify-center gap-1.5 rounded-md border border-[#c4b5fd] bg-[#f5f3ff] px-3.5 py-2">
+          <div className="flex items-center justify-center gap-1.5 rounded-md border border-primary/30 bg-secondary px-3.5 py-2">
             <span className="inline-flex items-center gap-1 rounded bg-[#635bff] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.5px] text-white">
               <CreditCard size={9} />
               Stripe

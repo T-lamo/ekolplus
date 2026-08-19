@@ -43,6 +43,12 @@
      as a literal (#a855f7) alongside --color-primary in 2+ components. */
   --color-primary-gradient-end: #a855f7;
 
+  /* Bulletin (printed document) gradient end — deliberately NOT themed: the
+     PDF pipeline renders /print/* without a user theme, so the on-screen
+     preview must use the same fixed stop or it would differ from the PDF.
+     Same value as the default brand gradient. */
+  --color-bulletin-gradient-end: #a855f7;
+
   /* « Or » = plan payant (décision utilisateur 2026-08-18) : la carte
      Établissement Pro, le bandeau de plan dans la sidebar, l'incitation à
      passer à Pro. Distinct de --color-warning (réservé aux alertes). Le texte
@@ -87,6 +93,93 @@
      repeated magic number. */
   --text-2xs: 0.6875rem; /* 11px — dense table cells, badges, column labels */
   --text-caption: 0.8125rem; /* 13px — card secondary text, list metadata */
+}
+
+/* ── Colour themes (Paramètres › Apparence) ─────────────────────────────
+   One block per theme, selected by <html data-theme="…"> (stamped before the
+   first paint by the inline script in app/layout.tsx, then by ThemeProvider).
+   Registry + picker: src/lib/themes.ts. Each block overrides EXACTLY the
+   brand/tint tokens listed in src/lib/themes.test.ts (THEMED_TOKENS) — that
+   test also checks every text/background pair clears WCAG AA (4.5:1) for
+   every theme, so Lighthouse's color-contrast audit stays green whatever the
+   user picks. Status colours (success/warning/destructive/info/gold), data
+   colours (subjects, avatars, charts) and --color-card are NOT themed.
+   The default theme (Lavande) has no block: it is the @theme above. */
+
+:root[data-theme='ocean'] {
+  --color-background: #f2f5fa;
+  --color-foreground: #15203a;
+  --color-border: #dde3ee;
+  --color-muted: #e8edf5;
+  --color-muted-foreground: #586582;
+  --color-primary: #1e40af;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #dbe7fe;
+  --color-secondary-foreground: #1e40af;
+  --color-accent: #2563eb;
+  --color-accent-foreground: #ffffff;
+  --color-primary-gradient-end: #3b82f6;
+  --color-card-foreground: #15203a;
+  --color-sidebar-light-foreground: #15203a;
+  --color-sidebar-dark: #0e1b3d;
+  --color-sidebar-dark-foreground: #e0e7f7;
+}
+
+:root[data-theme='foret'] {
+  --color-background: #f2f6f4;
+  --color-foreground: #14261f;
+  --color-border: #dbe5e0;
+  --color-muted: #e7efeb;
+  --color-muted-foreground: #5c6f67;
+  --color-primary: #047857;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #d3f3e4;
+  --color-secondary-foreground: #065f46;
+  --color-accent: #0a7a5e;
+  --color-accent-foreground: #ffffff;
+  --color-primary-gradient-end: #34d399;
+  --color-card-foreground: #14261f;
+  --color-sidebar-light-foreground: #14261f;
+  --color-sidebar-dark: #0b2a21;
+  --color-sidebar-dark-foreground: #dcebe4;
+}
+
+:root[data-theme='ardoise'] {
+  --color-background: #f4f6f8;
+  --color-foreground: #1a202c;
+  --color-border: #dfe4ea;
+  --color-muted: #e9edf2;
+  --color-muted-foreground: #5b6472;
+  --color-primary: #334155;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e2e8f0;
+  --color-secondary-foreground: #1e293b;
+  --color-accent: #475569;
+  --color-accent-foreground: #ffffff;
+  --color-primary-gradient-end: #64748b;
+  --color-card-foreground: #1a202c;
+  --color-sidebar-light-foreground: #1a202c;
+  --color-sidebar-dark: #0f172a;
+  --color-sidebar-dark-foreground: #e2e8f0;
+}
+
+:root[data-theme='terracotta'] {
+  --color-background: #f8f4f1;
+  --color-foreground: #2a1d16;
+  --color-border: #ebe1da;
+  --color-muted: #f0e9e4;
+  --color-muted-foreground: #6e6059;
+  --color-primary: #b4400f;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #fde8d8;
+  --color-secondary-foreground: #9a3412;
+  --color-accent: #c2410c;
+  --color-accent-foreground: #ffffff;
+  --color-primary-gradient-end: #fb923c;
+  --color-card-foreground: #2a1d16;
+  --color-sidebar-light-foreground: #2a1d16;
+  --color-sidebar-dark: #2e1a10;
+  --color-sidebar-dark-foreground: #f3e7df;
 }
 
 /* Radix Accordion — content height driven by --radix-accordion-content-height,

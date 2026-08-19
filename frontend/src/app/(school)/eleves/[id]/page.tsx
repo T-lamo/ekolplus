@@ -232,7 +232,10 @@ function StudentProfile() {
       <Card className="relative gap-4 overflow-hidden p-6">
         <div
           className="absolute inset-x-0 top-0 h-[72px]"
-          style={{ background: 'linear-gradient(135deg, #6c2bd9 0%, #a855f7 100%)' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-gradient-end) 100%)',
+          }}
         />
         <div className="relative z-10 flex flex-col gap-4 pt-7 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">

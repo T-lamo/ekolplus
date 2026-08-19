@@ -75,7 +75,7 @@ export function PaymentMethodCard({
         </div>
       </div>
       <div className="px-4 pb-3.5 sm:px-[18px]">
-        <div className="flex items-center gap-[7px] rounded-md border border-[#c4b5fd] bg-[#f5f3ff] px-3 py-[9px]">
+        <div className="flex items-center gap-[7px] rounded-md border border-primary/30 bg-secondary px-3 py-[9px]">
           <Info size={13} className="shrink-0 text-primary" />
           <span className="text-2xs font-medium text-primary">
             Le paiement s’effectue via Stripe sur une page sécurisée dédiée — vos données bancaires

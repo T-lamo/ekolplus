@@ -495,7 +495,7 @@ function NouvellePeriodeModal({
           </p>
         </div>
 
-        <div className="flex items-start gap-2.5 rounded-md border border-[#c4b5fd] bg-secondary px-3.5 py-2.5">
+        <div className="flex items-start gap-2.5 rounded-md border border-primary/30 bg-secondary px-3.5 py-2.5">
           <Info size={14} className="mt-0.5 shrink-0 text-primary" />
           <p className="text-[11px] leading-relaxed text-primary">
             Une fois créée, la période apparaîtra dans le calendrier scolaire et sera disponible

@@ -30,6 +30,11 @@ model User {
   avatarUrl         String?
   // Optional contact phone — self-service via /api/auth/me PATCH.
   phone             String?
+  // Colour theme chosen in Paramètres › Apparence — a key of
+  // src/lib/themes.ts (lavande | ocean | foret | ardoise | terracotta);
+  // null = never chosen (default). Per user, not per school: a personal
+  // display preference that follows the account across devices.
+  theme             String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).

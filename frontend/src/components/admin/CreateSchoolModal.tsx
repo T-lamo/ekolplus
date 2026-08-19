@@ -119,8 +119,8 @@ export function CreateSchoolModal({
         </div>
 
         {result.verificationEmailSent && (
-          <Card className="flex-row items-start gap-3 bg-[#0f0a1e] px-5 py-5">
-            <MailCheck size={18} className="mt-0.5 shrink-0 text-violet-300" />
+          <Card className="flex-row items-start gap-3 bg-sidebar-dark px-5 py-5">
+            <MailCheck size={18} className="mt-0.5 shrink-0 text-sidebar-dark-foreground" />
             <div className="flex flex-col gap-1">
               <span className="text-caption font-semibold text-white">
                 {T.verificationEmailSentLabel}

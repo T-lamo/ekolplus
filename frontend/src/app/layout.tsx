@@ -4,6 +4,8 @@ import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { THEME_INIT_SCRIPT } from '@/lib/themes';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
 const inter = Inter({
@@ -47,12 +49,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // `suppressHydrationWarning`: the pre-paint script below stamps
+  // data-theme on <html> from localStorage BEFORE React hydrates, so the
+  // server markup (no attribute) legitimately differs from the client DOM.
+  // Scoped to this element only — React does not propagate it to children.
   return (
-    <html lang="fr" className={inter.variable}>
+    <html lang="fr" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* Colour theme (Paramètres › Apparence) — applied before first
+            paint so a reload never flashes the default palette. Source:
+            src/lib/themes.ts THEME_INIT_SCRIPT (tested in themes.test.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={inter.className}>
         <ToastProvider>
           <ConfirmProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <ThemeProvider>{children}</ThemeProvider>
+            </AuthProvider>
           </ConfirmProvider>
         </ToastProvider>
       </body>

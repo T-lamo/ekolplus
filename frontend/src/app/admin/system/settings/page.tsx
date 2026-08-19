@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { CreditCard, Database, Lock, RotateCcw, Save, ShieldAlert } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
-import { ADMIN_SETTINGS as T } from '@/lib/constants';
+import { ADMIN_SETTINGS as T, APPEARANCE } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -23,6 +23,7 @@ import { Select, SelectItem } from '@/components/ui/Select';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { SkeletonStatCards } from '@/components/ui/Skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { ThemePicker } from '@/components/settings/ThemePicker';
 
 interface SettingsForm {
   platformName: string;
@@ -228,6 +229,7 @@ export default function SystemSettingsPage() {
 
   const navItems = [
     { id: 'general', label: T.nav.general },
+    { id: 'appearance', label: APPEARANCE.adminNav },
     { id: 'billing', label: T.nav.billing },
     { id: 'notifications', label: T.nav.notifications },
     { id: 'security', label: T.nav.security },
@@ -359,6 +361,16 @@ export default function SystemSettingsPage() {
                 />
               </div>
             )}
+          </SettingsSection>
+
+          {/* Per-user colour theme — applies immediately through ThemeProvider,
+              independent of the Save button (not a PlatformSettings field). */}
+          <SettingsSection
+            id="appearance"
+            title={APPEARANCE.title}
+            description={APPEARANCE.description}
+          >
+            <ThemePicker />
           </SettingsSection>
 
           <SettingsSection id="billing" title={T.billing.title} description={T.billing.description}>

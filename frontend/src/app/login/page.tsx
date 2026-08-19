@@ -91,7 +91,7 @@ export default function LoginPage() {
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute top-16 -right-20 hidden h-70 w-70 rounded-full bg-[radial-gradient(circle,rgba(108,43,217,0.25)_0%,transparent_70%)] lg:block"
+          className="pointer-events-none absolute top-16 -right-20 hidden h-70 w-70 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-primary)_25%,transparent)_0%,transparent_70%)] lg:block"
         />
 
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
@@ -119,7 +119,7 @@ export default function LoginPage() {
               return (
                 <div key={text} className="flex items-center gap-3.5">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/35">
-                    {Icon && <Icon size={15} className="text-violet-300" />}
+                    {Icon && <Icon size={15} className="text-sidebar-dark-foreground" />}
                   </div>
                   <span className="text-[13px] font-medium text-white/78">{text}</span>
                 </div>

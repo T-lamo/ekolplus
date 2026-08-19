@@ -445,7 +445,7 @@ export function BulletinCanvas({
       <div
         className="h-1.5 shrink-0"
         style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-primary-gradient-end))`,
+          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
         }}
       />
 
@@ -546,7 +546,7 @@ export function BulletinCanvas({
       <div
         className="h-1.5 shrink-0"
         style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-primary-gradient-end))`,
+          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
         }}
       />
     </div>

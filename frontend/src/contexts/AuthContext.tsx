@@ -23,6 +23,9 @@ export interface User {
   passwordChangedAt: string | null;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */
   linkedProviders: string[];
+  /** Colour theme key (src/lib/themes.ts) chosen in Paramètres › Apparence;
+   * null = never chosen (default theme). Applied by ThemeProvider. */
+  theme: string | null;
 }
 
 interface AuthContextValue {

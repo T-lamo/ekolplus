@@ -1378,3 +1378,21 @@ export const ADMIN_SETTINGS = {
   loadError: 'Impossible de charger les paramètres.',
   retry: 'Réessayer',
 } as const;
+
+// Paramètres › Apparence (école) + carte « Apparence » des Paramètres Système
+// (admin SaaS) — même composant ThemePicker, préférence PAR UTILISATEUR.
+export const APPEARANCE = {
+  tab: 'Apparence',
+  adminNav: 'Apparence',
+  title: 'Thème de couleur',
+  description:
+    'Choisis la palette de l’application. Préférence personnelle : elle s’applique immédiatement, sur tous tes appareils, et ne change rien pour les autres membres.',
+  groupLabel: 'Thème de couleur',
+  current: 'Actuel',
+  default: 'Par défaut',
+  previewAlt: (label: string) => `Aperçu du thème ${label}`,
+  applied: (label: string) => `Thème « ${label} » appliqué.`,
+  saveError: 'Thème appliqué sur cet appareil, mais impossible de l’enregistrer sur ton compte.',
+  contrastNote:
+    'Toutes les palettes respectent le contraste WCAG AA (texte ≥ 4,5:1) — les couleurs d’état (succès, alerte, erreur) et des matières restent identiques.',
+} as const;

@@ -1,4 +1,4 @@
-// Tests for GET /api/auth/me (AUTH-06).
+// Tests for GET + PATCH /api/auth/me (AUTH-06 + self-service profile/theme).
 // Pattern 14. requireAuth-gated. Note: requireAuth uses cookies() from
 // next/headers internally, so tests must use mockNextCookies + prismaMock.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -16,7 +16,7 @@ vi.mock('@/lib/server/auth', async () => {
 });
 
 import { verifyToken } from '@/lib/server/auth';
-import { GET } from './route';
+import { GET, PATCH } from './route';
 import { NextRequest } from 'next/server';
 
 function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequest {
@@ -91,5 +91,86 @@ describe('GET /api/auth/me', () => {
 
     const res = await GET(makeReq({ bearer: 'orphan-jwt' }));
     expect(res.status).toBe(401);
+  });
+});
+
+// PATCH — theme preference (Paramètres › Apparence). Only known keys are
+// stored; null resets to the default; anything else is a 400 so a garbage
+// value can never reach the DB (the client would not know how to render it).
+function makePatch(body: unknown): NextRequest {
+  return new NextRequest('https://test/api/auth/me', {
+    method: 'PATCH',
+    headers: {
+      authorization: 'Bearer valid-access-token',
+      'content-type': 'application/json',
+      // verifyCsrf: header present, no csrf cookie in the test store → passes.
+      'x-csrf-token': 'test-csrf',
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+describe('PATCH /api/auth/me — theme', () => {
+  beforeEach(() => {
+    vi.mocked(verifyToken).mockResolvedValue({ sub: 'u1', email: 'a@b.com', tokenVersion: 0 });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+    } as never);
+    prismaMock.user.update.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      name: null,
+      avatarUrl: null,
+      phone: null,
+      theme: 'ocean',
+    } as never);
+  });
+
+  it('stores a known theme key', async () => {
+    const res = await PATCH(makePatch({ theme: 'ocean' }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'u1' }, data: { theme: 'ocean' } }),
+    );
+    expect(await res.json()).toMatchObject({ user: { theme: 'ocean' } });
+  });
+
+  it('null resets to the default theme', async () => {
+    const res = await PATCH(makePatch({ theme: null }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { theme: null } }),
+    );
+  });
+
+  it('rejects an unknown theme key (400) without touching the DB', async () => {
+    const res = await PATCH(makePatch({ theme: 'dark' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/auth/me — theme', () => {
+  it('exposes the stored theme, normalising unknown legacy values to null', async () => {
+    vi.mocked(verifyToken).mockResolvedValue({ sub: 'u1', email: 'a@b.com', tokenVersion: 0 });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+      theme: 'foret',
+    } as never);
+    let res = await GET(makeReq({ bearer: 'valid-access-token' }));
+    expect(await res.json()).toMatchObject({ user: { theme: 'foret' } });
+
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.com',
+      tokenVersion: 0,
+      theme: 'legacy-value',
+    } as never);
+    res = await GET(makeReq({ bearer: 'valid-access-token' }));
+    expect(await res.json()).toMatchObject({ user: { theme: null } });
   });
 });

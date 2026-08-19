@@ -4,11 +4,15 @@ import type { DashboardData } from './types';
 
 const t = DASHBOARD.levelDistribution;
 
-// Graduated-purple donut (4 tints of --color-primary) — kept separate from
-// the shared admin DonutChart, whose 3-slot palette is semantically pinned
-// to the 3 subscription plans elsewhere; a level breakdown has a variable,
+// Graduated donut (5 tints of --color-primary) — kept separate from the
+// shared admin DonutChart, whose 3-slot palette is semantically pinned to
+// the 3 subscription plans elsewhere; a level breakdown has a variable,
 // school-defined number of levels and needs its own open-ended palette.
-const TINTS = ['#6c2bd9', '#9f67f5', '#c4a8fa', '#e0d4fc', '#efe4fc'];
+// Tints are mixed from the live primary token so the chart follows the
+// user's colour theme (Paramètres › Apparence) instead of staying purple.
+const TINTS = [100, 70, 45, 25, 14].map(
+  (pct) => `color-mix(in srgb, var(--color-primary) ${pct}%, white)`,
+);
 
 export function LevelDistributionCard({ levels }: { levels: DashboardData['levelDistribution'] }) {
   const total = levels.reduce((s, l) => s + l.count, 0);

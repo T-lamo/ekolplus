@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,11 @@ interface FilterSelectProps {
   disabled?: boolean;
   className?: string;
   title?: string;
+  /** Accessible name of the combobox (e.g. « Filtrer par classe »). When
+   * omitted the trigger is labelled by its own current value — a
+   * `role="combobox"` cannot take its name from content, so without this
+   * axe/Lighthouse flag `button-name`. */
+  ariaLabel?: string;
   children: ReactNode;
 }
 
@@ -27,8 +32,10 @@ export function FilterSelect({
   disabled = false,
   className,
   title,
+  ariaLabel,
   children,
 }: FilterSelectProps) {
+  const valueId = useId();
   return (
     <SelectPrimitive.Root
       value={value === '' ? EMPTY_VALUE : value}
@@ -37,6 +44,8 @@ export function FilterSelect({
     >
       <SelectPrimitive.Trigger
         title={title}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabel ? undefined : valueId}
         className={cn(
           'flex h-10 items-center justify-between gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground outline-none transition-colors',
           'focus:border-primary focus:ring-3 focus:ring-primary/10',
@@ -45,7 +54,7 @@ export function FilterSelect({
           className,
         )}
       >
-        <SelectPrimitive.Value />
+        <SelectPrimitive.Value id={valueId} />
         <SelectPrimitive.Icon asChild>
           <ChevronDown
             size={14}

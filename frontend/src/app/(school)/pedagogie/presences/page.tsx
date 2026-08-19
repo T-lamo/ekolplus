@@ -36,6 +36,8 @@ import { PageNumbers } from '@/components/ui/Pager';
 import { BarChart } from '@/components/admin/charts/BarChart';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { submitOrQueue } from '@/lib/offline-queue';
+import { OFFLINE_SYNC } from '@/lib/constants';
 import { AttendanceEditModal } from './AttendanceEditModal';
 import type {
   AttendanceDay,
@@ -212,6 +214,7 @@ export default function PresencesPage() {
   const pageStudents = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function markDay(studentId: string, date: string, status: AttendanceStatus | null) {
+    if (!user) return;
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -223,15 +226,26 @@ export default function PresencesPage() {
         ),
       };
     });
+    const entry =
+      status === null
+        ? {
+            path: `/api/school/attendance?studentId=${studentId}&date=${date}`,
+            method: 'DELETE' as const,
+            label: 'Présence',
+          }
+        : {
+            path: '/api/school/attendance',
+            method: 'PATCH' as const,
+            body: { studentId, date, status },
+            label: 'Présence',
+          };
     try {
-      if (status === null) {
-        await api(`/api/school/attendance?studentId=${studentId}&date=${date}`, {
-          method: 'DELETE',
-        });
+      const r = await submitOrQueue(entry, user.id);
+      if (r.queued) {
+        toast(OFFLINE_SYNC.queuedToast, 'info');
       } else {
-        await api('/api/school/attendance', { method: 'PATCH', body: { studentId, date, status } });
+        refresh();
       }
-      refresh();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
       refresh();

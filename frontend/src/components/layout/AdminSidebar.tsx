@@ -13,47 +13,63 @@ import {
   Tag,
   Users,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { Sidebar } from './sidebar/Sidebar';
 import type { NavSection } from './sidebar/types';
 
 // Spec: .planning/banani/epic-0-shell.md — SaaS admin shell sidebar.
-export const ADMIN_SECTIONS: NavSection[] = [
-  {
-    label: 'Vue globale',
-    items: [
-      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
-      { label: 'Statistiques', href: '/admin/statistics', icon: Activity },
-    ],
-  },
-  {
-    label: 'Clients',
-    items: [
-      { label: 'Écoles', href: '/admin/schools', icon: School },
-      { label: 'Utilisateurs', href: '/admin/users', icon: Users },
-    ],
-  },
-  {
-    label: 'Facturation',
-    items: [
-      { label: 'Abonnements', href: '/admin/billing/subscriptions', icon: CreditCard },
-      { label: 'Transactions', href: '/admin/billing/transactions', icon: Receipt },
-      { label: 'Coupons', href: '/admin/billing/coupons', icon: Tag },
-    ],
-  },
-  {
-    label: 'Système',
-    items: [
+// ADMIN_SECTIONS used to be a static module-level array; translated
+// labels need next-intl's useTranslations, a hook, so this is now a hook
+// too — called by this file's own AdminSidebar AND by AdminTopbar.tsx
+// (breadcrumbs + command palette both need the same translated sections).
+export function useAdminSections(): NavSection[] {
+  const t = useTranslations('AdminSidebar.sections');
+  return useMemo<NavSection[]>(
+    () => [
       {
-        label: 'Modèles de bulletin',
-        href: '/admin/system/bulletin-templates',
-        icon: LayoutTemplate,
+        label: t('overview.label'),
+        items: [
+          { label: t('overview.dashboard'), href: '/admin', icon: LayoutDashboard },
+          { label: t('overview.statistics'), href: '/admin/statistics', icon: Activity },
+        ],
       },
-      { label: 'Paramètres système', href: '/admin/system/settings', icon: Settings },
+      {
+        label: t('customers.label'),
+        items: [
+          { label: t('customers.schools'), href: '/admin/schools', icon: School },
+          { label: t('customers.users'), href: '/admin/users', icon: Users },
+        ],
+      },
+      {
+        label: t('billing.label'),
+        items: [
+          {
+            label: t('billing.subscriptions'),
+            href: '/admin/billing/subscriptions',
+            icon: CreditCard,
+          },
+          { label: t('billing.transactions'), href: '/admin/billing/transactions', icon: Receipt },
+          { label: t('billing.coupons'), href: '/admin/billing/coupons', icon: Tag },
+        ],
+      },
+      {
+        label: t('system.label'),
+        items: [
+          {
+            label: t('system.reportCardTemplates'),
+            href: '/admin/system/bulletin-templates',
+            icon: LayoutTemplate,
+          },
+          { label: t('system.systemSettings'), href: '/admin/system/settings', icon: Settings },
+        ],
+      },
     ],
-  },
-];
+    [t],
+  );
+}
 
 interface AdminSidebarProps {
   onNavigate?: (() => void) | undefined;
@@ -66,9 +82,11 @@ export function AdminSidebar({
   collapsed = false,
   onToggleCollapse,
 }: AdminSidebarProps) {
+  const t = useTranslations('AdminSidebar');
+  const sections = useAdminSections();
   return (
     <Sidebar
-      sections={ADMIN_SECTIONS}
+      sections={sections}
       variant="dark"
       brand={
         <div className="flex flex-col gap-0.5">
@@ -93,7 +111,7 @@ export function AdminSidebar({
           height={34}
         />
       }
-      roleLabel="Propriétaire SaaS"
+      roleLabel={t('roleLabel')}
       // /admin has no page.tsx yet (hard 404); /settings NO_SCHOOL-redirects
       // to / gracefully for an admin with no school membership — the lesser
       // of two broken destinations until a real admin profile page exists.
@@ -106,7 +124,7 @@ export function AdminSidebar({
           className="mb-2 flex min-h-11 items-center gap-2 rounded-md px-2.5 text-2xs text-white/38"
         >
           <ArrowLeft size={12} className="shrink-0" />
-          Retour à l&apos;interface école
+          {t('footerBackToSchool')}
         </Link>
       }
       onNavigate={onNavigate}

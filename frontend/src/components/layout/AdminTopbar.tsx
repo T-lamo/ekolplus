@@ -3,7 +3,7 @@
 
 import { Menu, Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { ADMIN_SECTIONS } from './AdminSidebar';
+import { useAdminSections } from './AdminSidebar';
 import { Breadcrumbs } from './topbar/Breadcrumbs';
 import { getBreadcrumbTrail } from './topbar/breadcrumb';
 import { CommandPalette } from './topbar/CommandPalette';
@@ -16,7 +16,8 @@ const EXTRA_LABELS: Record<string, string> = {};
 
 export function AdminTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
-  const trail = getBreadcrumbTrail(pathname, ADMIN_SECTIONS, EXTRA_LABELS);
+  const sections = useAdminSections();
+  const trail = getBreadcrumbTrail(pathname, sections, EXTRA_LABELS);
 
   return (
     <header className="flex h-13 shrink-0 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
@@ -41,7 +42,7 @@ export function AdminTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <CommandPalette sections={ADMIN_SECTIONS} />
+        <CommandPalette sections={sections} />
         <NotificationsMenu />
         <HelpMenu />
       </div>

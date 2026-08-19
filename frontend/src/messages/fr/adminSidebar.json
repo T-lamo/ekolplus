@@ -1,0 +1,27 @@
+{
+  "roleLabel": "Propriétaire SaaS",
+  "footerBackToSchool": "Retour à l'interface école",
+  "sections": {
+    "overview": {
+      "label": "Vue globale",
+      "dashboard": "Tableau de bord",
+      "statistics": "Statistiques"
+    },
+    "customers": {
+      "label": "Clients",
+      "schools": "Écoles",
+      "users": "Utilisateurs"
+    },
+    "billing": {
+      "label": "Facturation",
+      "subscriptions": "Abonnements",
+      "transactions": "Transactions",
+      "coupons": "Coupons"
+    },
+    "system": {
+      "label": "Système",
+      "reportCardTemplates": "Modèles de bulletin",
+      "systemSettings": "Paramètres système"
+    }
+  }
+}

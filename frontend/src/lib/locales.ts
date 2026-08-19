@@ -42,7 +42,13 @@ export const LOCALES: readonly LocaleDef[] = [
  * Creole/English, fails loudly here instead of throwing at request time
  * for non-French users. Add your namespace's key here in the same task
  * that creates its `fr`/`ht`/`en` JSON files. */
-export const MESSAGE_NAMESPACES = ['common', 'login', 'shell', 'schoolSidebar'] as const;
+export const MESSAGE_NAMESPACES = [
+  'common',
+  'login',
+  'shell',
+  'schoolSidebar',
+  'adminSidebar',
+] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 
 export function isLocaleKey(value: unknown): value is LocaleKey {

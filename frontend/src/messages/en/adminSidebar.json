@@ -1,0 +1,27 @@
+{
+  "roleLabel": "SaaS Owner",
+  "footerBackToSchool": "Back to the school interface",
+  "sections": {
+    "overview": {
+      "label": "Overview",
+      "dashboard": "Dashboard",
+      "statistics": "Statistics"
+    },
+    "customers": {
+      "label": "Customers",
+      "schools": "Schools",
+      "users": "Users"
+    },
+    "billing": {
+      "label": "Billing",
+      "subscriptions": "Subscriptions",
+      "transactions": "Transactions",
+      "coupons": "Coupons"
+    },
+    "system": {
+      "label": "System",
+      "reportCardTemplates": "Report card templates",
+      "systemSettings": "System settings"
+    }
+  }
+}

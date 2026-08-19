@@ -1,0 +1,28 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "roleLabel": "Pwopriyetè SaaS",
+  "footerBackToSchool": "Retounen nan entèfas lekòl la",
+  "sections": {
+    "overview": {
+      "label": "Vi jeneral",
+      "dashboard": "Tablodbò",
+      "statistics": "Estatistik"
+    },
+    "customers": {
+      "label": "Kliyan",
+      "schools": "Lekòl",
+      "users": "Itilizatè"
+    },
+    "billing": {
+      "label": "Faktirasyon",
+      "subscriptions": "Abònman",
+      "transactions": "Tranzaksyon",
+      "coupons": "Koupon"
+    },
+    "system": {
+      "label": "Sistèm",
+      "reportCardTemplates": "Modèl bilten",
+      "systemSettings": "Paramèt sistèm"
+    }
+  }
+}

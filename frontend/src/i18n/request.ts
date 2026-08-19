@@ -22,11 +22,12 @@ export default getRequestConfig(async () => {
     ? resolveLocaleKey(cookieValue)
     : matchAcceptLanguage((await headers()).get('accept-language'));
 
-  const [common, login, shell, schoolSidebar] = await Promise.all([
+  const [common, login, shell, schoolSidebar, adminSidebar] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
     import(`../messages/${locale}/shell.json`),
     import(`../messages/${locale}/schoolSidebar.json`),
+    import(`../messages/${locale}/adminSidebar.json`),
   ]);
 
   return {
@@ -36,6 +37,7 @@ export default getRequestConfig(async () => {
       Login: login.default,
       Shell: shell.default,
       SchoolSidebar: schoolSidebar.default,
+      AdminSidebar: adminSidebar.default,
     },
   };
 });

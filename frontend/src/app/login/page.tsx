@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   BarChart2,
   BookOpen,
@@ -22,23 +23,32 @@ import {
 } from 'lucide-react';
 import { api, ApiError, storeCsrfToken } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { AUTH_LOGIN } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
+import { LocaleQuickSwitcher } from '@/components/settings/LanguagePicker';
 
-const ROLE_TABS = [
-  { key: 'admin', label: AUTH_LOGIN.roleTabs.admin, icon: Shield },
-  { key: 'teacher', label: AUTH_LOGIN.roleTabs.teacher, icon: User },
-  { key: 'studentParent', label: AUTH_LOGIN.roleTabs.studentParent, icon: Users },
-] as const;
+const ROLE_TAB_KEYS = ['admin', 'teacher', 'studentParent'] as const;
+const ROLE_TAB_ICONS = { admin: Shield, teacher: User, studentParent: Users } as const;
+const FEATURE_KEYS = ['grades', 'attendance', 'bulletins', 'stats'] as const;
+const FEATURE_ICONS = {
+  grades: BookOpen,
+  attendance: ClipboardCheck,
+  bulletins: FileText,
+  stats: BarChart2,
+} as const;
 
-const FEATURE_ICONS = [BookOpen, ClipboardCheck, FileText, BarChart2];
-
+// ApiError.code values this screen knows how to translate — everything
+// else (VALIDATION_FAILED and any future/unmapped code) falls through to
+// Common.errors.generic. Kept local to this screen rather than in a
+// shared table: only /login ever returns these particular codes today
+// (see frontend/src/app/api/auth/login/route.ts).
 export default function LoginPage() {
   const router = useRouter();
   const { refresh } = useAuth();
-  const [role, setRole] = useState<(typeof ROLE_TABS)[number]['key']>('admin');
+  const t = useTranslations('Login');
+  const tCommon = useTranslations('Common');
+  const [role, setRole] = useState<(typeof ROLE_TAB_KEYS)[number]>('admin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,13 +74,31 @@ export default function LoginPage() {
       router.push(isPlatformStaff ? '/admin' : '/dashboard');
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(
-          err.code === 'TOO_MANY_LOGIN_ATTEMPTS'
-            ? AUTH_LOGIN.errors.TOO_MANY_LOGIN_ATTEMPTS
-            : AUTH_LOGIN.errors.default,
-        );
+        // Static, literal keys on purpose — next-intl's typed t() (see
+        // Task 7's AppConfig augmentation) validates each one against the
+        // real Login.errors.* keys at compile time; a dynamically built
+        // key (`t(`errors.${code}`)`) would bypass that check.
+        switch (err.code) {
+          case 'TOO_MANY_LOGIN_ATTEMPTS':
+            setError(t('errors.TOO_MANY_LOGIN_ATTEMPTS'));
+            break;
+          case 'LOCKED_OUT':
+            setError(t('errors.LOCKED_OUT'));
+            break;
+          case 'INVALID_CREDENTIALS':
+            setError(t('errors.INVALID_CREDENTIALS'));
+            break;
+          case 'EMAIL_NOT_VERIFIED':
+            setError(t('errors.EMAIL_NOT_VERIFIED'));
+            break;
+          case 'ACCOUNT_SUSPENDED':
+            setError(t('errors.ACCOUNT_SUSPENDED'));
+            break;
+          default:
+            setError(tCommon('errors.generic'));
+        }
       } else {
-        setError(AUTH_LOGIN.errors.network);
+        setError(tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -94,6 +122,10 @@ export default function LoginPage() {
           className="pointer-events-none absolute top-16 -right-20 hidden h-70 w-70 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-primary)_25%,transparent)_0%,transparent_70%)] lg:block"
         />
 
+        <div className="absolute top-4 right-4 z-20 lg:top-6 lg:right-8">
+          <LocaleQuickSwitcher className="text-white/70 [&_button[aria-current]]:text-white" />
+        </div>
+
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
           <div className="mb-4 flex items-center lg:mb-12">
             <Image
@@ -107,21 +139,23 @@ export default function LoginPage() {
           </div>
 
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
-            {AUTH_LOGIN.headline}
+            {t('headline')}
           </h1>
           <p className="mb-10 hidden text-sm leading-relaxed text-white/50 lg:block">
-            {AUTH_LOGIN.subline}
+            {t('subline')}
           </p>
 
           <div className="mb-4 hidden w-full flex-col gap-4 lg:flex">
-            {AUTH_LOGIN.features.map((text, i) => {
-              const Icon = FEATURE_ICONS[i];
+            {FEATURE_KEYS.map((key) => {
+              const Icon = FEATURE_ICONS[key];
               return (
-                <div key={text} className="flex items-center gap-3.5">
+                <div key={key} className="flex items-center gap-3.5">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/35">
-                    {Icon && <Icon size={15} className="text-sidebar-dark-foreground" />}
+                    <Icon size={15} className="text-sidebar-dark-foreground" />
                   </div>
-                  <span className="text-[13px] font-medium text-white/78">{text}</span>
+                  <span className="text-[13px] font-medium text-white/78">
+                    {t(`features.${key}`)}
+                  </span>
                 </div>
               );
             })}
@@ -132,7 +166,7 @@ export default function LoginPage() {
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-5 flex items-center">
+          <div className="mb-2 flex items-center justify-between gap-3">
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"
@@ -140,40 +174,44 @@ export default function LoginPage() {
               height={44}
               className="h-11 w-auto"
             />
+            <LocaleQuickSwitcher className="lg:hidden" />
           </div>
 
           <h2 className="mb-1.5 text-[26px] font-extrabold tracking-tight text-foreground">
-            {AUTH_LOGIN.welcome}
+            {t('welcome')}
           </h2>
           <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
-            {AUTH_LOGIN.formSubtitle}
+            {t('formSubtitle')}
           </p>
 
           <div
             role="tablist"
-            aria-label="Type de compte"
+            aria-label={t('accountTypeLabel')}
             className="mb-6 flex gap-0.5 rounded-md bg-muted p-1"
           >
-            {ROLE_TABS.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={role === key}
-                onClick={() => setRole(key)}
-                className={`flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-sm px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                  role === key ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'
-                }`}
-              >
-                <Icon size={11} />
-                {label}
-              </button>
-            ))}
+            {ROLE_TAB_KEYS.map((key) => {
+              const Icon = ROLE_TAB_ICONS[key];
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={role === key}
+                  onClick={() => setRole(key)}
+                  className={`flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-sm px-1.5 text-[11px] font-semibold whitespace-nowrap ${
+                    role === key ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'
+                  }`}
+                >
+                  <Icon size={11} />
+                  {t(`roleTabs.${key}`)}
+                </button>
+              );
+            })}
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Field
-              label={AUTH_LOGIN.emailLabel}
+              label={t('emailLabel')}
               type="email"
               name="email"
               required
@@ -185,7 +223,7 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-1">
               <Field
-                label={AUTH_LOGIN.passwordLabel}
+                label={t('passwordLabel')}
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 required
@@ -197,9 +235,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={
-                      showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
-                    }
+                    aria-label={showPassword ? t('hidePassword') : t('showPassword')}
                     className="flex h-12 w-12 shrink-0 items-center justify-center text-muted-foreground"
                   >
                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -211,7 +247,7 @@ export default function LoginPage() {
                   href="/forgot-password"
                   className="inline-flex items-center py-1.5 text-[11px] font-semibold text-primary"
                 >
-                  {AUTH_LOGIN.forgotPassword}
+                  {t('forgotPassword')}
                 </Link>
               </div>
             </div>
@@ -231,7 +267,7 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="sr-only"
               />
-              <span className="text-xs text-muted-foreground">{AUTH_LOGIN.rememberMe}</span>
+              <span className="text-xs text-muted-foreground">{t('rememberMe')}</span>
             </label>
 
             {error && (
@@ -242,20 +278,20 @@ export default function LoginPage() {
 
             <Button type="submit" loading={submitting}>
               <LogIn size={16} />
-              {submitting ? AUTH_LOGIN.submitting : AUTH_LOGIN.submit}
+              {submitting ? t('submitting') : t('submit')}
             </Button>
           </form>
 
           <p className="mb-3.5 text-center text-xs leading-relaxed text-muted-foreground">
-            {AUTH_LOGIN.noAccount}{' '}
+            {t('noAccount')}{' '}
             <Link href="/#contact-demo" className="font-semibold text-primary">
-              {AUTH_LOGIN.contactAdmin}
+              {t('contactAdmin')}
             </Link>
           </p>
 
           <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2.5 text-[11px] text-muted-foreground">
             <ShieldCheck size={13} className="shrink-0 text-success-foreground" />
-            <span>{AUTH_LOGIN.securityNote}</span>
+            <span>{t('securityNote')}</span>
           </div>
         </Card>
       </div>

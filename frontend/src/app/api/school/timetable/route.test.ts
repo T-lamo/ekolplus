@@ -134,7 +134,12 @@ describe('GET /api/school/timetable', () => {
     expect(json.sessions[0]).toMatchObject({
       id: 'ses_1',
       date: '2026-08-17',
+      // Effective colour = the subject's (the row has no override) — and the
+      // raw override is exposed separately so the edit form can tell
+      // "follows the subject" from "explicitly chosen" instead of freezing
+      // the subject's colour into the row on every save.
       color: '#2563eb',
+      colorOverride: null,
       seriesId: 'ser_1',
       seriesCount: 12,
       subject: { name: 'Mathématiques' },

@@ -1807,7 +1807,11 @@ export function buildTimetable(
             room,
             roomId: ctx.rid?.(room) ?? null,
             type,
-            color: subject.color,
+            // No per-session override: the grid paints the subject's own
+            // colour, so recolouring a subject in Configuration recolours
+            // its sessions. (Copying `subject.color` here froze every seeded
+            // session to the colour of the day.)
+            color: null,
             date,
             startMinutes,
             endMinutes,

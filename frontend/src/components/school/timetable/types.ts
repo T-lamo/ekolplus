@@ -14,9 +14,13 @@ export interface TimetableSession {
   /** Catalogue room (configuration/salles) — null for a free-text place. */
   roomId: string | null;
   type: string;
-  /** Effective colour (override or the subject's) — may be null for a
-   * subject without identity colour; the UI then falls back to primary. */
+  /** Effective colour (override or the subject's stored one) — may be null
+   * for a subject without a stored colour; always resolve through
+   * `sessionColor()` (timetable-utils), which then falls back to the same
+   * name-derived default the Matières list uses. */
   color: string | null;
+  /** Raw per-session override; null = the session follows the subject. */
+  colorOverride: string | null;
   date: string; // YYYY-MM-DD
   startMinutes: number;
   endMinutes: number;

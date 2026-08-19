@@ -6,7 +6,7 @@
 // share the grid). Colours come from the session's accent (data-driven →
 // inline style, like the subject tiles elsewhere).
 import type { TimetableSession } from './types';
-import { cardColors, minutesToHHMM, typeMeta } from './timetable-utils';
+import { cardColors, minutesToHHMM, sessionColor, typeMeta } from './timetable-utils';
 import { cn } from '@/lib/utils';
 
 export function CourseCard({
@@ -22,7 +22,7 @@ export function CourseCard({
   compact?: boolean;
   onClick: (session: TimetableSession) => void;
 }) {
-  const colors = cardColors(session.color);
+  const colors = cardColors(sessionColor(session));
   const meta = [
     showClass ? session.class.name : null,
     session.teacher?.name ?? null,

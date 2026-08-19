@@ -40,6 +40,10 @@ export function serializeSession(s: SessionRow, seriesCount = 1) {
     type: s.type,
     // Effective colour: explicit override, else the subject's identity colour.
     color: s.color ?? s.subject.color,
+    // Raw override, kept apart so the edit form can tell "follows the
+    // subject" (null) from "explicitly chosen" — re-saving a session must
+    // not freeze the subject's current colour into the row.
+    colorOverride: s.color,
     date: formatDay(s.date),
     startMinutes: s.startMinutes,
     endMinutes: s.endMinutes,

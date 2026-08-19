@@ -174,6 +174,17 @@ export function getSubjectVisual(
   return { ...base, Icon };
 }
 
+/**
+ * The ONE accent colour that identifies a subject everywhere — Matières list,
+ * timetable cards and legend, session pickers: the swatch chosen on the
+ * subject form, else the same name-derived default `getSubjectVisual` gives
+ * the list. Any screen colouring a subject must go through this (or
+ * `getSubjectVisual`) so a subject never wears two colours.
+ */
+export function subjectAccentColor(name: string, color?: string | null): string {
+  return getSubjectVisual(name, { color: color ?? null }).iconFg;
+}
+
 const DOT_PALETTE = ['#6c2bd9', '#2563eb', '#1a9e5c', '#f59e0b', '#d93025', '#00897b', '#ad1457'];
 
 export function getClassDotColor(seed: string): string {

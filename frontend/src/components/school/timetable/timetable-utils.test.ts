@@ -14,10 +14,12 @@ import {
   mondayOf,
   monthGrid,
   recurrenceDaysLabel,
+  sessionColor,
   weekDays,
   weeklyVolume,
 } from './timetable-utils';
 import type { TimetableSession } from './types';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 
 function session(
   over: Partial<TimetableSession> & { date: string; startMinutes: number; endMinutes: number },
@@ -35,6 +37,7 @@ function session(
     roomId: null,
     type: 'CM',
     color: '#2563eb',
+    colorOverride: null,
     description: null,
     meetingUrl: null,
     seriesId: null,
@@ -141,5 +144,46 @@ describe('recurrence & volume', () => {
     expect(weeklyVolume(sessions, 'c1', 's1', '2026-08-20')).toBe(180);
     expect(weeklyVolume(sessions, 'c1', 's1', '2026-08-20', '2026-08-17-480-c1')).toBe(60);
     expect(legendSubjects(sessions).map((s) => s.name)).toEqual(['Anglais', 'Mathématiques']);
+  });
+});
+
+// The colour that identifies a subject on the grid must be the SAME one the
+// Matières list shows for it (user request 2026-08-19): explicit session
+// override > colour chosen on the subject form > name-derived default.
+describe('sessionColor', () => {
+  const base = { date: '2026-08-17', startMinutes: 480, endMinutes: 540 };
+
+  it('an explicit session override wins', () => {
+    const s = session({ ...base, color: '#e65100', colorOverride: '#e65100' });
+    expect(sessionColor(s)).toBe('#e65100');
+  });
+
+  it('falls back to the colour chosen on the subject form', () => {
+    const s = session({
+      ...base,
+      color: '#2563eb',
+      subject: { id: 's1', name: 'Truc', abbreviation: null, color: '#2563eb' },
+    });
+    expect(sessionColor(s)).toBe('#2563eb');
+  });
+
+  it('a subject without a stored colour gets the same default as the Matières list', () => {
+    const s = session({
+      ...base,
+      color: null,
+      subject: { id: 's9', name: 'Philosophie', abbreviation: null, color: null },
+    });
+    expect(sessionColor(s)).toBe(getSubjectVisual('Philosophie').iconFg);
+    // Deterministic: the same name always yields the same colour.
+    expect(sessionColor(s)).toBe(sessionColor(session({ ...base, ...s })));
+  });
+
+  it('legend swatches follow the same resolution', () => {
+    const s = session({
+      ...base,
+      color: null,
+      subject: { id: 's9', name: 'Philosophie', abbreviation: null, color: null },
+    });
+    expect(legendSubjects([s])[0]?.color).toBe(getSubjectVisual('Philosophie').iconFg);
   });
 });

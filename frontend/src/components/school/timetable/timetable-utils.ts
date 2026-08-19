@@ -4,6 +4,7 @@
 // rows. No React, no DOM — see timetable-utils.test.ts.
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { subjectAccentColor } from '@/lib/subject-visuals';
 import type { SessionType, TimetableSession } from './types';
 
 // ─── Days ('YYYY-MM-DD', handled at UTC midnight so DST never shifts a day) ──
@@ -142,18 +143,26 @@ export function typeMeta(type: string) {
   return TYPE_META[(SESSION_TYPES as string[]).includes(type) ? (type as SessionType) : 'CM'];
 }
 
+/**
+ * Accent colour of a session: explicit per-session override, else the
+ * subject's identity colour — the SAME one the Matières list shows (stored
+ * swatch, else name-derived default), so a subject never wears one colour
+ * in Configuration and another on the grid.
+ */
+export function sessionColor(s: Pick<TimetableSession, 'color' | 'subject'>): string {
+  return s.color ?? subjectAccentColor(s.subject.name, s.subject.color);
+}
+
 /** Colour trio of a course card from the session's accent colour. */
-export const DEFAULT_SESSION_COLOR = '#6c2bd9';
-export function cardColors(color: string | null): {
+export function cardColors(color: string): {
   background: string;
   color: string;
   band: string;
 } {
-  const c = color ?? DEFAULT_SESSION_COLOR;
   return {
-    background: `color-mix(in srgb, ${c} 12%, white)`,
-    color: `color-mix(in srgb, ${c} 72%, black)`,
-    band: c,
+    background: `color-mix(in srgb, ${color} 12%, white)`,
+    color: `color-mix(in srgb, ${color} 72%, black)`,
+    band: color,
   };
 }
 
@@ -207,7 +216,7 @@ export function legendSubjects(
       seen.set(s.subjectId, {
         id: s.subjectId,
         name: s.subject.name,
-        color: s.color ?? DEFAULT_SESSION_COLOR,
+        color: sessionColor(s),
       });
     }
   }

@@ -10,6 +10,7 @@ import {
   formatDayShort,
   formatDayName,
   minutesToHHMM,
+  sessionColor,
   sessionsOn,
   typeMeta,
 } from './timetable-utils';
@@ -71,7 +72,7 @@ export function TimetableAgenda({
             </h3>
             <ul>
               {list.map((s) => {
-                const colors = cardColors(s.color);
+                const colors = cardColors(sessionColor(s));
                 const meta = [s.class.name, s.teacher?.name, s.room].filter(Boolean).join(' · ');
                 return (
                   <li key={s.id} className="border-b border-border last:border-b-0">

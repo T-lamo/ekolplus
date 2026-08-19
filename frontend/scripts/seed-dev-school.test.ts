@@ -125,6 +125,11 @@ describe('scripts/seed-dev-school', () => {
       }
     });
 
+    it('never freezes a colour on a session — the grid follows the subject', () => {
+      expect(sessions.length).toBeGreaterThan(0);
+      expect(sessions.every((s) => s.color === null)).toBe(true);
+    });
+
     it('covers each class’s weekly hours on a full week (30-slot grid)', () => {
       // 2026-08-10 → 08-14 is a full week inside the year.
       const weekStart = new Date('2026-08-10T00:00:00Z');

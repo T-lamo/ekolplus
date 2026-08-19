@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { type RoomRow } from '@/lib/rooms';
-import { SUBJECT_COLORS } from '@/lib/subject-visuals';
+import { SUBJECT_COLORS, subjectAccentColor } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -44,7 +44,6 @@ import type {
   TimetableSession,
 } from './types';
 import {
-  DEFAULT_SESSION_COLOR,
   RECURRENCE_DAYS,
   SESSION_TYPES,
   TIME_OPTIONS,
@@ -121,8 +120,12 @@ export function SessionFormModal({
   const mode = editing ? 'edit' : 'create';
 
   const [subjectId, setSubjectId] = useState(editing?.subjectId ?? '');
-  const [color, setColor] = useState<string | null>(editing?.color ?? null);
-  const [colorTouched, setColorTouched] = useState(!!editing);
+  // Only a real per-session override seeds the picker. Seeding from the
+  // effective colour (override ?? subject's) used to freeze the subject's
+  // colour of the day into the row on every save — and changing the
+  // subject's colour later no longer reached those sessions.
+  const [color, setColor] = useState<string | null>(editing?.colorOverride ?? null);
+  const [colorTouched, setColorTouched] = useState(!!editing?.colorOverride);
   const [type, setType] = useState<SessionType>(
     (SESSION_TYPES as string[]).includes(editing?.type ?? '')
       ? (editing?.type as SessionType)
@@ -173,7 +176,10 @@ export function SessionFormModal({
   const [maxReached, setMaxReached] = useState(editing ? STEPS.length - 1 : 0);
 
   const subject = subjects.find((s) => s.id === subjectId) ?? null;
-  const effectiveColor = colorTouched ? color : (subject?.color ?? null);
+  // Same colour the Matières list shows for the subject (stored swatch or
+  // name-derived default) — what the grid will paint unless overridden.
+  const subjectColor = subject ? subjectAccentColor(subject.name, subject.color) : null;
+  const effectiveColor = colorTouched ? color : subjectColor;
   const room = roomId && roomId !== OTHER_ROOM ? (selectedRoom?.name ?? '') : customRoom.trim();
 
   // Defaults that follow the class × subject assignment until the user
@@ -272,7 +278,9 @@ export function SessionFormModal({
       room: room || null,
       roomId: roomId && roomId !== OTHER_ROOM ? roomId : null,
       type,
-      color: colorTouched ? color : null,
+      // An override equal to the subject's own colour is pointless and
+      // harmful (it would stop following the subject) — store null instead.
+      color: colorTouched && color && color !== subjectColor ? color : null,
       date,
       startMinutes,
       endMinutes,
@@ -458,7 +466,7 @@ export function SessionFormModal({
                       <span
                         aria-hidden
                         className="h-3 w-3 shrink-0 rounded-[3px]"
-                        style={{ background: s.color ?? DEFAULT_SESSION_COLOR }}
+                        style={{ background: subjectAccentColor(s.name, s.color) }}
                       />
                       {s.name}
                     </span>
@@ -472,7 +480,7 @@ export function SessionFormModal({
               <div className="flex flex-wrap items-center gap-2.5">
                 <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Couleur">
                   {SUBJECT_COLORS.map((hex) => {
-                    const selected = (effectiveColor ?? DEFAULT_SESSION_COLOR) === hex;
+                    const selected = effectiveColor === hex;
                     return (
                       <button
                         key={hex}
@@ -493,9 +501,27 @@ export function SessionFormModal({
                     );
                   })}
                 </div>
-                <span className="text-2xs text-muted-foreground">
-                  Identifie rapidement la matière sur la grille
-                </span>
+                {colorTouched && subjectColor && color !== subjectColor ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setColorTouched(false);
+                      setColor(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-2xs font-medium text-primary"
+                  >
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                      style={{ background: subjectColor }}
+                    />
+                    Reprendre la couleur de la matière
+                  </button>
+                ) : (
+                  <span className="text-2xs text-muted-foreground">
+                    Couleur de la matière — identifie rapidement le cours sur la grille
+                  </span>
+                )}
               </div>
             </div>
 

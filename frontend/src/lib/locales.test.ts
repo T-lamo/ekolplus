@@ -90,6 +90,40 @@ describe('message-namespace registry stays in sync with disk', () => {
   });
 });
 
+// request.ts and next-intl.d.ts stay hand-written explicit lists (Next's
+// bundler and TypeScript's structural typing both need real, static
+// declarations — MESSAGE_NAMESPACES can't replace either) — but a
+// namespace added to the registry+disk and forgotten in either file must
+// fail here instead of throwing MISSING_MESSAGE at runtime for non-French
+// users. Mirrors runtime-enforcement.test.ts's readFileSync + toContain
+// pattern.
+const REQUEST_SRC = readFileSync(join(__dirname, '..', 'i18n', 'request.ts'), 'utf8');
+const TYPES_SRC = readFileSync(join(__dirname, '..', 'types', 'next-intl.d.ts'), 'utf8');
+
+function pascalCase(namespace: string): string {
+  return namespace.charAt(0).toUpperCase() + namespace.slice(1);
+}
+
+describe('message-namespace registry stays in sync with i18n/request.ts', () => {
+  it.each(MESSAGE_NAMESPACES)('%s: imported from the message file', (namespace) => {
+    expect(REQUEST_SRC).toContain('`../messages/${locale}/' + namespace + '.json`');
+  });
+
+  it.each(MESSAGE_NAMESPACES)('%s: returned under its PascalCase key', (namespace) => {
+    expect(REQUEST_SRC).toContain(`${pascalCase(namespace)}: ${namespace}.default`);
+  });
+});
+
+describe('message-namespace registry stays in sync with next-intl.d.ts', () => {
+  it.each(MESSAGE_NAMESPACES)('%s: imported as a type from the fr message file', (namespace) => {
+    expect(TYPES_SRC).toContain(`import type ${namespace} from '@/messages/fr/${namespace}.json'`);
+  });
+
+  it.each(MESSAGE_NAMESPACES)('%s: declared under AppConfig.Messages', (namespace) => {
+    expect(TYPES_SRC).toContain(`${pascalCase(namespace)}: typeof ${namespace};`);
+  });
+});
+
 // Deep key-set equality per namespace — a message added to French but
 // forgotten in Creole/English must fail `pnpm test`, not silently render
 // as a missing-key fallback (or worse, leak the raw key) in production.

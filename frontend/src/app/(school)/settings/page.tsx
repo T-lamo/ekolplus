@@ -12,6 +12,7 @@ import { AnneeScolaireTab } from './AnneeScolaireTab';
 import { AdministrateursTab } from './AdministrateursTab';
 import { NotificationsTab } from './NotificationsTab';
 import { ApparenceTab } from './ApparenceTab';
+import { LangueTab } from './LangueTab';
 import { APPEARANCE } from '@/lib/constants';
 import { ZoneDangereuseSection } from './ZoneDangereuseSection';
 import type { SchoolResponse, TermData } from './types';
@@ -19,6 +20,7 @@ import type { SchoolResponse, TermData } from './types';
 const TABS = [
   { key: 'profil', label: 'Profil' },
   { key: 'apparence', label: APPEARANCE.tab },
+  { key: 'langue', label: 'Langue' },
   { key: 'etablissement', label: 'Établissement' },
   { key: 'annee', label: 'Année scolaire' },
   { key: 'admins', label: 'Administrateurs' },
@@ -109,6 +111,7 @@ function SettingsForm() {
         <>
           {tab === 'profil' && <ProfilTab user={user} myRole={myRole} />}
           {tab === 'apparence' && <ApparenceTab />}
+          {tab === 'langue' && <LangueTab />}
           {tab === 'etablissement' && data && (
             <div className="flex flex-col gap-5">
               <EtablissementTab

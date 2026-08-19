@@ -1359,3 +1359,12 @@ export const ADMIN_SETTINGS = {
   loadError: 'Impossible de charger les paramètres.',
   retry: 'Réessayer',
 } as const;
+
+export const OFFLINE_SYNC = {
+  offline: (count: number) => `Hors ligne — ${count} en attente`,
+  reconnect: (count: number) => `Reconnecte-toi pour synchroniser ${count} modification(s)`,
+  queuedToast: 'Hors ligne — sera synchronisé automatiquement.',
+  syncedToast: 'Synchronisé.',
+  failedToast: (count: number) =>
+    `${count} modification${count > 1 ? 's' : ''} n'ont pas pu être synchronisée${count > 1 ? 's' : ''}.`,
+} as const;

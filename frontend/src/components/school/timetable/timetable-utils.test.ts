@@ -1,5 +1,5 @@
 // Pure helpers of the Emploi du temps screen: day/week arithmetic, labels,
-// derived PAUSE / DÉJEUNER rows, recurrence count + summary, weekly volume.
+// derived grid rows, recurrence count + summary, weekly volume.
 import { describe, it, expect } from 'vitest';
 import {
   addDays,
@@ -80,12 +80,10 @@ describe('buildRows', () => {
   const days = weekDays('2026-08-17');
   it('falls back to the default rows on an empty range', () => {
     const rows = buildRows([], days);
-    expect(rows.filter((r) => r.kind === 'slot').map((r) => r.start)).toEqual([
-      450, 540, 660, 840, 930,
-    ]);
+    expect(rows.map((r) => r.start)).toEqual([450, 540, 660, 840, 930]);
   });
 
-  it('inserts PAUSE and DÉJEUNER rows from the gaps between start slots', () => {
+  it('never inserts a break/lunch row — gaps between start slots stay blank', () => {
     const sessions = [
       session({ date: '2026-08-17', startMinutes: 450, endMinutes: 540 }),
       session({ date: '2026-08-18', startMinutes: 540, endMinutes: 630 }),
@@ -93,16 +91,8 @@ describe('buildRows', () => {
       session({ date: '2026-08-19', startMinutes: 840, endMinutes: 930 }),
     ];
     const rows = buildRows(sessions, days);
-    expect(rows.map((r) => (r.kind === 'slot' ? r.start : `${r.label}@${r.start}`))).toEqual([
-      450,
-      540,
-      'PAUSE@630',
-      660,
-      'DÉJEUNER@750',
-      840,
-    ]);
-    const first = rows[0];
-    expect(first?.kind === 'slot' && first.cells.get('2026-08-17')?.length).toBe(1);
+    expect(rows.map((r) => r.start)).toEqual([450, 540, 660, 840]);
+    expect(rows[0]?.cells.get('2026-08-17')?.length).toBe(1);
   });
 
   it('stacks two classes starting at the same time in the same cell, sorted by class', () => {
@@ -120,10 +110,7 @@ describe('buildRows', () => {
       days,
     );
     const row = rows[0];
-    expect(row?.kind === 'slot' && row.cells.get('2026-08-17')?.map((s) => s.class.name)).toEqual([
-      '3ème A',
-      '4ème A',
-    ]);
+    expect(row?.cells.get('2026-08-17')?.map((s) => s.class.name)).toEqual(['3ème A', '4ème A']);
   });
 });
 

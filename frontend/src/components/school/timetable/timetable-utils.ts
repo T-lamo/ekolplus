@@ -1,7 +1,7 @@
 // Pure helpers of the Emploi du temps screen (emploi-du-temps.md): day
 // arithmetic on 'YYYY-MM-DD' strings, week/month ranges, the derived grid
-// rows (start slots + PAUSE / DÉJEUNER rows), recurrence summary, weekly
-// volume, CSV rows. No React, no DOM — see timetable-utils.test.ts.
+// rows (one per distinct start slot), recurrence summary, weekly volume, CSV
+// rows. No React, no DOM — see timetable-utils.test.ts.
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { SessionType, TimetableSession } from './types';
@@ -159,29 +159,25 @@ export function cardColors(color: string | null): {
 
 // ─── Grid rows ─────────────────────────────────────────────────────────────
 export const DEFAULT_ROW_STARTS = [7 * 60 + 30, 9 * 60, 11 * 60, 14 * 60, 15 * 60 + 30];
-const BREAK_MIN_GAP = 30;
-const LUNCH_MIN_GAP = 45;
-const NOON = 12 * 60;
-const AFTER_LUNCH = 14 * 60;
 
-export type GridRow =
-  | { kind: 'slot'; start: number; cells: Map<string, TimetableSession[]> }
-  | { kind: 'break'; start: number; label: 'PAUSE' | 'DÉJEUNER' };
+export interface GridRow {
+  start: number;
+  cells: Map<string, TimetableSession[]>;
+}
 
 /**
  * Rows = every distinct start time of the visible sessions (the mock's rows
  * are start slots, not proportional hours), each holding the sessions that
- * start then, per day. A PAUSE / DÉJEUNER row is inserted when every session
- * of a row has ended ≥ 30 min before the next row starts (≥ 45 min gap
- * touching 12:00–14:00 → DÉJEUNER). Empty range → the default 5 rows.
+ * start then, per day. No break/lunch row is ever inserted — gaps between
+ * slots (including the whole default range when nothing is scheduled) just
+ * render as blank cells. Empty range → the default 5 rows.
  */
 export function buildRows(sessions: TimetableSession[], days: string[]): GridRow[] {
   const daySet = new Set(days);
   const visible = sessions.filter((s) => daySet.has(s.date));
   const starts = [...new Set(visible.map((s) => s.startMinutes))].sort((a, b) => a - b);
   const slotStarts = starts.length > 0 ? starts : DEFAULT_ROW_STARTS;
-  const rows: GridRow[] = [];
-  slotStarts.forEach((start, i) => {
+  return slotStarts.map((start) => {
     const cells = new Map<string, TimetableSession[]>();
     for (const day of days) cells.set(day, []);
     const inRow = visible.filter((s) => s.startMinutes === start);
@@ -189,17 +185,8 @@ export function buildRows(sessions: TimetableSession[], days: string[]): GridRow
     for (const list of cells.values()) {
       list.sort((a, b) => a.class.name.localeCompare(b.class.name, 'fr'));
     }
-    rows.push({ kind: 'slot', start, cells });
-    const next = slotStarts[i + 1];
-    if (next === undefined) return;
-    const rowEnd = inRow.length > 0 ? Math.max(...inRow.map((s) => s.endMinutes)) : start + 60;
-    const gap = next - rowEnd;
-    if (gap >= BREAK_MIN_GAP) {
-      const lunch = gap >= LUNCH_MIN_GAP && rowEnd <= AFTER_LUNCH - 30 && next >= NOON + 30;
-      rows.push({ kind: 'break', start: rowEnd, label: lunch ? 'DÉJEUNER' : 'PAUSE' });
-    }
+    return { start, cells };
   });
-  return rows;
 }
 
 export function sessionsOn(sessions: TimetableSession[], day: string): TimetableSession[] {

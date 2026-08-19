@@ -24,6 +24,7 @@ import { ImageUploader } from '@/components/ui/ImageUploader';
 import { SkeletonStatCards } from '@/components/ui/Skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { ThemePicker } from '@/components/settings/ThemePicker';
+import { LanguagePicker } from '@/components/settings/LanguagePicker';
 
 interface SettingsForm {
   platformName: string;
@@ -230,6 +231,7 @@ export default function SystemSettingsPage() {
   const navItems = [
     { id: 'general', label: T.nav.general },
     { id: 'appearance', label: APPEARANCE.adminNav },
+    { id: 'language', label: 'Langue' },
     { id: 'billing', label: T.nav.billing },
     { id: 'notifications', label: T.nav.notifications },
     { id: 'security', label: T.nav.security },
@@ -371,6 +373,18 @@ export default function SystemSettingsPage() {
             description={APPEARANCE.description}
           >
             <ThemePicker />
+          </SettingsSection>
+
+          {/* Per-user UI language — same pattern as Apparence above, and
+              likewise independent of the Save button / PlatformSettings.
+              Distinct from PlatformSettings.locale (below, under General)
+              which is an unrelated platform-wide default. */}
+          <SettingsSection
+            id="language"
+            title="Langue"
+            description="Langue de l'interface pour ton propre compte."
+          >
+            <LanguagePicker />
           </SettingsSection>
 
           <SettingsSection id="billing" title={T.billing.title} description={T.billing.description}>

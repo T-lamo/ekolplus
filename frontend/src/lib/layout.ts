@@ -34,7 +34,29 @@ export const CARD_GRID =
 //   zone    `<div className={TABLE_SCROLL}>` autour du <table> (défile en x et y)
 //   en-tête `<thead className={STICKY_THEAD}>` (reste visible en défilant)
 //   grille  `<CardGrid className={GRID_SCROLL}>` en vue cartes
-export const LIST_PAGE = 'flex h-full min-h-0 flex-col';
+// `min-h-full` not `h-full` below `lg`: on a page whose header/KPI/filter
+// chrome is tall relative to a short mobile viewport, a hard `h-full` forces
+// the `min-h-0 flex-1` Card down to near-zero height, and content that isn't
+// part of its own internal scroll area (the Pager, sitting beside
+// TABLE_SCROLL) then paints past that squeezed box into territory the outer
+// scroller doesn't count toward its scrollable height — reachable by no
+// amount of scrolling, and covered by the fixed mobile bottom nav (confirmed
+// via elementFromPoint on /scolarite/paiements at 360×760). `min-h-full`
+// behaves identically whenever content actually fits (the common case) and
+// only kicks in to let the page grow — and become scrollable — instead of
+// silently trapping content when it doesn't.
+//
+// `lg:h-full` restores the hard cap on desktop (user decision 2026-08-19):
+// with a `min-height`-only root, a flex container whose own height is
+// indeterminate sizes its `flex-1` children to their natural content height
+// instead of the remaining space, so TABLE_SCROLL/GRID_SCROLL never actually
+// clip+scroll — the outer shell scroller ends up scrolling the whole page
+// (header, KPIs, search) as one blob instead of just the table. Desktop has
+// enough width for header chrome to lay out in one row (no wrapping stack
+// like mobile), so the near-zero-squeeze failure mode above doesn't recur
+// there — the hard cap is safe from `lg` up and makes the header/search
+// truly sticky while only the table/card area scrolls.
+export const LIST_PAGE = 'flex min-h-full flex-col lg:h-full';
 export const TABLE_SCROLL = 'min-h-0 flex-1 overflow-auto';
 export const GRID_SCROLL = 'min-h-0 flex-1 overflow-y-auto';
 // Le filet sous l'en-tête est une ombre interne : en `border-collapse` la

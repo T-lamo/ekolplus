@@ -35,6 +35,14 @@ model User {
   // null = never chosen (default). Per user, not per school: a personal
   // display preference that follows the account across devices.
   theme             String?
+  // UI language chosen in Paramètres › Langue — a key of
+  // src/lib/locales.ts (fr | ht | en); null = never chosen (default:
+  // French). Per user, not per school. Unlike `theme` (purely a client
+  // CSS concern), the SERVER must know this on every request to pick the
+  // right message file for SSR — it reads the `sg-locale` cookie
+  // (src/i18n/request.ts), not this column directly. This column exists
+  // only to carry the choice across devices, exactly like `theme`.
+  locale            String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).

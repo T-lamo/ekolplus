@@ -89,7 +89,6 @@
     "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.4.20",
     "chrome-launcher": "^1.2.1",
-    "concurrently": "^10.0.5",
     "esbuild": "^0.28.2",
     "eslint-config-next": "^16.3.0",
     "fake-indexeddb": "^6.2.5",

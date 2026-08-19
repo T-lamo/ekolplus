@@ -8,18 +8,17 @@
 // redundancy is deliberate, see the design spec).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WifiOff } from 'lucide-react';
-import { useUser } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { drain, listPending, subscribe, type QueuedMutation } from '@/lib/offline-queue';
 import { OFFLINE_SYNC } from '@/lib/constants';
 
 export function OfflineIndicator() {
-  const user = useUser();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [pending, setPending] = useState<QueuedMutation[]>([]);
   const [reconnectNeeded, setReconnectNeeded] = useState(false);
   const drainingRef = useRef(false);
-  const wasPendingRef = useRef(false);
 
   const refresh = useCallback(() => {
     if (!user) {
@@ -42,10 +41,14 @@ export function OfflineIndicator() {
     drain(user.id)
       .then((result) => {
         setReconnectNeeded(result.stoppedReason === 'auth');
-        if (result.failed > 0) {
-          toast(OFFLINE_SYNC.failedToast(result.failed), 'error');
+        for (const entry of result.failedEntries) {
+          toast(`"${entry.label}" n'a pas pu être synchronisé — ${entry.message}`, 'error');
+        }
+        if (result.synced > 0 && result.failed === 0 && result.stillPending === 0) {
+          toast(OFFLINE_SYNC.syncedToast, 'success');
         }
       })
+      .catch(() => {})
       .finally(() => {
         drainingRef.current = false;
       });
@@ -66,13 +69,6 @@ export function OfflineIndicator() {
       clearInterval(interval);
     };
   }, [user, runDrain]);
-
-  useEffect(() => {
-    if (wasPendingRef.current && pending.length === 0) {
-      toast(OFFLINE_SYNC.syncedToast, 'success');
-    }
-    wasPendingRef.current = pending.length > 0;
-  }, [pending.length, toast]);
 
   if (pending.length === 0) return null;
 

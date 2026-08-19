@@ -1365,6 +1365,4 @@ export const OFFLINE_SYNC = {
   reconnect: (count: number) => `Reconnecte-toi pour synchroniser ${count} modification(s)`,
   queuedToast: 'Hors ligne — sera synchronisé automatiquement.',
   syncedToast: 'Synchronisé.',
-  failedToast: (count: number) =>
-    `${count} modification${count > 1 ? 's' : ''} n'ont pas pu être synchronisée${count > 1 ? 's' : ''}.`,
 } as const;

@@ -19,7 +19,8 @@ export interface QueuedMutation {
   path: string;
   method: QueuedMethod;
   body?: unknown;
-  /** Short human-readable label for the offline indicator, e.g. "Présence — Awa K." */
+  /** Short human-readable label shown in the failure toast when this entry
+   * is permanently rejected, e.g. "Présence — Awa K. (18/08)". */
   label: string;
   /** Stamped at enqueue time so a device shared by two accounts never
    * replays one user's queued writes under another user's session. */
@@ -30,6 +31,7 @@ export interface QueuedMutation {
 export interface DrainResult {
   synced: number;
   failed: number;
+  failedEntries: Array<{ label: string; message: string }>;
   stillPending: number;
   stoppedReason: 'offline' | 'auth' | null;
 }
@@ -55,6 +57,9 @@ function getDb(): Promise<IDBPDatabase> {
         db.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     },
+  }).catch((e: unknown) => {
+    dbPromise = null;
+    throw e;
   });
   return dbPromise;
 }
@@ -139,6 +144,7 @@ export async function drain(userId: string): Promise<DrainResult> {
   const pending = await listPending(userId);
   let synced = 0;
   let failed = 0;
+  const failedEntries: DrainResult['failedEntries'] = [];
   let stoppedReason: DrainResult['stoppedReason'] = null;
 
   for (const mutation of pending) {
@@ -146,6 +152,7 @@ export async function drain(userId: string): Promise<DrainResult> {
       await api(mutation.path, { method: mutation.method, body: mutation.body });
       await remove(mutation.id);
       synced++;
+      notify();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         stoppedReason = 'auth';
@@ -154,6 +161,8 @@ export async function drain(userId: string): Promise<DrainResult> {
       if (err instanceof ApiError && err.status !== 0 && err.status < 500) {
         await remove(mutation.id);
         failed++;
+        failedEntries.push({ label: mutation.label, message: err.message });
+        notify();
         continue;
       }
       stoppedReason = 'offline';
@@ -163,5 +172,5 @@ export async function drain(userId: string): Promise<DrainResult> {
 
   notify();
   const stillPending = (await listPending(userId)).length;
-  return { synced, failed, stillPending, stoppedReason };
+  return { synced, failed, failedEntries, stillPending, stoppedReason };
 }

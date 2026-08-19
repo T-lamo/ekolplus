@@ -21,6 +21,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 function isOfflineScreenApi({ url }: { url: URL }): boolean {
   const p = url.pathname;
+  if (!p.startsWith('/api/')) return false;
   return (
     p.startsWith('/api/school/attendance') ||
     p.startsWith('/api/school/evaluations/') ||

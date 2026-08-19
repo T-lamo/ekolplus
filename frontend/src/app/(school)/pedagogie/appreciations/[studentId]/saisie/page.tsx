@@ -171,7 +171,7 @@ export default function SaisirAppreciationPage() {
                   mention: suggestMention(s.average),
                   status,
                 },
-                label: `Appréciation — ${data.firstName} ${data.lastName}`,
+                label: `Appréciation — ${data.firstName} ${data.lastName} (${s.subjectName})`,
               },
               user.id,
             ),

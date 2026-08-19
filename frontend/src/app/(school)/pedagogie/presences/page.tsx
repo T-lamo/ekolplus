@@ -226,18 +226,22 @@ export default function PresencesPage() {
         ),
       };
     });
+    const student = data?.students.find((s) => s.id === studentId);
+    const label = student
+      ? `Présence — ${student.firstName} ${student.lastName.charAt(0)}. (${fmtDayHeader(date)})`
+      : 'Présence';
     const entry =
       status === null
         ? {
             path: `/api/school/attendance?studentId=${studentId}&date=${date}`,
             method: 'DELETE' as const,
-            label: 'Présence',
+            label,
           }
         : {
             path: '/api/school/attendance',
             method: 'PATCH' as const,
             body: { studentId, date, status },
-            label: 'Présence',
+            label,
           };
     try {
       const r = await submitOrQueue(entry, user.id);

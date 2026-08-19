@@ -24,6 +24,7 @@ import {
   enqueue,
   listPending,
   submitOrQueue,
+  subscribe,
 } from './offline-queue';
 
 const mockApi = vi.mocked(api);
@@ -104,7 +105,13 @@ describe('drain', () => {
 
     const result = await drain('u1');
 
-    expect(result).toEqual({ synced: 2, failed: 0, stillPending: 0, stoppedReason: null });
+    expect(result).toEqual({
+      synced: 2,
+      failed: 0,
+      failedEntries: [],
+      stillPending: 0,
+      stoppedReason: null,
+    });
     expect(mockApi).toHaveBeenNthCalledWith(1, '/a', { method: 'PATCH', body: undefined });
     expect(mockApi).toHaveBeenNthCalledWith(2, '/b', { method: 'PATCH', body: undefined });
   });
@@ -116,7 +123,13 @@ describe('drain', () => {
 
     const result = await drain('u1');
 
-    expect(result).toEqual({ synced: 0, failed: 0, stillPending: 2, stoppedReason: 'offline' });
+    expect(result).toEqual({
+      synced: 0,
+      failed: 0,
+      failedEntries: [],
+      stillPending: 2,
+      stoppedReason: 'offline',
+    });
     expect(mockApi).toHaveBeenCalledTimes(1);
   });
 
@@ -126,7 +139,13 @@ describe('drain', () => {
 
     const result = await drain('u1');
 
-    expect(result).toEqual({ synced: 0, failed: 0, stillPending: 1, stoppedReason: 'auth' });
+    expect(result).toEqual({
+      synced: 0,
+      failed: 0,
+      failedEntries: [],
+      stillPending: 1,
+      stoppedReason: 'auth',
+    });
   });
 
   it('drops a permanently-failing entry (real 4xx) and keeps draining the rest', async () => {
@@ -136,7 +155,37 @@ describe('drain', () => {
 
     const result = await drain('u1');
 
-    expect(result).toEqual({ synced: 1, failed: 1, stillPending: 0, stoppedReason: null });
+    expect(result).toEqual({
+      synced: 1,
+      failed: 1,
+      failedEntries: [{ label: 'Bad', message: 'not found' }],
+      stillPending: 0,
+      stoppedReason: null,
+    });
     expect(await listPending('u1')).toHaveLength(0);
+  });
+});
+
+describe('drain notifications', () => {
+  it('notifies subscribers after each entry, not just once at the end', async () => {
+    await enqueue({ path: '/a', method: 'PATCH', label: 'A', userId: 'u1' });
+    await new Promise((r) => setTimeout(r, 2));
+    await enqueue({ path: '/b', method: 'PUT', label: 'B', userId: 'u1' });
+    mockApi.mockResolvedValueOnce({}).mockRejectedValueOnce(new ApiError(404, 'gone'));
+
+    const calls: number[] = [];
+    const unsubscribe = subscribe(() => calls.push(calls.length));
+
+    const result = await drain('u1');
+
+    unsubscribe();
+    expect(result).toEqual({
+      synced: 1,
+      failed: 1,
+      failedEntries: [{ label: 'B', message: 'gone' }],
+      stillPending: 0,
+      stoppedReason: null,
+    });
+    expect(calls.length).toBeGreaterThanOrEqual(2);
   });
 });

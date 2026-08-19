@@ -2,7 +2,7 @@ node_modules/
 dist/
 .next/
 .turbo/
-public/sw*
+frontend/public/sw*
 coverage/
 *.log
 .DS_Store

@@ -60,20 +60,30 @@ Out of scope this pass (confirmed with the user):
 ## Current state (as found)
 
 - **Build tooling**: `pnpm dev` runs `next dev --turbopack` (`package.json`
-  line 12); `pnpm build` runs plain `next build` — **no** `--turbopack`
-  flag, so production builds still go through webpack. This matters
-  because Serwist's Next.js integration (`@serwist/next`) hooks the
-  webpack build to generate the precache manifest + `public/sw.js`; it
-  will run correctly for `pnpm build`/`pnpm start`, but the service worker
-  will simply not exist under `pnpm dev` (expected/standard — Serwist and
+  line 12); `pnpm build` runs plain `next build`, which is confirmed
+  (`▲ Next.js 16.3.0 (Turbopack)`, verified by actually running `pnpm build`
+  in this repo — not assumed) to use **Turbopack by default in production
+  too**, not webpack. Serwist (unlike the unmaintained `next-pwa`) added
+  Turbopack support for `next build`; it only still requires the
+  `--webpack` flag for `next dev` if someone wants to manually exercise the
+  service worker in dev mode (confirmed by cross-checking two independent
+  sources — an older guide claiming "Serwist requires webpack" turned out
+  to be describing `next-pwa`'s constraint, corrected by a more recent
+  Nov-2025 source). **Consequence: no change to `pnpm build`/`pnpm start`
+  or their underlying bundler is needed** — `@serwist/next`'s `withSerwist`
+  wrapper works against the existing Turbopack production build as-is. The
+  service worker will simply not exist under `pnpm dev` (expected/standard —
+  Serwist and
   Workbox both document that offline behavior should be verified against
   a production build, not dev).
 - **`next.config.ts`**: already wraps the config object with
   `withSentryConfig(config, {...})` at export time (`next.config.ts:149`).
-  `@serwist/next`'s `withSerwist(...)` wrapper composes the same way
-  (`withSerwist(withSentryConfig(config, {...}))` or the reverse — order
-  matters only in that Sentry's source-map upload step should see the
-  final webpack config, so `withSerwist` wraps outermost).
+  `@serwist/next`'s `withSerwist(...)` wrapper composes the same way —
+  `withSerwist` wraps `withSentryConfig(config, {...})`, i.e.
+  `export default withSerwist(withSentryConfig(config, {...}))`, since
+  `withSerwist` only needs to inject `swSrc`/`swDest` options onto the
+  config object Sentry already finished wrapping, not the other way
+  around.
 - **`frontend/src/lib/api.ts`** (protected file — read, not modified):
   the `api()` wrapper already classifies a network failure (fetch throws,
   not an HTTP error response) into `ApiError` with `status === 0` and a

@@ -240,6 +240,13 @@ Phase 0 ships and its pattern is confirmed to hold up:
    administrative language (likely French, given Haitian schools'
    official record-keeping conventions)? Needs its own short design
    conversation, not a default assumption.
+9. **Static rendering for the landing page** — cookie-based locale
+   resolution in the root layout made the whole app dynamically rendered
+   (no static prerendering anywhere, landing page included). Since the
+   landing page is already deferred to phase 7 for translation, a future
+   phase should weigh pulling it out of the shared locale-resolution path
+   (e.g. a route-group-local layout that skips `getLocale()`) to regain
+   static rendering there.
 
 Each phase is scoped to be small enough to review and ship on its own —
 attempting the whole app in one plan would produce a review the user

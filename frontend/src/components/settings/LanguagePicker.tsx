@@ -44,7 +44,7 @@ function useApplyLocale() {
       await setLocale(next);
       toast(TOAST_APPLIED[next], 'success');
     } catch {
-      toast(SAVE_ERROR[locale], 'warning');
+      toast(SAVE_ERROR[next], 'warning');
     } finally {
       setBusy(null);
     }
@@ -137,7 +137,9 @@ export function LocaleQuickSwitcher({ className }: { className?: string }) {
           )}
           <button
             type="button"
-            onClick={() => void setLocale(l.key)}
+            onClick={() => {
+              setLocale(l.key).catch(() => {});
+            }}
             aria-current={locale === l.key ? 'true' : undefined}
             className={cn(
               'rounded px-1 py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-primary',

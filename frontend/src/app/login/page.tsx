@@ -122,7 +122,7 @@ export default function LoginPage() {
           className="pointer-events-none absolute top-16 -right-20 hidden h-70 w-70 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-primary)_25%,transparent)_0%,transparent_70%)] lg:block"
         />
 
-        <div className="absolute top-4 right-4 z-20 lg:top-6 lg:right-8">
+        <div className="absolute top-4 right-4 z-20 hidden lg:top-6 lg:right-8 lg:block">
           <LocaleQuickSwitcher className="[&_button]:text-white/70 [&_button[aria-current]]:text-white" />
         </div>
 

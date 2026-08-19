@@ -204,3 +204,16 @@ scoping. Remaining future phases (Paramètres tabs, Pédagogie, Scolarité,
 admin back-office, server message normalization, landing page, bulletin
 PDFs) are unchanged and still each get their own brainstorm → spec → plan
 cycle.
+
+**Known gap surfaced during Plan 1a's final whole-branch review (not in
+this spec's original file inventory):** `SchoolSidebar.tsx`'s footer
+renders `SidebarPlanCard` (`frontend/src/components/school/billing/
+SidebarPlanCard.tsx`, copy sourced from `plan-presentation.ts`), which is
+entirely hardcoded French and was missed by this spec's 16-file Shell
+list — it sits between the now-translated nav sections and the
+now-translated `SidebarUserProfile`, so an EN/HT session sees a French
+billing-upsell card inside an otherwise-translated sidebar. Translating
+it means threading `t` through the pure, unit-tested `planPresentation()`
+function, not a one-line fix — Plan 1b or 1c should pick this up
+explicitly (a `SchoolPlanCard` namespace, matching this plan's
+one-namespace-per-component convention) rather than leave it unrecorded.

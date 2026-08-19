@@ -126,8 +126,8 @@ function StudentProfile() {
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Skeleton className="h-8 w-40 rounded-md" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-36 rounded-md" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="hidden h-9 w-36 rounded-md sm:block" />
             <Skeleton className="h-9 w-36 rounded-md" />
             <Skeleton className="h-9 w-40 rounded-md" />
           </div>
@@ -192,10 +192,13 @@ function StudentProfile() {
           <ArrowLeft size={14} />
           Retour aux élèves
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Bulk PDF export is desktop paperwork, not a phone action — kept
+              off the mobile action row (user decision: hide secondary
+              actions rather than let 3 buttons overflow at 360px). */}
           <Button
             variant="outline"
-            className="w-fit"
+            className="hidden w-fit sm:inline-flex"
             onClick={() => toast('Export PDF du dossier — bientôt disponible.', 'info')}
           >
             <Download size={14} />
@@ -282,22 +285,25 @@ function StudentProfile() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-5 sm:gap-6">
+          {/* 1×4 row with dividers from `sm` up; below that a 360px screen
+              can't fit 4 labels + 3 dividers on one line (measured overflow
+              during the mobile audit), so it becomes a borderless 2×2 grid. */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:items-center sm:gap-6">
             <Stat
               label="Moyenne générale"
               value={results?.overallAverage != null ? `${results.overallAverage.toFixed(1)}` : '—'}
             />
-            <div className="h-9 w-px bg-border" />
+            <div className="hidden h-9 w-px bg-border sm:block" />
             <Stat
               label="Taux de présence"
               value={attendance?.ratePercent != null ? `${attendance.ratePercent}%` : '—'}
             />
-            <div className="h-9 w-px bg-border" />
+            <div className="hidden h-9 w-px bg-border sm:block" />
             <Stat
               label="Absences ce trimestre"
               value={attendance ? String(attendance.absences) : '—'}
             />
-            <div className="h-9 w-px bg-border" />
+            <div className="hidden h-9 w-px bg-border sm:block" />
             <Stat label="Rang de classe" value={results?.rank ? `${results.rank}e` : '—'} />
           </div>
         </div>

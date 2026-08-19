@@ -494,10 +494,10 @@ export default function GradeEntryPage() {
         </p>
       )}
 
-      <Card className="flex-row items-center justify-between p-3.5">
-        <div className="flex items-center gap-2">
+      <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3.5">
+        <div className="flex min-w-0 items-center gap-2">
           <span
-            className={`h-2 w-2 rounded-full ${hasInvalidScore ? 'bg-destructive-foreground' : 'bg-warning-foreground'}`}
+            className={`h-2 w-2 shrink-0 rounded-full ${hasInvalidScore ? 'bg-destructive-foreground' : 'bg-warning-foreground'}`}
           />
           <span className="text-caption text-muted-foreground">
             {hasInvalidScore ? (
@@ -516,7 +516,7 @@ export default function GradeEntryPage() {
             )}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Button
             variant="ghost"
             className="w-fit"

@@ -90,6 +90,14 @@ export default function EmploiDuTempsPage() {
   const today = todayDay();
   const [view, setView] = useState<TimetableView>('week');
   const [anchor, setAnchor] = useState(today);
+  // Week's 5-6 narrow day columns need real horizontal room — on a phone
+  // (no `lg` sidebar) default to Day instead so the landing view is usable
+  // without constant sideways scrolling. Set in an effect (not the initial
+  // state) to keep SSR/client markup identical; Week/Month/Agenda stay one
+  // tap away. Runs once, before the switch to a manually-chosen view.
+  useEffect(() => {
+    if (window.innerWidth < 1024) setView('day');
+  }, []);
   const [filters, setFilters] = useState<TimetableFilters>(EMPTY_FILTERS);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [data, setData] = useState<TimetableResponse | null>(null);

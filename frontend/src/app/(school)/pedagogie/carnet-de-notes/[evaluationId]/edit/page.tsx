@@ -195,11 +195,11 @@ export default function EditEvaluationPage() {
         </p>
       )}
 
-      <Card className="flex-row items-center justify-between p-3.5">
+      <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3.5">
         <span className="text-caption text-muted-foreground">
           Des modifications non enregistrées peuvent exister.
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Button variant="ghost" className="w-fit" onClick={() => router.back()}>
             Annuler
           </Button>

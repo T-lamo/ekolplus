@@ -145,11 +145,13 @@ export default function AppreciationDetailPage() {
         Retour aux appréciations
       </Link>
 
-      <Card className="flex-row items-center justify-between p-3 px-4">
-        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <Users size={12} />
-          Élève {data.studentIndex ?? '—'} sur {data.classSize} — {data.className} ·{' '}
-          {data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? ''}
+      <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3 px-4">
+        <span className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Users size={12} className="shrink-0" />
+          <span className="truncate">
+            Élève {data.studentIndex ?? '—'} sur {data.classSize} — {data.className} ·{' '}
+            {data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? ''}
+          </span>
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -181,7 +183,7 @@ export default function AppreciationDetailPage() {
         </div>
       </Card>
 
-      <Card className="flex-row items-center gap-3.5 p-4">
+      <Card className="flex-col items-start gap-3.5 p-4 sm:flex-row sm:items-center">
         <div className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
           {data.firstName[0]}
           {data.lastName[0]}
@@ -217,11 +219,14 @@ export default function AppreciationDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          {/* Both still toast placeholders ("bientôt disponible") — hidden on
+              mobile so the one real action (Modifier) isn't crowded out by
+              two buttons that don't do anything yet. */}
           <button
             type="button"
             onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground"
+            className="hidden items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground sm:flex"
           >
             <Mail size={13} />
             Notifier le tuteur
@@ -229,7 +234,7 @@ export default function AppreciationDetailPage() {
           <button
             type="button"
             onClick={() => toast('Disponible avec les Bulletins (Epic 7).', 'info')}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground"
+            className="hidden items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground sm:flex"
           >
             <FileText size={13} />
             Générer le bulletin

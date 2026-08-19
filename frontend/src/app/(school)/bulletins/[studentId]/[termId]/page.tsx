@@ -155,9 +155,10 @@ export default function BulletinViewerPage() {
   };
 
   return (
-    <div className="flex items-start gap-5">
-      {/* Action panel */}
-      <div className="flex w-[220px] shrink-0 flex-col gap-3">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-5">
+      {/* Action panel — a fixed 220px column beside the canvas from `lg` up;
+          below that it stacks above the bulletin instead of squeezing it. */}
+      <div className="flex flex-col gap-3 lg:w-[220px] lg:shrink-0">
         <Link
           href="/bulletins"
           className="flex items-center gap-1.5 px-1 py-1.5 text-sm text-muted-foreground"
@@ -251,7 +252,7 @@ export default function BulletinViewerPage() {
 
       {/* Bulletin area */}
       <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-card px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-card px-4 py-2.5">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -279,7 +280,7 @@ export default function BulletinViewerPage() {
               Plein écran
             </button>
           </div>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
             <FileText size={13} />
             Format :{' '}
             {data.template

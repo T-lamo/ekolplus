@@ -154,9 +154,8 @@ function PaiementScreen() {
     <div className="flex flex-col gap-4">
       <PageHeaderCard
         backHref="/abonnement"
-        backLabel="Abonnement"
         chip={
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+          <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary sm:flex">
             <Lock size={16} />
           </span>
         }

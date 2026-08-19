@@ -221,7 +221,7 @@ export default function SaisirAppreciationPage() {
             {currentTermLabel} — {data.className}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/pedagogie/appreciations"
             className="flex w-fit items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold text-muted-foreground"
@@ -482,17 +482,26 @@ export default function SaisirAppreciationPage() {
               {data.subjects.map((s) => (
                 <div
                   key={s.classSubjectId}
-                  className="grid grid-cols-[140px_60px_70px_1fr] items-start gap-2.5"
+                  className="flex flex-col gap-1.5 sm:grid sm:grid-cols-[140px_60px_70px_1fr] sm:items-start sm:gap-2.5"
                 >
-                  <span className="pt-2 text-caption font-semibold text-foreground">
-                    {s.subjectName}
-                  </span>
-                  <span className="pt-2 text-xs text-muted-foreground">× {s.coefficient ?? 1}</span>
-                  <span className="pt-1.5">
-                    <span className="inline-flex min-w-[44px] items-center justify-center rounded-md bg-muted px-2 py-1 text-xs font-bold text-foreground">
-                      {fmt(s.average)}
+                  {/* `sm:contents` drops this wrapper from layout at `sm` and
+                      up so the 3 fields resume their place as direct grid
+                      columns — below that the fixed 140/60/70px columns
+                      would leave the comment column ~40px wide, so they
+                      become one row above the full-width textarea instead. */}
+                  <div className="flex items-center gap-2 sm:contents">
+                    <span className="text-caption font-semibold text-foreground sm:pt-2">
+                      {s.subjectName}
                     </span>
-                  </span>
+                    <span className="text-xs text-muted-foreground sm:pt-2">
+                      × {s.coefficient ?? 1}
+                    </span>
+                    <span className="sm:pt-1.5">
+                      <span className="inline-flex min-w-[44px] items-center justify-center rounded-md bg-muted px-2 py-1 text-xs font-bold text-foreground">
+                        {fmt(s.average)}
+                      </span>
+                    </span>
+                  </div>
                   <textarea
                     value={subjectRows[s.subjectId]?.text ?? ''}
                     onChange={(e) =>
@@ -510,7 +519,7 @@ export default function SaisirAppreciationPage() {
             </div>
           </Card>
 
-          <Card className="flex-row items-center justify-between p-3.5">
+          <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3.5">
             {prevName ? (
               <button
                 type="button"
@@ -519,15 +528,20 @@ export default function SaisirAppreciationPage() {
                     `/pedagogie/appreciations/${prevName.studentId}/saisie?termId=${data.resolvedTermId}`,
                   )
                 }
-                className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
+                className="flex min-w-0 max-w-full items-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
-                <ArrowLeft size={14} />
-                Précédent : {prevName.firstName} {prevName.lastName}
+                <ArrowLeft size={14} className="shrink-0" />
+                <span className="truncate">
+                  Précédent : {prevName.firstName} {prevName.lastName}
+                </span>
               </button>
             ) : (
               <span />
             )}
-            <div className="flex items-center gap-2">
+            {/* Order-first on mobile: the real save actions outrank the
+                prev/next nav, which wraps below them instead of squeezing
+                the row. */}
+            <div className="order-first flex w-full flex-wrap items-center gap-2 sm:order-none sm:w-auto">
               <Button
                 variant="ghost"
                 className="w-fit border border-border"
@@ -550,10 +564,12 @@ export default function SaisirAppreciationPage() {
                     `/pedagogie/appreciations/${nextName.studentId}/saisie?termId=${data.resolvedTermId}`,
                   )
                 }
-                className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
+                className="flex min-w-0 max-w-full items-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
-                Suivant : {nextName.firstName} {nextName.lastName}
-                <ArrowRight size={14} />
+                <span className="truncate">
+                  Suivant : {nextName.firstName} {nextName.lastName}
+                </span>
+                <ArrowRight size={14} className="shrink-0" />
               </button>
             ) : (
               <span />

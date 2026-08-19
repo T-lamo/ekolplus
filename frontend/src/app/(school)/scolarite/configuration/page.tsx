@@ -417,7 +417,7 @@ export default function PaymentConfigurationPage() {
                 </Card>
 
                 {copyPickerOpen && copySources.length > 0 && (
-                  <Card className="flex-row items-end gap-2 p-3.5">
+                  <Card className="flex-row flex-wrap items-end gap-2 p-3.5">
                     <div className="min-w-[220px] flex-1">
                       <Select
                         label={t.copyFromClass}

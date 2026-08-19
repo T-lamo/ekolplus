@@ -413,7 +413,7 @@ export function Step2Promotion({
             <span className="text-xs text-muted-foreground">
               {t.decidedCount(decidedCount, classes.length)}
             </span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"

@@ -18,8 +18,10 @@ interface SidebarProps {
   sections: NavSection[];
   variant: 'light' | 'dark';
   width?: number;
-  brandIcon: ReactNode;
-  brandText: ReactNode;
+  /** Full brand lockup shown in the expanded brand row. */
+  brand: ReactNode;
+  /** Icon-only counterpart of `brand` for the 72px collapsed rail. */
+  brandCollapsed: ReactNode;
   roleLabel: string;
   profileHref: string;
   collapsed?: boolean;
@@ -35,8 +37,8 @@ export function Sidebar({
   sections,
   variant,
   width = SIDEBAR_WIDTH,
-  brandIcon,
-  brandText,
+  brand,
+  brandCollapsed,
   roleLabel,
   profileHref,
   collapsed = false,
@@ -84,12 +86,7 @@ export function Sidebar({
             collapsed ? 'justify-center' : 'justify-between gap-2 px-4'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md bg-primary">
-              {brandIcon}
-            </div>
-            {!collapsed && brandText}
-          </div>
+          <div className="flex min-w-0 items-center">{collapsed ? brandCollapsed : brand}</div>
           {!collapsed && onToggleCollapse && (
             <SidebarCollapseToggle
               collapsed={false}

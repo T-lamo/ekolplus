@@ -7,7 +7,6 @@ import {
   CalendarCheck,
   CreditCard,
   FileText,
-  GraduationCap,
   LayoutDashboard,
   LayoutTemplate,
   ListOrdered,
@@ -20,6 +19,7 @@ import {
   Wallet,
   CalendarDays,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useMemo } from 'react';
 import { SidebarPlanCard } from '@/components/school/billing/SidebarPlanCard';
 import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
@@ -87,8 +87,19 @@ export function SchoolSidebar({
     <Sidebar
       sections={sections}
       variant="light"
-      brandIcon={<GraduationCap size={15} className="text-white" />}
-      brandText={<span className="text-[15px] font-bold text-foreground">Schoolgesti</span>}
+      brand={
+        <Image
+          src="/logos/schoolgesti-lockup.svg"
+          alt="Schoolgesti"
+          width={150}
+          height={44}
+          className="h-10 w-auto"
+          priority
+        />
+      }
+      brandCollapsed={
+        <Image src="/logos/schoolgesti-monogramme.svg" alt="Schoolgesti" width={34} height={34} />
+      }
       roleLabel="Administratrice"
       profileHref="/settings"
       collapsed={collapsed}

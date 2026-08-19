@@ -8,8 +8,6 @@ export const COOKIE_PREFIX = process.env.NEXT_PUBLIC_COOKIE_PREFIX ?? 'app';
 
 // French copy for the login screen — see .planning/banani/login-page.md.
 export const AUTH_LOGIN = {
-  brandName: 'School',
-  brandSuffix: 'gesti',
   headline: 'Gérez votre école, simplement.',
   subline:
     'La plateforme tout-en-un pour les établissements scolaires : notes, présences, bulletins et bien plus.',

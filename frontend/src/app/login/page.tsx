@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   BarChart2,
   BookOpen,
@@ -11,7 +12,6 @@ import {
   Eye,
   EyeOff,
   FileText,
-  GraduationCap,
   Lock,
   LogIn,
   Mail,
@@ -95,14 +95,15 @@ export default function LoginPage() {
         />
 
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
-          <div className="mb-4 flex items-center gap-3 lg:mb-12">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap size={22} />
-            </div>
-            <div className="text-2xl font-black tracking-tight">
-              {AUTH_LOGIN.brandName}
-              <span className="text-violet-300">{AUTH_LOGIN.brandSuffix}</span>
-            </div>
+          <div className="mb-4 flex items-center lg:mb-12">
+            <Image
+              src="/logos/schoolgesti-lockup-blanc.svg"
+              alt="Schoolgesti"
+              width={150}
+              height={44}
+              className="h-13 w-auto"
+              priority
+            />
           </div>
 
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
@@ -131,14 +132,14 @@ export default function LoginPage() {
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-5 flex items-center gap-2">
-            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-md bg-primary">
-              <GraduationCap size={17} className="text-primary-foreground" />
-            </div>
-            <div className="text-lg font-black tracking-tight text-foreground">
-              {AUTH_LOGIN.brandName}
-              <span className="text-primary">{AUTH_LOGIN.brandSuffix}</span>
-            </div>
+          <div className="mb-5 flex items-center">
+            <Image
+              src="/logos/schoolgesti-lockup.svg"
+              alt="Schoolgesti"
+              width={150}
+              height={44}
+              className="h-11 w-auto"
+            />
           </div>
 
           <h2 className="mb-1.5 text-[26px] font-extrabold tracking-tight text-foreground">

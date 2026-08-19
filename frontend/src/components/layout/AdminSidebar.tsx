@@ -5,7 +5,6 @@ import {
   Activity,
   ArrowLeft,
   CreditCard,
-  GraduationCap,
   LayoutDashboard,
   LayoutTemplate,
   Receipt,
@@ -14,6 +13,7 @@ import {
   Tag,
   Users,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Sidebar } from './sidebar/Sidebar';
 import type { NavSection } from './sidebar/types';
@@ -70,14 +70,28 @@ export function AdminSidebar({
     <Sidebar
       sections={ADMIN_SECTIONS}
       variant="dark"
-      brandIcon={<GraduationCap size={15} className="text-white" />}
-      brandText={
-        <div className="flex flex-col gap-px">
-          <div className="text-caption font-extrabold text-white">Schoolgesti</div>
+      brand={
+        <div className="flex flex-col gap-0.5">
+          <Image
+            src="/logos/schoolgesti-lockup-blanc.svg"
+            alt="Schoolgesti"
+            width={150}
+            height={44}
+            className="h-7 w-auto"
+            priority
+          />
           <div className="w-fit rounded-full bg-primary/22 px-1.5 py-px text-[9px] font-bold tracking-wide text-primary uppercase">
             Administration
           </div>
         </div>
+      }
+      brandCollapsed={
+        <Image
+          src="/logos/schoolgesti-monogramme-blanc.svg"
+          alt="Schoolgesti"
+          width={34}
+          height={34}
+        />
       }
       roleLabel="Propriétaire SaaS"
       // /admin has no page.tsx yet (hard 404); /settings NO_SCHOOL-redirects

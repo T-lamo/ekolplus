@@ -27,9 +27,9 @@ const TOAST_APPLIED: Record<LocaleKey, string> = {
   en: 'Language applied: English.',
 };
 const SAVE_ERROR: Record<LocaleKey, string> = {
-  fr: "Langue appliquée sur cet appareil, mais impossible de l'enregistrer sur ton compte.",
+  fr: 'Langue appliquée sur cet appareil, mais impossible de l’enregistrer sur ton compte.',
   ht: 'Lang lan aplike sou aparèy sa a, men nou pa t kapab anrejistre l sou kont ou.',
-  en: "Language applied on this device, but we couldn't save it to your account.",
+  en: 'Language applied on this device, but we couldn’t save it to your account.',
 };
 
 function useApplyLocale() {

@@ -25,3 +25,6 @@ amp
 node-compile-cache/
 
 .planning/banani/fetches/
+
+# Superpowers subagent-driven-development scratch (ledgers, briefs, reports)
+.superpowers/

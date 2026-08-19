@@ -331,6 +331,7 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
         <div className="flex items-center gap-1">
           <Link
             href={viewHref}
+            aria-label={`Voir le bulletin de ${student.firstName} ${student.lastName}`}
             className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
           >
             <Eye size={14} />

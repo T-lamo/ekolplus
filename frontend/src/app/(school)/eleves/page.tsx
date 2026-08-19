@@ -13,6 +13,7 @@ import {
   UserX,
 } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { CardGrid } from '@/components/school/CardGrid';
@@ -31,8 +32,16 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
-import { StudentFormModal } from './StudentFormModal';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
+
+// Code-split: a ~730-line form (validation, many fields) that's only ever
+// shown after a click ("Ajouter un élève" / row "Modifier") — eagerly
+// importing it inflated this list page's initial JS for every visitor who
+// never opens it.
+const StudentFormModal = dynamic(
+  () => import('./StudentFormModal').then((m) => m.StudentFormModal),
+  { ssr: false },
+);
 
 const PAGE_SIZE = 20;
 

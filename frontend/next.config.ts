@@ -69,7 +69,6 @@ const NOINDEX_SOURCES = [
   '/admin/:path*',
   '/api/:path*',
   '/print/:path*',
-  '/login',
   '/forgot-password',
   '/reset-password',
   '/verify-email',

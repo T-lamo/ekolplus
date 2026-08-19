@@ -32,6 +32,7 @@ export default getRequestConfig(async () => {
     adminTopbar,
     forgotPassword,
     resetPassword,
+    verifyEmail,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -42,6 +43,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/adminTopbar.json`),
     import(`../messages/${locale}/forgotPassword.json`),
     import(`../messages/${locale}/resetPassword.json`),
+    import(`../messages/${locale}/verifyEmail.json`),
   ]);
 
   return {
@@ -56,6 +58,7 @@ export default getRequestConfig(async () => {
       AdminTopbar: adminTopbar.default,
       ForgotPassword: forgotPassword.default,
       ResetPassword: resetPassword.default,
+      VerifyEmail: verifyEmail.default,
     },
   };
 });

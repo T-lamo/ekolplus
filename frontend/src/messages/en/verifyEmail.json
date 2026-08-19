@@ -1,0 +1,32 @@
+{
+  "title": "Verify your email address",
+  "subtitle": "Enter the 8-character code you received by email to activate your account.",
+  "emailLabel": "Email address",
+  "codeLabel": "Verification code",
+  "codePlaceholder": "XXXXXXXX",
+  "submit": "Verify",
+  "submitting": "Verifying…",
+  "backToLogin": "Back to sign in",
+  "setPassword": {
+    "title": "Address verified 🎉",
+    "subtitle": "Choose a password to sign in next time.",
+    "passwordLabel": "New password",
+    "submit": "Set password",
+    "submitting": "Saving…",
+    "skip": "Later",
+    "errors": {
+      "PASSWORD_BANNED": "This password is too common — choose another one.",
+      "PASSWORD_TOO_SHORT": "Password is too short.",
+      "PASSWORD_PWNED": "This password has appeared in a known data breach."
+    }
+  },
+  "done": {
+    "title": "All set!",
+    "cta": "Go to dashboard"
+  },
+  "errors": {
+    "VERIFICATION_CODE_INVALID": "Invalid code. Check what you entered.",
+    "VERIFICATION_CODE_EXPIRED": "This code has expired — request a new one.",
+    "TOO_MANY_VERIFY_ATTEMPTS": "Too many attempts. Try again in a few minutes."
+  }
+}

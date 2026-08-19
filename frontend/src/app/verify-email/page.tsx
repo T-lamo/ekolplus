@@ -3,10 +3,10 @@
 import { Suspense, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, KeyRound, Lock, Mail, PartyPopper } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { AUTH_LOGIN, AUTH_VERIFY_EMAIL } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +36,9 @@ export default function VerifyEmailPage() {
 function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('VerifyEmail');
+  const tLogin = useTranslations('Login');
+  const tCommon = useTranslations('Common');
   const [step, setStep] = useState<Step>('code');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [code, setCode] = useState(searchParams.get('code') ?? '');
@@ -54,12 +57,22 @@ function VerifyEmailForm() {
       });
       setStep('password');
     } catch (err) {
-      if (err instanceof ApiError && err.code in AUTH_VERIFY_EMAIL.errors) {
-        setError(AUTH_VERIFY_EMAIL.errors[err.code as keyof typeof AUTH_VERIFY_EMAIL.errors]);
-      } else if (err instanceof ApiError) {
-        setError(AUTH_VERIFY_EMAIL.errors.default);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'VERIFICATION_CODE_INVALID':
+            setError(t('errors.VERIFICATION_CODE_INVALID'));
+            break;
+          case 'VERIFICATION_CODE_EXPIRED':
+            setError(t('errors.VERIFICATION_CODE_EXPIRED'));
+            break;
+          case 'TOO_MANY_VERIFY_ATTEMPTS':
+            setError(t('errors.TOO_MANY_VERIFY_ATTEMPTS'));
+            break;
+          default:
+            setError(tCommon('errors.generic'));
+        }
       } else {
-        setError(AUTH_VERIFY_EMAIL.errors.network);
+        setError(tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -74,12 +87,27 @@ function VerifyEmailForm() {
       await api('/api/auth/set-password', { method: 'POST', body: { newPassword: password } });
       setStep('done');
     } catch (err) {
-      // Self-serve signups already have a password — nothing left to do.
-      if (err instanceof ApiError && err.code === 'PASSWORD_ALREADY_SET') {
-        setStep('done');
-        return;
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'PASSWORD_ALREADY_SET':
+            // Self-serve signups already have a password — nothing left to do.
+            setStep('done');
+            return;
+          case 'PASSWORD_BANNED':
+            setError(t('setPassword.errors.PASSWORD_BANNED'));
+            break;
+          case 'PASSWORD_TOO_SHORT':
+            setError(t('setPassword.errors.PASSWORD_TOO_SHORT'));
+            break;
+          case 'PASSWORD_PWNED':
+            setError(t('setPassword.errors.PASSWORD_PWNED'));
+            break;
+          default:
+            setError(tCommon('errors.generic'));
+        }
+      } else {
+        setError(tCommon('errors.network'));
       }
-      setError(err instanceof ApiError ? err.message : AUTH_VERIFY_EMAIL.errors.network);
     } finally {
       setSubmitting(false);
     }
@@ -108,10 +136,10 @@ function VerifyEmailForm() {
             />
           </div>
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
-            {AUTH_LOGIN.headline}
+            {tLogin('headline')}
           </h1>
           <p className="mb-10 hidden text-sm leading-relaxed text-white/50 lg:block">
-            {AUTH_LOGIN.subline}
+            {tLogin('subline')}
           </p>
         </div>
       </div>
@@ -131,14 +159,14 @@ function VerifyEmailForm() {
           {step === 'code' && (
             <>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_VERIFY_EMAIL.title}
+                {t('title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_VERIFY_EMAIL.subtitle}
+                {t('subtitle')}
               </p>
               <form onSubmit={onVerify} className="flex flex-col gap-4">
                 <Field
-                  label={AUTH_VERIFY_EMAIL.emailLabel}
+                  label={t('emailLabel')}
                   type="email"
                   name="email"
                   required
@@ -148,11 +176,11 @@ function VerifyEmailForm() {
                   icon={<Mail size={14} />}
                 />
                 <Field
-                  label={AUTH_VERIFY_EMAIL.codeLabel}
+                  label={t('codeLabel')}
                   type="text"
                   name="code"
                   required
-                  placeholder={AUTH_VERIFY_EMAIL.codePlaceholder}
+                  placeholder={t('codePlaceholder')}
                   autoComplete="one-time-code"
                   maxLength={8}
                   value={code}
@@ -166,7 +194,7 @@ function VerifyEmailForm() {
                   </p>
                 )}
                 <Button type="submit" loading={submitting}>
-                  {submitting ? AUTH_VERIFY_EMAIL.submitting : AUTH_VERIFY_EMAIL.submit}
+                  {submitting ? t('submitting') : t('submit')}
                 </Button>
               </form>
               <Link
@@ -174,7 +202,7 @@ function VerifyEmailForm() {
                 className="mt-5 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
                 <ArrowLeft size={14} />
-                {AUTH_VERIFY_EMAIL.backToLogin}
+                {t('backToLogin')}
               </Link>
             </>
           )}
@@ -182,14 +210,14 @@ function VerifyEmailForm() {
           {step === 'password' && (
             <>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_VERIFY_EMAIL.setPassword.title}
+                {t('setPassword.title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_VERIFY_EMAIL.setPassword.subtitle}
+                {t('setPassword.subtitle')}
               </p>
               <form onSubmit={onSetPassword} className="flex flex-col gap-4">
                 <Field
-                  label={AUTH_VERIFY_EMAIL.setPassword.passwordLabel}
+                  label={t('setPassword.passwordLabel')}
                   type="password"
                   name="password"
                   required
@@ -204,9 +232,7 @@ function VerifyEmailForm() {
                   </p>
                 )}
                 <Button type="submit" loading={submitting}>
-                  {submitting
-                    ? AUTH_VERIFY_EMAIL.setPassword.submitting
-                    : AUTH_VERIFY_EMAIL.setPassword.submit}
+                  {submitting ? t('setPassword.submitting') : t('setPassword.submit')}
                 </Button>
               </form>
               <button
@@ -214,7 +240,7 @@ function VerifyEmailForm() {
                 onClick={() => router.push('/configuration/classes')}
                 className="mt-5 flex w-full items-center justify-center text-sm font-medium text-muted-foreground"
               >
-                {AUTH_VERIFY_EMAIL.setPassword.skip}
+                {t('setPassword.skip')}
               </button>
             </>
           )}
@@ -225,11 +251,9 @@ function VerifyEmailForm() {
                 <PartyPopper size={20} className="text-success-foreground" />
               </div>
               <h2 className="mb-6 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_VERIFY_EMAIL.done.title}
+                {t('done.title')}
               </h2>
-              <Button onClick={() => router.push('/configuration/classes')}>
-                {AUTH_VERIFY_EMAIL.done.cta}
-              </Button>
+              <Button onClick={() => router.push('/configuration/classes')}>{t('done.cta')}</Button>
             </>
           )}
         </Card>

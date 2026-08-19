@@ -1,0 +1,33 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Verifye adrès imel ou",
+  "subtitle": "Antre kòd 8 karaktè ou resevwa pa imel pou aktive kont ou.",
+  "emailLabel": "Adrès imel",
+  "codeLabel": "Kòd verifikasyon",
+  "codePlaceholder": "XXXXXXXX",
+  "submit": "Verifye",
+  "submitting": "Ap verifye…",
+  "backToLogin": "Retounen nan koneksyon an",
+  "setPassword": {
+    "title": "Adrès verifye 🎉",
+    "subtitle": "Chwazi yon modpas pou konekte pwochenn fwa a.",
+    "passwordLabel": "Nouvo modpas",
+    "submit": "Defini modpas la",
+    "submitting": "Ap anrejistre…",
+    "skip": "Pita",
+    "errors": {
+      "PASSWORD_BANNED": "Modpas sa a twò komen — chwazi yon lòt.",
+      "PASSWORD_TOO_SHORT": "Modpas la twò kout.",
+      "PASSWORD_PWNED": "Modpas sa a parèt nan yon fuit done nou konnen."
+    }
+  },
+  "done": {
+    "title": "Tout bagay pare!",
+    "cta": "Ale nan tablodbò a"
+  },
+  "errors": {
+    "VERIFICATION_CODE_INVALID": "Kòd envalid. Verifye sa ou antre a.",
+    "VERIFICATION_CODE_EXPIRED": "Kòd sa a ekspire — mande yon lòt.",
+    "TOO_MANY_VERIFY_ATTEMPTS": "Twòp tantativ. Eseye ankò nan kèk minit."
+  }
+}

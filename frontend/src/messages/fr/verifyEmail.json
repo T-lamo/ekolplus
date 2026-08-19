@@ -1,0 +1,32 @@
+{
+  "title": "Vérifiez votre adresse e-mail",
+  "subtitle": "Entrez le code à 8 caractères reçu par email pour activer votre compte.",
+  "emailLabel": "Adresse e-mail",
+  "codeLabel": "Code de vérification",
+  "codePlaceholder": "XXXXXXXX",
+  "submit": "Vérifier",
+  "submitting": "Vérification…",
+  "backToLogin": "Retour à la connexion",
+  "setPassword": {
+    "title": "Adresse vérifiée 🎉",
+    "subtitle": "Choisissez un mot de passe pour vous connecter la prochaine fois.",
+    "passwordLabel": "Nouveau mot de passe",
+    "submit": "Définir le mot de passe",
+    "submitting": "Enregistrement…",
+    "skip": "Plus tard",
+    "errors": {
+      "PASSWORD_BANNED": "Ce mot de passe est trop courant — choisissez-en un autre.",
+      "PASSWORD_TOO_SHORT": "Mot de passe trop court.",
+      "PASSWORD_PWNED": "Ce mot de passe est apparu dans une fuite de données connue."
+    }
+  },
+  "done": {
+    "title": "Tout est prêt !",
+    "cta": "Accéder au tableau de bord"
+  },
+  "errors": {
+    "VERIFICATION_CODE_INVALID": "Code invalide. Vérifiez votre saisie.",
+    "VERIFICATION_CODE_EXPIRED": "Ce code a expiré — demandez-en un nouveau.",
+    "TOO_MANY_VERIFY_ATTEMPTS": "Trop de tentatives. Réessayez dans quelques minutes."
+  }
+}

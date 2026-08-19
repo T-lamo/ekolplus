@@ -8,7 +8,7 @@ import { prisma } from '@/lib/server/prisma';
 import { weightedAverage, resolveCurrentTerm } from '@/lib/server/grades';
 import { attendanceRate, mondayOf, addDays, dateOnlyUTC } from '@/lib/server/attendance';
 import { getFeeLedgerRows } from '@/lib/server/fees/rows';
-import { DASHBOARD } from '@/lib/constants';
+import { queryActivityEvents } from '@/lib/server/activity-log';
 
 export interface DashboardData {
   academicYear: { id: string; label: string } | null;
@@ -370,114 +370,6 @@ async function getRecentActivity(
   schoolId: string,
   academicYearId: string,
 ): Promise<DashboardData['recentActivity']> {
-  const [gradeEvents, absenceEvents, paymentEvents, enrollmentEvents] = await Promise.all([
-    prisma.grade.findMany({
-      where: {
-        score: { not: null },
-        evaluation: { status: 'PUBLISHED', classSubject: { class: { schoolId, academicYearId } } },
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 5,
-      select: {
-        updatedAt: true,
-        evaluation: {
-          select: {
-            classSubject: {
-              select: { subject: { select: { name: true } }, class: { select: { name: true } } },
-            },
-          },
-        },
-      },
-    }),
-    prisma.attendance.findMany({
-      where: { status: 'ABSENT', student: { schoolId } },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: {
-        createdAt: true,
-        student: {
-          select: {
-            firstName: true,
-            lastName: true,
-            enrollments: {
-              where: { academicYearId },
-              select: { class: { select: { name: true } } },
-            },
-          },
-        },
-      },
-    }),
-    prisma.feePayment.findMany({
-      where: { schoolId },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: {
-        createdAt: true,
-        student: {
-          select: {
-            firstName: true,
-            lastName: true,
-            enrollments: {
-              where: { academicYearId },
-              select: { class: { select: { name: true } } },
-            },
-          },
-        },
-      },
-    }),
-    prisma.enrollment.findMany({
-      where: { academicYearId },
-      orderBy: { enrolledAt: 'desc' },
-      take: 5,
-      select: {
-        enrolledAt: true,
-        student: { select: { firstName: true, lastName: true } },
-        class: { select: { name: true } },
-      },
-    }),
-  ]);
-
-  const events: {
-    type: DashboardData['recentActivity'][number]['type'];
-    text: string;
-    at: Date;
-  }[] = [
-    ...gradeEvents.map((g) => ({
-      type: 'grade' as const,
-      text: DASHBOARD.activity.gradeUpdated(
-        g.evaluation.classSubject.subject.name,
-        g.evaluation.classSubject.class.name,
-      ),
-      at: g.updatedAt,
-    })),
-    ...absenceEvents.map((a) => ({
-      type: 'absence' as const,
-      text: DASHBOARD.activity.absenceMarked(
-        `${a.student.firstName} ${a.student.lastName}`,
-        a.student.enrollments[0]?.class.name ?? '—',
-      ),
-      at: a.createdAt,
-    })),
-    ...paymentEvents.map((p) => ({
-      type: 'payment' as const,
-      text: DASHBOARD.activity.paymentRecorded(
-        `${p.student.firstName} ${p.student.lastName}`,
-        p.student.enrollments[0]?.class.name ?? '—',
-      ),
-      at: p.createdAt,
-    })),
-    ...enrollmentEvents.map((e) => ({
-      type: 'enrollment' as const,
-      text: DASHBOARD.activity.studentEnrolled(
-        `${e.student.firstName} ${e.student.lastName}`,
-        e.class.name,
-      ),
-      at: e.enrolledAt,
-    })),
-  ];
-
-  return events
-    .sort((a, b) => b.at.getTime() - a.at.getTime())
-    .slice(0, 8)
-    .map((e) => ({ type: e.type, text: e.text, at: e.at.toISOString() }));
+  const events = await queryActivityEvents(schoolId, academicYearId, { limitPerType: 5 });
+  return events.slice(0, 8);
 }

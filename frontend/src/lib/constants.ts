@@ -477,6 +477,20 @@ export const DASHBOARD = {
       `Paiement enregistré — ${name} (${className})`,
     studentEnrolled: (name: string, className: string) => `${name} ajouté(e) en ${className}`,
   },
+  activityLog: {
+    title: "Journal d'activité",
+    subtitle: "Historique complet des évènements de l'établissement",
+    back: 'Retour au tableau de bord',
+    filterAll: 'Tous les types',
+    typeLabel: {
+      grade: 'Notes',
+      absence: 'Absences',
+      payment: 'Paiements',
+      enrollment: 'Inscriptions',
+    },
+    empty: 'Aucune activité pour le moment.',
+    resultCount: (n: number) => `${n} évènement${n > 1 ? 's' : ''}`,
+  },
   emptyYear:
     "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",
 } as const;

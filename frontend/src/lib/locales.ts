@@ -51,6 +51,7 @@ export const MESSAGE_NAMESPACES = [
   'schoolTopbar',
   'adminTopbar',
   'forgotPassword',
+  'resetPassword',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

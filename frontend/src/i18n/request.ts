@@ -31,6 +31,7 @@ export default getRequestConfig(async () => {
     schoolTopbar,
     adminTopbar,
     forgotPassword,
+    resetPassword,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -40,6 +41,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/schoolTopbar.json`),
     import(`../messages/${locale}/adminTopbar.json`),
     import(`../messages/${locale}/forgotPassword.json`),
+    import(`../messages/${locale}/resetPassword.json`),
   ]);
 
   return {
@@ -53,6 +55,7 @@ export default getRequestConfig(async () => {
       SchoolTopbar: schoolTopbar.default,
       AdminTopbar: adminTopbar.default,
       ForgotPassword: forgotPassword.default,
+      ResetPassword: resetPassword.default,
     },
   };
 });

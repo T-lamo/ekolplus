@@ -3,10 +3,10 @@
 import { Suspense, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, KeyRound, Lock, Mail, PartyPopper } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { AUTH_LOGIN, AUTH_RESET_PASSWORD } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +32,9 @@ export default function ResetPasswordPage() {
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('ResetPassword');
+  const tLogin = useTranslations('Login');
+  const tCommon = useTranslations('Common');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [code, setCode] = useState(searchParams.get('code') ?? '');
   const [password, setPassword] = useState('');
@@ -50,12 +53,31 @@ function ResetPasswordForm() {
       });
       setDone(true);
     } catch (err) {
-      if (err instanceof ApiError && err.code in AUTH_RESET_PASSWORD.errors) {
-        setError(AUTH_RESET_PASSWORD.errors[err.code as keyof typeof AUTH_RESET_PASSWORD.errors]);
-      } else if (err instanceof ApiError) {
-        setError(AUTH_RESET_PASSWORD.errors.default);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'VERIFICATION_CODE_INVALID':
+            setError(t('errors.VERIFICATION_CODE_INVALID'));
+            break;
+          case 'VERIFICATION_CODE_EXPIRED':
+            setError(t('errors.VERIFICATION_CODE_EXPIRED'));
+            break;
+          case 'TOO_MANY_RESET_ATTEMPTS':
+            setError(t('errors.TOO_MANY_RESET_ATTEMPTS'));
+            break;
+          case 'PASSWORD_BANNED':
+            setError(t('errors.PASSWORD_BANNED'));
+            break;
+          case 'PASSWORD_TOO_SHORT':
+            setError(t('errors.PASSWORD_TOO_SHORT'));
+            break;
+          case 'PASSWORD_PWNED':
+            setError(t('errors.PASSWORD_PWNED'));
+            break;
+          default:
+            setError(tCommon('errors.generic'));
+        }
       } else {
-        setError(AUTH_RESET_PASSWORD.errors.network);
+        setError(tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -85,10 +107,10 @@ function ResetPasswordForm() {
             />
           </div>
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
-            {AUTH_LOGIN.headline}
+            {tLogin('headline')}
           </h1>
           <p className="mb-10 hidden text-sm leading-relaxed text-white/50 lg:block">
-            {AUTH_LOGIN.subline}
+            {tLogin('subline')}
           </p>
         </div>
       </div>
@@ -111,24 +133,24 @@ function ResetPasswordForm() {
                 <PartyPopper size={20} className="text-success-foreground" />
               </div>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_RESET_PASSWORD.done.title}
+                {t('done.title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_RESET_PASSWORD.done.subtitle}
+                {t('done.subtitle')}
               </p>
-              <Button onClick={() => router.push('/login')}>{AUTH_RESET_PASSWORD.done.cta}</Button>
+              <Button onClick={() => router.push('/login')}>{t('done.cta')}</Button>
             </>
           ) : (
             <>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_RESET_PASSWORD.title}
+                {t('title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_RESET_PASSWORD.subtitle}
+                {t('subtitle')}
               </p>
               <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <Field
-                  label={AUTH_RESET_PASSWORD.emailLabel}
+                  label={t('emailLabel')}
                   type="email"
                   name="email"
                   required
@@ -138,11 +160,11 @@ function ResetPasswordForm() {
                   icon={<Mail size={14} />}
                 />
                 <Field
-                  label={AUTH_RESET_PASSWORD.codeLabel}
+                  label={t('codeLabel')}
                   type="text"
                   name="code"
                   required
-                  placeholder={AUTH_RESET_PASSWORD.codePlaceholder}
+                  placeholder={t('codePlaceholder')}
                   autoComplete="one-time-code"
                   maxLength={8}
                   value={code}
@@ -151,7 +173,7 @@ function ResetPasswordForm() {
                   className="uppercase"
                 />
                 <Field
-                  label={AUTH_RESET_PASSWORD.passwordLabel}
+                  label={t('passwordLabel')}
                   type="password"
                   name="password"
                   required
@@ -166,7 +188,7 @@ function ResetPasswordForm() {
                   </p>
                 )}
                 <Button type="submit" loading={submitting}>
-                  {submitting ? AUTH_RESET_PASSWORD.submitting : AUTH_RESET_PASSWORD.submit}
+                  {submitting ? t('submitting') : t('submit')}
                 </Button>
               </form>
               <Link
@@ -174,7 +196,7 @@ function ResetPasswordForm() {
                 className="mt-5 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
                 <ArrowLeft size={14} />
-                {AUTH_RESET_PASSWORD.backToLogin}
+                {t('backToLogin')}
               </Link>
             </>
           )}

@@ -1,10 +1,14 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { LocaleProvider } from '@/contexts/LocaleContext';
+import { resolveLocaleKey } from '@/lib/locales';
 import { THEME_INIT_SCRIPT } from '@/lib/themes';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
@@ -44,17 +48,30 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolved server-side from the sg-locale cookie / Accept-Language (see
+  // src/i18n/request.ts) — the very first response already renders in the
+  // right language, so <html lang> is correct from the start (no client
+  // patch-up needed the way the colour theme needs one).
+  //
+  // `resolveLocaleKey`: next-intl's `getLocale()` returns the generic
+  // `use-intl` `Locale` type, which is plain `string` until the app
+  // augments `AppConfig.Locale` (that augmentation ships in a later
+  // migration step, not yet in this tree). request.ts already guarantees
+  // the resolved value is one of our LocaleKeys, so this is a type-level
+  // normalisation only — no behaviour change.
+  const locale = resolveLocaleKey(await getLocale());
+
   // `suppressHydrationWarning`: the pre-paint script below stamps
   // data-theme on <html> from localStorage BEFORE React hydrates, so the
   // server markup (no attribute) legitimately differs from the client DOM.
   // Scoped to this element only — React does not propagate it to children.
   return (
-    <html lang="fr" className={inter.variable} suppressHydrationWarning>
+    <html lang={locale} className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Colour theme (Paramètres › Apparence) — applied before first
             paint so a reload never flashes the default palette. Source:
@@ -62,13 +79,20 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className={inter.className}>
-        <ToastProvider>
-          <ConfirmProvider>
-            <AuthProvider>
-              <ThemeProvider>{children}</ThemeProvider>
-            </AuthProvider>
-          </ConfirmProvider>
-        </ToastProvider>
+        {/* No `locale`/`messages` props: rendered from a Server Component,
+            NextIntlClientProvider automatically inherits both from the
+            request config resolved in src/i18n/request.ts. */}
+        <NextIntlClientProvider>
+          <ToastProvider>
+            <ConfirmProvider>
+              <AuthProvider>
+                <ThemeProvider>
+                  <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+                </ThemeProvider>
+              </AuthProvider>
+            </ConfirmProvider>
+          </ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

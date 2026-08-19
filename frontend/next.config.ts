@@ -77,6 +77,34 @@ const NOINDEX_SOURCES = [
 
 const config: NextConfig = {
   reactStrictMode: true,
+  // @sparticuz/chromium and puppeteer-core are already in Next.js' built-in
+  // server-external-packages list (so they're required(), not webpack-
+  // bundled) — listed here explicitly anyway so this doesn't silently
+  // regress if that default list changes. This alone is NOT enough for the
+  // PDF pipeline (lib/server/bulletin-pdf/generate.ts): @vercel/nft's static
+  // trace follows `import`/`require`/`fs` calls, but @sparticuz/chromium
+  // locates its binary (bin/chromium.br) via a runtime-computed relative
+  // path, so nft never sees it as a dependency and the deployed Vercel
+  // function ships without it — chromium.executablePath() then has nothing
+  // to extract. Confirmed locally: `VERCEL=1 pnpm build` produces a
+  // route.js.nft.json for the PDF routes that includes @sparticuz/chromium's
+  // *.js files but zero entries under its bin/ folder. Multiple key
+  // variants below (escaped brackets, wildcard, with/without trailing
+  // /route) because the exact route-glob key format for a dynamic segment
+  // isn't documented — harmless if a variant doesn't match anything.
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+  outputFileTracingIncludes: {
+    '/api/school/students/[id]/bulletin/pdf': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+    '/api/school/students/\\[id\\]/bulletin/pdf': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+    '/api/school/students/*/bulletin/pdf': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+    '/api/school/bulletin-templates/[id]/preview-pdf': [
+      './node_modules/@sparticuz/chromium/bin/**/*',
+    ],
+    '/api/school/bulletin-templates/\\[id\\]/preview-pdf': [
+      './node_modules/@sparticuz/chromium/bin/**/*',
+    ],
+    '/api/school/bulletin-templates/*/preview-pdf': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+  },
   // Standalone output bundles a self-contained server.js + minimal node_modules
   // into .next/standalone — required by the Docker runtime image (frontend/Dockerfile).
   // Has no impact on `next dev` / `next start` workflows. Skipped on Vercel

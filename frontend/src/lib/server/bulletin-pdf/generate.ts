@@ -28,7 +28,15 @@ async function renderPdfFromUrl(url: string, options: GeneratePdfOptions): Promi
   const browser = await puppeteer.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath(),
-    headless: true,
+    // `headless: true` launches Chrome's "new headless" mode — a different
+    // binary/protocol from what @sparticuz/chromium bundles. Its package
+    // only ships chrome-headless-shell (chromium.args already carries
+    // `--headless='shell'`) and its own FAQ says the new mode isn't
+    // supported. Passing `true` here caused puppeteer to negotiate the
+    // wrong protocol against that binary — the launch could hang or fail
+    // silently, which is exactly what a bare `window.open()` to the PDF
+    // route shows as: a blank tab with no error surfaced to the user.
+    headless: 'shell',
   });
 
   try {

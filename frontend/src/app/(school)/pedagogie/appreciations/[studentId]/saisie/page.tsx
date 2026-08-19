@@ -20,6 +20,8 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { submitOrQueue } from '@/lib/offline-queue';
+import { OFFLINE_SYNC } from '@/lib/constants';
 import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -131,42 +133,59 @@ export default function SaisirAppreciationPage() {
   );
 
   async function save(publish: boolean) {
-    if (!data) return;
+    if (!data || !user) return;
     setSaving(true);
     setError(null);
     const status = publish ? 'PUBLISHED' : 'DRAFT';
     try {
-      await api(`/api/school/students/${data.studentId}/appreciations`, {
-        method: 'PUT',
-        body: {
-          termId: data.resolvedTermId,
-          subjectId: null,
-          mention,
-          text,
-          comportement,
-          investissement,
-          assiduite,
-          status,
+      const generalResult = await submitOrQueue(
+        {
+          path: `/api/school/students/${data.studentId}/appreciations`,
+          method: 'PUT',
+          body: {
+            termId: data.resolvedTermId,
+            subjectId: null,
+            mention,
+            text,
+            comportement,
+            investissement,
+            assiduite,
+            status,
+          },
+          label: `Appréciation générale — ${data.firstName} ${data.lastName}`,
         },
-      });
-      await Promise.all(
+        user.id,
+      );
+      const subjectResults = await Promise.all(
         data.subjects
           .filter((s) => (subjectRows[s.subjectId]?.text ?? '').trim() !== '')
           .map((s) =>
-            api(`/api/school/students/${data.studentId}/appreciations`, {
-              method: 'PUT',
-              body: {
-                termId: data.resolvedTermId,
-                subjectId: s.subjectId,
-                text: subjectRows[s.subjectId]!.text,
-                mention: suggestMention(s.average),
-                status,
+            submitOrQueue(
+              {
+                path: `/api/school/students/${data.studentId}/appreciations`,
+                method: 'PUT' as const,
+                body: {
+                  termId: data.resolvedTermId,
+                  subjectId: s.subjectId,
+                  text: subjectRows[s.subjectId]!.text,
+                  mention: suggestMention(s.average),
+                  status,
+                },
+                label: `Appréciation — ${data.firstName} ${data.lastName}`,
               },
-            }),
+              user.id,
+            ),
           ),
       );
-      if (publish) {
+      const anyQueued = generalResult.queued || subjectResults.some((r) => r.queued);
+      if (anyQueued) {
+        toast(OFFLINE_SYNC.queuedToast, 'info');
+      } else if (publish) {
         toast('Appréciation validée.', 'success');
+      } else {
+        toast('Brouillon enregistré.', 'success');
+      }
+      if (publish) {
         if (data.nextStudentId) {
           router.push(
             `/pedagogie/appreciations/${data.nextStudentId}/saisie?termId=${data.resolvedTermId}`,
@@ -174,8 +193,6 @@ export default function SaisirAppreciationPage() {
         } else {
           router.push('/pedagogie/appreciations');
         }
-      } else {
-        toast('Brouillon enregistré.', 'success');
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');

@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   NotebookPen,
   Users,
@@ -34,9 +35,21 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
-import { NewEvaluationModal } from './NewEvaluationModal';
-import { StatistiquesTab } from './StatistiquesTab';
-import { ParEvaluationTab } from './ParEvaluationTab';
+// Code-split: only shown after clicking "Saisir évaluation" — see the
+// matching StudentFormModal split in eleves/page.tsx for why.
+const NewEvaluationModal = dynamic(
+  () => import('./NewEvaluationModal').then((m) => m.NewEvaluationModal),
+  { ssr: false },
+);
+// Code-split: only mounted once the user switches to that tab (default is
+// "table") — same reasoning as the StudentFormModal split in eleves/page.tsx.
+const StatistiquesTab = dynamic(() => import('./StatistiquesTab').then((m) => m.StatistiquesTab), {
+  ssr: false,
+});
+const ParEvaluationTab = dynamic(
+  () => import('./ParEvaluationTab').then((m) => m.ParEvaluationTab),
+  { ssr: false },
+);
 import type {
   ClassSubjectOption,
   CombinedNotebookData,

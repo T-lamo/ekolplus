@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import {
   CalendarClock,
   CircleAlert,
@@ -37,7 +38,12 @@ import { FeesTabs } from '@/components/school/fees/FeesTabs';
 import { FeeKpiRow } from '@/components/school/fees/FeeKpiRow';
 import { StudentStatusBadge, type StudentFeeStatus } from '@/components/school/fees/badges';
 import { PaymentRegistrationModal } from '@/components/school/fees/PaymentRegistrationModal';
-import { FeeHistoryModal } from '@/components/school/fees/FeeHistoryModal';
+// Code-split: only mounted when a row's "historique" action is clicked —
+// see the matching StudentFormModal split in eleves/page.tsx for why.
+const FeeHistoryModal = dynamic(
+  () => import('@/components/school/fees/FeeHistoryModal').then((m) => m.FeeHistoryModal),
+  { ssr: false },
+);
 import { Pager } from '@/components/school/fees/Pager';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 

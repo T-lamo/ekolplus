@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Star,
   Users,
@@ -35,8 +36,14 @@ import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
-import { ParMatiereTab } from './ParMatiereTab';
-import { StatistiquesTab } from './StatistiquesTab';
+// Code-split: only mounted once the user switches to that tab (default is
+// "Par élève") — same reasoning as the StudentFormModal split in eleves/page.tsx.
+const ParMatiereTab = dynamic(() => import('./ParMatiereTab').then((m) => m.ParMatiereTab), {
+  ssr: false,
+});
+const StatistiquesTab = dynamic(() => import('./StatistiquesTab').then((m) => m.StatistiquesTab), {
+  ssr: false,
+});
 
 const PAGE_SIZE = 20;
 
@@ -406,7 +413,12 @@ export default function AppreciationsListPage() {
           </div>
 
           {!data ? (
-            <Card className="gap-0 overflow-visible p-4">
+            // min-h-0 flex-1 matches the real table Card below (line ~435) —
+            // without it this skeleton sizes to its own content (~8 rows)
+            // while the real table can run to PAGE_SIZE (20) rows, so the
+            // skeleton→data swap was shifting everything below it down by
+            // several hundred px (Lighthouse CLS 0.29 on this page).
+            <Card className="min-h-0 flex-1 gap-0 overflow-visible p-4">
               <div className="flex flex-col gap-2.5">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <Skeleton key={i} className="h-9 w-full" />

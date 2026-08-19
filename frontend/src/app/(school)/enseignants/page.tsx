@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Pencil,
   Trash2,
@@ -33,7 +34,12 @@ import { exportToCsv } from '@/lib/csv-export';
 import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
-import { TeacherFormModal } from './TeacherFormModal';
+// Code-split: only shown after a click ("Ajouter" / row "Modifier") —
+// see the matching StudentFormModal split in eleves/page.tsx for why.
+const TeacherFormModal = dynamic(
+  () => import('./TeacherFormModal').then((m) => m.TeacherFormModal),
+  { ssr: false },
+);
 import type { TeacherListItem, TeacherStatus } from './types';
 
 const PAGE_SIZE = 20;

@@ -80,56 +80,56 @@ const KNOWN: Record<string, SubjectVisual> = {
     iconBg: '#e0f0ff',
     iconFg: '#2563eb',
     badgeBg: '#e0f0ff',
-    badgeFg: '#2563eb',
+    badgeFg: '#1c5cea',
   },
   'sciences de la vie et de la terre': {
     Icon: FlaskConical,
     iconBg: '#e8f5e9',
     iconFg: '#388e3c',
     badgeBg: '#e0f7f4',
-    badgeFg: '#00897b',
+    badgeFg: '#007a6d',
   },
   français: {
     Icon: BookOpen,
     iconBg: '#fce4ec',
     iconFg: '#c2185b',
     badgeBg: '#ececf3',
-    badgeFg: '#8884a0',
+    badgeFg: '#625d80',
   },
   anglais: {
     Icon: Globe,
     iconBg: '#e3f2fd',
     iconFg: '#1976d2',
     badgeBg: '#ececf3',
-    badgeFg: '#8884a0',
+    badgeFg: '#625d80',
   },
   'histoire-géographie': {
     Icon: Landmark,
     iconBg: '#fff3e0',
     iconFg: '#e65100',
     badgeBg: '#fff3e0',
-    badgeFg: '#e65100',
+    badgeFg: '#c24400',
   },
   informatique: {
     Icon: Monitor,
     iconBg: '#ede9fb',
     iconFg: '#6c4cff',
     badgeBg: '#ede9fb',
-    badgeFg: '#6c4cff',
+    badgeFg: '#5f3ee6',
   },
   'éducation musicale': {
     Icon: Music,
     iconBg: '#fce4ec',
     iconFg: '#ad1457',
     badgeBg: '#ececf3',
-    badgeFg: '#8884a0',
+    badgeFg: '#625d80',
   },
   'éducation physique et sportive': {
     Icon: Dumbbell,
     iconBg: '#e8f5e9',
     iconFg: '#388e3c',
     badgeBg: '#ececf3',
-    badgeFg: '#8884a0',
+    badgeFg: '#625d80',
   },
 };
 
@@ -165,7 +165,7 @@ export function getSubjectVisual(
     iconBg: p.iconBg,
     iconFg: p.iconFg,
     badgeBg: '#ececf3',
-    badgeFg: '#8884a0',
+    badgeFg: '#625d80',
   };
   const Icon = (stored?.icon && ICON_BY_KEY.get(stored.icon)) || base.Icon;
   if (stored?.color) {

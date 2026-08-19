@@ -25,6 +25,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { submitOrQueue } from '@/lib/offline-queue';
+import { OFFLINE_SYNC } from '@/lib/constants';
 
 interface EvaluationDetail {
   id: string;
@@ -203,7 +205,7 @@ export default function GradeEntryPage() {
   }
 
   async function save(publish: boolean) {
-    if (!evaluation || !notebook) return;
+    if (!evaluation || !notebook || !user) return;
     setSaving(true);
     setError(null);
     try {
@@ -216,19 +218,37 @@ export default function GradeEntryPage() {
           comment: r.comment.trim() || null,
         };
       });
-      await api(`/api/school/evaluations/${evaluation.id}/grades`, {
-        method: 'PUT',
-        body: { grades },
-      });
+      const gradesResult = await submitOrQueue(
+        {
+          path: `/api/school/evaluations/${evaluation.id}/grades`,
+          method: 'PUT',
+          body: { grades },
+          label: `Notes — ${evaluation.classSubject.subject.name}`,
+        },
+        user.id,
+      );
+      let queued = gradesResult.queued;
       if (publish) {
-        await api(`/api/school/evaluations/${evaluation.id}`, {
-          method: 'PATCH',
-          body: { status: 'PUBLISHED' },
-        });
+        const publishResult = await submitOrQueue(
+          {
+            path: `/api/school/evaluations/${evaluation.id}`,
+            method: 'PATCH' as const,
+            body: { status: 'PUBLISHED' },
+            label: `Validation — ${evaluation.classSubject.subject.name}`,
+          },
+          user.id,
+        );
+        queued = queued || publishResult.queued;
+      }
+      if (queued) {
+        toast(OFFLINE_SYNC.queuedToast, 'info');
+      } else if (publish) {
         toast('Notes validées.', 'success');
-        router.push('/pedagogie/carnet-de-notes');
       } else {
         toast('Brouillon enregistré.', 'success');
+      }
+      if (publish) {
+        router.push('/pedagogie/carnet-de-notes');
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');

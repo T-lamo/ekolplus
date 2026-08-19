@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -168,6 +169,7 @@ export default function GradeNotebookPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
   // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
   // just the classes that have subject affectations — a brand-new class must
@@ -258,9 +260,10 @@ export default function GradeNotebookPage() {
     const allEvals = unified.subjects.flatMap((s) => s.evaluations);
     if (allEvals.length === 0) return;
     if (
-      !confirm(
-        `Supprimer toutes les notes de ${student.firstName} ${student.lastName} pour cette période ?`,
-      )
+      !(await confirm({
+        message: `Supprimer toutes les notes de ${student.firstName} ${student.lastName} pour cette période ?`,
+        danger: true,
+      }))
     )
       return;
     try {

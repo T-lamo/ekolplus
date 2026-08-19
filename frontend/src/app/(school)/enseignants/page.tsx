@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -57,6 +58,7 @@ export default function TeachersPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [teachers, setTeachers] = useState<TeacherListItem[] | null>(null);
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export default function TeachersPage() {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function onDelete(t: TeacherListItem) {
-    if (!window.confirm(`Supprimer « ${t.name} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer « ${t.name} » ?`, danger: true }))) return;
     try {
       await api(`/api/school/teachers/${t.id}`, { method: 'DELETE' });
       setTeachers((prev) => (prev ? prev.filter((x) => x.id !== t.id) : prev));

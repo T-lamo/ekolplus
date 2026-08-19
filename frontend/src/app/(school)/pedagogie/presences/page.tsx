@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -106,6 +107,7 @@ export default function PresencesPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
 
   const [data, setData] = useState<AttendanceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -239,9 +241,11 @@ export default function PresencesPage() {
   async function deleteToday(student: AttendanceStudentRow) {
     if (!targetDate) return;
     if (
-      !window.confirm(
-        `Effacer la présence de « ${student.firstName} ${student.lastName} » pour ce jour ?`,
-      )
+      !(await confirm({
+        message: `Effacer la présence de « ${student.firstName} ${student.lastName} » pour ce jour ?`,
+        confirmLabel: 'Effacer',
+        danger: true,
+      }))
     )
       return;
     await markDay(student.id, targetDate, null);

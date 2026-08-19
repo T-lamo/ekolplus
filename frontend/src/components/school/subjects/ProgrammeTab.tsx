@@ -27,6 +27,7 @@ import {
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -78,6 +79,7 @@ export function ProgrammeTab({
   onChapterCountChange: (count: number) => void;
 }) {
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [terms, setTerms] = useState<TermData[] | null>(null);
   const [chapters, setChapters] = useState<ChapterData[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +178,8 @@ export function ProgrammeTab({
   }
 
   async function removeChapter(chapter: ChapterData) {
-    if (!window.confirm(`Supprimer le chapitre « ${chapter.title} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer le chapitre « ${chapter.title} » ?`, danger: true })))
+      return;
     try {
       pending.current.delete(chapter.id);
       await api(`/api/school/subjects/${subject.id}/chapters/${chapter.id}`, { method: 'DELETE' });

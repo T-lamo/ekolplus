@@ -22,6 +22,7 @@ import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -73,6 +74,7 @@ export default function AppreciationsListPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
   // the classes that happen to have subject affectations — a brand-new class
   // must show up here immediately, and archived-year classes never.
@@ -130,7 +132,10 @@ export default function AppreciationsListPage() {
   const enAttenteCount = data ? data.students.filter((s) => s.status !== 'PUBLISHED').length : 0;
 
   async function deleteAppreciation(studentId: string, name: string) {
-    if (!confirm(`Supprimer l'appréciation générale de ${name} ?`)) return;
+    if (
+      !(await confirm({ message: `Supprimer l'appréciation générale de ${name} ?`, danger: true }))
+    )
+      return;
     try {
       await api(`/api/school/students/${studentId}/appreciations?termId=${termId}`, {
         method: 'DELETE',

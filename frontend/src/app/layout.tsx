@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
@@ -50,7 +51,9 @@ export default function RootLayout({
     <html lang="fr" className={inter.variable}>
       <body className={inter.className}>
         <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <ConfirmProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ConfirmProvider>
         </ToastProvider>
       </body>
     </html>

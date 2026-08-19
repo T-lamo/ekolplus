@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -60,6 +61,7 @@ export default function MatieresPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [subjects, setSubjects] = useState<SubjectData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -114,7 +116,8 @@ export default function MatieresPage() {
   }, [subjects]);
 
   async function onDelete(subject: SubjectData) {
-    if (!window.confirm(`Supprimer la matière « ${subject.name} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer la matière « ${subject.name} » ?`, danger: true })))
+      return;
     try {
       await api(`/api/school/subjects/${subject.id}`, { method: 'DELETE' });
       setSubjects((prev) => (prev ? prev.filter((s) => s.id !== subject.id) : prev));

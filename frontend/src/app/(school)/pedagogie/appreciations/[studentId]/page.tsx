@@ -27,6 +27,7 @@ import { api, ApiError } from '@/lib/api';
 import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { MENTION_LABEL, type Mention, type StudentAppreciationData } from '../types';
@@ -66,6 +67,7 @@ export default function AppreciationDetailPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const params = useParams<{ studentId: string }>();
   const searchParams = useSearchParams();
   const termId = searchParams.get('termId') ?? '';
@@ -88,7 +90,13 @@ export default function AppreciationDetailPage() {
 
   async function onDelete() {
     if (!data) return;
-    if (!confirm("Supprimer l'appréciation générale de cet élève ?")) return;
+    if (
+      !(await confirm({
+        message: "Supprimer l'appréciation générale de cet élève ?",
+        danger: true,
+      }))
+    )
+      return;
     try {
       await api(
         `/api/school/students/${data.studentId}/appreciations?termId=${data.resolvedTermId}`,

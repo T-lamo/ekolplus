@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -17,6 +18,7 @@ export default function EditEvaluationPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const params = useParams<{ evaluationId: string }>();
   const [value, setValue] = useState<EvaluationConfig | null>(null);
   const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
@@ -101,9 +103,11 @@ export default function EditEvaluationPage() {
   async function onDelete() {
     if (!value) return;
     if (
-      !confirm(
-        'Supprimer cette évaluation et toutes les notes associées ? Cette action est irréversible.',
-      )
+      !(await confirm({
+        message:
+          'Supprimer cette évaluation et toutes les notes associées ? Cette action est irréversible.',
+        danger: true,
+      }))
     )
       return;
     setDeleting(true);

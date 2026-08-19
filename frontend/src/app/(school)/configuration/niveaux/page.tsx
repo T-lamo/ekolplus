@@ -36,6 +36,7 @@ import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -211,6 +212,7 @@ export default function NiveauxPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
 
   const [levels, setLevels] = useState<GradeLevel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -284,7 +286,8 @@ export default function NiveauxPage() {
   }
 
   async function onDelete(level: GradeLevel) {
-    if (!window.confirm(`Supprimer le niveau « ${level.name} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer le niveau « ${level.name} » ?`, danger: true })))
+      return;
     try {
       await api(`/api/school/grade-levels/${level.id}`, { method: 'DELETE' });
       setLevels((prev) => (prev ? prev.filter((l) => l.id !== level.id) : prev));

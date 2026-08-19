@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -51,6 +52,7 @@ export default function ClassesPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [classes, setClasses] = useState<ClassData[] | null>(null);
   const [school, setSchool] = useState<SchoolInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +111,8 @@ export default function ClassesPage() {
   }, [classes]);
 
   async function onDelete(cls: ClassData) {
-    if (!window.confirm(`Supprimer la classe « ${cls.name} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer la classe « ${cls.name} » ?`, danger: true })))
+      return;
     try {
       await api(`/api/school/classes/${cls.id}`, { method: 'DELETE' });
       setClasses((prev) => (prev ? prev.filter((c) => c.id !== cls.id) : prev));

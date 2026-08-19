@@ -18,6 +18,7 @@ import { api, ApiError } from '@/lib/api';
 import { CardGrid } from '@/components/school/CardGrid';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -58,6 +59,7 @@ export default function StudentsPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [students, setStudents] = useState<StudentListItem[] | null>(null);
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +107,8 @@ export default function StudentsPage() {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function onDelete(s: StudentListItem) {
-    if (!window.confirm(`Supprimer « ${s.firstName} ${s.lastName} » ?`)) return;
+    if (!(await confirm({ message: `Supprimer « ${s.firstName} ${s.lastName} » ?`, danger: true })))
+      return;
     try {
       await api(`/api/school/students/${s.id}`, { method: 'DELETE' });
       setStudents((prev) => (prev ? prev.filter((x) => x.id !== s.id) : prev));

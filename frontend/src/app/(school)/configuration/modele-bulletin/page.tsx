@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -55,6 +56,7 @@ export default function BulletinTemplatesPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [data, setData] = useState<TemplateListData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'personal' | 'global'>('personal');
@@ -101,7 +103,7 @@ export default function BulletinTemplatesPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Supprimer ce modèle de bulletin ?')) return;
+    if (!(await confirm({ message: 'Supprimer ce modèle de bulletin ?', danger: true }))) return;
     try {
       await api(`/api/school/bulletin-templates/${id}`, { method: 'DELETE' });
       toast('Modèle supprimé.', 'success');

@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -56,6 +57,7 @@ export default function RoomsPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [rooms, setRooms] = useState<RoomRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -142,7 +144,10 @@ export default function RoomsPage() {
       room.classCount + room.sessionCount > 0
         ? `\nLes ${room.classCount} classe(s) et ${room.sessionCount} séance(s) qui l’utilisent garderont « ${room.name} » en texte libre.`
         : '';
-    if (!window.confirm(`Supprimer la salle « ${room.name} » ?${usage}`)) return;
+    if (
+      !(await confirm({ message: `Supprimer la salle « ${room.name} » ?${usage}`, danger: true }))
+    )
+      return;
     try {
       await api(`/api/school/rooms/${room.id}`, { method: 'DELETE' });
       setRooms((prev) => (prev ? prev.filter((r) => r.id !== room.id) : prev));

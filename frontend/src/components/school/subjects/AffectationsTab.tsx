@@ -30,6 +30,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -68,6 +69,7 @@ export function AffectationsTab({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirm();
   const [filter, setFilter] = useState('');
   const [busyRow, setBusyRow] = useState<string | null>(null);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
@@ -109,7 +111,14 @@ export function AffectationsTab({
   }
 
   async function detach(row: SubjectClassAssignment) {
-    if (!window.confirm(`Retirer « ${subject.name} » de la classe ${row.class.name} ?`)) return;
+    if (
+      !(await confirm({
+        message: `Retirer « ${subject.name} » de la classe ${row.class.name} ?`,
+        confirmLabel: 'Retirer',
+        danger: true,
+      }))
+    )
+      return;
     setBusyRow(row.classId);
     try {
       await api(`/api/school/class-subjects/${row.id}`, { method: 'DELETE' });

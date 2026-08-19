@@ -1,24 +1,23 @@
 // Locale registry — the accessibility/consistency guard behind
 // « Paramètres › Langue » mirrors src/lib/themes.test.ts's role for
-// themes. This file's first describe block only needs the registry
-// itself; a second block (added once the message JSON files exist, in a
-// later task) asserts the three message trees stay key-for-key identical.
+// themes. The first two describe blocks test the registry itself; the
+// rest scan src/messages/ on disk against MESSAGE_NAMESPACES, so a
+// namespace forgotten in one locale — or never registered at all — fails
+// `pnpm test` instead of silently breaking at runtime for non-French
+// users.
 import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   DEFAULT_LOCALE,
   LOCALES,
   LOCALE_COOKIE_NAME,
   LOCALE_KEYS,
+  MESSAGE_NAMESPACES,
   isLocaleKey,
   matchAcceptLanguage,
   resolveLocaleKey,
 } from './locales';
-import frCommon from '../messages/fr/common.json';
-import htCommon from '../messages/ht/common.json';
-import enCommon from '../messages/en/common.json';
-import frLogin from '../messages/fr/login.json';
-import htLogin from '../messages/ht/login.json';
-import enLogin from '../messages/en/login.json';
 
 describe('locale registry', () => {
   it('lists exactly fr, ht, en — French default first', () => {
@@ -65,6 +64,32 @@ describe('matchAcceptLanguage', () => {
   });
 });
 
+// This test file lives at src/lib/locales.test.ts; src/messages/ is a
+// sibling of src/lib — same "__dirname-relative path" pattern already
+// used in src/lib/server/observability/runtime-enforcement.test.ts.
+const MESSAGES_DIR = join(__dirname, '..', 'messages');
+
+function namespacesOnDisk(locale: string): string[] {
+  return readdirSync(join(MESSAGES_DIR, locale))
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.replace(/\.json$/, ''))
+    .sort();
+}
+
+function readNamespace(locale: string, namespace: string): unknown {
+  return JSON.parse(readFileSync(join(MESSAGES_DIR, locale, `${namespace}.json`), 'utf8'));
+}
+
+describe('message-namespace registry stays in sync with disk', () => {
+  it('MESSAGE_NAMESPACES matches the fr/ directory listing exactly', () => {
+    expect([...MESSAGE_NAMESPACES].sort()).toEqual(namespacesOnDisk('fr'));
+  });
+
+  it.each(['ht', 'en'] as const)('%s/ has the exact same namespace files as fr/', (locale) => {
+    expect(namespacesOnDisk(locale)).toEqual(namespacesOnDisk('fr'));
+  });
+});
+
 // Deep key-set equality per namespace — a message added to French but
 // forgotten in Creole/English must fail `pnpm test`, not silently render
 // as a missing-key fallback (or worse, leak the raw key) in production.
@@ -76,38 +101,30 @@ function keyPaths(obj: unknown, prefix = ''): string[] {
 }
 
 describe('message files stay in sync across locales', () => {
-  const namespaces = [
-    { name: 'common', fr: frCommon, ht: htCommon, en: enCommon },
-    { name: 'login', fr: frLogin, ht: htLogin, en: enLogin },
-  ];
-
-  it.each(namespaces)('$name: fr/ht/en share the exact same key set', ({ fr, ht, en }) => {
-    const frKeys = keyPaths(fr)
+  it.each(MESSAGE_NAMESPACES)('%s: fr/ht/en share the exact same key set', (namespace) => {
+    const frKeys = keyPaths(readNamespace('fr', namespace))
       .filter((k) => k !== '_review')
       .sort();
-    const htKeys = keyPaths(ht)
+    const htKeys = keyPaths(readNamespace('ht', namespace))
       .filter((k) => k !== '_review')
       .sort();
-    const enKeys = keyPaths(en)
+    const enKeys = keyPaths(readNamespace('en', namespace))
       .filter((k) => k !== '_review')
       .sort();
     expect(htKeys).toEqual(frKeys);
     expect(enKeys).toEqual(frKeys);
   });
 
-  it.each(namespaces)('$name: no empty-string values in any locale', ({ name, fr, ht, en }) => {
-    for (const [label, tree] of [
-      ['fr', fr],
-      ['ht', ht],
-      ['en', en],
-    ] as const) {
+  it.each(MESSAGE_NAMESPACES)('%s: no empty-string values in any locale', (namespace) => {
+    for (const locale of ['fr', 'ht', 'en'] as const) {
+      const tree = readNamespace(locale, namespace);
       const empties = keyPaths(tree).filter((path) => {
         const value = path.split('.').reduce<unknown>((acc, key) => {
           return acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined;
         }, tree);
         return value === '';
       });
-      expect(empties, `${label}.${name} has empty values: ${empties.join(', ')}`).toEqual([]);
+      expect(empties, `${locale}.${namespace} has empty values: ${empties.join(', ')}`).toEqual([]);
     }
   });
 });

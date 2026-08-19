@@ -31,6 +31,20 @@ export const LOCALES: readonly LocaleDef[] = [
   { key: 'en', nativeName: 'English' },
 ];
 
+/** Every message namespace that ships today — the single source of truth
+ * this app's message files are checked against. `src/i18n/request.ts`'s
+ * import list and `src/types/next-intl.d.ts`'s `Messages` interface both
+ * stay hand-written (Next.js's bundler and TypeScript's structural typing
+ * both need real, static declarations there — this array can't replace
+ * either), but `locales.test.ts` scans `src/messages/fr/` on disk and
+ * fails `pnpm test` if this array or any locale's file set ever drifts
+ * from it — a forgotten namespace, or one that exists in French but not
+ * Creole/English, fails loudly here instead of throwing at request time
+ * for non-French users. Add your namespace's key here in the same task
+ * that creates its `fr`/`ht`/`en` JSON files. */
+export const MESSAGE_NAMESPACES = ['common', 'login'] as const;
+export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
+
 export function isLocaleKey(value: unknown): value is LocaleKey {
   return typeof value === 'string' && (LOCALE_KEYS as readonly string[]).includes(value);
 }

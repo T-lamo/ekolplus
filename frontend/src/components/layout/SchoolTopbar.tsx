@@ -9,6 +9,7 @@ import { getBreadcrumbTrail } from './topbar/breadcrumb';
 import { CommandPalette } from './topbar/CommandPalette';
 import { HelpMenu } from './topbar/HelpMenu';
 import { NotificationsMenu } from './topbar/NotificationsMenu';
+import { OfflineIndicator } from './topbar/OfflineIndicator';
 
 // Sub-pages not covered by useSchoolSections() (detail views etc.) — extend
 // as new ones land.
@@ -35,6 +36,7 @@ export function SchoolTopbar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <OfflineIndicator />
         <CommandPalette sections={sections} />
         <AcademicYearBadge />
         <NotificationsMenu />

@@ -1277,3 +1277,10 @@ export const APPEARANCE = {
   contrastNote:
     'Toutes les palettes respectent le contraste WCAG AA (texte ≥ 4,5:1) — les couleurs d’état (succès, alerte, erreur) et des matières restent identiques.',
 } as const;
+
+export const OFFLINE_SYNC = {
+  offline: (count: number) => `Hors ligne — ${count} en attente`,
+  reconnect: (count: number) => `Reconnecte-toi pour synchroniser ${count} modification(s)`,
+  queuedToast: 'Hors ligne — sera synchronisé automatiquement.',
+  syncedToast: 'Synchronisé.',
+} as const;

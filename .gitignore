@@ -2,6 +2,7 @@ node_modules/
 dist/
 .next/
 .turbo/
+frontend/public/sw*
 coverage/
 *.log
 .DS_Store
@@ -25,3 +26,6 @@ amp
 node-compile-cache/
 
 .planning/banani/fetches/
+
+# Superpowers subagent-driven-development scratch (ledgers, briefs, reports)
+.superpowers/

@@ -11,6 +11,7 @@ import { LocaleProvider } from '@/contexts/LocaleContext';
 import { resolveLocaleKey } from '@/lib/locales';
 import { THEME_INIT_SCRIPT } from '@/lib/themes';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -79,6 +80,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className={inter.className}>
+        <ServiceWorkerRegister />
         {/* No `locale`/`messages` props: rendered from a Server Component,
             NextIntlClientProvider automatically inherits both from the
             request config resolved in src/i18n/request.ts. */}

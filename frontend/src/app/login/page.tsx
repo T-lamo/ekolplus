@@ -123,7 +123,7 @@ export default function LoginPage() {
         />
 
         <div className="absolute top-4 right-4 z-20 lg:top-6 lg:right-8">
-          <LocaleQuickSwitcher className="text-white/70 [&_button[aria-current]]:text-white" />
+          <LocaleQuickSwitcher className="[&_button]:text-white/70 [&_button[aria-current]]:text-white" />
         </div>
 
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">

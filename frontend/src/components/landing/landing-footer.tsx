@@ -35,7 +35,7 @@ export function LandingFooter() {
             <Image
               src="/logos/schoolgesti-lockup-blanc.svg"
               alt="Schoolgesti"
-              width={150}
+              width={164}
               height={44}
               className="h-9 w-auto"
             />

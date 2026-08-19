@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 220" width="750" height="220"><circle cx="110" cy="110" r="86" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="40 60" transform="rotate(-215 110 110)"></circle>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 220" width="820" height="220"><circle cx="110" cy="110" r="86" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="40 60" transform="rotate(-215 110 110)"></circle>
   <circle cx="110" cy="110" r="86" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="40 60" transform="rotate(-35 110 110)"></circle>
   <circle cx="110" cy="24" r="9" fill="#F4783C"></circle>
   <text x="110" y="142" text-anchor="middle" font-family="Poppins, Helvetica, Arial, sans-serif" font-weight="600" font-size="92" letter-spacing="-4" fill="#FFFFFF">S<tspan fill="#FFFFFF">G</tspan></text>
-  <text x="248" y="134" font-family="Poppins, Helvetica, Arial, sans-serif" font-weight="600" font-size="70" letter-spacing="-1.5" fill="#FFFFFF">SchoolGesti</text></svg>
+  <text x="248" y="142" font-family="Poppins, Helvetica, Arial, sans-serif" font-weight="600" font-size="92" letter-spacing="-2" fill="#FFFFFF">SchoolGesti</text></svg>

@@ -78,7 +78,7 @@ function ResetPasswordForm() {
             <Image
               src="/logos/schoolgesti-lockup-blanc.svg"
               alt="Schoolgesti"
-              width={150}
+              width={164}
               height={44}
               className="h-13 w-auto"
               priority
@@ -99,7 +99,7 @@ function ResetPasswordForm() {
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"
-              width={150}
+              width={164}
               height={44}
               className="h-11 w-auto"
             />

@@ -91,7 +91,7 @@ export function SchoolSidebar({
         <Image
           src="/logos/schoolgesti-lockup.svg"
           alt="Schoolgesti"
-          width={150}
+          width={164}
           height={44}
           className="h-10 w-auto"
           priority

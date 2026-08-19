@@ -75,7 +75,7 @@ export function AdminSidebar({
           <Image
             src="/logos/schoolgesti-lockup-blanc.svg"
             alt="Schoolgesti"
-            width={150}
+            width={164}
             height={44}
             className="h-7 w-auto"
             priority

@@ -48,6 +48,8 @@ export const MESSAGE_NAMESPACES = [
   'shell',
   'schoolSidebar',
   'adminSidebar',
+  'schoolTopbar',
+  'adminTopbar',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

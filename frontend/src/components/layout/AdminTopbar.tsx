@@ -2,6 +2,7 @@
 'use client';
 
 import { Menu, Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useAdminSections } from './AdminSidebar';
 import { Breadcrumbs } from './topbar/Breadcrumbs';
@@ -10,11 +11,12 @@ import { CommandPalette } from './topbar/CommandPalette';
 import { HelpMenu } from './topbar/HelpMenu';
 import { NotificationsMenu } from './topbar/NotificationsMenu';
 
-// Sub-pages not covered by ADMIN_SECTIONS (detail views etc.) — extend as
-// new ones land.
+// Sub-pages not covered by useAdminSections() (detail views etc.) — extend
+// as new ones land.
 const EXTRA_LABELS: Record<string, string> = {};
 
 export function AdminTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
+  const t = useTranslations('AdminTopbar');
   const pathname = usePathname();
   const sections = useAdminSections();
   const trail = getBreadcrumbTrail(pathname, sections, EXTRA_LABELS);
@@ -25,7 +27,7 @@ export function AdminTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <button
           type="button"
           onClick={onMenuClick}
-          aria-label="Ouvrir le menu"
+          aria-label={t('openMenuAriaLabel')}
           className="flex h-11 w-11 items-center justify-center text-muted-foreground lg:hidden"
         >
           <Menu size={20} />
@@ -34,7 +36,7 @@ export function AdminTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
           root={
             <span className="flex items-center gap-1.5">
               <Shield size={13} className="text-primary" />
-              Administration
+              {t('rootLabel')}
             </span>
           }
           trail={trail}

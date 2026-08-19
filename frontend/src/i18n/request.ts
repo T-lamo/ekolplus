@@ -22,16 +22,25 @@ export default getRequestConfig(async () => {
     ? resolveLocaleKey(cookieValue)
     : matchAcceptLanguage((await headers()).get('accept-language'));
 
-  const [common, login, shell, schoolSidebar, adminSidebar, schoolTopbar, adminTopbar] =
-    await Promise.all([
-      import(`../messages/${locale}/common.json`),
-      import(`../messages/${locale}/login.json`),
-      import(`../messages/${locale}/shell.json`),
-      import(`../messages/${locale}/schoolSidebar.json`),
-      import(`../messages/${locale}/adminSidebar.json`),
-      import(`../messages/${locale}/schoolTopbar.json`),
-      import(`../messages/${locale}/adminTopbar.json`),
-    ]);
+  const [
+    common,
+    login,
+    shell,
+    schoolSidebar,
+    adminSidebar,
+    schoolTopbar,
+    adminTopbar,
+    forgotPassword,
+  ] = await Promise.all([
+    import(`../messages/${locale}/common.json`),
+    import(`../messages/${locale}/login.json`),
+    import(`../messages/${locale}/shell.json`),
+    import(`../messages/${locale}/schoolSidebar.json`),
+    import(`../messages/${locale}/adminSidebar.json`),
+    import(`../messages/${locale}/schoolTopbar.json`),
+    import(`../messages/${locale}/adminTopbar.json`),
+    import(`../messages/${locale}/forgotPassword.json`),
+  ]);
 
   return {
     locale,
@@ -43,6 +52,7 @@ export default getRequestConfig(async () => {
       AdminSidebar: adminSidebar.default,
       SchoolTopbar: schoolTopbar.default,
       AdminTopbar: adminTopbar.default,
+      ForgotPassword: forgotPassword.default,
     },
   };
 });

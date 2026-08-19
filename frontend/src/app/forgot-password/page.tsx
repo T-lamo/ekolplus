@@ -3,14 +3,17 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Mail, MailCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { api, ApiError } from '@/lib/api';
-import { AUTH_LOGIN, AUTH_FORGOT_PASSWORD } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations('ForgotPassword');
+  const tLogin = useTranslations('Login');
+  const tCommon = useTranslations('Common');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +27,16 @@ export default function ForgotPasswordPage() {
       await api('/api/auth/forgot-password', { method: 'POST', body: { email } });
       setSubmitted(true);
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'TOO_MANY_FORGOT_ATTEMPTS') {
-        setError(AUTH_FORGOT_PASSWORD.errors.TOO_MANY_FORGOT_ATTEMPTS);
-      } else if (err instanceof ApiError) {
-        setError(AUTH_FORGOT_PASSWORD.errors.default);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'TOO_MANY_FORGOT_ATTEMPTS':
+            setError(t('errors.TOO_MANY_FORGOT_ATTEMPTS'));
+            break;
+          default:
+            setError(tCommon('errors.generic'));
+        }
       } else {
-        setError(AUTH_FORGOT_PASSWORD.errors.network);
+        setError(tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -60,10 +67,10 @@ export default function ForgotPasswordPage() {
             />
           </div>
           <h1 className="mb-3 hidden text-[32px] leading-tight font-extrabold tracking-tight lg:block">
-            {AUTH_LOGIN.headline}
+            {tLogin('headline')}
           </h1>
           <p className="mb-10 hidden text-sm leading-relaxed text-white/50 lg:block">
-            {AUTH_LOGIN.subline}
+            {tLogin('subline')}
           </p>
         </div>
       </div>
@@ -87,31 +94,31 @@ export default function ForgotPasswordPage() {
                 <MailCheck size={20} className="text-success-foreground" />
               </div>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_FORGOT_PASSWORD.confirmation.title}
+                {t('confirmation.title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_FORGOT_PASSWORD.confirmation.body(email)}
+                {t('confirmation.body', { email })}
               </p>
               <Link
                 href="/login"
                 className="flex items-center justify-center gap-1.5 text-sm font-semibold text-primary"
               >
                 <ArrowLeft size={14} />
-                {AUTH_FORGOT_PASSWORD.backToLogin}
+                {t('backToLogin')}
               </Link>
             </>
           ) : (
             <>
               <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
-                {AUTH_FORGOT_PASSWORD.title}
+                {t('title')}
               </h2>
               <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
-                {AUTH_FORGOT_PASSWORD.subtitle}
+                {t('subtitle')}
               </p>
 
               <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <Field
-                  label={AUTH_FORGOT_PASSWORD.emailLabel}
+                  label={t('emailLabel')}
                   type="email"
                   name="email"
                   required
@@ -129,7 +136,7 @@ export default function ForgotPasswordPage() {
 
                 <Button type="submit" loading={submitting}>
                   <Mail size={16} />
-                  {submitting ? AUTH_FORGOT_PASSWORD.submitting : AUTH_FORGOT_PASSWORD.submit}
+                  {submitting ? t('submitting') : t('submit')}
                 </Button>
               </form>
 
@@ -138,7 +145,7 @@ export default function ForgotPasswordPage() {
                 className="mt-5 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
                 <ArrowLeft size={14} />
-                {AUTH_FORGOT_PASSWORD.backToLogin}
+                {t('backToLogin')}
               </Link>
             </>
           )}

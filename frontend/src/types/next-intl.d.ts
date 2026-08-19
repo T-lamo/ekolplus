@@ -12,6 +12,7 @@ import type schoolSidebar from '@/messages/fr/schoolSidebar.json';
 import type adminSidebar from '@/messages/fr/adminSidebar.json';
 import type schoolTopbar from '@/messages/fr/schoolTopbar.json';
 import type adminTopbar from '@/messages/fr/adminTopbar.json';
+import type forgotPassword from '@/messages/fr/forgotPassword.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -25,6 +26,7 @@ declare module 'next-intl' {
       AdminSidebar: typeof adminSidebar;
       SchoolTopbar: typeof schoolTopbar;
       AdminTopbar: typeof adminTopbar;
+      ForgotPassword: typeof forgotPassword;
     };
   }
 }

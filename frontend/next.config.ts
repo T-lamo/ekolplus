@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 // Static security headers applied to every response.
 // Set via next.config.ts (not src/proxy.ts) so Vercel's edge can serve them
@@ -142,11 +143,18 @@ const config: NextConfig = {
   },
 };
 
+// next-intl plugin — links src/i18n/request.ts (the default location it
+// looks for) so Server Components can resolve messages per request. Must
+// wrap `config` BEFORE the Sentry wrapper below (order doesn't matter
+// functionally here, but this keeps the innermost config — the one both
+// wrappers actually see — closest to its own definition).
+const withNextIntl = createNextIntlPlugin();
+
 // Sentry build-time wrapper. Uploads source maps when SENTRY_AUTH_TOKEN +
 // SENTRY_ORG + SENTRY_PROJECT are present (typically only in CI). Without
 // those env vars the wrapper still works — it just skips the upload step.
 // silent:true keeps the build log clean when nothing is configured.
-export default withSentryConfig(config, {
+export default withSentryConfig(withNextIntl(config), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,

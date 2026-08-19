@@ -5,6 +5,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,6 +51,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={inter.variable}>
       <body className={inter.className}>
+        <ServiceWorkerRegister />
         <ToastProvider>
           <ConfirmProvider>
             <AuthProvider>{children}</AuthProvider>

@@ -2,6 +2,7 @@
 
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LogOut, UserRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,7 @@ export function SidebarUserProfile({
 }: SidebarUserProfileProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const t = useTranslations('Shell.sidebarUserProfile');
   const email = user?.email ?? '';
 
   const nameClasses = variant === 'light' ? 'text-foreground' : 'text-white';
@@ -31,7 +33,7 @@ export function SidebarUserProfile({
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          aria-label={`Compte de ${email}`}
+          aria-label={t('accountOf', { email })}
           className={`flex w-full items-center gap-2 rounded-md py-1.5 outline-none ${
             collapsed ? 'justify-center px-0' : 'px-2'
           }`}
@@ -60,14 +62,14 @@ export function SidebarUserProfile({
             className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground outline-none data-[highlighted]:bg-secondary data-[highlighted]:text-primary"
           >
             <UserRound size={14} />
-            Mon profil
+            {t('myProfile')}
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onSelect={() => void logout()}
             className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive-foreground outline-none data-[highlighted]:bg-destructive"
           >
             <LogOut size={14} />
-            Déconnexion
+            {t('logout')}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

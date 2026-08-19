@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useAdminUser } from '@/contexts/AuthContext';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminTopbar } from '@/components/layout/AdminTopbar';
@@ -9,6 +10,7 @@ import { SIDEBAR_WIDTH_CLASS } from '@/components/layout/sidebar/width';
 import { useSidebarCollapse } from '@/components/layout/sidebar/useSidebarCollapse';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const t = useTranslations('Shell');
   const admin = useAdminUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, toggleCollapsed] = useSidebarCollapse();
@@ -16,7 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   if (!admin) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <p className="text-sm text-muted-foreground">{t('notifications.loading')}</p>
       </main>
     );
   }
@@ -37,7 +39,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}
-              aria-label="Fermer le menu"
+              aria-label={t('closeMenu')}
               className="absolute top-3 -right-11 flex h-9 w-9 items-center justify-center rounded-md bg-white/10 text-white"
             >
               <X size={18} />

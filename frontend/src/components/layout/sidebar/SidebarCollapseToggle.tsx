@@ -1,6 +1,7 @@
 'use client';
 
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface SidebarCollapseToggleProps {
   collapsed: boolean;
@@ -13,6 +14,7 @@ export function SidebarCollapseToggle({
   onToggle,
   variant,
 }: SidebarCollapseToggleProps) {
+  const t = useTranslations('Shell.collapseToggle');
   const Icon = collapsed ? PanelLeftOpen : PanelLeftClose;
   const colorClasses =
     variant === 'light'
@@ -23,7 +25,7 @@ export function SidebarCollapseToggle({
     <button
       type="button"
       onClick={onToggle}
-      aria-label={collapsed ? 'Étendre la barre latérale' : 'Réduire la barre latérale'}
+      aria-label={collapsed ? t('expand') : t('collapse')}
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${colorClasses}`}
     >
       <Icon size={16} />

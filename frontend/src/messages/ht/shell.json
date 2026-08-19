@@ -1,0 +1,40 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "sidebarUserProfile": {
+    "accountOf": "Kont {email}",
+    "myProfile": "Pwofil mwen",
+    "logout": "Dekonekte"
+  },
+  "collapseToggle": {
+    "expand": "Elaji ba lateral la",
+    "collapse": "Redwi ba lateral la"
+  },
+  "commandPalette": {
+    "trigger": "Rechèch global...",
+    "dialogLabel": "Rechèch global",
+    "inputPlaceholder": "Chèche yon paj...",
+    "noResults": "Pa gen rezilta."
+  },
+  "helpMenu": {
+    "ariaLabel": "Èd",
+    "title": "Ou bezwen èd?",
+    "body": "Kontakte administratè etablisman ou pou nenpòt kesyon sou Schoolgesti."
+  },
+  "notifications": {
+    "ariaLabel": "Notifikasyon",
+    "heading": "Notifikasyon",
+    "markAllRead": "Make tout kòm li",
+    "loading": "Ap chaje…",
+    "empty": "Pa gen nouvo notifikasyon."
+  },
+  "mobileNav": {
+    "ariaLabel": "Navigasyon prensipal",
+    "home": "Akèy",
+    "students": "Elèv",
+    "grades": "Nòt",
+    "tuition": "Eskolarite",
+    "more": "Plis",
+    "moreAriaLabel": "Plis meni"
+  },
+  "closeMenu": "Fèmen meni a"
+}

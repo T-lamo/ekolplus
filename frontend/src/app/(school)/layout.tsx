@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/AuthContext';
 import { SchoolPlanProvider } from '@/contexts/SchoolPlanContext';
 import { MobileBottomNav } from '@/components/layout/mobile/MobileBottomNav';
@@ -22,6 +23,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 // login (see login/page.tsx) already sends pure-teacher accounts to
 // /enseignant; this shell intentionally does not re-enforce it.
 export default function SchoolLayout({ children }: { children: ReactNode }) {
+  const t = useTranslations('Shell');
   const user = useUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, toggleCollapsed] = useSidebarCollapse();
@@ -49,7 +51,7 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                aria-label="Fermer le menu"
+                aria-label={t('closeMenu')}
                 className="absolute top-3 -right-11 flex h-9 w-9 items-center justify-center rounded-md bg-black/60 text-white"
               >
                 <X size={18} />

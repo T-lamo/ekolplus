@@ -1,0 +1,39 @@
+{
+  "sidebarUserProfile": {
+    "accountOf": "Account of {email}",
+    "myProfile": "My profile",
+    "logout": "Log out"
+  },
+  "collapseToggle": {
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar"
+  },
+  "commandPalette": {
+    "trigger": "Global search...",
+    "dialogLabel": "Global search",
+    "inputPlaceholder": "Search for a page...",
+    "noResults": "No results."
+  },
+  "helpMenu": {
+    "ariaLabel": "Help",
+    "title": "Need help?",
+    "body": "Contact your school's administrator with any questions about Schoolgesti."
+  },
+  "notifications": {
+    "ariaLabel": "Notifications",
+    "heading": "Notifications",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading…",
+    "empty": "No new notifications."
+  },
+  "mobileNav": {
+    "ariaLabel": "Main navigation",
+    "home": "Home",
+    "students": "Students",
+    "grades": "Grades",
+    "tuition": "Tuition",
+    "more": "More",
+    "moreAriaLabel": "More menus"
+  },
+  "closeMenu": "Close menu"
+}

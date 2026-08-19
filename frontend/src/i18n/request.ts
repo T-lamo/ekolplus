@@ -22,9 +22,10 @@ export default getRequestConfig(async () => {
     ? resolveLocaleKey(cookieValue)
     : matchAcceptLanguage((await headers()).get('accept-language'));
 
-  const [common, login] = await Promise.all([
+  const [common, login, shell] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
+    import(`../messages/${locale}/shell.json`),
   ]);
 
   return {
@@ -32,6 +33,7 @@ export default getRequestConfig(async () => {
     messages: {
       Common: common.default,
       Login: login.default,
+      Shell: shell.default,
     },
   };
 });

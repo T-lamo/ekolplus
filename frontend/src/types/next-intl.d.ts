@@ -7,6 +7,7 @@
 // language). See https://next-intl.dev/docs/workflows/typescript.
 import type common from '@/messages/fr/common.json';
 import type login from '@/messages/fr/login.json';
+import type shell from '@/messages/fr/shell.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -15,6 +16,7 @@ declare module 'next-intl' {
     Messages: {
       Common: typeof common;
       Login: typeof login;
+      Shell: typeof shell;
     };
   }
 }

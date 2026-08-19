@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Bell } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { invalidateCache, useApi } from '@/lib/useApi';
 
@@ -27,6 +28,7 @@ const COUNT_PATH = '/api/notifications/count';
 const LIST_PATH = '/api/notifications?unread=true&limit=5';
 
 export function NotificationsMenu() {
+  const t = useTranslations('Shell.notifications');
   const [open, setOpen] = useState(false);
   const { data: countData, refresh: refreshCount } = useApi<NotificationsCountResponse>(COUNT_PATH);
   const {
@@ -48,7 +50,7 @@ export function NotificationsMenu() {
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          aria-label="Notifications"
+          aria-label={t('ariaLabel')}
           className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           <Bell size={17} />
@@ -66,24 +68,24 @@ export function NotificationsMenu() {
           className="z-50 w-80 rounded-lg border border-border bg-card p-2 shadow-xl"
         >
           <div className="flex items-center justify-between px-2 py-1.5">
-            <span className="text-sm font-semibold text-foreground">Notifications</span>
+            <span className="text-sm font-semibold text-foreground">{t('heading')}</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => void markRead('all')}
                 className="text-xs font-medium text-primary"
               >
-                Tout marquer comme lu
+                {t('markAllRead')}
               </button>
             )}
           </div>
           {loading && (
-            <div className="px-2 py-4 text-center text-xs text-muted-foreground">Chargement…</div>
+            <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+              {t('loading')}
+            </div>
           )}
           {!loading && (listData?.items.length ?? 0) === 0 && (
-            <div className="px-2 py-4 text-center text-xs text-muted-foreground">
-              Aucune nouvelle notification.
-            </div>
+            <div className="px-2 py-4 text-center text-xs text-muted-foreground">{t('empty')}</div>
           )}
           {listData?.items.map((n) => (
             <DropdownMenu.Item

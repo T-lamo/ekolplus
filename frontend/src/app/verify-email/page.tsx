@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { LocaleQuickSwitcher } from '@/components/settings/LanguagePicker';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
@@ -124,6 +125,11 @@ function VerifyEmailForm() {
           aria-hidden
           className="pointer-events-none absolute -bottom-10 -left-16 hidden h-55 w-55 rounded-full border border-primary/10 lg:block"
         />
+
+        <div className="absolute top-4 right-4 z-20 hidden lg:top-6 lg:right-8 lg:block">
+          <LocaleQuickSwitcher className="[&_button]:text-white/70 [&_button[aria-current]]:text-white" />
+        </div>
+
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
           <div className="mb-4 flex items-center lg:mb-12">
             <Image
@@ -146,7 +152,7 @@ function VerifyEmailForm() {
 
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-5 flex items-center">
+          <div className="mb-5 flex items-center justify-between gap-3">
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"
@@ -154,6 +160,7 @@ function VerifyEmailForm() {
               height={44}
               className="h-11 w-auto"
             />
+            <LocaleQuickSwitcher className="lg:hidden" />
           </div>
 
           {step === 'code' && (

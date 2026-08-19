@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { SchoolPlanProvider } from '@/contexts/SchoolPlanContext';
+import { MobileBottomNav } from '@/components/layout/mobile/MobileBottomNav';
 import { SchoolSidebar } from '@/components/layout/SchoolSidebar';
 import { SchoolTopbar } from '@/components/layout/SchoolTopbar';
 import { SIDEBAR_WIDTH_CLASS } from '@/components/layout/sidebar/width';
@@ -66,15 +67,19 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <SchoolTopbar onMenuClick={() => setDrawerOpen(true)} />
+          <SchoolTopbar />
           {/* The inner div is the scroller — the panel itself never scrolls, so
             its rounded corners always clip the content. Pages built on
-            LIST_PAGE (h-full) size themselves against that inner div. */}
+            LIST_PAGE (h-full) size themselves against that inner div. Below
+            `lg` the extra bottom padding clears the fixed MobileBottomNav
+            (h-16 + safe-area) so the last row of content is never hidden
+            under it. */}
           <main className="mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(26,26,46,0.04),0_8px_28px_-10px_rgba(26,26,46,0.14)] sm:mx-4 sm:mb-4 lg:ml-3">
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-5 pb-28 sm:px-6 sm:pt-6 sm:pb-28 lg:px-7 lg:py-7">
               {children}
             </div>
           </main>
+          <MobileBottomNav onMoreClick={() => setDrawerOpen(true)} />
         </div>
       </div>
     </SchoolPlanProvider>

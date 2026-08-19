@@ -1,9 +1,8 @@
 'use client';
 
-import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { SCHOOL_SECTIONS } from './SchoolSidebar';
-import { AcademicYearSelector } from './topbar/AcademicYearSelector';
+import { AcademicYearBadge } from './topbar/AcademicYearBadge';
 import { Breadcrumbs } from './topbar/Breadcrumbs';
 import { getBreadcrumbTrail } from './topbar/breadcrumb';
 import { CommandPalette } from './topbar/CommandPalette';
@@ -14,27 +13,27 @@ import { NotificationsMenu } from './topbar/NotificationsMenu';
 // new ones land.
 const EXTRA_LABELS: Record<string, string> = {};
 
-export function SchoolTopbar({ onMenuClick }: { onMenuClick?: () => void }) {
+export function SchoolTopbar() {
   const pathname = usePathname();
   const trail = getBreadcrumbTrail(pathname, SCHOOL_SECTIONS, EXTRA_LABELS);
+  // Breadcrumbs only render from `sm` up — below that a phone gets this
+  // single-line page title instead (there's no hamburger anymore, the
+  // MobileBottomNav owns navigation, so the topbar's only job on a phone is
+  // to say where you are).
+  const pageTitle = trail[trail.length - 1] ?? 'Tableau de bord';
 
   return (
     <header className="flex h-13 shrink-0 items-center justify-between px-4 lg:px-6">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          aria-label="Ouvrir le menu"
-          className="flex h-11 w-11 items-center justify-center text-muted-foreground lg:hidden"
-        >
-          <Menu size={20} />
-        </button>
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="truncate text-[15px] font-bold text-foreground sm:hidden">
+          {pageTitle}
+        </span>
         <Breadcrumbs root={<span>Schoolgesti</span>} trail={trail} />
       </div>
 
       <div className="flex items-center gap-2">
         <CommandPalette sections={SCHOOL_SECTIONS} />
-        <AcademicYearSelector />
+        <AcademicYearBadge />
         <NotificationsMenu />
         <HelpMenu />
       </div>

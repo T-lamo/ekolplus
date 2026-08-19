@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -29,6 +29,16 @@ export const metadata: Metadata = {
   // fallback keeps any page that forgets to set its own `metadata` out of
   // search results by default; `app/page.tsx` opts the landing page back in.
   robots: { index: false, follow: false },
+};
+
+// `viewport-fit=cover` lets the app draw under the iPhone home-indicator
+// area so `env(safe-area-inset-bottom)` (used by MobileBottomNav) resolves
+// to the real inset instead of 0 — without it the bottom tab bar would sit
+// flush under the home indicator.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

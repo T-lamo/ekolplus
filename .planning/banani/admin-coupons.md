@@ -34,6 +34,15 @@
 ## Copy / i18n
 - `ADMIN_COUPONS` dans constants.ts.
 
+## Miroir Stripe (2026-08-19) — le code saisi dans l'admin est saisissable sur checkout.stripe.com
+- Pourquoi : `createCheckoutSession` a `allow_promotion_codes: true`, mais Stripe ne connaît que SES codes. Un coupon créé dans `/admin/billing/coupons` est donc mirroré en **Stripe Coupon** (termes : `percent_off` / `amount_off` USD, `duration` forever | repeating `durationMonths` ; FREE_MONTH = 100 % repeating N mois) + **Promotion Code** (même texte de code, `max_redemptions`, `expires_at`, `customer` si le coupon est restreint à une école → Customer Stripe créé à la volée). Ids persistés dans `Coupon.stripeCouponId` / `stripePromotionCodeId` (migration 29 `coupon_stripe_ids`).
+- Lib : `lib/server/billing/coupons.ts` (`reconcileStripeCoupon(db, after, before)` → `created` / `replaced` (termes modifiés → ancienne paire désactivée + supprimée, nouvelle créée — les objets Stripe sont immuables) / `toggled` (`active`) / `removed` (plan hors Stripe) / `skipped` (Stripe non configuré) / `unchanged` ; `removeStripeCoupon`), 18 tests.
+- Routes : POST → ligne créée puis miroir (échec Stripe = ligne gardée, `stripe.synced:false` + `error`) ; PATCH → Stripe AVANT la BDD (échec = 502 `STRIPE_ERROR`, rien n'est écrit) ; `PATCH {}` = « Synchroniser avec Stripe » ; DELETE → Stripe d'abord (tolère `resource_missing`). GET expose `stripe: { synced, redeemable }` par ligne + `stripeConfigured`.
+- Portée : seul le plan **Établissement Pro** passe par Stripe → un coupon restreint à Starter/Enterprise reste back-office (« Hors Stripe »), « Tous les plans » ou Pro est mirroré. Code = `lib/coupon-code.ts` (`A-Z0-9-`, 3-30, même alphabet que Stripe).
+- Usage : le webhook/cron (`syncSubscriptionFromStripe`) lit `subscription.discounts[0]` (promotion_code ou coupon) → relie `Subscription.couponId` et incrémente `usedCount` une seule fois par abonnement ; un code créé directement dans le Dashboard Stripe marche aussi mais n'est pas compté ici.
+- UI : colonne « Checkout Stripe » (Saisissable / À synchroniser / Hors Stripe / Stripe inactif, tooltip), action « Synchroniser avec Stripe » sur les lignes à synchroniser, toast d'avertissement si la création n'a pas pu être mirrorée, hint d'alphabet sous le champ code.
+- Backfill : `pnpm stripe:sync-coupons` (`-- --dry-run`, `:live` charge `.env.production.local`) — tourne avec `tsx --conditions=react-server` pour charger les modules `server-only` ; **à lancer une fois en prod après le déploiement de la migration 29** pour les coupons existants. Vérifié en test le 2026-08-19 (coupon `76RUGCSS` 30 % → `promo_…`, re-run = 0 à faire).
+
 ## Checklist
 - [ ] Routes coupons + tests (unicité code, statuts dérivés, garde suppression)
 - [ ] Page mobile-first + modal création/édition/duplication

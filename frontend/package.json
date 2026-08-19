@@ -29,6 +29,8 @@
     "stripe:setup-prices": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-setup-prices.ts",
     "stripe:doctor": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-doctor.ts",
     "stripe:doctor:live": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-doctor.ts --live",
+    "stripe:sync-coupons": "tsx --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-sync-coupons.ts",
+    "stripe:sync-coupons:live": "tsx --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-sync-coupons.ts --live",
     "db:backfill-bulletin-content-layout": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-content-layout.ts",
     "db:backfill-bulletin-density-typography": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-density-typography.ts",
     "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",

@@ -78,6 +78,7 @@ function makeDb() {
       findFirst: fn(async () => ({ user: { email: 'owner@etoiles.ht' } })),
     },
     student: { count: fn(async () => 130) },
+    coupon: { findFirst: fn(async () => null), update: fn(async () => ({})) },
   };
 }
 
@@ -191,6 +192,89 @@ describe('syncSubscriptionFromStripe', () => {
     );
     const arg = firstArg<{ data: Record<string, unknown> }>(db.subscription.update);
     expect(arg.data.statusChanges).toBeUndefined();
+  });
+
+  // A code typed on Checkout arrives as a Discount (bare id in webhook
+  // payloads) → one expanded retrieve → our Coupon by Promotion Code id.
+  it('links the admin Coupon redeemed on Checkout and counts one use', async () => {
+    const { syncSubscriptionFromStripe } = await import('./stripe');
+    const db = makeDb();
+    db.subscription.findUnique.mockResolvedValueOnce({
+      id: 'sub_row',
+      status: 'ACTIVE',
+      stripeSubscriptionId: 'sub_test_001',
+      couponId: null,
+    });
+    db.coupon.findFirst.mockResolvedValueOnce({ id: 'coupon_row' });
+    subscriptionsRetrieve.mockResolvedValueOnce({
+      id: 'sub_test_001',
+      discounts: [
+        { id: 'di_1', promotion_code: 'promo_abc', source: { type: 'coupon', coupon: 'stc_1' } },
+      ],
+    });
+    const sub = stripeSubscriptionObject({
+      status: 'active',
+      discounts: ['di_1'],
+    }) as unknown as Stripe.Subscription;
+
+    await syncSubscriptionFromStripe(db as never, sub);
+
+    expect(subscriptionsRetrieve).toHaveBeenCalledWith('sub_test_001', { expand: ['discounts'] });
+    expect(firstArg<{ where: unknown }>(db.coupon.findFirst).where).toEqual({
+      OR: [{ stripePromotionCodeId: 'promo_abc' }, { stripeCouponId: 'stc_1' }],
+    });
+    expect(firstArg<{ data: Record<string, unknown> }>(db.subscription.update).data).toMatchObject({
+      couponId: 'coupon_row',
+    });
+    expect(firstArg<{ where: unknown; data: unknown }>(db.coupon.update)).toEqual({
+      where: { id: 'coupon_row' },
+      data: { usedCount: { increment: 1 } },
+    });
+  });
+
+  it('does not count the same coupon twice on later syncs of the same row', async () => {
+    const { syncSubscriptionFromStripe } = await import('./stripe');
+    const db = makeDb();
+    db.subscription.findUnique.mockResolvedValueOnce({
+      id: 'sub_row',
+      status: 'ACTIVE',
+      stripeSubscriptionId: 'sub_test_001',
+      couponId: 'coupon_row',
+    });
+    db.coupon.findFirst.mockResolvedValueOnce({ id: 'coupon_row' });
+    const sub = stripeSubscriptionObject({
+      status: 'active',
+      discounts: [{ id: 'di_1', promotion_code: 'promo_abc', source: { coupon: 'stc_1' } }],
+    }) as unknown as Stripe.Subscription;
+
+    await syncSubscriptionFromStripe(db as never, sub);
+
+    // Already expanded → no retrieve; already linked → no increment, no couponId write.
+    expect(subscriptionsRetrieve).not.toHaveBeenCalled();
+    expect(db.coupon.update).not.toHaveBeenCalled();
+    expect(
+      firstArg<{ data: Record<string, unknown> }>(db.subscription.update).data.couponId,
+    ).toBeUndefined();
+  });
+
+  it('ignores a Stripe discount that mirrors no admin coupon (Dashboard-only coupon)', async () => {
+    const { syncSubscriptionFromStripe } = await import('./stripe');
+    const db = makeDb();
+    db.subscription.findUnique.mockResolvedValueOnce({
+      id: 'sub_row',
+      status: 'ACTIVE',
+      stripeSubscriptionId: 'sub_test_001',
+      couponId: null,
+    });
+    const sub = stripeSubscriptionObject({
+      status: 'active',
+      discounts: [{ id: 'di_9', promotion_code: null, source: { coupon: 'stc_unknown' } }],
+    }) as unknown as Stripe.Subscription;
+    await syncSubscriptionFromStripe(db as never, sub);
+    expect(db.coupon.update).not.toHaveBeenCalled();
+    expect(
+      firstArg<{ data: Record<string, unknown> }>(db.subscription.update).data.couponId,
+    ).toBeUndefined();
   });
 
   it('marks CANCELED on customer.subscription.deleted (school falls back to Starter)', async () => {

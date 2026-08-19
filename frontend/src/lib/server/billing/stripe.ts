@@ -374,7 +374,7 @@ export async function syncSubscriptionFromStripe(
 
   const existing = await db.subscription.findUnique({
     where: { schoolId },
-    select: { id: true, status: true, stripeSubscriptionId: true },
+    select: { id: true, status: true, stripeSubscriptionId: true, couponId: true },
   });
 
   // Stale-event guard: a school that canceled then re-subscribed has a NEW
@@ -403,6 +403,23 @@ export async function syncSubscriptionFromStripe(
     });
   }
 
+  // A code typed on Checkout (or a coupon applied from the Dashboard) shows
+  // up as a Discount on the subscription — link it to the admin Coupon it
+  // mirrors so the back-office « utilisations » and the school's estimate
+  // stay honest. Set-only: a discount that has run its course disappears
+  // from Stripe but the row keeps the coupon it redeemed.
+  const redeemedCouponId = await resolveDiscountCouponId(db, sub);
+  const couponFields =
+    redeemedCouponId && redeemedCouponId !== existing?.couponId
+      ? { couponId: redeemedCouponId }
+      : {};
+  if (couponFields.couponId) {
+    await db.coupon.update({
+      where: { id: couponFields.couponId },
+      data: { usedCount: { increment: 1 } },
+    });
+  }
+
   if (!existing) {
     const created = await db.subscription.create({
       data: {
@@ -413,6 +430,7 @@ export async function syncSubscriptionFromStripe(
         renewsAt,
         trialEndsAt: unix(sub.trial_end),
         ...stripeFields,
+        ...couponFields,
         statusChanges: { create: { fromStatus: null, toStatus: status } },
       },
       select: { id: true, schoolId: true },
@@ -428,12 +446,46 @@ export async function syncSubscriptionFromStripe(
       renewsAt,
       trialEndsAt: unix(sub.trial_end),
       ...stripeFields,
+      ...couponFields,
       ...(existing.status !== status
         ? { statusChanges: { create: { fromStatus: existing.status, toStatus: status } } }
         : {}),
     },
   });
   return { id: existing.id, schoolId };
+}
+
+/**
+ * Our Coupon behind the subscription's first Stripe Discount, matched by
+ * Promotion Code id (typed on Checkout) or Coupon id (applied by hand in
+ * the Dashboard). Webhook payloads carry discounts as bare ids — one
+ * expanded retrieve resolves them; no discount = no call.
+ */
+async function resolveDiscountCouponId(db: Db, sub: Stripe.Subscription): Promise<string | null> {
+  const first = sub.discounts?.[0];
+  if (!first) return null;
+  let discount: Stripe.Discount;
+  if (typeof first === 'string') {
+    const expanded = await getStripe().subscriptions.retrieve(sub.id, { expand: ['discounts'] });
+    const d = expanded.discounts?.[0];
+    if (!d || typeof d === 'string') return null;
+    discount = d;
+  } else {
+    discount = first;
+  }
+  const promotionCodeId = idOf(discount.promotion_code);
+  const stripeCouponId = idOf(discount.source?.coupon);
+  if (!promotionCodeId && !stripeCouponId) return null;
+  const coupon = await db.coupon.findFirst({
+    where: {
+      OR: [
+        ...(promotionCodeId ? [{ stripePromotionCodeId: promotionCodeId }] : []),
+        ...(stripeCouponId ? [{ stripeCouponId }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  return coupon?.id ?? null;
 }
 
 /**

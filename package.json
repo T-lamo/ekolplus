@@ -35,6 +35,8 @@
     "seed:dev-school": "pnpm --filter frontend run seed:dev-school",
     "stripe:doctor": "pnpm --filter frontend run stripe:doctor",
     "stripe:doctor:live": "pnpm --filter frontend run stripe:doctor:live",
+    "stripe:sync-coupons": "pnpm --filter frontend run stripe:sync-coupons",
+    "stripe:sync-coupons:live": "pnpm --filter frontend run stripe:sync-coupons:live",
     "smoke:auth": "pnpm --filter frontend run smoke:auth",
     "prepare": "husky"
   },

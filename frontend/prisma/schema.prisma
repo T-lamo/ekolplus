@@ -1008,38 +1008,48 @@ model Coupon {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
+  // Stripe mirror — the SAME code is redeemable on the hosted Checkout page
+  // (`allow_promotion_codes`): a Stripe Coupon (the discount terms) + a
+  // Promotion Code (the customer-facing code, max uses, expiry, customer
+  // restriction). Both null = not pushed to Stripe (keys absent, plan not
+  // billed through Stripe, or legacy row → `pnpm stripe:sync-coupons`).
+  // Stripe coupons/promo codes are immutable: editing terms replaces the
+  // pair (see lib/server/billing/coupons.ts).
+  stripeCouponId        String? @unique
+  stripePromotionCodeId String? @unique
+
   subscriptions Subscription[]
 
   @@index([expiresAt])
 }
 
 model BillingTransaction {
-  id             String              @id @default(cuid())
-  reference      String              @unique // TXN-YYYYMMDD-NNNN
-  schoolId       String
-  school         School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  subscriptionId String?
-  subscription   Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  amountCents    Int // negative = refund
-  method         BillingMethod
-  status         BillingStatus
-  paidAt         DateTime            @default(now())
-  periodStart    DateTime // first day of the covered month
+  id                    String              @id @default(cuid())
+  reference             String              @unique // TXN-YYYYMMDD-NNNN
+  schoolId              String
+  school                School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  subscriptionId        String?
+  subscription          Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  amountCents           Int // negative = refund
+  method                BillingMethod
+  status                BillingStatus
+  paidAt                DateTime            @default(now())
+  periodStart           DateTime // first day of the covered month
   // A REFUNDED row points at the transaction it reverses (1:1).
-  refundOfId     String?             @unique
-  refundOf       BillingTransaction? @relation("Refund", fields: [refundOfId], references: [id], onDelete: SetNull)
-  refund         BillingTransaction? @relation("Refund")
+  refundOfId            String?             @unique
+  refundOf              BillingTransaction? @relation("Refund", fields: [refundOfId], references: [id], onDelete: SetNull)
+  refund                BillingTransaction? @relation("Refund")
   // Stripe linkage (method = STRIPE only). `stripeInvoiceId` is the upsert
   // key of invoice.paid / invoice.payment_failed; `stripePaymentIntentId`
   // is what charge.refunded correlates on (Charge → PaymentIntent — the
   // Charge no longer carries the invoice id in current API versions).
   // `stripeInvoiceUrl` is Stripe's hosted invoice page (with PDF download),
   // exposed only to the school's own members via GET /api/school/billing.
-  stripeInvoiceId       String? @unique
-  stripePaymentIntentId String? @unique
+  stripeInvoiceId       String?             @unique
+  stripePaymentIntentId String?             @unique
   stripeInvoiceUrl      String?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   @@index([schoolId, paidAt])
   @@index([status, paidAt])

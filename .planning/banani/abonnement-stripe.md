@@ -79,6 +79,8 @@ Décisions utilisateur : **pas de verrouillage de modules** (les plans diffèren
 7. `pnpm stripe:doctor:live` (charge `.env.production.local`) → 0 bloqueur.
 8. Stripe Tax laissé désactivé (décision à revoir avec l'expert-comptable : entité FR facturant en USD).
 9. Test réel : une école de test en live avec un coupon 100 % → checkout → webhooks → cron → rétrogradation → reprise, puis annulation.
+10. **Sièges = effectif réel** : vérifier sur le projet Vercel prod que `CRON_SECRET` est défini et que `vercel.json` a bien déployé le cron `stripe-sync` (03:00 UTC, quotidien) — c'est lui qui recompte les élèves de chaque école Pro chaque jour et aligne `quantity` sur l'abonnement Stripe (`syncSeatQuantity`, proration `none` → le prochain prélèvement mensuel/annuel suit l'effectif). Le webhook `invoice.upcoming` n'est pas utilisé ; sans ce cron, la quantité ne bouge qu'au checkout. Contrôle : Vercel → Cron Jobs → dernière exécution `200`, ou Dashboard Stripe → abonnement → quantité = nombre d'élèves.
+11. **Coupons admin sur Checkout** : après `db:migrate:deploy` (migration 29), `pnpm stripe:sync-coupons:live` une fois pour mirrorer les coupons existants en Promotion Codes Stripe (les nouveaux le sont à la création). Voir `.planning/banani/admin-coupons.md` § Miroir Stripe.
 
 ## Thème « or » = plan payant (décision utilisateur 2026-08-18, exception explicite à « pas de couleurs par carte »)
 - Tokens `--color-gold-100…900` dans `globals.css` (texte foncé sur or, AA) ; `Badge tone="gold"`, `Button variant="gold"` (dégradé 300→500, texte gold-900).

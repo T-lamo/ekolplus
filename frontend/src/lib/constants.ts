@@ -1194,7 +1194,26 @@ export const ADMIN_COUPONS = {
     limit: 'Limite',
     expiry: 'Expiration',
     status: 'Statut',
+    stripe: 'Checkout Stripe',
     actions: 'Actions',
+  },
+  // Whether the code can be typed on the hosted Stripe Checkout page. The
+  // back-office mirrors each coupon as a Stripe Promotion Code (same code).
+  stripe: {
+    synced: 'Saisissable',
+    syncedHint: 'Le code peut être saisi sur la page de paiement Stripe.',
+    pending: 'À synchroniser',
+    pendingHint:
+      'Pas encore sur Stripe — le code ne sera pas accepté sur la page de paiement. Utilisez « Synchroniser avec Stripe ».',
+    notRedeemable: 'Hors Stripe',
+    notRedeemableHint:
+      'Seul le plan Établissement Pro est facturé via Stripe : ce coupon ne s’applique pas sur la page de paiement.',
+    notConfigured: 'Stripe inactif',
+    notConfiguredHint: 'Stripe n’est pas configuré sur cet environnement.',
+    syncAction: 'Synchroniser avec Stripe',
+    syncDone: 'Coupon synchronisé avec Stripe.',
+    createdUnsynced:
+      'Coupon créé, mais pas encore sur Stripe — utilisez « Synchroniser avec Stripe » pour le rendre saisissable.',
   },
   allPlans: 'Tous les plans',
   perMonths: (n: number) => `/ ${n} mois`,

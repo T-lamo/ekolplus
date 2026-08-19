@@ -20,7 +20,21 @@ import {
   monthsSince,
   subscriptionMonthlyCents,
 } from '@/lib/server/admin/saas-metrics';
+import { createLogger } from '@/lib/server/logger';
+import {
+  COUPON_CODE_HINT,
+  COUPON_CODE_MAX,
+  COUPON_CODE_MIN,
+  COUPON_CODE_RE,
+} from '@/lib/coupon-code';
+import { isStripeConfigured } from '@/lib/server/billing/stripe-client';
+import {
+  COUPON_STRIPE_SELECT,
+  isStripeRedeemablePlan,
+  reconcileStripeCoupon,
+} from '@/lib/server/billing/coupons';
 
+const log = createLogger();
 const PAGE_SIZE = 20;
 
 const COUPON_SELECT = {
@@ -36,6 +50,7 @@ const COUPON_SELECT = {
   description: true,
   plan: { select: { key: true, name: true } },
   school: { select: { id: true, name: true } },
+  stripePromotionCodeId: true,
   _count: { select: { subscriptions: true } },
 } satisfies Prisma.CouponSelect;
 
@@ -131,10 +146,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           school: c.school,
           attachedSubscriptions: c._count.subscriptions,
           status: couponStatus(c, now),
+          // Whether the code can be typed on the hosted Checkout page
+          // (mirrored as a Stripe Promotion Code). `redeemable` = the plan
+          // scope allows it at all (only Pro is billed via Stripe).
+          stripe: {
+            synced: c.stripePromotionCodeId !== null,
+            redeemable: isStripeRedeemablePlan(c.plan?.key ?? null),
+          },
         })),
         total,
         page,
         pageSize: PAGE_SIZE,
+        stripeConfigured: isStripeConfigured(),
         stats: {
           activeCount,
           totalUses: usesAgg._sum.usedCount ?? 0,
@@ -151,9 +174,9 @@ const PostBody = z.object({
   code: z
     .string()
     .trim()
-    .min(3)
-    .max(30)
-    .regex(/^[A-ZÀ-Ü0-9_-]+$/i, 'Lettres, chiffres, tirets uniquement'),
+    .min(COUPON_CODE_MIN)
+    .max(COUPON_CODE_MAX)
+    .regex(COUPON_CODE_RE, COUPON_CODE_HINT),
   type: z.enum(['PERCENT', 'FIXED', 'FREE_MONTH']),
   value: z.number().int().positive(),
   durationMonths: z.number().int().positive().max(60).nullable().optional(),
@@ -237,8 +260,38 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return row;
     });
 
+    // Mirror on Stripe AFTER the row exists: a Stripe hiccup must not lose
+    // the admin's coupon — the row is kept, flagged unsynced in the list,
+    // and « Synchroniser avec Stripe » (PATCH {}) retries.
+    let stripe: { synced: boolean; error?: string } = { synced: false };
+    try {
+      const view = await prisma.coupon.findUniqueOrThrow({
+        where: { id: created.id },
+        select: COUPON_STRIPE_SELECT,
+      });
+      const sync = await reconcileStripeCoupon(prisma, view, null);
+      if (sync.stripePromotionCodeId) {
+        await prisma.coupon.update({
+          where: { id: created.id },
+          data: {
+            stripeCouponId: sync.stripeCouponId,
+            stripePromotionCodeId: sync.stripePromotionCodeId,
+          },
+        });
+        stripe = { synced: true };
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      log.warn('coupon created but not mirrored on Stripe', {
+        couponId: created.id,
+        code,
+        message,
+      });
+      stripe = { synced: false, error: message };
+    }
+
     return NextResponse.json(
-      { coupon: created },
+      { coupon: created, stripe },
       { status: 201, headers: { 'x-request-id': ctx.requestId } },
     );
   });

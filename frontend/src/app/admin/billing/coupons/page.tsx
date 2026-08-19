@@ -12,7 +12,9 @@ import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_COUPONS as T, ADMIN_SAAS } from '@/lib/constants';
 import { couponDiscountLabel, fmtDateMed, fmtUsdRound } from '@/lib/admin-format';
+import { COUPON_CODE_HINT, COUPON_CODE_MAX, COUPON_CODE_RE } from '@/lib/coupon-code';
 import { exportToCsv } from '@/lib/csv-export';
+import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -46,6 +48,8 @@ interface CouponRow {
   school: { id: string; name: string } | null;
   attachedSubscriptions: number;
   status: CouponDisplayStatus;
+  // Mirrored as a Stripe Promotion Code → typable on the hosted Checkout.
+  stripe: { synced: boolean; redeemable: boolean };
 }
 
 interface CouponsResponse {
@@ -53,6 +57,7 @@ interface CouponsResponse {
   total: number;
   page: number;
   pageSize: number;
+  stripeConfigured: boolean;
   stats: {
     activeCount: number;
     totalUses: number;
@@ -133,6 +138,24 @@ export default function AdminCouponsPage() {
     }
   }
 
+  // `PATCH {}` = reconcile the coupon with Stripe without changing anything
+  // (creates the Promotion Code for a row saved while Stripe was down).
+  async function syncStripe(c: CouponRow) {
+    try {
+      const res = await api<{ stripe: { synced: boolean } }>(`/api/admin/billing/coupons/${c.id}`, {
+        method: 'PATCH',
+        body: {},
+      });
+      toast(
+        res.stripe.synced ? T.stripe.syncDone : T.stripe.pendingHint,
+        res.stripe.synced ? 'success' : 'warning',
+      );
+      void load();
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : T.loadError, 'error');
+    }
+  }
+
   function onExport() {
     if (!data) return;
     exportToCsv(
@@ -146,6 +169,7 @@ export default function AdminCouponsPage() {
         T.columns.limit,
         T.columns.expiry,
         T.columns.status,
+        T.columns.stripe,
       ],
       data.items.map((c) => [
         c.code,
@@ -156,6 +180,11 @@ export default function AdminCouponsPage() {
         c.maxUses ?? T.unlimited,
         c.expiresAt ? fmtDateMed(c.expiresAt) : T.noExpiry,
         ADMIN_SAAS.couponStatus[c.status],
+        !c.stripe.redeemable
+          ? T.stripe.notRedeemable
+          : c.stripe.synced
+            ? T.stripe.synced
+            : T.stripe.pending,
       ]),
     );
   }
@@ -270,7 +299,7 @@ export default function AdminCouponsPage() {
           ) : (
             <>
               <div className="flex-1 overflow-x-auto">
-                <table className="w-full min-w-[980px]">
+                <table className="w-full min-w-[1080px]">
                   <thead>
                     <tr className="border-b border-border">
                       <th className={TH_CLASS}>{T.columns.code}</th>
@@ -281,6 +310,7 @@ export default function AdminCouponsPage() {
                       <th className={TH_CLASS}>{T.columns.limit}</th>
                       <th className={TH_CLASS}>{T.columns.expiry}</th>
                       <th className={TH_CLASS}>{T.columns.status}</th>
+                      <th className={TH_CLASS}>{T.columns.stripe}</th>
                       <th className={`${TH_CLASS} text-right`}>{T.columns.actions}</th>
                     </tr>
                   </thead>
@@ -352,6 +382,9 @@ export default function AdminCouponsPage() {
                         <td className={TD_CLASS}>
                           <CouponStatusBadge status={c.status} />
                         </td>
+                        <td className={TD_CLASS}>
+                          <StripeBadge coupon={c} configured={data.stripeConfigured} />
+                        </td>
                         <td className={`${TD_CLASS} text-right`}>
                           <div className="flex justify-end">
                             <ActionMenu
@@ -370,6 +403,14 @@ export default function AdminCouponsPage() {
                                   label: c.active ? T.actions.disable : T.actions.enable,
                                   onClick: () => void toggleActive(c),
                                 },
+                                ...(data.stripeConfigured && c.stripe.redeemable && !c.stripe.synced
+                                  ? [
+                                      {
+                                        label: T.stripe.syncAction,
+                                        onClick: () => void syncStripe(c),
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   label: T.actions.delete,
                                   tone: 'danger',
@@ -422,6 +463,38 @@ export default function AdminCouponsPage() {
         />
       )}
     </div>
+  );
+}
+
+// One pill per Stripe state — the same question the admin asks when handing a
+// code to a school: « est-ce que ça passera sur la page de paiement ? ».
+function StripeBadge({ coupon, configured }: { coupon: CouponRow; configured: boolean }) {
+  const s = T.stripe;
+  if (!coupon.stripe.redeemable) {
+    return (
+      <Badge tone="muted" title={s.notRedeemableHint}>
+        {s.notRedeemable}
+      </Badge>
+    );
+  }
+  if (coupon.stripe.synced) {
+    return (
+      <Badge tone="success" title={s.syncedHint}>
+        {s.synced}
+      </Badge>
+    );
+  }
+  if (!configured) {
+    return (
+      <Badge tone="muted" title={s.notConfiguredHint}>
+        {s.notConfigured}
+      </Badge>
+    );
+  }
+  return (
+    <Badge tone="warning" title={s.pendingHint}>
+      {s.pending}
+    </Badge>
   );
 }
 
@@ -481,6 +554,11 @@ function FormModal({
       toast(valueLabel, 'error');
       return;
     }
+    const trimmedCode = code.trim().toUpperCase();
+    if (!isEdit && !COUPON_CODE_RE.test(trimmedCode)) {
+      toast(COUPON_CODE_HINT, 'error');
+      return;
+    }
     const shared = {
       type,
       value: intValue,
@@ -496,10 +574,13 @@ function FormModal({
         await api(`/api/admin/billing/coupons/${coupon.id}`, { method: 'PATCH', body: shared });
         onDone(T.formModal.updated);
       } else {
-        await api('/api/admin/billing/coupons', {
-          method: 'POST',
-          body: { ...shared, code: code.trim().toUpperCase() },
-        });
+        const res = await api<{ stripe: { synced: boolean; error?: string } }>(
+          '/api/admin/billing/coupons',
+          { method: 'POST', body: { ...shared, code: trimmedCode } },
+        );
+        // The row is saved either way; only warn when Stripe itself failed
+        // (not when the plan scope simply isn't billed via Stripe).
+        if (res.stripe.error) toast(T.stripe.createdUnsynced, 'warning');
         onDone(T.formModal.created);
       }
     } catch (err) {
@@ -565,6 +646,7 @@ function FormModal({
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   autoComplete="off"
+                  maxLength={COUPON_CODE_MAX}
                   className="font-mono uppercase"
                 />
               </div>
@@ -577,7 +659,9 @@ function FormModal({
                 {T.formModal.generate}
               </Button>
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{T.formModal.codeHint}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {T.formModal.codeHint} · {COUPON_CODE_HINT}
+            </p>
           </div>
         )}
 

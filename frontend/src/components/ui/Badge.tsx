@@ -20,14 +20,18 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
 export function Badge({
   tone = 'muted',
   className,
+  title,
   children,
 }: {
   tone?: BadgeTone;
   className?: string;
+  /** Native tooltip — a one-line explanation of the status. */
+  title?: string;
   children: ReactNode;
 }) {
   return (
     <span
+      title={title}
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap',
         TONE_CLASSES[tone],

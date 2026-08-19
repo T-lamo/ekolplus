@@ -1,3 +1,36 @@
 {
-  "placeholder": "placeholder"
+  "headline": "Gérez votre école, simplement.",
+  "subline": "La plateforme tout-en-un pour les établissements scolaires : notes, présences, bulletins et bien plus.",
+  "features": {
+    "grades": "Saisie et gestion des notes par matière",
+    "attendance": "Suivi des présences en temps réel",
+    "bulletins": "Génération automatique des bulletins",
+    "stats": "Statistiques et rapports détaillés"
+  },
+  "welcome": "Bienvenue 👋",
+  "formSubtitle": "Connectez-vous à votre espace pour accéder au tableau de bord de votre établissement.",
+  "accountTypeLabel": "Type de compte",
+  "roleTabs": {
+    "admin": "Administrateur",
+    "teacher": "Enseignant",
+    "studentParent": "Élève / Parent"
+  },
+  "emailLabel": "Adresse e-mail",
+  "passwordLabel": "Mot de passe",
+  "showPassword": "Afficher le mot de passe",
+  "hidePassword": "Masquer le mot de passe",
+  "forgotPassword": "Mot de passe oublié ?",
+  "rememberMe": "Se souvenir de moi sur cet appareil",
+  "submit": "Se connecter",
+  "submitting": "Connexion…",
+  "noAccount": "Pas encore de compte ?",
+  "contactAdmin": "Contacter l'administrateur",
+  "securityNote": "Connexion sécurisée — vos données sont chiffrées",
+  "errors": {
+    "TOO_MANY_LOGIN_ATTEMPTS": "Trop de tentatives. Réessaie dans quelques minutes.",
+    "LOCKED_OUT": "Compte temporairement verrouillé après plusieurs échecs. Réessaie dans quelques minutes.",
+    "INVALID_CREDENTIALS": "E-mail ou mot de passe incorrect.",
+    "EMAIL_NOT_VERIFIED": "Vérifie d'abord ton adresse e-mail avant de te connecter.",
+    "ACCOUNT_SUSPENDED": "Ce compte a été suspendu. Contacte le support."
+  }
 }

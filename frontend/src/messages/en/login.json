@@ -1,3 +1,36 @@
 {
-  "placeholder": "placeholder"
+  "headline": "Manage your school, simply.",
+  "subline": "The all-in-one platform for schools: grades, attendance, report cards and more.",
+  "features": {
+    "grades": "Enter and manage grades by subject",
+    "attendance": "Real-time attendance tracking",
+    "bulletins": "Automatic report card generation",
+    "stats": "Detailed statistics and reports"
+  },
+  "welcome": "Welcome 👋",
+  "formSubtitle": "Sign in to your workspace to access your school's dashboard.",
+  "accountTypeLabel": "Account type",
+  "roleTabs": {
+    "admin": "Administrator",
+    "teacher": "Teacher",
+    "studentParent": "Student / Parent"
+  },
+  "emailLabel": "Email address",
+  "passwordLabel": "Password",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "forgotPassword": "Forgot password?",
+  "rememberMe": "Remember me on this device",
+  "submit": "Sign in",
+  "submitting": "Signing in…",
+  "noAccount": "Don't have an account yet?",
+  "contactAdmin": "Contact the administrator",
+  "securityNote": "Secure connection — your data is encrypted",
+  "errors": {
+    "TOO_MANY_LOGIN_ATTEMPTS": "Too many attempts. Try again in a few minutes.",
+    "LOCKED_OUT": "Account temporarily locked after several failed attempts. Try again in a few minutes.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "EMAIL_NOT_VERIFIED": "Please verify your email address before signing in.",
+    "ACCOUNT_SUSPENDED": "This account has been suspended. Contact support."
+  }
 }

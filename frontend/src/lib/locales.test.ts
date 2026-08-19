@@ -13,6 +13,12 @@ import {
   matchAcceptLanguage,
   resolveLocaleKey,
 } from './locales';
+import frCommon from '../messages/fr/common.json';
+import htCommon from '../messages/ht/common.json';
+import enCommon from '../messages/en/common.json';
+import frLogin from '../messages/fr/login.json';
+import htLogin from '../messages/ht/login.json';
+import enLogin from '../messages/en/login.json';
 
 describe('locale registry', () => {
   it('lists exactly fr, ht, en — French default first', () => {
@@ -56,5 +62,52 @@ describe('matchAcceptLanguage', () => {
 
   it('matches on the primary subtag (fr-CA still matches fr)', () => {
     expect(matchAcceptLanguage('fr-CA')).toBe('fr');
+  });
+});
+
+// Deep key-set equality per namespace — a message added to French but
+// forgotten in Creole/English must fail `pnpm test`, not silently render
+// as a missing-key fallback (or worse, leak the raw key) in production.
+function keyPaths(obj: unknown, prefix = ''): string[] {
+  if (typeof obj !== 'object' || obj === null) return [prefix];
+  return Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) =>
+    keyPaths(v, prefix ? `${prefix}.${k}` : k),
+  );
+}
+
+describe('message files stay in sync across locales', () => {
+  const namespaces = [
+    { name: 'common', fr: frCommon, ht: htCommon, en: enCommon },
+    { name: 'login', fr: frLogin, ht: htLogin, en: enLogin },
+  ];
+
+  it.each(namespaces)('$name: fr/ht/en share the exact same key set', ({ fr, ht, en }) => {
+    const frKeys = keyPaths(fr)
+      .filter((k) => k !== '_review')
+      .sort();
+    const htKeys = keyPaths(ht)
+      .filter((k) => k !== '_review')
+      .sort();
+    const enKeys = keyPaths(en)
+      .filter((k) => k !== '_review')
+      .sort();
+    expect(htKeys).toEqual(frKeys);
+    expect(enKeys).toEqual(frKeys);
+  });
+
+  it.each(namespaces)('$name: no empty-string values in any locale', ({ name, fr, ht, en }) => {
+    for (const [label, tree] of [
+      ['fr', fr],
+      ['ht', ht],
+      ['en', en],
+    ] as const) {
+      const empties = keyPaths(tree).filter((path) => {
+        const value = path.split('.').reduce<unknown>((acc, key) => {
+          return acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined;
+        }, tree);
+        return value === '';
+      });
+      expect(empties, `${label}.${name} has empty values: ${empties.join(', ')}`).toEqual([]);
+    }
   });
 });

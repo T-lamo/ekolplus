@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -420,7 +421,7 @@ export default function AppreciationsListPage() {
             </Card>
           ) : (
             <Card className="min-h-0 flex-1 gap-0 overflow-visible">
-              <div className={TABLE_SCROLL}>
+              <div className={cn('hidden md:block', TABLE_SCROLL)}>
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
@@ -514,6 +515,54 @@ export default function AppreciationsListPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* < md: cards */}
+              <div className="flex flex-col gap-2.5 p-3.5 md:hidden">
+                {pageStudents.map((s) => (
+                  <div key={s.studentId} className="rounded-md border border-border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />
+                        <div className="min-w-0">
+                          <div className="truncate text-caption font-semibold text-foreground">
+                            {s.firstName} {s.lastName}
+                          </div>
+                          <div className="truncate text-2xs text-muted-foreground">
+                            #{s.studentNumber}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="-mt-1 -mr-1 shrink-0">
+                        <ActionMenu items={menuItemsFor(s)} />
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
+                      {s.status === 'PUBLISHED' ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
+                          <CheckCircle2 size={10} />
+                          Saisie
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
+                          <Clock size={10} />
+                          En attente
+                        </span>
+                      )}
+                      <span className={`text-sm font-bold ${moyColor(s.average)}`}>
+                        {fmt(s.average)}
+                        {s.mention && (
+                          <span
+                            className={`ml-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
+                          >
+                            {MENTION_LABEL[s.mention]}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">
                   Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}

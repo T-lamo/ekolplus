@@ -12,6 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -336,7 +337,7 @@ export default function OverdueFeesPage() {
                 </Card>
               ) : (
                 <Card className="min-h-0 flex-1">
-                  <div className={TABLE_SCROLL}>
+                  <div className={cn('hidden md:block', TABLE_SCROLL)}>
                     <table className="w-full min-w-[920px] border-collapse text-sm">
                       <thead className={STICKY_THEAD}>
                         <tr className="border-b border-border">
@@ -410,7 +411,57 @@ export default function OverdueFeesPage() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* < md: cards */}
+                  <div className="flex flex-col gap-2.5 p-3.5 md:hidden">
+                    {data.rows.map((r) => {
+                      const key = `${r.studentId}:${r.trancheId}`;
+                      return (
+                        <div key={key} className="rounded-md border border-border p-3">
+                          <div className="flex items-start gap-2.5">
+                            <input
+                              type="checkbox"
+                              aria-label={`Sélectionner ${r.firstName} ${r.lastName}`}
+                              checked={selected.has(key)}
+                              onChange={() => toggleRow(key)}
+                              className="mt-1 shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex min-w-0 items-center gap-2.5">
+                                  <Avatar name={`${r.firstName} ${r.lastName}`} size={32} />
+                                  <div className="min-w-0">
+                                    <div className="truncate font-semibold text-foreground">
+                                      {r.firstName} {r.lastName}
+                                    </div>
+                                    <div className="truncate text-2xs text-muted-foreground">
+                                      #{r.studentNumber} · {r.className}
+                                      {r.disputed && ' · Litigieux'}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="-mt-1 -mr-1 shrink-0">
+                                  <ActionMenu items={menuItemsFor(r)} />
+                                </div>
+                              </div>
+                              <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
+                                <SeverityBadge severity={r.severity} />
+                                <span className="text-caption font-bold text-foreground">
+                                  {fmtMoney(r.amountDue, automation?.currency)}
+                                </span>
+                              </div>
+                              <div className="mt-1.5 text-2xs text-muted-foreground">
+                                {r.trancheLabel} · {t.daysOverdue(r.daysOverdue)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                   <Pager
+                    centered
                     page={data.page}
                     pageSize={data.pageSize}
                     total={data.total}

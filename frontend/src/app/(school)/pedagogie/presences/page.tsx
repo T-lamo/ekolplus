@@ -827,7 +827,7 @@ function AlertsSection({
           — taux &lt; {ALERT_RATE_THRESHOLD}% ou {ALERT_ABSENCE_THRESHOLD}+ absences ce trimestre
         </span>
       </div>
-      <table className="w-full min-w-[560px] border-collapse text-sm">
+      <table className="hidden w-full min-w-[560px] border-collapse text-sm md:table">
         <thead>
           <tr className="border-b border-border">
             <Th>Élève</Th>
@@ -897,6 +897,65 @@ function AlertsSection({
           })}
         </tbody>
       </table>
+
+      {/* < md: cards */}
+      <div className="flex flex-col gap-2.5 p-3.5 md:hidden">
+        {atRisk.map((row) => {
+          const lowRate = row.rate != null && row.rate < ALERT_RATE_THRESHOLD;
+          const highAbsences = row.absences >= ALERT_ABSENCE_THRESHOLD;
+          return (
+            <div key={row.id} className="rounded-md border border-border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <Avatar name={`${row.firstName} ${row.lastName}`} size={28} />
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-foreground">
+                      {row.firstName} {row.lastName}
+                    </div>
+                    <div className="truncate text-2xs text-muted-foreground">
+                      #{row.studentNumber}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                  {lowRate && (
+                    <span className="rounded-full bg-destructive px-2 py-0.5 text-2xs font-bold text-destructive-foreground">
+                      Taux faible
+                    </span>
+                  )}
+                  {highAbsences && (
+                    <span className="rounded-full bg-warning px-2 py-0.5 text-2xs font-bold text-warning-foreground">
+                      Absences répétées
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-border pt-2.5">
+                <RateBar rate={row.rate} />
+                <span className="text-caption font-semibold text-foreground">
+                  {row.absences} absence{row.absences > 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onView(row.id)}
+                  className="flex-1 rounded-md border border-border px-2.5 py-1.5 text-2xs font-semibold text-foreground"
+                >
+                  Voir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onJustify(row)}
+                  className="flex-1 rounded-md border border-border px-2.5 py-1.5 text-2xs font-semibold text-foreground"
+                >
+                  Justifier
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </Card>
   );
 }

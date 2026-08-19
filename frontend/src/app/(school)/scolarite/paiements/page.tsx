@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -378,7 +379,12 @@ export default function FeeManagementPage() {
             </Card>
           ) : (
             <Card className="min-h-0 flex-1">
-              <div className={TABLE_SCROLL}>
+              {/* md+: table. Below that a table needs constant horizontal
+                  scrolling to read a single student's balance — cards show
+                  the numbers that matter (reste dû, statut) without it,
+                  trading the secondary columns (dû/payé/tranches) for a tap
+                  into the row's own menu (Historique shows the full detail). */}
+              <div className={cn('hidden md:block', TABLE_SCROLL)}>
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
@@ -432,7 +438,43 @@ export default function FeeManagementPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* < md: cards */}
+              <div
+                className={cn(
+                  'flex flex-col gap-2.5 overflow-y-auto p-3.5 md:hidden',
+                  'min-h-0 flex-1',
+                )}
+              >
+                {data.students.map((s) => (
+                  <div key={s.studentId} className="rounded-md border border-border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Avatar name={`${s.firstName} ${s.lastName}`} size={32} />
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-foreground">
+                            {s.firstName} {s.lastName}
+                          </div>
+                          <div className="truncate text-2xs text-muted-foreground">
+                            #{s.studentNumber} · {s.className}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="-mt-1 -mr-1 shrink-0">
+                        <ActionMenu items={menuItemsFor(s)} />
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
+                      <StudentStatusBadge status={s.status} />
+                      <span className="text-caption font-bold text-foreground">
+                        {t.columns.remaining} : {fmtMoney(s.remaining, currency)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <Pager
+                centered
                 page={data.page}
                 pageSize={data.pageSize}
                 total={data.total}

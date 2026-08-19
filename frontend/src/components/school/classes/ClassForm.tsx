@@ -772,55 +772,140 @@ function SubjectsDetail({
         )}
       </button>
       {open && (
-        <div id="class-subjects-detail" className="overflow-x-auto">
-          <table className="w-full min-w-[520px] border-collapse text-caption">
-            <thead>
-              <tr className="border-t border-b border-border bg-card text-left text-2xs font-semibold text-muted-foreground uppercase">
-                <th className="px-3 py-1.5 font-semibold">Matière</th>
-                <th className="px-2 py-1.5 font-semibold">Enseignant</th>
-                <th className="w-[72px] px-2 py-1.5 text-center font-semibold">Coef.</th>
-                <th className="w-[84px] px-2 py-1.5 text-center font-semibold">h / sem</th>
-                <th className="w-8 px-2 py-1.5" aria-label="Verrou" />
-              </tr>
-            </thead>
-            <tbody>
-              {subjects.map((s) => {
-                const pivot = form.pivots[s.id];
-                const busy = form.pivotBusy === s.id;
-                return (
-                  <tr
-                    key={s.id}
-                    className={cn('border-b border-border last:border-b-0', busy && 'opacity-60')}
-                  >
-                    <td className="px-3 py-1.5">
-                      <span className="flex items-center gap-2">
-                        <span
-                          aria-hidden
-                          className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
-                          style={{ background: s.color ?? 'var(--color-primary)' }}
+        <div id="class-subjects-detail">
+          {/* md+: table */}
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[520px] border-collapse text-caption">
+              <thead>
+                <tr className="border-t border-b border-border bg-card text-left text-2xs font-semibold text-muted-foreground uppercase">
+                  <th className="px-3 py-1.5 font-semibold">Matière</th>
+                  <th className="px-2 py-1.5 font-semibold">Enseignant</th>
+                  <th className="w-[72px] px-2 py-1.5 text-center font-semibold">Coef.</th>
+                  <th className="w-[84px] px-2 py-1.5 text-center font-semibold">h / sem</th>
+                  <th className="w-8 px-2 py-1.5" aria-label="Verrou" />
+                </tr>
+              </thead>
+              <tbody>
+                {subjects.map((s) => {
+                  const pivot = form.pivots[s.id];
+                  const busy = form.pivotBusy === s.id;
+                  return (
+                    <tr
+                      key={s.id}
+                      className={cn('border-b border-border last:border-b-0', busy && 'opacity-60')}
+                    >
+                      <td className="px-3 py-1.5">
+                        <span className="flex items-center gap-2">
+                          <span
+                            aria-hidden
+                            className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                            style={{ background: s.color ?? 'var(--color-primary)' }}
+                          />
+                          <span className="truncate font-medium text-foreground">{s.name}</span>
+                        </span>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <BareSelect
+                          value={pivot?.teacherId ?? ''}
+                          onValueChange={(id) =>
+                            void form.updatePivot(s.id, { teacherId: id || null })
+                          }
+                          placeholder="—"
+                          className="h-8 py-1 text-xs"
+                          disabled={!pivot || busy}
+                        >
+                          <SelectItem value="">— Aucun —</SelectItem>
+                          {teachers.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.name}
+                            </SelectItem>
+                          ))}
+                        </BareSelect>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <NumberCell
+                          ariaLabel={`Coefficient de ${s.name}`}
+                          value={pivot?.coefficient ?? null}
+                          min={1}
+                          max={10}
+                          step={1}
+                          disabled={!pivot || busy}
+                          onCommit={(n) => void form.updatePivot(s.id, { coefficient: n })}
                         />
-                        <span className="truncate font-medium text-foreground">{s.name}</span>
-                      </span>
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <BareSelect
-                        value={pivot?.teacherId ?? ''}
-                        onValueChange={(id) =>
-                          void form.updatePivot(s.id, { teacherId: id || null })
-                        }
-                        placeholder="—"
-                        className="h-8 py-1 text-xs"
-                        disabled={!pivot || busy}
-                      >
-                        <SelectItem value="">— Aucun —</SelectItem>
-                        {teachers.map((t) => (
-                          <SelectItem key={t.id} value={t.id}>
-                            {t.name}
-                          </SelectItem>
-                        ))}
-                      </BareSelect>
-                    </td>
-                    <td className="px-2 py-1.5">
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <NumberCell
+                          ariaLabel={`Heures hebdomadaires de ${s.name}`}
+                          value={pivot?.weeklyHours ?? null}
+                          min={0.5}
+                          max={60}
+                          step={0.5}
+                          disabled={!pivot || busy}
+                          onCommit={(n) => void form.updatePivot(s.id, { weeklyHours: n })}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        {pivot?.locked && (
+                          <Lock
+                            size={12}
+                            className="inline text-muted-foreground"
+                            aria-label="Des notes existent pour cette matière"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* < md: cards */}
+          <div className="flex flex-col gap-2 p-2.5 md:hidden">
+            {subjects.map((s) => {
+              const pivot = form.pivots[s.id];
+              const busy = form.pivotBusy === s.id;
+              return (
+                <div
+                  key={s.id}
+                  className={cn('rounded-md border border-border p-2.5', busy && 'opacity-60')}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                      style={{ background: s.color ?? 'var(--color-primary)' }}
+                    />
+                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                      {s.name}
+                    </span>
+                    {pivot?.locked && (
+                      <Lock
+                        size={12}
+                        className="shrink-0 text-muted-foreground"
+                        aria-label="Des notes existent pour cette matière"
+                      />
+                    )}
+                  </div>
+                  <div className="mt-2">
+                    <BareSelect
+                      value={pivot?.teacherId ?? ''}
+                      onValueChange={(id) => void form.updatePivot(s.id, { teacherId: id || null })}
+                      placeholder="Enseignant — Aucun"
+                      className="h-8 w-full py-1 text-xs"
+                      disabled={!pivot || busy}
+                    >
+                      <SelectItem value="">— Aucun —</SelectItem>
+                      {teachers.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </BareSelect>
+                  </div>
+                  <div className="mt-2 flex items-center gap-4">
+                    <label className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+                      Coeff.
                       <NumberCell
                         ariaLabel={`Coefficient de ${s.name}`}
                         value={pivot?.coefficient ?? null}
@@ -830,8 +915,9 @@ function SubjectsDetail({
                         disabled={!pivot || busy}
                         onCommit={(n) => void form.updatePivot(s.id, { coefficient: n })}
                       />
-                    </td>
-                    <td className="px-2 py-1.5">
+                    </label>
+                    <label className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+                      h/sem
                       <NumberCell
                         ariaLabel={`Heures hebdomadaires de ${s.name}`}
                         value={pivot?.weeklyHours ?? null}
@@ -841,21 +927,12 @@ function SubjectsDetail({
                         disabled={!pivot || busy}
                         onCommit={(n) => void form.updatePivot(s.id, { weeklyHours: n })}
                       />
-                    </td>
-                    <td className="px-2 py-1.5 text-center">
-                      {pivot?.locked && (
-                        <Lock
-                          size={12}
-                          className="inline text-muted-foreground"
-                          aria-label="Des notes existent pour cette matière"
-                        />
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

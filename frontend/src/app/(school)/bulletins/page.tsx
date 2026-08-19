@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -223,7 +224,7 @@ export default function BulletinsListPage() {
       </Card>
 
       <Card className="min-h-0 flex-1 overflow-hidden">
-        <div className={TABLE_SCROLL}>
+        <div className={cn('hidden md:block', TABLE_SCROLL)}>
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead className={STICKY_THEAD}>
               <tr className="border-b border-border">
@@ -249,6 +250,17 @@ export default function BulletinsListPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* < md: cards */}
+        <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3.5 md:hidden">
+          {filteredStudents.length === 0 ? (
+            <p className="p-5 text-center text-sm text-muted-foreground">Aucun élève trouvé.</p>
+          ) : (
+            filteredStudents.map((s) => (
+              <StudentCard key={s.studentId} student={s} termId={data.resolvedTermId} />
+            ))
+          )}
         </div>
       </Card>
     </div>
@@ -327,6 +339,58 @@ function StudentRow({ student, termId }: { student: ListStudentRow; termId: stri
         </div>
       </td>
     </tr>
+  );
+}
+
+function StudentCard({ student, termId }: { student: ListStudentRow; termId: string | null }) {
+  const viewHref = `/bulletins/${student.studentId}/${termId ?? ''}`;
+  const items: ActionMenuItem[] = [
+    {
+      label: 'Voir le bulletin',
+      icon: <Eye size={13} />,
+      onClick: () => (window.location.href = viewHref),
+    },
+    {
+      label: "Modifier l'appréciation",
+      icon: <Pencil size={13} />,
+      onClick: () =>
+        (window.location.href = `/pedagogie/appreciations/${student.studentId}/saisie?termId=${termId ?? ''}`),
+    },
+  ];
+
+  return (
+    <div className="rounded-md border border-border p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar name={`${student.firstName} ${student.lastName}`} size={30} />
+          <div className="min-w-0">
+            <div className="truncate text-caption font-semibold text-foreground">
+              {student.firstName} {student.lastName}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">#{student.studentNumber}</div>
+          </div>
+        </div>
+        <div className="-mt-1 -mr-1 shrink-0">
+          <ActionMenu items={items} />
+        </div>
+      </div>
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
+        <span
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold ${student.status === 'GENERATED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
+        >
+          {student.status === 'GENERATED' ? 'Généré' : 'En attente'}
+        </span>
+        <span className={`text-sm font-bold ${moyToneClass(student.average)}`}>
+          {fmt(student.average)} / 20
+          {student.rank && (
+            <span className="ml-1.5 text-xs font-medium text-muted-foreground">
+              · {student.rank}
+              {student.rank === 1 ? 'er' : 'ème'}
+            </span>
+          )}
+        </span>
+      </div>
+    </div>
   );
 }
 

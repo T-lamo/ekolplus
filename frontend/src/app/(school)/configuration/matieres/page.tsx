@@ -304,7 +304,12 @@ export default function MatieresPage() {
               <SelectItem value="archived">Archivée</SelectItem>
             </FilterSelect>
             <span className="text-sm text-muted-foreground">{filtered.length} matières</span>
-            <ViewToggle view={view} onChange={setView} className="ml-auto" />
+            {/* Table view needs real width to be usable — mobile always
+                gets the card grid instead, so the toggle (and the way to
+                reach the table) only shows from `md` up. */}
+            <div className="ml-auto hidden md:block">
+              <ViewToggle view={view} onChange={setView} />
+            </div>
           </div>
 
           {filtered.length === 0 ? (

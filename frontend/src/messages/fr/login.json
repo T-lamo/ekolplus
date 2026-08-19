@@ -27,10 +27,10 @@
   "contactAdmin": "Contacter l'administrateur",
   "securityNote": "Connexion sécurisée — vos données sont chiffrées",
   "errors": {
-    "TOO_MANY_LOGIN_ATTEMPTS": "Trop de tentatives. Réessaie dans quelques minutes.",
-    "LOCKED_OUT": "Compte temporairement verrouillé après plusieurs échecs. Réessaie dans quelques minutes.",
+    "TOO_MANY_LOGIN_ATTEMPTS": "Trop de tentatives. Réessayez dans quelques minutes.",
+    "LOCKED_OUT": "Compte temporairement verrouillé après plusieurs échecs. Réessayez dans quelques minutes.",
     "INVALID_CREDENTIALS": "E-mail ou mot de passe incorrect.",
-    "EMAIL_NOT_VERIFIED": "Vérifie d'abord ton adresse e-mail avant de te connecter.",
-    "ACCOUNT_SUSPENDED": "Ce compte a été suspendu. Contacte le support."
+    "EMAIL_NOT_VERIFIED": "Vérifiez d'abord votre adresse e-mail avant de vous connecter.",
+    "ACCOUNT_SUSPENDED": "Ce compte a été suspendu. Contactez le support."
   }
 }

@@ -1,6 +1,6 @@
 {
   "errors": {
-    "generic": "Une erreur est survenue. Réessaie.",
-    "network": "Erreur réseau. Réessaie."
+    "generic": "Une erreur est survenue. Réessayez.",
+    "network": "Erreur réseau. Réessayez."
   }
 }

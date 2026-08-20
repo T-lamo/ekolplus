@@ -20,6 +20,7 @@ import type adminDashboard from '@/messages/fr/adminDashboard.json';
 import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
 import type billingPlans from '@/messages/fr/billingPlans.json';
 import type abonnement from '@/messages/fr/abonnement.json';
+import type abonnementPaiement from '@/messages/fr/abonnementPaiement.json';
 import type settings from '@/messages/fr/settings.json';
 import type themePicker from '@/messages/fr/themePicker.json';
 import type presences from '@/messages/fr/presences.json';
@@ -50,6 +51,7 @@ declare module 'next-intl' {
       SchoolPlanCard: typeof schoolPlanCard;
       BillingPlans: typeof billingPlans;
       Abonnement: typeof abonnement;
+      AbonnementPaiement: typeof abonnementPaiement;
       Settings: typeof settings;
       ThemePicker: typeof themePicker;
       Presences: typeof presences;

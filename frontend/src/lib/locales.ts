@@ -58,6 +58,7 @@ export const MESSAGE_NAMESPACES = [
   'schoolPlanCard',
   'billingPlans',
   'abonnement',
+  'abonnementPaiement',
   'settings',
   'themePicker',
   'presences',

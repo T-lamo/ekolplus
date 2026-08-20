@@ -1,0 +1,123 @@
+{
+  "steps": {
+    "plan": "Chwazi plan",
+    "payment": "Peman",
+    "confirmation": "Konfimasyon"
+  },
+  "loadError": "Nou pa ka chaje abònman an.",
+  "header": {
+    "title": "Peman sekirize",
+    "meta": "Abònman › {plan}",
+    "sslBadge": "Koneksyon SSL 256-bit"
+  },
+  "banners": {
+    "canceled": "Peman anile — okenn montan pa t prelve. Ou ka repran nenpòt lè.",
+    "alreadyPro": "Lekòl sa a deja abòne sou plan {plan}. Jere sik la, kat la ak fakti yo soti nan paj <link>Abònman</link> la.",
+    "notOwner": "Se sèlman pwopriyetè etablisman an ki ka abòne a yon plan."
+  },
+  "plan": {
+    "title": "Chwazi plan an",
+    "subtitle": "Pri a {amount} pou chak elèv / mwa",
+    "ariaLabel": "Plan",
+    "starterName": "Starter",
+    "starterDescCurrent": "Jiska 50 elèv · gratis pou tout tan — plan aktyèl ou",
+    "starterDescOther": "Jiska 50 elèv · plan repli apre yon desann",
+    "starterPrice": "0 $",
+    "starterDisabledCurrent": "Ou deja sou Starter",
+    "starterDisabledOther": "Desann soti nan paj Abònman an",
+    "proDesc": "Jiska 1000 elèv",
+    "perElevePerMonth": "/ elèv / mwa",
+    "perElevePerYear": "/ elèv / an",
+    "cycleTitle": "Sik fakti",
+    "monthly": "Chak mwa",
+    "annual": "Chak ane",
+    "cycleSave": "Ekonomize {pct} %",
+    "studentCountLabel": "Kantite elèv",
+    "studentsEnrolled": {
+      "one": "elèv enskri",
+      "other": "elèv enskri"
+    },
+    "estimateAnnual": "Estimasyon anyèl",
+    "estimateMonthly": "Estimasyon chak mwa",
+    "seatsHint": "Kantite syèj yo fakti swiv efektif ou yo otomatikman (sinkwonizasyon chak jou, san pworata sipriz) — pa bezwen ajiste l manyèlman.",
+    "unitPerYear": "/ an",
+    "unitPerMonth": "/ mwa"
+  },
+  "billingInfo": {
+    "title": "Enfòmasyon fakti",
+    "subtitle": "Enfòmasyon sa yo ap parèt sou fakti ou yo",
+    "schoolName": "Non etablisman an",
+    "officialCode": "Kòd ofisyèl / NIF (opsyonèl)",
+    "officialCodePlaceholder": "Egz : 123-456-789",
+    "billingEmail": "Imèl fakti",
+    "phone": "Telefòn",
+    "country": "Peyi",
+    "address": "Adrès",
+    "footer": "Modifyab nan <link>Paramèt › Etablisman</link>. Adrès fakti a konfime sou paj peman Stripe a."
+  },
+  "card": {
+    "title": "Peman pa kat",
+    "subtitle": "Fòm sekirize eberje pa Stripe",
+    "cardTypes": "Kat kredi ak debi entènasyonal",
+    "processedByStripe": "Peman trete pa Stripe",
+    "dataNotice": "Done bankè ou yo pa janm konsève sou sèvè nou yo. Lè ou klike « Kontinye », w ap antre kat ou sou paj sekirize Stripe a (PCI-DSS nivo 1, 3D Secure).",
+    "promoNotice": "Ou gen yon kòd pwomosyonèl ? Antre l dirèkteman sou paj Stripe a."
+  },
+  "summary": {
+    "title": "Rezime kòmann lan",
+    "meta": {
+      "one": "{plan} · {cycle} · {count} elèv",
+      "other": "{plan} · {cycle} · {count} elèv"
+    },
+    "planLabel": "Plan {plan}",
+    "studentCount": "Kantite elèv",
+    "studentCountValue": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "monthlySubtotal": "Sou-total chak mwa",
+    "annualBilling": "Fakti anyèl",
+    "annualBillingValue": "× 12 mwa",
+    "annualDiscount": "Rabè anyèl (−{pct} %)",
+    "totalDue": "Total pou peye",
+    "perYear": "pa an",
+    "perMonth": "pa mwa",
+    "taxIncluded": "tax enkli",
+    "savingBanner": "Ou ekonomize {amount} vs. chak mwa",
+    "trialBanner": "Esè gratis {days} jou — premye prelèvman {date}",
+    "includedInPlan": "Enkli nan plan an"
+  },
+  "cta": {
+    "startTrial": "Kòmanse esè gratis la",
+    "payNow": "Peye {amount} kounye a",
+    "termsNotice": "Lè ou klike, ou aksepte <link>kondisyon itilizasyon</link> nou yo epi w ap redirije sou Stripe.",
+    "stripeBadge": "Stripe",
+    "stripeSecure": "Peman sekirize via Stripe"
+  },
+  "notes": {
+    "freeTrial": "Esè gratis {days} jou, san angajman",
+    "cancelAnytime": "Anile nenpòt kilè nan espas kliyan ou",
+    "support": "Sipò disponib pa imèl"
+  },
+  "security": {
+    "ssl": "SSL 256-bit",
+    "pci": "PCI-DSS",
+    "threeDs": "3D Secure"
+  },
+  "confirmation": {
+    "backLabel": "Abònman",
+    "title": "Konfimasyon",
+    "meta": "Abònman › {plan}",
+    "activatedTitle": "Abònman aktive",
+    "confirmedTitle": "Peman konfime",
+    "activatedBody": "Lekòl ou a kounye a sou plan {plan}. Yon resi te voye ba ou pa Stripe.",
+    "pollingBody": "Mèsi ! Stripe konfime abònman ou — aktivasyon an kou, kèk segond…",
+    "timeoutBody": "Peman an anrejistre bò kote Stripe ; aktivasyon an ap parèt talè konsa (sinkwonizasyon otomatik).",
+    "viewSubscription": "Gade abònman m"
+  },
+  "planOption": {
+    "popularBadge": "⭐ Pi popilè a",
+    "selectedBadge": "Seleksyone",
+    "currentBadge": "Plan aktyèl"
+  }
+}

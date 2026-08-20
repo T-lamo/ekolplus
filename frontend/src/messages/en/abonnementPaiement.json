@@ -1,0 +1,123 @@
+{
+  "steps": {
+    "plan": "Choose plan",
+    "payment": "Payment",
+    "confirmation": "Confirmation"
+  },
+  "loadError": "Unable to load the subscription.",
+  "header": {
+    "title": "Secure payment",
+    "meta": "Subscription › {plan}",
+    "sslBadge": "256-bit SSL connection"
+  },
+  "banners": {
+    "canceled": "Payment canceled — no amount was charged. You can resume whenever you like.",
+    "alreadyPro": "This school is already subscribed to the {plan} plan. Manage the cycle, card, and invoices from the <link>Subscription</link> page.",
+    "notOwner": "Only the school owner can subscribe to a plan."
+  },
+  "plan": {
+    "title": "Select the plan",
+    "subtitle": "Priced at {amount} per student / month",
+    "ariaLabel": "Plan",
+    "starterName": "Starter",
+    "starterDescCurrent": "Up to 50 students · free forever — your current plan",
+    "starterDescOther": "Up to 50 students · fallback plan after a downgrade",
+    "starterPrice": "$0",
+    "starterDisabledCurrent": "You’re already on Starter",
+    "starterDisabledOther": "Downgrade from the Subscription page",
+    "proDesc": "Up to 1000 students",
+    "perElevePerMonth": "/ student / month",
+    "perElevePerYear": "/ student / year",
+    "cycleTitle": "Billing cycle",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "cycleSave": "Save {pct}%",
+    "studentCountLabel": "Number of students",
+    "studentsEnrolled": {
+      "one": "student enrolled",
+      "other": "students enrolled"
+    },
+    "estimateAnnual": "Annual estimate",
+    "estimateMonthly": "Monthly estimate",
+    "seatsHint": "Billed seats automatically track your headcount (daily sync, no surprise proration) — no need to adjust it by hand.",
+    "unitPerYear": "/ year",
+    "unitPerMonth": "/ month"
+  },
+  "billingInfo": {
+    "title": "Billing information",
+    "subtitle": "This information will appear on your invoices",
+    "schoolName": "School name",
+    "officialCode": "Official code / tax ID (optional)",
+    "officialCodePlaceholder": "e.g. 123-456-789",
+    "billingEmail": "Billing email",
+    "phone": "Phone",
+    "country": "Country",
+    "address": "Address",
+    "footer": "Editable in <link>Settings › School</link>. The billing address is confirmed on the Stripe payment page."
+  },
+  "card": {
+    "title": "Card payment",
+    "subtitle": "Secure form hosted by Stripe",
+    "cardTypes": "International credit and debit cards",
+    "processedByStripe": "Payment processed by Stripe",
+    "dataNotice": "Your card details are never stored on our servers. Clicking \"Continue\" takes you to Stripe’s secure page to enter your card (PCI-DSS level 1, 3D Secure).",
+    "promoNotice": "Have a promo code? Enter it directly on the Stripe page."
+  },
+  "summary": {
+    "title": "Order summary",
+    "meta": {
+      "one": "{plan} · {cycle} · {count} student",
+      "other": "{plan} · {cycle} · {count} students"
+    },
+    "planLabel": "{plan} plan",
+    "studentCount": "Number of students",
+    "studentCountValue": {
+      "one": "{count} student",
+      "other": "{count} students"
+    },
+    "monthlySubtotal": "Monthly subtotal",
+    "annualBilling": "Annual billing",
+    "annualBillingValue": "× 12 months",
+    "annualDiscount": "Annual discount (−{pct}%)",
+    "totalDue": "Total due",
+    "perYear": "per year",
+    "perMonth": "per month",
+    "taxIncluded": "tax incl.",
+    "savingBanner": "You save {amount} vs. monthly",
+    "trialBanner": "Free {days}-day trial — first charge on {date}",
+    "includedInPlan": "Included in the plan"
+  },
+  "cta": {
+    "startTrial": "Start free trial",
+    "payNow": "Pay {amount} now",
+    "termsNotice": "By clicking, you accept our <link>terms of use</link> and will be redirected to Stripe.",
+    "stripeBadge": "Stripe",
+    "stripeSecure": "Secure payment via Stripe"
+  },
+  "notes": {
+    "freeTrial": "Free {days}-day trial, no commitment",
+    "cancelAnytime": "Cancel anytime from your account",
+    "support": "Support available by email"
+  },
+  "security": {
+    "ssl": "256-bit SSL",
+    "pci": "PCI-DSS",
+    "threeDs": "3D Secure"
+  },
+  "confirmation": {
+    "backLabel": "Subscription",
+    "title": "Confirmation",
+    "meta": "Subscription › {plan}",
+    "activatedTitle": "Subscription activated",
+    "confirmedTitle": "Payment confirmed",
+    "activatedBody": "Your school is now on the {plan} plan. A receipt was sent to you by Stripe.",
+    "pollingBody": "Thank you! Stripe confirms your subscription — activation in progress, a few seconds…",
+    "timeoutBody": "The payment is recorded with Stripe; activation will show shortly (automatic sync).",
+    "viewSubscription": "View my subscription"
+  },
+  "planOption": {
+    "popularBadge": "⭐ Most popular",
+    "selectedBadge": "Selected",
+    "currentBadge": "Current plan"
+  }
+}

@@ -13,7 +13,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   BadgeCheck,
@@ -42,12 +42,11 @@ import { ASIDE_GRID } from '@/lib/layout';
 import { cn } from '@/lib/utils';
 import {
   ANNUAL_DISCOUNT,
-  PLAN_FEATURES,
-  PLAN_LABELS,
   formatUsd,
   type BillingIntervalKey,
   type PlanKey,
 } from '@/lib/billing-plans';
+import { planFeatures, planLabel, type PlanFeatureT } from '@/lib/billing-plan-i18n';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageHeaderCard } from '@/components/school/PageHeaderCard';
@@ -61,12 +60,6 @@ import type { SchoolResponse } from '@/app/(school)/settings/types';
 /** Terms page linked from the récap — override per deployment (NEXT_PUBLIC_TERMS_URL). */
 const TERMS_URL = process.env.NEXT_PUBLIC_TERMS_URL || '/cgu';
 
-const STEPS = [
-  { id: 'plan', label: 'Choisir le plan' },
-  { id: 'paiement', label: 'Paiement' },
-  { id: 'confirmation', label: 'Confirmation' },
-];
-
 export default function PaiementPage() {
   return (
     <Suspense fallback={null}>
@@ -75,7 +68,17 @@ export default function PaiementPage() {
   );
 }
 
+const STEP_IDS = ['plan', 'paiement', 'confirmation'] as const;
+
 function PaiementScreen() {
+  const t = useTranslations('AbonnementPaiement');
+  const tPlan = useTranslations('BillingPlans.label');
+  const tFeatures = useTranslations('BillingPlans.features') as unknown as PlanFeatureT;
+  const steps = [
+    { id: STEP_IDS[0], label: t('steps.plan') },
+    { id: STEP_IDS[1], label: t('steps.payment') },
+    { id: STEP_IDS[2], label: t('steps.confirmation') },
+  ];
   const user = useUser();
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
@@ -137,7 +140,7 @@ function PaiementScreen() {
   if (error || !billing || !totals) {
     return (
       <p role="alert" className="text-sm text-destructive-foreground">
-        {error ?? 'Impossible de charger l’abonnement.'}
+        {error ?? t('loadError')}
       </p>
     );
   }
@@ -146,11 +149,12 @@ function PaiementScreen() {
     return <ConfirmationStep activated={billing.managedByStripe} reload={reload} />;
   }
 
+  const proLabel = planLabel('PRO', tPlan);
   const alreadyPro =
     billing.managedByStripe && billing.plan === 'PRO' && !billing.cancelAtPeriodEnd;
   const rateLabel = annual
-    ? `${formatUsd(billing.rates.annualCents, bcp47)} / élève / an`
-    : `${formatUsd(billing.rates.monthlyCents, bcp47)} / élève / mois`;
+    ? `${formatUsd(billing.rates.annualCents, bcp47)} ${t('plan.perElevePerYear')}`
+    : `${formatUsd(billing.rates.monthlyCents, bcp47)} ${t('plan.perElevePerMonth')}`;
   const trialEnds = new Date(Date.now() + billing.rates.trialDays * 86_400_000).toISOString();
   const firstStripe = !billing.managedByStripe && billing.status !== 'CANCELED';
 
@@ -163,44 +167,43 @@ function PaiementScreen() {
             <Lock size={16} />
           </span>
         }
-        title="Paiement sécurisé"
-        meta={`Abonnement › ${PLAN_LABELS.PRO}`}
+        title={t('header.title')}
+        meta={t('header.meta', { plan: proLabel })}
         actions={
           <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-2xs font-semibold text-success-foreground">
             <Lock size={12} />
-            Connexion SSL 256-bit
+            {t('header.sslBadge')}
           </span>
         }
       />
 
-      <FormStepsBar steps={STEPS} activeIndex={1} maxReachedIndex={1} onStepSelect={() => {}} />
+      <FormStepsBar steps={steps} activeIndex={1} maxReachedIndex={1} onStepSelect={() => {}} />
 
       {canceled && (
         <div className="flex items-start gap-2.5 rounded-md border border-warning-foreground/30 bg-warning p-3.5 text-caption text-warning-foreground">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          <p>
-            Paiement annulé — aucun montant n’a été prélevé. Vous pouvez reprendre quand vous
-            voulez.
-          </p>
+          <p>{t('banners.canceled')}</p>
         </div>
       )}
       {alreadyPro && (
         <div className="flex items-start gap-2.5 rounded-md border border-primary/20 bg-secondary p-3.5 text-caption text-primary">
           <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
           <p>
-            Cette école est déjà abonnée au plan {PLAN_LABELS.PRO}. Gérez le cycle, la carte et les
-            factures depuis la page{' '}
-            <Link href="/abonnement" className="font-semibold underline">
-              Abonnement
-            </Link>
-            .
+            {t.rich('banners.alreadyPro', {
+              plan: proLabel,
+              link: (chunks) => (
+                <Link href="/abonnement" className="font-semibold underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </div>
       )}
       {!canManage && (
         <div className="flex items-start gap-2.5 rounded-md border border-border bg-muted p-3.5 text-caption text-muted-foreground">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          <p>Seul le propriétaire de l’établissement peut souscrire un abonnement.</p>
+          <p>{t('banners.notOwner')}</p>
         </div>
       )}
 
@@ -210,35 +213,37 @@ function PaiementScreen() {
           <FormSectionCard
             id="plan"
             icon={<Layers size={15} />}
-            title="Sélectionner le plan"
-            subtitle={`Tarification à ${formatUsd(billing.rates.monthlyCents, bcp47)} par élève / mois`}
+            title={t('plan.title')}
+            subtitle={t('plan.subtitle', {
+              amount: formatUsd(billing.rates.monthlyCents, bcp47),
+            })}
           >
-            <div role="radiogroup" aria-label="Plan" className="flex flex-col gap-2">
+            <div role="radiogroup" aria-label={t('plan.ariaLabel')} className="flex flex-col gap-2">
               <PlanOption
                 value="STARTER"
                 icon={<Sprout size={14} className="text-muted-foreground" />}
                 iconBg="bg-muted"
-                name="Starter"
+                name={t('plan.starterName')}
                 desc={
                   billing.plan === 'STARTER'
-                    ? 'Jusqu’à 50 élèves · gratuit pour toujours — votre plan actuel'
-                    : 'Jusqu’à 50 élèves · plan de repli après rétrogradation'
+                    ? t('plan.starterDescCurrent')
+                    : t('plan.starterDescOther')
                 }
-                price="0 $"
+                price={t('plan.starterPrice')}
                 current={billing.plan === 'STARTER'}
                 disabled
                 disabledReason={
                   billing.plan === 'STARTER'
-                    ? 'Vous êtes déjà sur Starter'
-                    : 'Rétrogradez depuis la page Abonnement'
+                    ? t('plan.starterDisabledCurrent')
+                    : t('plan.starterDisabledOther')
                 }
               />
               <PlanOption
                 value="PRO"
                 icon={<Crown size={14} className="text-gold-900" />}
                 iconBg="bg-linear-to-br from-gold-300 to-gold-500"
-                name={PLAN_LABELS.PRO}
-                desc="Jusqu’à 1000 élèves"
+                name={proLabel}
+                desc={t('plan.proDesc')}
                 price={rateLabel}
                 selected
                 current={billing.plan === 'PRO'}
@@ -249,20 +254,20 @@ function PaiementScreen() {
             {billing.rates.annualAvailable && (
               <div className="mt-3.5">
                 <div className="mb-2 text-xs font-semibold text-foreground">
-                  Cycle de facturation
+                  {t('plan.cycleTitle')}
                 </div>
                 <div className="flex gap-2">
                   <CycleTile
-                    label="Mensuel"
-                    sub={`${formatUsd(billing.rates.monthlyCents, bcp47)} / élève / mois`}
+                    label={t('plan.monthly')}
+                    sub={`${formatUsd(billing.rates.monthlyCents, bcp47)} ${t('plan.perElevePerMonth')}`}
                     active={!annual}
                     onClick={() => setInterval_('MONTH')}
                   />
                   <CycleTile
-                    label="Annuel"
-                    sub={`${formatUsd(Math.round(billing.rates.annualCents / 12), bcp47)} / élève / mois`}
+                    label={t('plan.annual')}
+                    sub={`${formatUsd(Math.round(billing.rates.annualCents / 12), bcp47)} ${t('plan.perElevePerMonth')}`}
                     active={annual}
-                    badge={`Économisez ${Math.round(ANNUAL_DISCOUNT * 100)} %`}
+                    badge={t('plan.cycleSave', { pct: Math.round(ANNUAL_DISCOUNT * 100) })}
                     onClick={() => setInterval_('YEAR')}
                   />
                 </div>
@@ -270,30 +275,43 @@ function PaiementScreen() {
             )}
 
             <div className="mt-3.5">
-              <div className="mb-2 text-xs font-semibold text-foreground">Nombre d’élèves</div>
+              <div className="mb-2 text-xs font-semibold text-foreground">
+                {t('plan.studentCountLabel')}
+              </div>
               <div className="flex items-center gap-2.5">
                 <div className="flex h-10 flex-1 items-center justify-center rounded-md border-[1.5px] border-border bg-card text-[22px] font-extrabold text-primary tabular-nums">
                   {totals.students}
                 </div>
                 <div className="text-xs whitespace-nowrap text-muted-foreground">
-                  élève{totals.students > 1 ? 's' : ''} inscrit{totals.students > 1 ? 's' : ''}
+                  {t(
+                    totals.students > 1
+                      ? 'plan.studentsEnrolled.other'
+                      : 'plan.studentsEnrolled.one',
+                  )}
                 </div>
               </div>
               <div className="mt-2.5 flex items-center justify-between gap-3 rounded-md bg-secondary px-3.5 py-2.5">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold text-secondary-foreground">
-                    Estimation {annual ? 'annuelle' : 'mensuelle'}
+                    {annual ? t('plan.estimateAnnual') : t('plan.estimateMonthly')}
                   </div>
                   <div className="mt-0.5 text-2xs text-secondary-foreground/80">
-                    {totals.students} élève{totals.students > 1 ? 's' : ''} ×{' '}
+                    {t(
+                      totals.students > 1
+                        ? 'summary.studentCountValue.other'
+                        : 'summary.studentCountValue.one',
+                      { count: totals.students },
+                    )}{' '}
+                    ×{' '}
                     {annual
-                      ? `${formatUsd(billing.rates.annualCents, bcp47)} / an`
-                      : `${formatUsd(billing.rates.monthlyCents, bcp47)} / mois`}
+                      ? `${formatUsd(billing.rates.annualCents, bcp47)} ${t('plan.unitPerYear')}`
+                      : `${formatUsd(billing.rates.monthlyCents, bcp47)} ${t('plan.unitPerMonth')}`}
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
                   <div className="text-[15px] font-extrabold whitespace-nowrap text-primary tabular-nums">
-                    {formatUsd(totals.due, bcp47)} / {annual ? 'an' : 'mois'}
+                    {formatUsd(totals.due, bcp47)}{' '}
+                    {annual ? t('plan.unitPerYear') : t('plan.unitPerMonth')}
                   </div>
                   <div className="text-2xs text-muted-foreground">
                     ≈{' '}
@@ -302,64 +320,63 @@ function PaiementScreen() {
                       bcp47,
                       { decimals: 0 },
                     )}{' '}
-                    / {annual ? 'mois' : 'an'}
+                    {annual ? t('plan.unitPerMonth') : t('plan.unitPerYear')}
                   </div>
                 </div>
               </div>
-              <p className="mt-2 text-2xs text-muted-foreground">
-                Le nombre de sièges facturés suit automatiquement vos effectifs (synchronisation
-                quotidienne, sans prorata surprise) — nul besoin de l’ajuster à la main.
-              </p>
+              <p className="mt-2 text-2xs text-muted-foreground">{t('plan.seatsHint')}</p>
             </div>
           </FormSectionCard>
 
           <FormSectionCard
             id="facturation"
             icon={<Building2 size={15} />}
-            title="Informations de facturation"
-            subtitle="Ces informations apparaîtront sur vos factures"
+            title={t('billingInfo.title')}
+            subtitle={t('billingInfo.subtitle')}
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <ReadField
-                label="Nom de l’établissement"
+                label={t('billingInfo.schoolName')}
                 icon={<SchoolIcon size={14} />}
                 value={school?.name}
               />
               <ReadField
-                label="Code officiel / NIF (facultatif)"
+                label={t('billingInfo.officialCode')}
                 value={school?.officialCode}
-                placeholder="Ex : 123-456-789"
+                placeholder={t('billingInfo.officialCodePlaceholder')}
               />
               <ReadField
-                label="Email de facturation"
+                label={t('billingInfo.billingEmail')}
                 icon={<Mail size={14} />}
                 value={school?.officialEmail ?? user.email}
               />
-              <ReadField label="Téléphone" value={school?.phone} placeholder="—" />
-              <ReadField label="Pays" value={school?.country} />
+              <ReadField label={t('billingInfo.phone')} value={school?.phone} placeholder="—" />
+              <ReadField label={t('billingInfo.country')} value={school?.country} />
               <ReadField
-                label="Adresse"
+                label={t('billingInfo.address')}
                 value={[school?.address, school?.city].filter(Boolean).join(', ') || null}
                 placeholder="—"
               />
             </div>
             <p className="mt-3 text-2xs text-muted-foreground">
-              Modifiables dans{' '}
-              <Link
-                href="/settings?tab=etablissement"
-                className="font-semibold text-primary hover:underline"
-              >
-                Paramètres › Établissement
-              </Link>
-              . L’adresse de facturation est confirmée sur la page de paiement Stripe.
+              {t.rich('billingInfo.footer', {
+                link: (chunks) => (
+                  <Link
+                    href="/settings?tab=etablissement"
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           </FormSectionCard>
 
           <FormSectionCard
             id="carte"
             icon={<CreditCard size={15} />}
-            title="Paiement par carte"
-            subtitle="Formulaire sécurisé hébergé par Stripe"
+            title={t('card.title')}
+            subtitle={t('card.subtitle')}
           >
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-1">
@@ -368,26 +385,20 @@ function PaiementScreen() {
                   {' '}
                 </BrandChip>
                 <BrandChip className="bg-[#006FCF]">AMEX</BrandChip>
-                <span className="ml-2 text-2xs text-muted-foreground">
-                  Cartes de crédit et de débit internationales
-                </span>
+                <span className="ml-2 text-2xs text-muted-foreground">{t('card.cardTypes')}</span>
               </div>
               <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-secondary px-3 py-2.5">
                 <ShieldCheck size={15} className="mt-px shrink-0 text-primary" />
                 <div>
                   <div className="text-xs font-semibold text-primary">
-                    Paiement traité par Stripe
+                    {t('card.processedByStripe')}
                   </div>
                   <div className="mt-0.5 text-2xs text-muted-foreground">
-                    Vos données bancaires ne sont jamais stockées sur nos serveurs. En cliquant sur
-                    « Continuer », vous saisirez votre carte sur la page sécurisée Stripe (PCI-DSS
-                    niveau 1, 3D Secure).
+                    {t('card.dataNotice')}
                   </div>
                 </div>
               </div>
-              <p className="text-2xs text-muted-foreground">
-                Un code promotionnel ? Il se saisit directement sur la page Stripe.
-              </p>
+              <p className="text-2xs text-muted-foreground">{t('card.promoNotice')}</p>
             </div>
           </FormSectionCard>
         </div>
@@ -398,28 +409,39 @@ function PaiementScreen() {
             <div className="bg-linear-to-br from-gold-300 to-gold-500 px-[18px] py-3.5 text-gold-900">
               <div className="flex items-center gap-1.5 text-caption font-bold">
                 <Crown size={14} />
-                Résumé de la commande
+                {t('summary.title')}
               </div>
               <div className="mt-0.5 text-2xs text-gold-900/75">
-                {PLAN_LABELS.PRO} · {annual ? 'Annuel' : 'Mensuel'} · {totals.students} élève
-                {totals.students > 1 ? 's' : ''}
+                {t(totals.students > 1 ? 'summary.meta.other' : 'summary.meta.one', {
+                  plan: proLabel,
+                  cycle: annual ? t('plan.annual') : t('plan.monthly'),
+                  count: totals.students,
+                })}
               </div>
             </div>
             <div className="flex flex-col gap-2.5 px-[18px] py-4">
-              <SummaryRow label={`Plan ${PLAN_LABELS.PRO}`} value={rateLabel} />
+              <SummaryRow label={t('summary.planLabel', { plan: proLabel })} value={rateLabel} />
               <SummaryRow
-                label="Nombre d’élèves"
-                value={`${totals.students} élève${totals.students > 1 ? 's' : ''}`}
+                label={t('summary.studentCount')}
+                value={t(
+                  totals.students > 1
+                    ? 'summary.studentCountValue.other'
+                    : 'summary.studentCountValue.one',
+                  { count: totals.students },
+                )}
               />
               <SummaryRow
-                label="Sous-total mensuel"
-                value={`${formatUsd(totals.monthlyList, bcp47)} / mois`}
+                label={t('summary.monthlySubtotal')}
+                value={`${formatUsd(totals.monthlyList, bcp47)} ${t('plan.unitPerMonth')}`}
               />
               {annual && (
                 <>
-                  <SummaryRow label="Facturation annuelle" value="× 12 mois" />
                   <SummaryRow
-                    label={`Remise annuelle (−${Math.round(ANNUAL_DISCOUNT * 100)} %)`}
+                    label={t('summary.annualBilling')}
+                    value={t('summary.annualBillingValue')}
+                  />
+                  <SummaryRow
+                    label={t('summary.annualDiscount', { pct: Math.round(ANNUAL_DISCOUNT * 100) })}
                     value={`−${formatUsd(totals.annualSaving, bcp47)}`}
                     accent
                   />
@@ -427,13 +449,14 @@ function PaiementScreen() {
               )}
               <div className="h-px bg-border" />
               <div className="flex items-center justify-between">
-                <div className="text-sm font-bold text-foreground">Total à payer</div>
+                <div className="text-sm font-bold text-foreground">{t('summary.totalDue')}</div>
                 <div className="text-right">
                   <div className="text-xl font-extrabold text-primary tabular-nums">
                     {formatUsd(totals.due, bcp47)}
                   </div>
                   <div className="mt-0.5 text-2xs text-muted-foreground">
-                    {annual ? 'par an' : 'par mois'} · TTC
+                    {annual ? t('summary.perYear') : t('summary.perMonth')} ·{' '}
+                    {t('summary.taxIncluded')}
                   </div>
                 </div>
               </div>
@@ -441,7 +464,7 @@ function PaiementScreen() {
                 <div className="flex items-center gap-1.5 rounded-md bg-success px-2.5 py-2">
                   <PiggyBank size={13} className="shrink-0 text-success-foreground" />
                   <span className="text-2xs font-semibold text-success-foreground">
-                    Vous économisez {formatUsd(totals.annualSaving, bcp47)} vs. mensuel
+                    {t('summary.savingBanner', { amount: formatUsd(totals.annualSaving, bcp47) })}
                   </span>
                 </div>
               )}
@@ -449,17 +472,19 @@ function PaiementScreen() {
                 <div className="flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-2">
                   <Zap size={13} className="shrink-0 text-primary" />
                   <span className="text-2xs font-semibold text-primary">
-                    Essai gratuit {billing.rates.trialDays} jours — premier prélèvement le{' '}
-                    {fmtDateLong(trialEnds, bcp47)}
+                    {t('summary.trialBanner', {
+                      days: billing.rates.trialDays,
+                      date: fmtDateLong(trialEnds, bcp47),
+                    })}
                   </span>
                 </div>
               )}
             </div>
             <div className="flex flex-col gap-1.5 border-t border-border px-[18px] py-3.5">
               <div className="mb-0.5 text-2xs font-bold tracking-[0.6px] text-muted-foreground uppercase">
-                Inclus dans le plan
+                {t('summary.includedInPlan')}
               </div>
-              {PLAN_FEATURES.PRO.map((f) => (
+              {planFeatures('PRO', tFeatures).map((f) => (
                 <div key={f.label} className="flex items-start gap-[7px] text-xs text-foreground">
                   <Check size={11} className="mt-px shrink-0 text-success-foreground" />
                   {f.label}
@@ -478,44 +503,44 @@ function PaiementScreen() {
           >
             <Lock size={16} />
             {firstStripe
-              ? 'Démarrer l’essai gratuit'
-              : `Payer ${formatUsd(totals.due, bcp47)} maintenant`}
+              ? t('cta.startTrial')
+              : t('cta.payNow', { amount: formatUsd(totals.due, bcp47) })}
           </Button>
           <p className="text-center text-2xs text-muted-foreground">
-            En cliquant, vous acceptez nos{' '}
-            <a
-              href={TERMS_URL}
-              target={TERMS_URL.startsWith('http') ? '_blank' : undefined}
-              rel="noopener noreferrer"
-              className="font-semibold text-foreground underline underline-offset-2"
-            >
-              conditions d’utilisation
-            </a>{' '}
-            et serez redirigé vers Stripe.
+            {t.rich('cta.termsNotice', {
+              link: (chunks) => (
+                <a
+                  href={TERMS_URL}
+                  target={TERMS_URL.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  className="font-semibold text-foreground underline underline-offset-2"
+                >
+                  {chunks}
+                </a>
+              ),
+            })}
           </p>
 
           <div className="flex items-center justify-center gap-1.5 rounded-md border border-primary/30 bg-secondary px-3.5 py-2">
             <span className="inline-flex items-center gap-1 rounded bg-[#635bff] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.5px] text-white">
               <CreditCard size={9} />
-              Stripe
+              {t('cta.stripeBadge')}
             </span>
-            <span className="text-2xs font-medium text-primary">Paiement sécurisé via Stripe</span>
+            <span className="text-2xs font-medium text-primary">{t('cta.stripeSecure')}</span>
           </div>
 
           <div className="flex flex-col gap-1.5 rounded-md bg-muted px-3.5 py-3">
             <Note icon={<RotateCcw size={12} />}>
-              Essai gratuit {billing.rates.trialDays} jours, sans engagement
+              {t('notes.freeTrial', { days: billing.rates.trialDays })}
             </Note>
-            <Note icon={<XCircle size={12} />}>
-              Résiliation à tout moment depuis votre espace client
-            </Note>
-            <Note icon={<Headphones size={12} />}>Support disponible par email</Note>
+            <Note icon={<XCircle size={12} />}>{t('notes.cancelAnytime')}</Note>
+            <Note icon={<Headphones size={12} />}>{t('notes.support')}</Note>
           </div>
 
           <div className="flex items-center justify-center gap-5 pt-1">
-            <Sec icon={<Shield size={13} />}>SSL 256-bit</Sec>
-            <Sec icon={<BadgeCheck size={13} />}>PCI-DSS</Sec>
-            <Sec icon={<Lock size={13} />}>3D Secure</Sec>
+            <Sec icon={<Shield size={13} />}>{t('security.ssl')}</Sec>
+            <Sec icon={<BadgeCheck size={13} />}>{t('security.pci')}</Sec>
+            <Sec icon={<Lock size={13} />}>{t('security.threeDs')}</Sec>
           </div>
         </aside>
       </div>
@@ -530,27 +555,35 @@ function ConfirmationStep({
   activated: boolean;
   reload: () => Promise<unknown>;
 }) {
+  const t = useTranslations('AbonnementPaiement');
+  const tPlan = useTranslations('BillingPlans.label');
+  const proLabel = planLabel('PRO', tPlan);
+  const steps = [
+    { id: STEP_IDS[0], label: t('steps.plan') },
+    { id: STEP_IDS[1], label: t('steps.payment') },
+    { id: STEP_IDS[2], label: t('steps.confirmation') },
+  ];
   const [tries, setTries] = useState(0);
   // The webhook usually lands within a second or two of the redirect — poll
   // the summary a few times before giving up on the spinner (the daily
   // stripe-sync cron self-heals if the webhook was missed).
   useEffect(() => {
     if (activated || tries >= 10) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       void reload().finally(() => setTries((n) => n + 1));
     }, 2000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [activated, tries, reload]);
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeaderCard
         backHref="/abonnement"
-        backLabel="Abonnement"
-        title="Confirmation"
-        meta={`Abonnement › ${PLAN_LABELS.PRO}`}
+        backLabel={t('confirmation.backLabel')}
+        title={t('confirmation.title')}
+        meta={t('confirmation.meta', { plan: proLabel })}
       />
-      <FormStepsBar steps={STEPS} activeIndex={2} maxReachedIndex={2} onStepSelect={() => {}} />
+      <FormStepsBar steps={steps} activeIndex={2} maxReachedIndex={2} onStepSelect={() => {}} />
       <section className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card px-6 py-10 text-center">
         <span
           className={cn(
@@ -561,18 +594,18 @@ function ConfirmationStep({
           <CheckCircle2 size={28} />
         </span>
         <h2 className="text-lg font-extrabold text-foreground">
-          {activated ? 'Abonnement activé' : 'Paiement confirmé'}
+          {activated ? t('confirmation.activatedTitle') : t('confirmation.confirmedTitle')}
         </h2>
         <p className="max-w-md text-caption text-muted-foreground">
           {activated
-            ? `Votre école est maintenant sur le plan ${PLAN_LABELS.PRO}. Un reçu vous a été envoyé par Stripe.`
+            ? t('confirmation.activatedBody', { plan: proLabel })
             : tries < 10
-              ? 'Merci ! Stripe nous confirme votre abonnement — activation en cours, quelques secondes…'
-              : 'Le paiement est enregistré côté Stripe ; l’activation sera visible sous peu (synchronisation automatique).'}
+              ? t('confirmation.pollingBody')
+              : t('confirmation.timeoutBody')}
         </p>
         <Link href="/abonnement" className="mt-2">
           <Button type="button" size="sm" className="w-fit">
-            Voir mon abonnement
+            {t('confirmation.viewSubscription')}
           </Button>
         </Link>
       </section>
@@ -614,6 +647,7 @@ function PlanOption({
   disabled?: boolean;
   disabledReason?: string;
 }) {
+  const t = useTranslations('AbonnementPaiement.planOption');
   return (
     <label
       data-testid={`plan-option-${value}`}
@@ -666,7 +700,7 @@ function PlanOption({
             <span>{name}</span>
             {popular && (
               <span className="rounded-full bg-linear-to-br from-gold-300 to-gold-500 px-[7px] py-0.5 text-[10px] font-bold text-gold-900">
-                ⭐ Le plus populaire
+                {t('popularBadge')}
               </span>
             )}
             {selected && (
@@ -676,12 +710,12 @@ function PlanOption({
                   popular ? 'bg-gold-700 text-gold-100' : 'bg-primary text-white',
                 )}
               >
-                Sélectionné
+                {t('selectedBadge')}
               </span>
             )}
             {current && (
               <span className="rounded-full bg-muted px-[7px] py-0.5 text-[10px] font-bold text-muted-foreground">
-                Plan actuel
+                {t('currentBadge')}
               </span>
             )}
           </div>

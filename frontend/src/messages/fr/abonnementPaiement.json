@@ -1,0 +1,123 @@
+{
+  "steps": {
+    "plan": "Choisir le plan",
+    "payment": "Paiement",
+    "confirmation": "Confirmation"
+  },
+  "loadError": "Impossible de charger l’abonnement.",
+  "header": {
+    "title": "Paiement sécurisé",
+    "meta": "Abonnement › {plan}",
+    "sslBadge": "Connexion SSL 256-bit"
+  },
+  "banners": {
+    "canceled": "Paiement annulé — aucun montant n’a été prélevé. Vous pouvez reprendre quand vous voulez.",
+    "alreadyPro": "Cette école est déjà abonnée au plan {plan}. Gérez le cycle, la carte et les factures depuis la page <link>Abonnement</link>.",
+    "notOwner": "Seul le propriétaire de l’établissement peut souscrire un abonnement."
+  },
+  "plan": {
+    "title": "Sélectionner le plan",
+    "subtitle": "Tarification à {amount} par élève / mois",
+    "ariaLabel": "Plan",
+    "starterName": "Starter",
+    "starterDescCurrent": "Jusqu’à 50 élèves · gratuit pour toujours — votre plan actuel",
+    "starterDescOther": "Jusqu’à 50 élèves · plan de repli après rétrogradation",
+    "starterPrice": "0 $",
+    "starterDisabledCurrent": "Vous êtes déjà sur Starter",
+    "starterDisabledOther": "Rétrogradez depuis la page Abonnement",
+    "proDesc": "Jusqu’à 1000 élèves",
+    "perElevePerMonth": "/ élève / mois",
+    "perElevePerYear": "/ élève / an",
+    "cycleTitle": "Cycle de facturation",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "cycleSave": "Économisez {pct} %",
+    "studentCountLabel": "Nombre d’élèves",
+    "studentsEnrolled": {
+      "one": "élève inscrit",
+      "other": "élèves inscrits"
+    },
+    "estimateAnnual": "Estimation annuelle",
+    "estimateMonthly": "Estimation mensuelle",
+    "seatsHint": "Le nombre de sièges facturés suit automatiquement vos effectifs (synchronisation quotidienne, sans prorata surprise) — nul besoin de l’ajuster à la main.",
+    "unitPerYear": "/ an",
+    "unitPerMonth": "/ mois"
+  },
+  "billingInfo": {
+    "title": "Informations de facturation",
+    "subtitle": "Ces informations apparaîtront sur vos factures",
+    "schoolName": "Nom de l’établissement",
+    "officialCode": "Code officiel / NIF (facultatif)",
+    "officialCodePlaceholder": "Ex : 123-456-789",
+    "billingEmail": "Email de facturation",
+    "phone": "Téléphone",
+    "country": "Pays",
+    "address": "Adresse",
+    "footer": "Modifiables dans <link>Paramètres › Établissement</link>. L’adresse de facturation est confirmée sur la page de paiement Stripe."
+  },
+  "card": {
+    "title": "Paiement par carte",
+    "subtitle": "Formulaire sécurisé hébergé par Stripe",
+    "cardTypes": "Cartes de crédit et de débit internationales",
+    "processedByStripe": "Paiement traité par Stripe",
+    "dataNotice": "Vos données bancaires ne sont jamais stockées sur nos serveurs. En cliquant sur « Continuer », vous saisirez votre carte sur la page sécurisée Stripe (PCI-DSS niveau 1, 3D Secure).",
+    "promoNotice": "Un code promotionnel ? Il se saisit directement sur la page Stripe."
+  },
+  "summary": {
+    "title": "Résumé de la commande",
+    "meta": {
+      "one": "{plan} · {cycle} · {count} élève",
+      "other": "{plan} · {cycle} · {count} élèves"
+    },
+    "planLabel": "Plan {plan}",
+    "studentCount": "Nombre d’élèves",
+    "studentCountValue": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "monthlySubtotal": "Sous-total mensuel",
+    "annualBilling": "Facturation annuelle",
+    "annualBillingValue": "× 12 mois",
+    "annualDiscount": "Remise annuelle (−{pct} %)",
+    "totalDue": "Total à payer",
+    "perYear": "par an",
+    "perMonth": "par mois",
+    "taxIncluded": "TTC",
+    "savingBanner": "Vous économisez {amount} vs. mensuel",
+    "trialBanner": "Essai gratuit {days} jours — premier prélèvement le {date}",
+    "includedInPlan": "Inclus dans le plan"
+  },
+  "cta": {
+    "startTrial": "Démarrer l’essai gratuit",
+    "payNow": "Payer {amount} maintenant",
+    "termsNotice": "En cliquant, vous acceptez nos <link>conditions d’utilisation</link> et serez redirigé vers Stripe.",
+    "stripeBadge": "Stripe",
+    "stripeSecure": "Paiement sécurisé via Stripe"
+  },
+  "notes": {
+    "freeTrial": "Essai gratuit {days} jours, sans engagement",
+    "cancelAnytime": "Résiliation à tout moment depuis votre espace client",
+    "support": "Support disponible par email"
+  },
+  "security": {
+    "ssl": "SSL 256-bit",
+    "pci": "PCI-DSS",
+    "threeDs": "3D Secure"
+  },
+  "confirmation": {
+    "backLabel": "Abonnement",
+    "title": "Confirmation",
+    "meta": "Abonnement › {plan}",
+    "activatedTitle": "Abonnement activé",
+    "confirmedTitle": "Paiement confirmé",
+    "activatedBody": "Votre école est maintenant sur le plan {plan}. Un reçu vous a été envoyé par Stripe.",
+    "pollingBody": "Merci ! Stripe nous confirme votre abonnement — activation en cours, quelques secondes…",
+    "timeoutBody": "Le paiement est enregistré côté Stripe ; l’activation sera visible sous peu (synchronisation automatique).",
+    "viewSubscription": "Voir mon abonnement"
+  },
+  "planOption": {
+    "popularBadge": "⭐ Le plus populaire",
+    "selectedBadge": "Sélectionné",
+    "currentBadge": "Plan actuel"
+  }
+}

@@ -2,8 +2,9 @@
 // arithmetic on 'YYYY-MM-DD' strings, week/month ranges, the derived grid
 // rows (one per distinct start slot), recurrence summary, weekly volume, CSV
 // rows. No React, no DOM — see timetable-utils.test.ts.
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { format, type Locale } from 'date-fns';
+import { enUS, fr } from 'date-fns/locale';
+import { LOCALE_BCP47, type LocaleKey } from '@/lib/locales';
 import { subjectAccentColor } from '@/lib/subject-visuals';
 import type { SessionType, TimetableSession } from './types';
 
@@ -58,34 +59,70 @@ export function monthGrid(day: string): string[][] {
 // ─── Labels ────────────────────────────────────────────────────────────────
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-export function formatLong(day: string): string {
-  // "Lundi 17 août 2026"
-  return cap(format(fromDay(day), 'EEEE d MMMM yyyy', { locale: fr }));
+// Haitian Creole has no distinct calendar-formatting convention in wide
+// practical use (same reasoning as locales.ts's LOCALE_BCP47 and
+// DateField.tsx's own CALENDAR_LOCALE: 'ht' maps to the French locale, not a
+// bare 'ht' the engine would silently fall back on), so day/month names stay
+// French between fr/ht and only switch for en.
+const CALENDAR_LOCALE: Record<LocaleKey, Locale> = {
+  fr,
+  ht: fr,
+  en: enUS,
+};
+
+export function formatLong(day: string, locale: LocaleKey): string {
+  // "Lundi 17 août 2026" / "Monday 17 August 2026"
+  return cap(format(fromDay(day), 'EEEE d MMMM yyyy', { locale: CALENDAR_LOCALE[locale] }));
 }
-export function formatDayName(day: string): string {
-  return cap(format(fromDay(day), 'EEEE', { locale: fr }));
+export function formatDayName(day: string, locale: LocaleKey): string {
+  return cap(format(fromDay(day), 'EEEE', { locale: CALENDAR_LOCALE[locale] }));
 }
-export function formatDayShort(day: string): string {
+export function formatDayShort(day: string, locale: LocaleKey): string {
   // "17 Août" — the mock capitalises the month in the column head
-  const [n, ...rest] = format(fromDay(day), 'd MMMM', { locale: fr }).split(' ');
+  const [n, ...rest] = format(fromDay(day), 'd MMMM', {
+    locale: CALENDAR_LOCALE[locale],
+  }).split(' ');
   return `${n} ${cap(rest.join(' '))}`;
 }
-export function formatMonthYear(day: string): string {
-  return cap(format(fromDay(day), 'MMMM yyyy', { locale: fr }));
+export function formatMonthYear(day: string, locale: LocaleKey): string {
+  return cap(format(fromDay(day), 'MMMM yyyy', { locale: CALENDAR_LOCALE[locale] }));
 }
 /** "16 – 20 Juin 2025" or "29 Sept. – 3 Oct. 2025" across two months. */
-export function formatWeekRange(days: string[]): string {
+export function formatWeekRange(days: string[], locale: LocaleKey): string {
   const first = days[0];
   const last = days[days.length - 1];
   if (!first || !last) return '';
   const a = fromDay(first);
   const b = fromDay(last);
-  const month = (d: Date) => cap(format(d, 'MMMM', { locale: fr }));
-  const monthShort = (d: Date) => cap(format(d, 'MMM', { locale: fr }));
+  const dateLocale = CALENDAR_LOCALE[locale];
+  const month = (d: Date) => cap(format(d, 'MMMM', { locale: dateLocale }));
+  const monthShort = (d: Date) => cap(format(d, 'MMM', { locale: dateLocale }));
   if (a.getUTCMonth() === b.getUTCMonth()) {
     return `${a.getUTCDate()} – ${b.getUTCDate()} ${month(a)} ${b.getUTCFullYear()}`;
   }
   return `${a.getUTCDate()} ${monthShort(a)} – ${b.getUTCDate()} ${monthShort(b)} ${b.getUTCFullYear()}`;
+}
+
+// Any real Monday works — only the weekday names are read off it. Routed
+// through mondayOf() so the constant stays a Monday even if someone edits it.
+const HEADER_WEEK_MONDAY = mondayOf('2026-08-17');
+/**
+ * Mon → Sun column heads of the month view — « Lun · Mar … » in fr/ht,
+ * « Mon · Tue … » in en. date-fns's 'EEE' yields 'lun.' (lowercase, trailing
+ * period) in French and 'Mon' in English; cap() + the period strip normalise
+ * both to the style the month grid has always shown (the fixups are no-ops
+ * for English). Replaces TimetableMonth.tsx's hardcoded French array.
+ */
+export function weekdayHeaders(locale: LocaleKey): string[] {
+  const dateLocale = CALENDAR_LOCALE[locale];
+  return Array.from({ length: 7 }, (_, i) =>
+    cap(
+      format(fromDay(addDays(HEADER_WEEK_MONDAY, i)), 'EEE', { locale: dateLocale }).replace(
+        /\.$/,
+        '',
+      ),
+    ),
+  );
 }
 export function minutesToHHMM(m: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -110,31 +147,27 @@ export const TIME_OPTIONS: number[] = Array.from(
 
 // ─── Session types ─────────────────────────────────────────────────────────
 export const SESSION_TYPES: SessionType[] = ['CM', 'TD', 'TP', 'EXAM'];
-export const TYPE_META: Record<
-  SessionType,
-  { short: string; label: string; badge: string; active: string }
-> = {
+/** Visual metadata of a session type. The user-visible long label is NOT
+ * here — it lives in the `timetable.sessionType.*` message group so it can
+ * be translated; `short` is the persisted API code and stays as-is. */
+export const TYPE_META: Record<SessionType, { short: string; badge: string; active: string }> = {
   CM: {
     short: 'CM',
-    label: 'Cours magistral',
     badge: 'bg-[#ddd6fe] text-[#5b21b6]',
     active: 'border-[#7c3aed] bg-[#ede9fb] text-[#5b21b6]',
   },
   TD: {
     short: 'TD',
-    label: 'Travaux dirigés',
     badge: 'bg-[#d1fae5] text-[#065f46]',
     active: 'border-[#059669] bg-[#d1fae5] text-[#065f46]',
   },
   TP: {
     short: 'TP',
-    label: 'Travaux pratiques',
     badge: 'bg-[#fee2e2] text-[#991b1b]',
     active: 'border-[#e11d48] bg-[#fee2e2] text-[#991b1b]',
   },
   EXAM: {
     short: 'EXAM',
-    label: 'Examen',
     badge: 'bg-[#fef3c7] text-[#92400e]',
     active: 'border-[#d97706] bg-[#fef3c7] text-[#92400e]',
   },
@@ -181,7 +214,12 @@ export interface GridRow {
  * slots (including the whole default range when nothing is scheduled) just
  * render as blank cells. Empty range → the default 5 rows.
  */
-export function buildRows(sessions: TimetableSession[], days: string[]): GridRow[] {
+export function buildRows(
+  sessions: TimetableSession[],
+  days: string[],
+  locale: LocaleKey,
+): GridRow[] {
+  const collation = LOCALE_BCP47[locale];
   const daySet = new Set(days);
   const visible = sessions.filter((s) => daySet.has(s.date));
   const starts = [...new Set(visible.map((s) => s.startMinutes))].sort((a, b) => a - b);
@@ -192,23 +230,30 @@ export function buildRows(sessions: TimetableSession[], days: string[]): GridRow
     const inRow = visible.filter((s) => s.startMinutes === start);
     for (const s of inRow) cells.get(s.date)?.push(s);
     for (const list of cells.values()) {
-      list.sort((a, b) => a.class.name.localeCompare(b.class.name, 'fr'));
+      list.sort((a, b) => a.class.name.localeCompare(b.class.name, collation));
     }
     return { start, cells };
   });
 }
 
-export function sessionsOn(sessions: TimetableSession[], day: string): TimetableSession[] {
+export function sessionsOn(
+  sessions: TimetableSession[],
+  day: string,
+  locale: LocaleKey,
+): TimetableSession[] {
+  const collation = LOCALE_BCP47[locale];
   return sessions
     .filter((s) => s.date === day)
     .sort(
-      (a, b) => a.startMinutes - b.startMinutes || a.class.name.localeCompare(b.class.name, 'fr'),
+      (a, b) =>
+        a.startMinutes - b.startMinutes || a.class.name.localeCompare(b.class.name, collation),
     );
 }
 
 /** Distinct subjects of the visible sessions, for the legend. */
 export function legendSubjects(
   sessions: TimetableSession[],
+  locale: LocaleKey,
 ): { id: string; name: string; color: string }[] {
   const seen = new Map<string, { id: string; name: string; color: string }>();
   for (const s of sessions) {
@@ -220,18 +265,16 @@ export function legendSubjects(
       });
     }
   }
-  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, LOCALE_BCP47[locale]));
 }
 
 // ─── Recurrence ────────────────────────────────────────────────────────────
-export const RECURRENCE_DAYS: { value: number; short: string; plural: string }[] = [
-  { value: 1, short: 'L', plural: 'lundis' },
-  { value: 2, short: 'Ma', plural: 'mardis' },
-  { value: 3, short: 'Me', plural: 'mercredis' },
-  { value: 4, short: 'J', plural: 'jeudis' },
-  { value: 5, short: 'V', plural: 'vendredis' },
-  { value: 6, short: 'Sa', plural: 'samedis' },
-];
+/** Mon–Sat — the only weekdays a weekly recurrence may target. These ISO
+ * numbers are sent to the API verbatim (persisted values, never translated);
+ * their visible labels live in the `timetable.sessionForm.recurrence.dayShort.*`
+ * and `.dayPlural.*` message groups. */
+export type RecurrenceDay = 1 | 2 | 3 | 4 | 5 | 6;
+export const RECURRENCE_DAYS: readonly RecurrenceDay[] = [1, 2, 3, 4, 5, 6];
 
 /** Same rule as the server: base date + every selected weekday until `until`. */
 export function countOccurrences(date: string, days: number[], until: string): number {
@@ -245,11 +288,13 @@ export function countOccurrences(date: string, days: number[], until: string): n
   return n;
 }
 
-export function recurrenceDaysLabel(days: number[]): string {
-  const names = RECURRENCE_DAYS.filter((d) => days.includes(d.value)).map((d) => d.plural);
+/** « lundis, mercredis et vendredis » — `names` are already translated by
+ * the caller and `and` is the locale's list conjunction, because this module
+ * stays React/next-intl free. Empty selection renders an em dash. */
+export function joinDayNames(names: string[], and: string): string {
   if (names.length === 0) return '—';
   if (names.length === 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}`;
+  return `${names.slice(0, -1).join(', ')} ${and} ${names[names.length - 1]}`;
 }
 
 /** Sum of the class × subject sessions in the ISO week of `day` (minutes). */
@@ -274,31 +319,23 @@ export function weeklyVolume(
 }
 
 // ─── Export ────────────────────────────────────────────────────────────────
-export const CSV_HEADERS = [
-  'Date',
-  'Jour',
-  'Début',
-  'Fin',
-  'Classe',
-  'Matière',
-  'Type',
-  'Enseignant',
-  'Salle',
-  'Description',
-];
-export function csvRows(sessions: TimetableSession[]): (string | number)[][] {
-  return [...sessions]
-    .sort((a, b) => a.date.localeCompare(b.date) || a.startMinutes - b.startMinutes)
-    .map((s) => [
-      s.date,
-      formatDayName(s.date),
-      minutesToHHMM(s.startMinutes),
-      minutesToHHMM(s.endMinutes),
-      s.class.name,
-      s.subject.name,
-      typeMeta(s.type).short,
-      s.teacher?.name ?? '',
-      s.room ?? '',
-      s.description ?? '',
-    ]);
+export function csvRows(sessions: TimetableSession[], locale: LocaleKey): (string | number)[][] {
+  return (
+    [...sessions]
+      // Chronological, not lexicographic-by-locale: 'YYYY-MM-DD' ordinal
+      // comparison is intentionally locale-independent here.
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startMinutes - b.startMinutes)
+      .map((s) => [
+        s.date,
+        formatDayName(s.date, locale),
+        minutesToHHMM(s.startMinutes),
+        minutesToHHMM(s.endMinutes),
+        s.class.name,
+        s.subject.name,
+        typeMeta(s.type).short,
+        s.teacher?.name ?? '',
+        s.room ?? '',
+        s.description ?? '',
+      ])
+  );
 }

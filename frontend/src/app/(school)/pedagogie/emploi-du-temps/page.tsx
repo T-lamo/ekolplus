@@ -7,6 +7,7 @@
 // grid (or agenda / month), the legend. Data: GET /api/school/timetable for
 // the visible range; filters apply client-side (a week is ~150 rows at most).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   BookOpen,
   Calendar,
@@ -50,7 +51,6 @@ import type {
   TimetableView,
 } from '@/components/school/timetable/types';
 import {
-  CSV_HEADERS,
   addDays,
   addMonths,
   csvRows,
@@ -64,11 +64,13 @@ import {
   weekDays,
 } from '@/components/school/timetable/timetable-utils';
 
-const VIEWS: { key: TimetableView; label: string; subtitle: string; Icon: typeof Calendar }[] = [
-  { key: 'month', label: 'Mois', subtitle: 'Vue mensuelle', Icon: Calendar },
-  { key: 'week', label: 'Semaine', subtitle: 'Vue hebdomadaire', Icon: CalendarDays },
-  { key: 'day', label: 'Jour', subtitle: 'Vue journalière', Icon: CalendarClock },
-  { key: 'agenda', label: 'Agenda', subtitle: 'Agenda de la semaine', Icon: List },
+// Labels/subtitles live in `timetable.toolbar.views.*` (keyed by `key`) —
+// this const can't call a hook, so it carries only the icon and identity.
+const VIEWS: { key: TimetableView; Icon: typeof Calendar }[] = [
+  { key: 'month', Icon: Calendar },
+  { key: 'week', Icon: CalendarDays },
+  { key: 'day', Icon: CalendarClock },
+  { key: 'agenda', Icon: List },
 ];
 
 const EMPTY_FILTERS: TimetableFilters = { classId: '', teacherId: '', room: '', subjectId: '' };
@@ -87,6 +89,9 @@ interface Meta {
 
 export default function EmploiDuTempsPage() {
   const { toast } = useToast();
+  const locale = useLocale();
+  const t = useTranslations('Timetable.toolbar');
+  const tExport = useTranslations('Timetable.export');
   const today = todayDay();
   const [view, setView] = useState<TimetableView>('week');
   const [anchor, setAnchor] = useState(today);
@@ -152,10 +157,10 @@ export default function EmploiDuTempsPage() {
             room: c.room ?? null,
             roomId: c.roomId ?? null,
           })),
-          teachers: teachers.teachers.map((t) => ({
-            id: t.id,
-            name: t.name,
-            photoUrl: t.photoUrl ?? null,
+          teachers: teachers.teachers.map((teacher) => ({
+            id: teacher.id,
+            name: teacher.name,
+            photoUrl: teacher.photoUrl ?? null,
           })),
           subjects: subjects.subjects.map((s) => ({
             id: s.id,
@@ -173,7 +178,7 @@ export default function EmploiDuTempsPage() {
         });
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+          setError(err instanceof ApiError ? err.message : t('networkError'));
         }
       }
     })();
@@ -202,7 +207,7 @@ export default function EmploiDuTempsPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+          setError(err instanceof ApiError ? err.message : t('networkError'));
         }
       })
       .finally(() => {
@@ -232,10 +237,10 @@ export default function EmploiDuTempsPage() {
 
   const navLabel =
     view === 'month'
-      ? formatMonthYear(anchor)
+      ? formatMonthYear(anchor, locale)
       : view === 'day'
-        ? formatLong(anchor)
-        : formatWeekRange(days);
+        ? formatLong(anchor, locale)
+        : formatWeekRange(days, locale);
 
   const step = useCallback(
     (dir: 1 | -1) => {
@@ -266,13 +271,31 @@ export default function EmploiDuTempsPage() {
 
   function onExport() {
     if (filtered.length === 0) {
-      toast('Aucune séance à exporter sur cette période.', 'info');
+      toast(t('exportEmpty'), 'info');
       return;
     }
-    exportToCsv(`emploi-du-temps-${range.from}_${range.to}.csv`, CSV_HEADERS, csvRows(filtered));
+    // Column heads follow the admin's UI language; the filename stays a
+    // stable technical slug in every locale (spec decision 5).
+    const headers = [
+      tExport('date'),
+      tExport('day'),
+      tExport('start'),
+      tExport('end'),
+      tExport('class'),
+      tExport('subject'),
+      tExport('type'),
+      tExport('teacher'),
+      tExport('room'),
+      tExport('description'),
+    ];
+    exportToCsv(
+      `emploi-du-temps-${range.from}_${range.to}.csv`,
+      headers,
+      csvRows(filtered, locale),
+    );
   }
 
-  const subtitleView = VIEWS.find((v) => v.key === view)?.subtitle ?? '';
+  const subtitleView = t(`views.${view}.subtitle`);
   const noYear = meta !== null && meta.academicYear === null;
   const rooms = data?.rooms ?? [];
 
@@ -281,19 +304,20 @@ export default function EmploiDuTempsPage() {
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Emploi du temps</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {meta?.academicYear ? `Année scolaire ${meta.academicYear.label} — ` : ''}
-            {subtitleView}
+            {meta?.academicYear
+              ? t('headerWithYear', { label: meta.academicYear.label, view: subtitleView })
+              : subtitleView}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div
             role="tablist"
-            aria-label="Vue"
+            aria-label={t('viewsAriaLabel')}
             className="flex max-w-full gap-0.5 overflow-x-auto rounded-md bg-muted p-[3px]"
           >
-            {VIEWS.map(({ key, label, Icon }) => (
+            {VIEWS.map(({ key, Icon }) => (
               <button
                 key={key}
                 type="button"
@@ -308,13 +332,13 @@ export default function EmploiDuTempsPage() {
                 )}
               >
                 <Icon size={12} aria-hidden />
-                {label}
+                {t(`views.${key}.label`)}
               </button>
             ))}
           </div>
           <Button className="w-fit" onClick={() => openCreate()} disabled={noYear}>
             <Plus size={14} />
-            Ajouter un cours
+            {t('addSession')}
           </Button>
         </div>
       </div>
@@ -331,7 +355,7 @@ export default function EmploiDuTempsPage() {
           <button
             type="button"
             onClick={() => step(-1)}
-            aria-label="Période précédente"
+            aria-label={t('prevPeriod')}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-muted"
           >
             <ChevronLeft size={14} />
@@ -342,7 +366,7 @@ export default function EmploiDuTempsPage() {
           <button
             type="button"
             onClick={() => step(1)}
-            aria-label="Période suivante"
+            aria-label={t('nextPeriod')}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-muted"
           >
             <ChevronRight size={14} />
@@ -359,7 +383,7 @@ export default function EmploiDuTempsPage() {
                 : 'text-muted-foreground hover:bg-muted',
             )}
           >
-            Aujourd’hui
+            {t('today')}
           </button>
         </div>
         <div className="hidden h-5 w-px bg-border sm:block" aria-hidden />
@@ -367,11 +391,11 @@ export default function EmploiDuTempsPage() {
           <TimetableFilterSelect
             className={FILTER_CLASS}
             icon={<School />}
-            ariaLabel="Classe"
+            ariaLabel={t('filterClass')}
             value={filters.classId}
             onValueChange={setFilter('classId')}
           >
-            <SelectItem value="">Toutes les classes</SelectItem>
+            <SelectItem value="">{t('allClasses')}</SelectItem>
             {(meta?.classes ?? []).map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
@@ -381,25 +405,25 @@ export default function EmploiDuTempsPage() {
           <TimetableFilterSelect
             className={FILTER_CLASS}
             icon={<UserCheck />}
-            ariaLabel="Enseignant"
+            ariaLabel={t('filterTeacher')}
             value={filters.teacherId}
             onValueChange={setFilter('teacherId')}
           >
-            <SelectItem value="">Tous les enseignants</SelectItem>
-            {(meta?.teachers ?? []).map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.name}
+            <SelectItem value="">{t('allTeachers')}</SelectItem>
+            {(meta?.teachers ?? []).map((teacher) => (
+              <SelectItem key={teacher.id} value={teacher.id}>
+                {teacher.name}
               </SelectItem>
             ))}
           </TimetableFilterSelect>
           <TimetableFilterSelect
             className={FILTER_CLASS}
             icon={<DoorOpen />}
-            ariaLabel="Salle"
+            ariaLabel={t('filterRoom')}
             value={filters.room}
             onValueChange={setFilter('room')}
           >
-            <SelectItem value="">Toutes les salles</SelectItem>
+            <SelectItem value="">{t('allRooms')}</SelectItem>
             {rooms.map((r) => (
               <SelectItem key={r} value={r}>
                 {r}
@@ -409,11 +433,11 @@ export default function EmploiDuTempsPage() {
           <TimetableFilterSelect
             className={FILTER_CLASS}
             icon={<BookOpen />}
-            ariaLabel="Matière"
+            ariaLabel={t('filterSubject')}
             value={filters.subjectId}
             onValueChange={setFilter('subjectId')}
           >
-            <SelectItem value="">Toutes les matières</SelectItem>
+            <SelectItem value="">{t('allSubjects')}</SelectItem>
             {(meta?.subjects ?? []).map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name}
@@ -423,17 +447,15 @@ export default function EmploiDuTempsPage() {
         </div>
         <Button variant="outline" size="sm" className="ml-auto w-fit" onClick={onExport}>
           <Download size={13} />
-          Exporter
+          {t('export')}
         </Button>
       </div>
 
       {/* ── Body ───────────────────────────────────────────────── */}
       {noYear ? (
         <div className="rounded-2xl border border-border bg-card px-4 py-10 text-center">
-          <p className="text-caption font-semibold text-foreground">Aucune année scolaire active</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Configure d’abord une année scolaire dans Paramètres pour planifier des cours.
-          </p>
+          <p className="text-caption font-semibold text-foreground">{t('noYearTitle')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('noYearHint')}</p>
         </div>
       ) : !data ? (
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -485,10 +507,7 @@ export default function EmploiDuTempsPage() {
                 onSlotClick={(day, start) => openCreate(day, start)}
               />
               {filtered.length === 0 && (
-                <p className="mt-2 text-center text-xs text-muted-foreground">
-                  Aucune séance sur cette période — clique sur un créneau ou sur « Ajouter un cours
-                  ».
-                </p>
+                <p className="mt-2 text-center text-xs text-muted-foreground">{t('emptyRange')}</p>
               )}
             </>
           )}

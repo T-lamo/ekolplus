@@ -30,6 +30,7 @@ import type configuration from '@/messages/fr/configuration.json';
 import type gradebook from '@/messages/fr/gradebook.json';
 import type fees from '@/messages/fr/fees.json';
 import type appreciations from '@/messages/fr/appreciations.json';
+import type timetable from '@/messages/fr/timetable.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -61,6 +62,7 @@ declare module 'next-intl' {
       Gradebook: typeof gradebook;
       Fees: typeof fees;
       Appreciations: typeof appreciations;
+      Timetable: typeof timetable;
     };
   }
 }

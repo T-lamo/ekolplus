@@ -1,0 +1,191 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "sessionType": {
+    "CM": "Kou majistral",
+    "TD": "Travo dirije",
+    "TP": "Travo pratik",
+    "EXAM": "Egzamen"
+  },
+  "legend": {
+    "subjectsAriaLabel": "Lejand matyè yo",
+    "empty": "Pa gen matyè pou peryòd sa a",
+    "typesAriaLabel": "Kalite seyans"
+  },
+  "grid": {
+    "addSessionAriaLabel": "Ajoute yon kou {day} a {time}"
+  },
+  "agenda": {
+    "emptyTitle": "Pa gen seyans pou peryòd sa a",
+    "emptyHint": "Ajoute yon kou oswa chanje semèn ak flèch yo.",
+    "todayBadge": "Jodi a"
+  },
+  "month": {
+    "viewDayAriaLabel": "Wè {day}",
+    "more": {
+      "one": "+{count} lòt",
+      "other": "+{count} lòt"
+    }
+  },
+  "toolbar": {
+    "title": "Orè",
+    "headerWithYear": "Ane eskolè {label} — {view}",
+    "viewsAriaLabel": "Vi",
+    "views": {
+      "month": { "label": "Mwa", "subtitle": "Vi mansyèl" },
+      "week": { "label": "Semèn", "subtitle": "Vi semanyèl" },
+      "day": { "label": "Jou", "subtitle": "Vi jounalye" },
+      "agenda": { "label": "Ajanda", "subtitle": "Ajanda semèn nan" }
+    },
+    "addSession": "Ajoute yon kou",
+    "prevPeriod": "Peryòd anvan",
+    "nextPeriod": "Peryòd apre",
+    "today": "Jodi a",
+    "filterClass": "Klas",
+    "filterTeacher": "Anseyan",
+    "filterRoom": "Sal",
+    "filterSubject": "Matyè",
+    "allClasses": "Tout klas yo",
+    "allTeachers": "Tout anseyan yo",
+    "allRooms": "Tout sal yo",
+    "allSubjects": "Tout matyè yo",
+    "export": "Ekspòte",
+    "exportEmpty": "Pa gen seyans pou ekspòte pou peryòd sa a.",
+    "noYearTitle": "Pa gen ane eskolè aktif",
+    "noYearHint": "Konfigire yon ane eskolè nan Paramèt anvan pou w ka planifye kou.",
+    "emptyRange": "Pa gen seyans pou peryòd sa a — klike sou yon plaj orè oswa sou « Ajoute yon kou ».",
+    "networkError": "Erè rezo. Tanpri eseye ankò."
+  },
+  "export": {
+    "date": "Dat",
+    "day": "Jou",
+    "start": "Kòmansman",
+    "end": "Fen",
+    "class": "Klas",
+    "subject": "Matyè",
+    "type": "Kalite",
+    "teacher": "Anseyan",
+    "room": "Sal",
+    "description": "Deskripsyon"
+  },
+  "sessionForm": {
+    "steps": {
+      "cours": "Kou",
+      "horaire": "Anseyan & orè",
+      "options": "Opsyon"
+    },
+    "title": {
+      "edit": "Modifye seyans lan",
+      "create": "Nouvo kou",
+      "createSubtitle": "Ajoute yon seyans nan orè a"
+    },
+    "sections": {
+      "course": "Kou",
+      "staffAndPlace": "Anseyan & Kote",
+      "schedule": "Orè",
+      "recurrence": "Repetisyon",
+      "series": "Seri",
+      "options": "Opsyon"
+    },
+    "fields": {
+      "subject": "Matyè",
+      "subjectPlaceholder": "Chwazi yon matyè",
+      "sessionType": "Kalite seyans",
+      "class": "Klas",
+      "classPlaceholder": "Chwazi yon klas",
+      "teacher": "Anseyan",
+      "teacherPlaceholder": "Chwazi yon anseyan",
+      "room": "Sal / Kote",
+      "roomPlaceholder": "Chwazi yon sal",
+      "otherPlace": "Lòt kote…",
+      "otherPlaceAriaLabel": "Lòt kote",
+      "otherPlacePlaceholder": "Egz. Bibliyotèk, Lakou…",
+      "roomOrPlaceAriaLabel": "Sal oswa kote",
+      "roomFreePlaceholder": "Egz. Sal 12, Lakou…",
+      "date": "Dat",
+      "startTime": "Lè kòmansman",
+      "endTime": "Lè fen",
+      "durationSummary": "Dire : {duration} · Volim chak semèn : {weekly}/semèn",
+      "description": "Deskripsyon",
+      "descriptionPlaceholder": "Ajoute nòt, objektif oswa remak pou seyans sa a…",
+      "meetingUrl": "Lyen videyokonferans",
+      "submit": "Anrejistre seyans lan"
+    },
+    "color": {
+      "label": "Koulè seyans lan",
+      "groupAriaLabel": "Koulè",
+      "reset": "Repran koulè matyè a",
+      "hint": "Koulè matyè a — li idantifye kou a rapidman sou griy la"
+    },
+    "rooms": {
+      "capacity": {
+        "one": "{count} plas",
+        "other": "{count} plas"
+      },
+      "inactive": "inaktif",
+      "noCatalogue": "Pa gen katalòg sal — <link>defini sal lekòl la</link>"
+    },
+    "recurrence": {
+      "toggleLabel": "Repetisyon kou a",
+      "toggleHint": "Defini yon repetisyon chak semèn",
+      "daysLabel": "Jou repetisyon yo",
+      "dayShort": { "1": "L", "2": "Ma", "3": "Mè", "4": "J", "5": "V", "6": "S" },
+      "dayPlural": {
+        "1": "lendi",
+        "2": "madi",
+        "3": "mèkredi",
+        "4": "jedi",
+        "5": "vandredi",
+        "6": "samdi"
+      },
+      "and": "ak",
+      "hint": "Kou a ap repete chak semèn nan jou ou chwazi yo",
+      "untilLabel": "Fen repetisyon an",
+      "untilHint": "Li koresponn ak fen ane eskolè {label}",
+      "summary": "Chak <b>{days}</b> soti {start} rive {end} — <b>{occurrences}</b>",
+      "summaryUntil": "Chak <b>{days}</b> soti {start} rive {end} · jiska {until} — <b>{occurrences}</b>",
+      "occurrenceCount": {
+        "one": "{count} okirans",
+        "other": "{count} okirans"
+      }
+    },
+    "series": {
+      "toggleLabel": "Aplike sou tout seri a",
+      "hint": "Seyans sa a fè pati yon seri {count} seyans — dat la rete pwòp pou chak okirans."
+    },
+    "delete": {
+      "trigger": "Efase",
+      "scopeLabel": "Efase :",
+      "thisOne": "Seyans sa a",
+      "wholeSeries": "Tout seri a ({count})",
+      "cancel": "Anile"
+    },
+    "errors": {
+      "subject": "Chwazi yon matyè.",
+      "class": "Chwazi yon klas.",
+      "teacher": "Chwazi yon anseyan.",
+      "room": "Endike yon sal oswa yon kote.",
+      "date": "Chwazi yon dat.",
+      "time": "Lè fen an dwe apre lè kòmansman an.",
+      "untilRequired": "Chwazi dat fen repetisyon an.",
+      "untilBeforeDate": "Fen an dwe apre dat seyans lan.",
+      "meetingUrl": "Lyen an dwe kòmanse ak http:// oswa https://."
+    },
+    "conflict": {
+      "title": "Konfli nan orè a",
+      "saveFailedTitle": "Anrejistreman enposib"
+    },
+    "toasts": {
+      "networkError": "Erè rezo. Tanpri eseye ankò.",
+      "updated": {
+        "one": "Seyans lan mete ajou.",
+        "other": "{count} seyans mete ajou."
+      },
+      "created": {
+        "one": "Seyans lan ajoute.",
+        "other": "{count} seyans ajoute nan orè a."
+      },
+      "deletedOne": "Seyans lan efase.",
+      "deletedSeries": "Seri a efase."
+    }
+  }
+}

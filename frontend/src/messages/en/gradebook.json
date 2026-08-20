@@ -1,0 +1,38 @@
+{
+  "evaluationType": {
+    "DS": "Supervised test (DS)",
+    "INTERROGATION": "Quiz",
+    "EXAMEN": "Exam",
+    "AUTRE": "Other"
+  },
+  "evaluationStatus": {
+    "DRAFT": "Draft",
+    "PUBLISHED": "Published"
+  },
+  "evaluationForm": {
+    "classLabel": "Class",
+    "subjectLabel": "Subject",
+    "termLabel": "Term / Period",
+    "typeLabel": "Evaluation type",
+    "titleLabel": "Evaluation title",
+    "titlePlaceholder": "E.g.: Supervised test #3, Pop quiz...",
+    "dateLabel": "Date",
+    "maxScoreLabel": "Maximum score",
+    "maxScoreOption": "Out of {n}",
+    "coefficientLabel": "Coefficient",
+    "countsTowardAverageLabel": "Counted toward the average",
+    "countsTowardAverageHint": "Include this evaluation in the average calculation",
+    "yes": "Yes",
+    "no": "No",
+    "teacherInCharge": "Teacher in charge:",
+    "notesLabel": "Notes (optional)",
+    "notesPlaceholder": "Internal notes visible to admins and teachers"
+  },
+  "newEvaluationModal": {
+    "title": "New evaluation",
+    "validationError": "Class, subject, term, and title are required.",
+    "createdToast": "Evaluation created — enter the grades.",
+    "submitLabel": "Create and enter grades",
+    "submitting": "Creating…"
+  }
+}

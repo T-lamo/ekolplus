@@ -20,6 +20,7 @@ import type adminDashboard from '@/messages/fr/adminDashboard.json';
 import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
 import type settings from '@/messages/fr/settings.json';
 import type themePicker from '@/messages/fr/themePicker.json';
+import type gradebook from '@/messages/fr/gradebook.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -41,6 +42,7 @@ declare module 'next-intl' {
       SchoolPlanCard: typeof schoolPlanCard;
       Settings: typeof settings;
       ThemePicker: typeof themePicker;
+      Gradebook: typeof gradebook;
     };
   }
 }

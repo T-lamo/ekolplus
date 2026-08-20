@@ -1,0 +1,38 @@
+{
+  "evaluationType": {
+    "DS": "Devoir surveillé (DS)",
+    "INTERROGATION": "Interrogation",
+    "EXAMEN": "Examen",
+    "AUTRE": "Autre"
+  },
+  "evaluationStatus": {
+    "DRAFT": "Brouillon",
+    "PUBLISHED": "Publiée"
+  },
+  "evaluationForm": {
+    "classLabel": "Classe",
+    "subjectLabel": "Matière",
+    "termLabel": "Trimestre / Période",
+    "typeLabel": "Type d'évaluation",
+    "titleLabel": "Intitulé de l'évaluation",
+    "titlePlaceholder": "Ex. : Devoir surveillé n°3, Interrogation surprise...",
+    "dateLabel": "Date",
+    "maxScoreLabel": "Note maximale",
+    "maxScoreOption": "Sur {n}",
+    "coefficientLabel": "Coefficient",
+    "countsTowardAverageLabel": "Prise en compte dans la moyenne",
+    "countsTowardAverageHint": "Inclure cette évaluation dans le calcul de la moyenne",
+    "yes": "Oui",
+    "no": "Non",
+    "teacherInCharge": "Enseignant responsable :",
+    "notesLabel": "Remarques (optionnel)",
+    "notesPlaceholder": "Notes internes visibles par les administrateurs et enseignants"
+  },
+  "newEvaluationModal": {
+    "title": "Nouvelle évaluation",
+    "validationError": "Classe, matière, trimestre et intitulé sont requis.",
+    "createdToast": "Évaluation créée — saisissez les notes.",
+    "submitLabel": "Créer et saisir les notes",
+    "submitting": "Création…"
+  }
+}

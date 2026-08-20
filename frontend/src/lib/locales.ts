@@ -58,6 +58,7 @@ export const MESSAGE_NAMESPACES = [
   'schoolPlanCard',
   'settings',
   'themePicker',
+  'gradebook',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

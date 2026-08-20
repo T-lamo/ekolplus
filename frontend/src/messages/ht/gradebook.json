@@ -1,0 +1,39 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "evaluationType": {
+    "DS": "Devwa siveye (DS)",
+    "INTERROGATION": "Kontwòl",
+    "EXAMEN": "Egzamen",
+    "AUTRE": "Lòt"
+  },
+  "evaluationStatus": {
+    "DRAFT": "Bouyon",
+    "PUBLISHED": "Pibliye"
+  },
+  "evaluationForm": {
+    "classLabel": "Klas",
+    "subjectLabel": "Matyè",
+    "termLabel": "Trimès / Peryòd",
+    "typeLabel": "Kalite evalyasyon",
+    "titleLabel": "Tit evalyasyon an",
+    "titlePlaceholder": "Egz. : Devwa siveye n°3, Kontwòl sipriz...",
+    "dateLabel": "Dat",
+    "maxScoreLabel": "Nòt maksimòm",
+    "maxScoreOption": "Sou {n}",
+    "coefficientLabel": "Koefisyan",
+    "countsTowardAverageLabel": "Konte nan mwayèn nan",
+    "countsTowardAverageHint": "Enkli evalyasyon sa a nan kalkil mwayèn nan",
+    "yes": "Wi",
+    "no": "Non",
+    "teacherInCharge": "Pwofesè responsab :",
+    "notesLabel": "Remak (opsyonèl)",
+    "notesPlaceholder": "Nòt entèn administratè ak pwofesè yo ka wè"
+  },
+  "newEvaluationModal": {
+    "title": "Nouvo evalyasyon",
+    "validationError": "Klas, matyè, trimès ak tit yo obligatwa.",
+    "createdToast": "Evalyasyon kreye — antre nòt yo.",
+    "submitLabel": "Kreye epi antre nòt yo",
+    "submitting": "K ap kreye…"
+  }
+}

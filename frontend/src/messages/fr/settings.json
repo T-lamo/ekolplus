@@ -1,4 +1,16 @@
 {
+  "title": "Paramètres",
+  "subtitle": "Gérez les informations de votre établissement, les préférences et la sécurité du compte.",
+  "loadError": "Impossible de charger les informations de l'établissement.",
+  "tabs": {
+    "profil": "Profil",
+    "apparence": "Apparence",
+    "langue": "Langue",
+    "etablissement": "Établissement",
+    "annee": "Année scolaire",
+    "admins": "Administrateurs",
+    "notifications": "Notifications"
+  },
   "administrateurs": {
     "title": "Administrateurs",
     "description": "Comptes ayant accès à l'espace de gestion de l'établissement.",

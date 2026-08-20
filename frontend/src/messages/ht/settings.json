@@ -1,5 +1,17 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Paramèt",
+  "subtitle": "Jere enfòmasyon lekòl ou, preferans ak sekirite kont lan.",
+  "loadError": "Nou pa ka chaje enfòmasyon lekòl la.",
+  "tabs": {
+    "profil": "Pwofil",
+    "apparence": "Aparans",
+    "langue": "Lang",
+    "etablissement": "Lekòl",
+    "annee": "Ane eskolè",
+    "admins": "Administratè yo",
+    "notifications": "Notifikasyon"
+  },
   "administrateurs": {
     "title": "Administratè yo",
     "description": "Kont ki gen aksè nan espas jesyon lekòl la.",

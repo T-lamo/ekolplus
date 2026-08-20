@@ -1,4 +1,16 @@
 {
+  "title": "Settings",
+  "subtitle": "Manage your school's information, preferences, and account security.",
+  "loadError": "Unable to load the school's information.",
+  "tabs": {
+    "profil": "Profile",
+    "apparence": "Appearance",
+    "langue": "Language",
+    "etablissement": "School",
+    "annee": "School year",
+    "admins": "Administrators",
+    "notifications": "Notifications"
+  },
   "administrateurs": {
     "title": "Administrators",
     "description": "Accounts with access to the school's management workspace.",

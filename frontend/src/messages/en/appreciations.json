@@ -115,5 +115,65 @@
       "statusRecorded": "Recorded",
       "statusPending": "Pending"
     }
+  },
+  "detail": {
+    "back": "Back to appreciations",
+    "studentNotFound": "Student not found.",
+    "loadError": "Unable to load the appreciation.",
+    "deleteConfirm": "Delete this student's general appreciation?",
+    "deletedToast": "Appreciation deleted.",
+    "deleteErrorToast": "Deletion failed.",
+    "position": "Student {index} of {total} — {className} · {term}",
+    "messagingSoon": "Messaging — coming soon.",
+    "reportCardsSoon": "Available with Report cards (Epic 7).",
+    "classCouncilSoon": "Available with the Class council (coming soon).",
+    "auditHistorySoon": "The detailed history arrives with the audit module (coming soon).",
+    "notifyGuardian": "Notify the guardian",
+    "generateReportCard": "Generate report card",
+    "editAppreciation": "Edit appreciation",
+    "generalTitle": "General appreciation",
+    "writtenBy": "Written by:",
+    "enteredOn": "Entered on {date}",
+    "statusRecorded": "Recorded",
+    "statusDraft": "Draft",
+    "generalEmpty": "No general appreciation entered for this student.",
+    "bySubjectTitle": "Appreciations by subject",
+    "bySubject": {
+      "subject": "Subject",
+      "coefficient": "Coeff.",
+      "average": "Avg.",
+      "mention": "Mention",
+      "appreciation": "Appreciation",
+      "teacher": "Teacher"
+    },
+    "overallAverage": "Overall average",
+    "rankLine": "— Rank: {rank} / {rankedCount}",
+    "classCouncilTitle": "Class council decision",
+    "statsTitle": "Term statistics",
+    "stats": {
+      "average": "Average",
+      "rank": "Rank",
+      "minScore": "Lowest score",
+      "maxScore": "Highest score",
+      "rankValue": {
+        "one": "#{rank}",
+        "other": "#{rank}"
+      }
+    },
+    "info": {
+      "classAverage": "Class avg.",
+      "absences": "Absences",
+      "lateArrivals": "Late arrivals",
+      "gradedSubjects": "Graded subjects",
+      "enteredOn": "Entered on",
+      "lastModified": "Last modified"
+    },
+    "homeroomTitle": "Homeroom teacher",
+    "notSet": "Not set",
+    "historyTitle": "Change history",
+    "quickActionsTitle": "Quick actions",
+    "generateReportCardPdf": "Generate report card PDF",
+    "sendToGuardian": "Send to legal guardian",
+    "deleteAppreciation": "Delete appreciation"
   }
 }

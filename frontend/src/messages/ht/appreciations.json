@@ -116,5 +116,65 @@
       "statusRecorded": "Antre",
       "statusPending": "An atant"
     }
+  },
+  "detail": {
+    "back": "Retounen nan apresyasyon yo",
+    "studentNotFound": "Nou pa jwenn elèv la.",
+    "loadError": "Nou pa t kapab chaje apresyasyon an.",
+    "deleteConfirm": "Efase apresyasyon jeneral elèv sa a?",
+    "deletedToast": "Apresyasyon efase.",
+    "deleteErrorToast": "Erè pandan efasman an.",
+    "position": "Elèv {index} sou {total} — {className} · {term}",
+    "messagingSoon": "Mesajri — l ap disponib byento.",
+    "reportCardsSoon": "Disponib ak Bilten yo (Epic 7).",
+    "classCouncilSoon": "Disponib ak Konsèy klas la (k ap vini).",
+    "auditHistorySoon": "Istorik detaye a ap vini ak modil odit la (k ap vini).",
+    "notifyGuardian": "Avèti responsab la",
+    "generateReportCard": "Jenere bilten an",
+    "editAppreciation": "Modifye apresyasyon an",
+    "generalTitle": "Apresyasyon jeneral",
+    "writtenBy": "Ekri pa :",
+    "enteredOn": "Antre le {date}",
+    "statusRecorded": "Antre",
+    "statusDraft": "Bouyon",
+    "generalEmpty": "Pa gen apresyasyon jeneral antre pou elèv sa a.",
+    "bySubjectTitle": "Apresyasyon pa matyè",
+    "bySubject": {
+      "subject": "Matyè",
+      "coefficient": "Koef.",
+      "average": "Mwa.",
+      "mention": "Mansyon",
+      "appreciation": "Apresyasyon",
+      "teacher": "Pwofesè"
+    },
+    "overallAverage": "Mwayèn jeneral",
+    "rankLine": "— Ran : {rank} / {rankedCount}",
+    "classCouncilTitle": "Desizyon konsèy klas la",
+    "statsTitle": "Estatistik trimès la",
+    "stats": {
+      "average": "Mwayèn",
+      "rank": "Ran",
+      "minScore": "Nòt minimòm",
+      "maxScore": "Nòt maksimòm",
+      "rankValue": {
+        "one": "{rank}e",
+        "other": "{rank}e"
+      }
+    },
+    "info": {
+      "classAverage": "Mwa. klas la",
+      "absences": "Absans",
+      "lateArrivals": "Reta",
+      "gradedSubjects": "Matyè evalye",
+      "enteredOn": "Antre le",
+      "lastModified": "Dènye modifikasyon"
+    },
+    "homeroomTitle": "Pwofesè prensipal",
+    "notSet": "Pa defini",
+    "historyTitle": "Istorik modifikasyon yo",
+    "quickActionsTitle": "Aksyon rapid",
+    "generateReportCardPdf": "Jenere bilten PDF la",
+    "sendToGuardian": "Voye bay responsab legal la",
+    "deleteAppreciation": "Efase apresyasyon an"
   }
 }

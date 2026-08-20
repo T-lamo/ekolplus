@@ -24,5 +24,62 @@
   "langue": {
     "title": "Lang enèfas la",
     "description": "Chwazi lang aplikasyon an. Preferans pèsonèl : li aplike imedyatman, sou tout aparèy ou yo, e li pa chanje anyen pou lòt manm yo."
+  },
+  "profil": {
+    "info": {
+      "title": "Pwofil mwen",
+      "subtitle": "Enfòmasyon kont administratè a",
+      "avatarLabel": "Foto pwofil",
+      "avatarHint": "PNG, JPG oswa WebP",
+      "nameLabel": "Non konplè",
+      "emailLabel": "Adrès imèl",
+      "phoneLabel": "Telefòn",
+      "roleLabel": "Wòl",
+      "avatarUpdated": "Foto pwofil la mizajou.",
+      "profileUpdated": "Pwofil la mizajou.",
+      "save": "Anrejistre chanjman yo",
+      "saving": "N ap anrejistre…"
+    },
+    "password": {
+      "strength": {
+        "weak": "Fèb",
+        "medium": "Mwayen",
+        "strong": "Fò"
+      },
+      "lastChangedToday": "Jodi a",
+      "lastChangedMonthsAgo": {
+        "one": "Sa gen 1 mwa",
+        "other": "Sa gen {months} mwa"
+      },
+      "showPassword": "Montre modpas la",
+      "hidePassword": "Kache modpas la",
+      "titleChange": "Modpas",
+      "titleSet": "Defini yon modpas",
+      "subtitleChange": "Modifye modpas koneksyon w lan",
+      "subtitleSet": "Ou konekte ak Google. Defini yon modpas pou w ka konekte tou avèk imèl.",
+      "lastChangedLabel": "Dènye modifikasyon",
+      "currentPasswordLabel": "Modpas aktyèl",
+      "newPasswordLabel": "Nouvo modpas",
+      "confirmPasswordLabel": "Konfime nouvo modpas la",
+      "hint": "Min. 8 karaktè, yon majiskil, yon chif",
+      "passwordsMatch": "Modpas yo koresponn",
+      "errorMissingNew": "Antre yon nouvo modpas.",
+      "errorMismatch": "Konfimasyon an pa koresponn ak nouvo modpas la.",
+      "updatedToast": "Modpas la mizajou.",
+      "setToast": "Modpas defini. Ou ka konekte kounye a avèk imèl.",
+      "errors": {
+        "invalidCredentials": "Modpas aktyèl la pa kòrèk.",
+        "passwordBanned": "Modpas sa a twò komen.",
+        "passwordTooShort": "Modpas la twò kout.",
+        "passwordPwned": "Modpas sa a fuit — chwazi yon lòt.",
+        "passwordAlreadySet": "Gen yon modpas ki deja defini. Itilize « chanje modpas ».",
+        "validationFailed": "Chan yo pa valid."
+      },
+      "save": "Anrejistre modpas la",
+      "define": "Defini modpas la",
+      "saving": "N ap anrejistre…",
+      "generate": "Jenere yon modpas",
+      "logoutWarning": "Apre modifikasyon an, w ap dekonekte nan tout sesyon aktif yo."
+    }
   }
 }

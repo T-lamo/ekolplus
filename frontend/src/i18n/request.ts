@@ -41,6 +41,7 @@ export default getRequestConfig(async () => {
     presences,
     enseignants,
     eleves,
+    configuration,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -60,6 +61,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/presences.json`),
     import(`../messages/${locale}/enseignants.json`),
     import(`../messages/${locale}/eleves.json`),
+    import(`../messages/${locale}/configuration.json`),
   ]);
 
   return {
@@ -83,6 +85,7 @@ export default getRequestConfig(async () => {
       Presences: presences.default,
       Enseignants: enseignants.default,
       Eleves: eleves.default,
+      Configuration: configuration.default,
     },
   };
 });

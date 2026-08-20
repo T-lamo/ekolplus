@@ -14,6 +14,7 @@ import {
   type ReactNode,
   type TextareaHTMLAttributes,
 } from 'react';
+import { useTranslations } from 'next-intl';
 import { SelectItem } from '@/components/ui/Select';
 import { cn } from '@/lib/utils';
 
@@ -71,6 +72,7 @@ export function FormGroup({
   className?: string;
   children: ReactNode;
 }) {
+  const t = useTranslations('Configuration.common');
   return (
     <div
       className={cn('flex flex-col gap-[5px]', className)}
@@ -80,7 +82,9 @@ export function FormGroup({
         {label}
         {required && <span className="ml-0.5 text-destructive-foreground">*</span>}
         {optional && (
-          <span className="ml-[3px] text-2xs font-normal text-muted-foreground">(optionnel)</span>
+          <span className="ml-[3px] text-2xs font-normal text-muted-foreground">
+            {t('optional')}
+          </span>
         )}
         {labelHint && (
           <span className="ml-[3px] text-2xs font-normal text-muted-foreground">{labelHint}</span>

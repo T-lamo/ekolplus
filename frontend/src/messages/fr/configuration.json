@@ -1,0 +1,281 @@
+{
+  "common": {
+    "optional": "(optionnel)"
+  },
+  "niveaux": {
+    "title": "Niveaux",
+    "subtitle": "Ordre des niveaux scolaires, du premier au dernier — glisse une ligne pour réordonner. Utilisé pour suggérer les promotions lors du passage à l'année suivante.",
+    "addLevel": "Ajouter un niveau",
+    "loadError": "Impossible de charger les niveaux.",
+    "empty": "Aucun niveau configuré — ajoute ton premier niveau avec le bouton ci-dessus.",
+    "reorderAria": "Réordonner {name}",
+    "renameAria": "Renommer {name}",
+    "deleteAria": "Supprimer {name}",
+    "deleteConfirm": "Supprimer le niveau « {name} » ?",
+    "levelAdded": "Niveau ajouté.",
+    "levelRenamed": "Niveau renommé.",
+    "levelDeleted": "Niveau supprimé.",
+    "addModalTitle": "Ajouter un niveau",
+    "addModalSubmit": "Ajouter",
+    "renameModalTitle": "Renommer le niveau",
+    "renameModalSubmit": "Enregistrer",
+    "nameLabel": "Nom du niveau",
+    "namePlaceholder": "Ex. 6ème",
+    "nameRequired": "Le nom est requis.",
+    "cancel": "Annuler",
+    "errors": {
+      "nameTaken": "Ce niveau existe déjà.",
+      "invalidSet": "La liste des niveaux a changé — rechargez la page et réessayez.",
+      "orgRoleInsufficient": "Vous n'avez pas les droits pour modifier les niveaux.",
+      "validationFailed": "Nom invalide (1 à 40 caractères)."
+    }
+  },
+  "classes": {
+    "list": {
+      "title": "Classes",
+      "subtitle": "Gestion des classes de l'établissement.",
+      "loadError": "Impossible de charger les classes.",
+      "export": "Exporter",
+      "addClass": "Ajouter une classe",
+      "deleteConfirm": "Supprimer la classe « {name} » ?",
+      "classDeleted": "Classe supprimée.",
+      "csv": {
+        "class": "Classe",
+        "level": "Niveau",
+        "room": "Salle",
+        "homeroomTeacher": "Professeur principal",
+        "capacity": "Capacité",
+        "subjects": "Matières"
+      },
+      "menu": {
+        "view": "Voir la classe",
+        "edit": "Modifier",
+        "manageStudents": "Gérer les élèves",
+        "manageStudentsToast": "Disponible avec Epic 5 (Élèves).",
+        "assignTeachers": "Affecter enseignants",
+        "viewSubjects": "Voir les matières",
+        "classBulletins": "Bulletins de la classe",
+        "classBulletinsToast": "Disponible avec Epic 7 (Bulletins).",
+        "delete": "Supprimer la classe"
+      },
+      "stats": {
+        "total": "Total classes",
+        "levels": "Niveaux distincts",
+        "homeroomAssigned": "Prof. principal assigné",
+        "avgSubjects": "Matières / classe (moy.)"
+      },
+      "searchPlaceholder": "Rechercher une classe...",
+      "allLevels": "Tous niveaux",
+      "multiYearComingSoon": "Sélecteur multi-année à venir — une seule année scolaire active pour l'instant",
+      "noActiveYear": "Aucune année active",
+      "resultCount": {
+        "one": "{count} classe",
+        "other": "{count} classes"
+      },
+      "emptyNoClasses": "Aucune classe — ajoute la première.",
+      "emptyNoResults": "Aucun résultat.",
+      "roomUnset": "Salle non renseignée",
+      "homeroomSuffix": "· Prof. principal",
+      "homeroomEmpty": "Professeur principal non affecté",
+      "subjectCount": {
+        "one": "{count} matière",
+        "other": "{count} matières"
+      },
+      "studentCountSuffix": "élèves",
+      "table": {
+        "class": "Classe",
+        "level": "Niveau",
+        "homeroomTeacher": "Professeur principal",
+        "students": "Élèves",
+        "subjects": "Matières",
+        "average": "Moyenne générale",
+        "status": "Statut",
+        "unassigned": "Non affecté",
+        "places": "places",
+        "active": "Active"
+      }
+    },
+    "pageShell": {
+      "tabs": {
+        "info": "Informations générales",
+        "prof": "Professeur principal",
+        "subjects": "Matières",
+        "notes": "Notes & Évaluation"
+      },
+      "addTitle": "Ajouter une classe",
+      "sectionsAriaLabel": "Sections de la fiche classe"
+    },
+    "create": {
+      "meta": "Nouvelle classe",
+      "metaWithYear": "Nouvelle classe — Année scolaire {year}",
+      "cancel": "Annuler",
+      "save": "Enregistrer la classe",
+      "created": "Classe créée."
+    },
+    "detail": {
+      "yearPrefix": "Année {year}",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "updated": "Classe mise à jour.",
+      "notFound": "Classe introuvable."
+    },
+    "form": {
+      "requiredHint": "Les champs marqués",
+      "requiredHintSuffix": "sont obligatoires",
+      "info": {
+        "title": "Informations générales",
+        "subtitle": "Identité et localisation de la classe.",
+        "nameLabel": "Nom de la classe",
+        "nameHint": "Ex : 3ème A, NS1, Philo Sciences…",
+        "namePlaceholder": "3ème A",
+        "levelLabel": "Niveau scolaire",
+        "levelPlaceholder": "Sélectionner un niveau",
+        "levelOther": "Autre…",
+        "levelOtherPlaceholder": "Saisir le niveau",
+        "levelOtherAria": "Niveau (autre)",
+        "levelFreePlaceholder": "3ème",
+        "noLevelCatalog": "Aucun catalogue de niveaux —",
+        "noLevelCatalogLink": "définir les niveaux de l'école",
+        "roomLabel": "Salle de cours",
+        "roomNone": "Aucune salle attitrée",
+        "roomOther": "Autre lieu…",
+        "roomOtherPlaceholder": "Saisir le lieu (ex. Préau, Salle paroissiale)",
+        "roomOtherAria": "Salle (autre lieu)",
+        "roomFreePlaceholder": "Salle 12 — Bât. B",
+        "noRoomCatalog": "Aucun catalogue de salles —",
+        "noRoomCatalogLink": "définir les salles de l'école",
+        "roomTooSmall": "Cette salle n'a que {roomCapacity} places pour {classCapacity} élèves.",
+        "inactiveSuffix": "· inactive",
+        "capacityLabel": "Capacité maximale",
+        "capacityHint": "Nombre maximum de places disponibles",
+        "capacityPlaceholder": "32",
+        "trackLabel": "Filière / Série",
+        "trackPlaceholder": "Sciences, Lettres, NS…",
+        "yearLabel": "Année scolaire",
+        "yearHint": "Année active — modifiable dans Paramètres › Année scolaire",
+        "noActiveYear": "Aucune année active",
+        "errors": {
+          "nameRequired": "Le nom est requis.",
+          "nameTooLong": "40 caractères maximum.",
+          "levelRequired": "Le niveau est requis.",
+          "capacityRequired": "La capacité est requise.",
+          "capacityRange": "Nombre entier entre 1 et 500."
+        }
+      },
+      "prof": {
+        "title": "Professeur principal",
+        "subtitle": "Responsable pédagogique de la classe.",
+        "teacherLabel": "Professeur principal",
+        "teacherHint": "Ce professeur recevra les bulletins et rapports de la classe",
+        "teacherPlaceholder": "Rechercher un enseignant…",
+        "teacherNone": "— Aucun —",
+        "subjectsLabel": "Matières enseignées",
+        "subjectsHint": "d'après ses affectations",
+        "chooseTeacherHint": "Choisissez un enseignant pour voir ses matières"
+      },
+      "subjects": {
+        "title": "Matières de la classe",
+        "subtitle": "Sélectionner les matières enseignées dans cette classe.",
+        "coefficientHint": "Coef. {coefficient}",
+        "lockedHint": "Des notes existent — la matière ne peut plus être retirée",
+        "noSubjectsPlaceholder": "Aucune matière active — crée d'abord les matières de l'école",
+        "placeholder": "Choisir les matières de la classe…",
+        "searchPlaceholder": "Rechercher une matière…",
+        "emptyLabel": "Aucune matière trouvée",
+        "selectedCount": {
+          "one": "{count} matière sélectionnée sur {total} disponible",
+          "other": "{count} matières sélectionnées sur {total} disponibles"
+        },
+        "selectAll": "Tout sélectionner",
+        "deselectAll": "Tout désélectionner",
+        "createNew": "Créer une nouvelle matière",
+        "detailToggle": "Détail des matières ({count})",
+        "detailToggleHint": "enseignant · coefficient · heures / semaine",
+        "withoutTeacherBadge": "{count} sans enseignant",
+        "detailTable": {
+          "subject": "Matière",
+          "teacher": "Enseignant",
+          "coefficient": "Coef.",
+          "weeklyHours": "h / sem",
+          "lockAria": "Verrou",
+          "teacherNone": "— Aucun —",
+          "teacherPlaceholderMobile": "Enseignant — Aucun",
+          "coefficientAria": "Coefficient de {subject}",
+          "weeklyHoursAria": "Heures hebdomadaires de {subject}",
+          "lockedAria": "Des notes existent pour cette matière",
+          "coeffLabel": "Coeff.",
+          "weeklyHoursLabelMobile": "h/sem"
+        }
+      },
+      "notes": {
+        "title": "Configuration des notes",
+        "subtitle": "Paramètres d'évaluation hérités de l'établissement — identiques pour toutes les classes.",
+        "scale": "Barème",
+        "scaleDefault": "Sur 20",
+        "periods": "Périodes",
+        "periodsNone": "Aucune période",
+        "periodCount": {
+          "one": "{count} {type}",
+          "other": "{count} {type}s"
+        },
+        "calcMode": "Mode de calcul",
+        "calcModeValue": "Moyenne pondérée par coeff.",
+        "passingGrade": "Note de passage",
+        "passingGradeValue": "Définie par matière",
+        "bulletinTemplate": "Modèle de bulletin",
+        "bulletinTemplateNone": "Aucun modèle actif",
+        "manage": "Gérer"
+      },
+      "appearance": {
+        "title": "Apparence",
+        "subtitle": "Couleur affichée sur les cartes et badges de la classe.",
+        "colorLabel": "Couleur d'identification",
+        "cardPreview": "Aperçu de la carte",
+        "namePlaceholder": "Nom de la classe",
+        "subtitlePlaceholder": "Salle · niveau",
+        "students": "Élèves",
+        "subjects": "Matières"
+      },
+      "recap": {
+        "title": "Récapitulatif",
+        "name": "Nom",
+        "level": "Niveau",
+        "room": "Salle",
+        "capacity": "Capacité",
+        "capacitySuffix": "places",
+        "subjects": "Matières",
+        "subjectsSelected": {
+          "one": "{count} sélectionnée",
+          "other": "{count} sélectionnées"
+        },
+        "homeroom": "Prof. principal",
+        "homeroomEmpty": "Non assigné",
+        "year": "Année scolaire"
+      },
+      "checklist": {
+        "title": "Checklist",
+        "name": "Nom de la classe renseigné",
+        "level": "Niveau scolaire sélectionné",
+        "capacity": "Capacité définie",
+        "subjects": "Matières assignées",
+        "subjectsCount": " ({count})",
+        "homeroom": "Professeur principal assigné",
+        "allSubjectsHaveTeacher": "Toutes les matières ont un enseignant",
+        "someWithoutTeacher": " ({count} sans)",
+        "coefficientsFilled": "Coefficients renseignés",
+        "someMissingCoefficients": " ({count} manquants)",
+        "homeroomOptionalHint": "Le professeur principal est recommandé mais optionnel à la création."
+      },
+      "next": {
+        "titleCreate": "Après création",
+        "titleEdit": "Navigation rapide",
+        "enrollTitle": "Inscrire les élèves",
+        "enrollDesc": "Ajouter ou importer les élèves",
+        "assignTitle": "Affecter les enseignants",
+        "assignDesc": "Associer un enseignant par matière",
+        "feesTitle": "Configurer la scolarité",
+        "feesDesc": "Définir les frais et tranches"
+      }
+    }
+  }
+}

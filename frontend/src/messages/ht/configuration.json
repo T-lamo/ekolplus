@@ -1,0 +1,282 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "common": {
+    "optional": "(opsyonèl)"
+  },
+  "niveaux": {
+    "title": "Nivo yo",
+    "subtitle": "Lòd nivo lekòl yo, soti nan premye a rive nan dènye a — trennen yon liy pou reòdone. Sèvi pou sijere pwomosyon yo lè n ap pase nan ane eskolè k ap vini an.",
+    "addLevel": "Ajoute yon nivo",
+    "loadError": "Nou pa t kapab chaje nivo yo.",
+    "empty": "Pa gen nivo konfigire — ajoute premye nivo ou avèk bouton anwo a.",
+    "reorderAria": "Reòdone {name}",
+    "renameAria": "Chanje non {name}",
+    "deleteAria": "Efase {name}",
+    "deleteConfirm": "Efase nivo « {name} » a ?",
+    "levelAdded": "Nivo ajoute.",
+    "levelRenamed": "Non nivo a chanje.",
+    "levelDeleted": "Nivo efase.",
+    "addModalTitle": "Ajoute yon nivo",
+    "addModalSubmit": "Ajoute",
+    "renameModalTitle": "Chanje non nivo a",
+    "renameModalSubmit": "Anrejistre",
+    "nameLabel": "Non nivo a",
+    "namePlaceholder": " Egzanp. 6yèm",
+    "nameRequired": "Non an obligatwa.",
+    "cancel": "Anile",
+    "errors": {
+      "nameTaken": "Nivo sa a egziste deja.",
+      "invalidSet": "Lis nivo yo chanje — rechaje paj la epi eseye ankò.",
+      "orgRoleInsufficient": "Ou pa gen dwa pou modifye nivo yo.",
+      "validationFailed": "Non envalid (1 rive 40 karaktè)."
+    }
+  },
+  "classes": {
+    "list": {
+      "title": "Klas yo",
+      "subtitle": "Jesyon klas lekòl la.",
+      "loadError": "Nou pa t kapab chaje klas yo.",
+      "export": "Ekspòte",
+      "addClass": "Ajoute yon klas",
+      "deleteConfirm": "Efase klas « {name} » a ?",
+      "classDeleted": "Klas efase.",
+      "csv": {
+        "class": "Klas",
+        "level": "Nivo",
+        "room": "Sal",
+        "homeroomTeacher": "Pwofesè prensipal",
+        "capacity": "Kapasite",
+        "subjects": "Matyè"
+      },
+      "menu": {
+        "view": "Wè klas la",
+        "edit": "Modifye",
+        "manageStudents": "Jere elèv yo",
+        "manageStudentsToast": "Disponib avèk Epic 5 (Elèv).",
+        "assignTeachers": "Afekte pwofesè",
+        "viewSubjects": "Wè matyè yo",
+        "classBulletins": "Bilten klas la",
+        "classBulletinsToast": "Disponib avèk Epic 7 (Bilten).",
+        "delete": "Efase klas la"
+      },
+      "stats": {
+        "total": "Total klas",
+        "levels": "Nivo diferan",
+        "homeroomAssigned": "Pwofesè prensipal afekte",
+        "avgSubjects": "Matyè / klas (mwayèn)"
+      },
+      "searchPlaceholder": "Chèche yon klas...",
+      "allLevels": "Tout nivo",
+      "multiYearComingSoon": "Seleksyonè plizyè ane ap vini — yon sèl ane eskolè aktif pou kounye a",
+      "noActiveYear": "Pa gen ane aktif",
+      "resultCount": {
+        "one": "{count} klas",
+        "other": "{count} klas"
+      },
+      "emptyNoClasses": "Pa gen klas — ajoute premye a.",
+      "emptyNoResults": "Pa gen rezilta.",
+      "roomUnset": "Sal pa presize",
+      "homeroomSuffix": "· Pwofesè prensipal",
+      "homeroomEmpty": "Pa gen pwofesè prensipal afekte",
+      "subjectCount": {
+        "one": "{count} matyè",
+        "other": "{count} matyè"
+      },
+      "studentCountSuffix": "elèv",
+      "table": {
+        "class": "Klas",
+        "level": "Nivo",
+        "homeroomTeacher": "Pwofesè prensipal",
+        "students": "Elèv",
+        "subjects": "Matyè",
+        "average": "Mwayèn jeneral",
+        "status": "Estati",
+        "unassigned": "Pa afekte",
+        "places": "plas",
+        "active": "Aktif"
+      }
+    },
+    "pageShell": {
+      "tabs": {
+        "info": "Enfòmasyon jeneral",
+        "prof": "Pwofesè prensipal",
+        "subjects": "Matyè",
+        "notes": "Nòt & Evalyasyon"
+      },
+      "addTitle": "Ajoute yon klas",
+      "sectionsAriaLabel": "Seksyon fich klas la"
+    },
+    "create": {
+      "meta": "Nouvo klas",
+      "metaWithYear": "Nouvo klas — Ane eskolè {year}",
+      "cancel": "Anile",
+      "save": "Anrejistre klas la",
+      "created": "Klas kreye."
+    },
+    "detail": {
+      "yearPrefix": "Ane {year}",
+      "cancel": "Anile",
+      "save": "Anrejistre",
+      "updated": "Klas mete ajou.",
+      "notFound": "Klas la pa jwenn."
+    },
+    "form": {
+      "requiredHint": "Chan make ak",
+      "requiredHintSuffix": "obligatwa",
+      "info": {
+        "title": "Enfòmasyon jeneral",
+        "subtitle": "Idantite ak kote klas la ye.",
+        "nameLabel": "Non klas la",
+        "nameHint": "Egzanp : 3yèm A, NS1, Filo Syans…",
+        "namePlaceholder": "3yèm A",
+        "levelLabel": "Nivo eskolè",
+        "levelPlaceholder": "Chwazi yon nivo",
+        "levelOther": "Lòt…",
+        "levelOtherPlaceholder": "Antre nivo a",
+        "levelOtherAria": "Nivo (lòt)",
+        "levelFreePlaceholder": "3yèm",
+        "noLevelCatalog": "Pa gen katalòg nivo —",
+        "noLevelCatalogLink": "defini nivo lekòl la",
+        "roomLabel": "Sal klas",
+        "roomNone": "Pa gen sal afekte",
+        "roomOther": "Lòt kote…",
+        "roomOtherPlaceholder": "Antre kote a (egz. Lakou, Sal pawas)",
+        "roomOtherAria": "Sal (lòt kote)",
+        "roomFreePlaceholder": "Sal 12 — Bilding B",
+        "noRoomCatalog": "Pa gen katalòg sal —",
+        "noRoomCatalogLink": "defini sal lekòl la",
+        "roomTooSmall": "Sal sa a gen sèlman {roomCapacity} plas pou {classCapacity} elèv.",
+        "inactiveSuffix": "· inaktif",
+        "capacityLabel": "Kapasite maksimòm",
+        "capacityHint": "Kantite plas maksimòm ki disponib",
+        "capacityPlaceholder": "32",
+        "trackLabel": "Filyè / Seri",
+        "trackPlaceholder": "Syans, Lèt, NS…",
+        "yearLabel": "Ane eskolè",
+        "yearHint": "Ane aktif — modifyab nan Paramèt › Ane eskolè",
+        "noActiveYear": "Pa gen ane aktif",
+        "errors": {
+          "nameRequired": "Non an obligatwa.",
+          "nameTooLong": "40 karaktè maksimòm.",
+          "levelRequired": "Nivo a obligatwa.",
+          "capacityRequired": "Kapasite a obligatwa.",
+          "capacityRange": "Nonm antye ant 1 ak 500."
+        }
+      },
+      "prof": {
+        "title": "Pwofesè prensipal",
+        "subtitle": "Responsab pedagojik klas la.",
+        "teacherLabel": "Pwofesè prensipal",
+        "teacherHint": "Pwofesè sa a ap resevwa bilten ak rapò klas la",
+        "teacherPlaceholder": "Chèche yon pwofesè…",
+        "teacherNone": "— Okenn —",
+        "subjectsLabel": "Matyè li anseye",
+        "subjectsHint": "dapre afektasyon li yo",
+        "chooseTeacherHint": "Chwazi yon pwofesè pou wè matyè li yo"
+      },
+      "subjects": {
+        "title": "Matyè klas la",
+        "subtitle": "Chwazi matyè yo anseye nan klas sa a.",
+        "coefficientHint": "Kwef. {coefficient}",
+        "lockedHint": "Gen nòt ki egziste deja — yo pa ka retire matyè a ankò",
+        "noSubjectsPlaceholder": "Pa gen matyè aktif — kreye matyè lekòl la anvan",
+        "placeholder": "Chwazi matyè klas la…",
+        "searchPlaceholder": "Chèche yon matyè…",
+        "emptyLabel": "Pa gen matyè yo jwenn",
+        "selectedCount": {
+          "one": "{count} matyè seleksyone sou {total} disponib",
+          "other": "{count} matyè seleksyone sou {total} disponib"
+        },
+        "selectAll": "Seleksyone tout",
+        "deselectAll": "Dezeleksyone tout",
+        "createNew": "Kreye yon nouvo matyè",
+        "detailToggle": "Detay matyè yo ({count})",
+        "detailToggleHint": "pwofesè · kwefisyan · èdtan / semèn",
+        "withoutTeacherBadge": "{count} san pwofesè",
+        "detailTable": {
+          "subject": "Matyè",
+          "teacher": "Pwofesè",
+          "coefficient": "Kwef.",
+          "weeklyHours": "èdtan / sm",
+          "lockAria": "Kadna",
+          "teacherNone": "— Okenn —",
+          "teacherPlaceholderMobile": "Pwofesè — Okenn",
+          "coefficientAria": "Kwefisyan pou {subject}",
+          "weeklyHoursAria": "Èdtan pou chak semèn pou {subject}",
+          "lockedAria": "Gen nòt ki egziste deja pou matyè sa a",
+          "coeffLabel": "Kwef.",
+          "weeklyHoursLabelMobile": "èdtan/sm"
+        }
+      },
+      "notes": {
+        "title": "Konfigirasyon nòt yo",
+        "subtitle": "Paramèt evalyasyon eritye nan men lekòl la — menm jan pou tout klas.",
+        "scale": "Baram",
+        "scaleDefault": "Sou 20",
+        "periods": "Peryòd",
+        "periodsNone": "Pa gen peryòd",
+        "periodCount": {
+          "one": "{count} {type}",
+          "other": "{count} {type}"
+        },
+        "calcMode": "Mòd kalkil",
+        "calcModeValue": "Mwayèn poze pa kwefisyan",
+        "passingGrade": "Nòt pou pase",
+        "passingGradeValue": "Defini pa matyè",
+        "bulletinTemplate": "Modèl bilten",
+        "bulletinTemplateNone": "Pa gen modèl aktif",
+        "manage": "Jere"
+      },
+      "appearance": {
+        "title": "Aparans",
+        "subtitle": "Koulè ki parèt sou kat ak badj klas la.",
+        "colorLabel": "Koulè idantifikasyon",
+        "cardPreview": "Apèsi kat la",
+        "namePlaceholder": "Non klas la",
+        "subtitlePlaceholder": "Sal · nivo",
+        "students": "Elèv",
+        "subjects": "Matyè"
+      },
+      "recap": {
+        "title": "Rekapitilasyon",
+        "name": "Non",
+        "level": "Nivo",
+        "room": "Sal",
+        "capacity": "Kapasite",
+        "capacitySuffix": "plas",
+        "subjects": "Matyè",
+        "subjectsSelected": {
+          "one": "{count} seleksyone",
+          "other": "{count} seleksyone"
+        },
+        "homeroom": "Pwofesè prensipal",
+        "homeroomEmpty": "Pa afekte",
+        "year": "Ane eskolè"
+      },
+      "checklist": {
+        "title": "Lis kontwòl",
+        "name": "Non klas la antre",
+        "level": "Nivo eskolè chwazi",
+        "capacity": "Kapasite defini",
+        "subjects": "Matyè afekte",
+        "subjectsCount": " ({count})",
+        "homeroom": "Pwofesè prensipal afekte",
+        "allSubjectsHaveTeacher": "Tout matyè gen yon pwofesè",
+        "someWithoutTeacher": " ({count} san)",
+        "coefficientsFilled": "Kwefisyan antre",
+        "someMissingCoefficients": " ({count} manke)",
+        "homeroomOptionalHint": "Nou rekòmande yon pwofesè prensipal men li opsyonèl lè n ap kreye a."
+      },
+      "next": {
+        "titleCreate": "Apre kreyasyon an",
+        "titleEdit": "Navigasyon rapid",
+        "enrollTitle": "Enskri elèv yo",
+        "enrollDesc": "Ajoute oswa enpòte elèv yo",
+        "assignTitle": "Afekte pwofesè yo",
+        "assignDesc": "Asosye yon pwofesè pou chak matyè",
+        "feesTitle": "Konfigire frè eskolè",
+        "feesDesc": "Defini frè ak tranch yo"
+      }
+    }
+  }
+}

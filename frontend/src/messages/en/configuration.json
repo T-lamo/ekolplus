@@ -1,0 +1,281 @@
+{
+  "common": {
+    "optional": "(optional)"
+  },
+  "niveaux": {
+    "title": "Grade levels",
+    "subtitle": "Order of school grade levels, first to last — drag a row to reorder. Used to suggest promotions when moving to the next school year.",
+    "addLevel": "Add a grade level",
+    "loadError": "Could not load grade levels.",
+    "empty": "No grade levels configured — add your first one with the button above.",
+    "reorderAria": "Reorder {name}",
+    "renameAria": "Rename {name}",
+    "deleteAria": "Delete {name}",
+    "deleteConfirm": "Delete the grade level \"{name}\"?",
+    "levelAdded": "Grade level added.",
+    "levelRenamed": "Grade level renamed.",
+    "levelDeleted": "Grade level deleted.",
+    "addModalTitle": "Add a grade level",
+    "addModalSubmit": "Add",
+    "renameModalTitle": "Rename grade level",
+    "renameModalSubmit": "Save",
+    "nameLabel": "Grade level name",
+    "namePlaceholder": "E.g. Grade 6",
+    "nameRequired": "Name is required.",
+    "cancel": "Cancel",
+    "errors": {
+      "nameTaken": "This grade level already exists.",
+      "invalidSet": "The grade level list has changed — reload the page and try again.",
+      "orgRoleInsufficient": "You don't have permission to edit grade levels.",
+      "validationFailed": "Invalid name (1 to 40 characters)."
+    }
+  },
+  "classes": {
+    "list": {
+      "title": "Classes",
+      "subtitle": "Manage the school's classes.",
+      "loadError": "Could not load classes.",
+      "export": "Export",
+      "addClass": "Add a class",
+      "deleteConfirm": "Delete the class \"{name}\"?",
+      "classDeleted": "Class deleted.",
+      "csv": {
+        "class": "Class",
+        "level": "Grade level",
+        "room": "Room",
+        "homeroomTeacher": "Homeroom teacher",
+        "capacity": "Capacity",
+        "subjects": "Subjects"
+      },
+      "menu": {
+        "view": "View class",
+        "edit": "Edit",
+        "manageStudents": "Manage students",
+        "manageStudentsToast": "Available with Epic 5 (Students).",
+        "assignTeachers": "Assign teachers",
+        "viewSubjects": "View subjects",
+        "classBulletins": "Class report cards",
+        "classBulletinsToast": "Available with Epic 7 (Report cards).",
+        "delete": "Delete class"
+      },
+      "stats": {
+        "total": "Total classes",
+        "levels": "Distinct grade levels",
+        "homeroomAssigned": "Homeroom teacher assigned",
+        "avgSubjects": "Subjects / class (avg.)"
+      },
+      "searchPlaceholder": "Search a class...",
+      "allLevels": "All grade levels",
+      "multiYearComingSoon": "Multi-year selector coming soon — only one active school year for now",
+      "noActiveYear": "No active year",
+      "resultCount": {
+        "one": "{count} class",
+        "other": "{count} classes"
+      },
+      "emptyNoClasses": "No classes — add the first one.",
+      "emptyNoResults": "No results.",
+      "roomUnset": "No room set",
+      "homeroomSuffix": "· Homeroom teacher",
+      "homeroomEmpty": "No homeroom teacher assigned",
+      "subjectCount": {
+        "one": "{count} subject",
+        "other": "{count} subjects"
+      },
+      "studentCountSuffix": "students",
+      "table": {
+        "class": "Class",
+        "level": "Grade level",
+        "homeroomTeacher": "Homeroom teacher",
+        "students": "Students",
+        "subjects": "Subjects",
+        "average": "Overall average",
+        "status": "Status",
+        "unassigned": "Unassigned",
+        "places": "places",
+        "active": "Active"
+      }
+    },
+    "pageShell": {
+      "tabs": {
+        "info": "General information",
+        "prof": "Homeroom teacher",
+        "subjects": "Subjects",
+        "notes": "Grading & Assessment"
+      },
+      "addTitle": "Add a class",
+      "sectionsAriaLabel": "Class profile sections"
+    },
+    "create": {
+      "meta": "New class",
+      "metaWithYear": "New class — School year {year}",
+      "cancel": "Cancel",
+      "save": "Save class",
+      "created": "Class created."
+    },
+    "detail": {
+      "yearPrefix": "Year {year}",
+      "cancel": "Cancel",
+      "save": "Save",
+      "updated": "Class updated.",
+      "notFound": "Class not found."
+    },
+    "form": {
+      "requiredHint": "Fields marked",
+      "requiredHintSuffix": "are required",
+      "info": {
+        "title": "General information",
+        "subtitle": "Class identity and location.",
+        "nameLabel": "Class name",
+        "nameHint": "E.g.: Grade 9A, NS1, Philo Sciences…",
+        "namePlaceholder": "Grade 9A",
+        "levelLabel": "Grade level",
+        "levelPlaceholder": "Select a grade level",
+        "levelOther": "Other…",
+        "levelOtherPlaceholder": "Enter the grade level",
+        "levelOtherAria": "Grade level (other)",
+        "levelFreePlaceholder": "Grade 9",
+        "noLevelCatalog": "No grade-level catalog —",
+        "noLevelCatalogLink": "set the school's grade levels",
+        "roomLabel": "Classroom",
+        "roomNone": "No room assigned",
+        "roomOther": "Other place…",
+        "roomOtherPlaceholder": "Enter the place (e.g. Courtyard, Parish hall)",
+        "roomOtherAria": "Room (other place)",
+        "roomFreePlaceholder": "Room 12 — Bldg. B",
+        "noRoomCatalog": "No room catalog —",
+        "noRoomCatalogLink": "set the school's rooms",
+        "roomTooSmall": "This room only has {roomCapacity} seats for {classCapacity} students.",
+        "inactiveSuffix": "· inactive",
+        "capacityLabel": "Maximum capacity",
+        "capacityHint": "Maximum number of seats available",
+        "capacityPlaceholder": "32",
+        "trackLabel": "Track / Stream",
+        "trackPlaceholder": "Sciences, Arts, NS…",
+        "yearLabel": "School year",
+        "yearHint": "Active year — editable in Settings › School year",
+        "noActiveYear": "No active year",
+        "errors": {
+          "nameRequired": "Name is required.",
+          "nameTooLong": "40 characters maximum.",
+          "levelRequired": "Grade level is required.",
+          "capacityRequired": "Capacity is required.",
+          "capacityRange": "Whole number between 1 and 500."
+        }
+      },
+      "prof": {
+        "title": "Homeroom teacher",
+        "subtitle": "Class's pedagogical lead.",
+        "teacherLabel": "Homeroom teacher",
+        "teacherHint": "This teacher will receive the class's report cards and reports",
+        "teacherPlaceholder": "Search for a teacher…",
+        "teacherNone": "— None —",
+        "subjectsLabel": "Subjects taught",
+        "subjectsHint": "based on their assignments",
+        "chooseTeacherHint": "Choose a teacher to see their subjects"
+      },
+      "subjects": {
+        "title": "Class subjects",
+        "subtitle": "Select the subjects taught in this class.",
+        "coefficientHint": "Coef. {coefficient}",
+        "lockedHint": "Grades already exist — the subject can no longer be removed",
+        "noSubjectsPlaceholder": "No active subjects — create the school's subjects first",
+        "placeholder": "Choose the class's subjects…",
+        "searchPlaceholder": "Search a subject…",
+        "emptyLabel": "No subjects found",
+        "selectedCount": {
+          "one": "{count} subject selected out of {total} available",
+          "other": "{count} subjects selected out of {total} available"
+        },
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all",
+        "createNew": "Create a new subject",
+        "detailToggle": "Subject detail ({count})",
+        "detailToggleHint": "teacher · coefficient · hours / week",
+        "withoutTeacherBadge": "{count} without a teacher",
+        "detailTable": {
+          "subject": "Subject",
+          "teacher": "Teacher",
+          "coefficient": "Coef.",
+          "weeklyHours": "h / wk",
+          "lockAria": "Lock",
+          "teacherNone": "— None —",
+          "teacherPlaceholderMobile": "Teacher — None",
+          "coefficientAria": "Coefficient for {subject}",
+          "weeklyHoursAria": "Weekly hours for {subject}",
+          "lockedAria": "Grades already exist for this subject",
+          "coeffLabel": "Coeff.",
+          "weeklyHoursLabelMobile": "h/wk"
+        }
+      },
+      "notes": {
+        "title": "Grading configuration",
+        "subtitle": "Assessment settings inherited from the school — identical for every class.",
+        "scale": "Scale",
+        "scaleDefault": "Out of 20",
+        "periods": "Periods",
+        "periodsNone": "No periods",
+        "periodCount": {
+          "one": "{count} {type}",
+          "other": "{count} {type}s"
+        },
+        "calcMode": "Calculation mode",
+        "calcModeValue": "Weighted average by coefficient",
+        "passingGrade": "Passing grade",
+        "passingGradeValue": "Defined per subject",
+        "bulletinTemplate": "Report card template",
+        "bulletinTemplateNone": "No active template",
+        "manage": "Manage"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "subtitle": "Color shown on the class's cards and badges.",
+        "colorLabel": "Identification color",
+        "cardPreview": "Card preview",
+        "namePlaceholder": "Class name",
+        "subtitlePlaceholder": "Room · grade level",
+        "students": "Students",
+        "subjects": "Subjects"
+      },
+      "recap": {
+        "title": "Summary",
+        "name": "Name",
+        "level": "Grade level",
+        "room": "Room",
+        "capacity": "Capacity",
+        "capacitySuffix": "seats",
+        "subjects": "Subjects",
+        "subjectsSelected": {
+          "one": "{count} selected",
+          "other": "{count} selected"
+        },
+        "homeroom": "Homeroom teacher",
+        "homeroomEmpty": "Not assigned",
+        "year": "School year"
+      },
+      "checklist": {
+        "title": "Checklist",
+        "name": "Class name entered",
+        "level": "Grade level selected",
+        "capacity": "Capacity set",
+        "subjects": "Subjects assigned",
+        "subjectsCount": " ({count})",
+        "homeroom": "Homeroom teacher assigned",
+        "allSubjectsHaveTeacher": "Every subject has a teacher",
+        "someWithoutTeacher": " ({count} without)",
+        "coefficientsFilled": "Coefficients entered",
+        "someMissingCoefficients": " ({count} missing)",
+        "homeroomOptionalHint": "A homeroom teacher is recommended but optional at creation."
+      },
+      "next": {
+        "titleCreate": "After creation",
+        "titleEdit": "Quick navigation",
+        "enrollTitle": "Enroll students",
+        "enrollDesc": "Add or import students",
+        "assignTitle": "Assign teachers",
+        "assignDesc": "Link a teacher to each subject",
+        "feesTitle": "Set up tuition",
+        "feesDesc": "Define fees and installments"
+      }
+    }
+  }
+}

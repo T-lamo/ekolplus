@@ -12,6 +12,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
   DndContext,
@@ -49,19 +50,32 @@ interface GradeLevel {
   order: number;
 }
 
+type NiveauxErrorT = (
+  key:
+    | 'errors.nameTaken'
+    | 'errors.invalidSet'
+    | 'errors.orgRoleInsufficient'
+    | 'errors.validationFailed',
+) => string;
+type NetworkErrorT = (key: 'errors.network') => string;
+type LevelRowT = (
+  key: 'reorderAria' | 'renameAria' | 'deleteAria',
+  values: { name: string },
+) => string;
+
 /** `ApiError.message` carries the stable server code — switch on it (project
  * convention: branch on `err.code`, never on the message string). */
-function errorMessage(err: unknown): string {
-  if (!(err instanceof ApiError)) return 'Erreur réseau. Réessaie.';
+function errorMessage(err: unknown, t: NiveauxErrorT, tCommon: NetworkErrorT): string {
+  if (!(err instanceof ApiError)) return tCommon('errors.network');
   switch (err.code) {
     case 'LEVEL_NAME_TAKEN':
-      return 'Ce niveau existe déjà.';
+      return t('errors.nameTaken');
     case 'INVALID_LEVEL_SET':
-      return 'La liste des niveaux a changé — recharge la page et réessaie.';
+      return t('errors.invalidSet');
     case 'ORG_ROLE_INSUFFICIENT':
-      return "Tu n'as pas les droits pour modifier les niveaux.";
+      return t('errors.orgRoleInsufficient');
     case 'VALIDATION_FAILED':
-      return 'Nom invalide (1 à 40 caractères).';
+      return t('errors.validationFailed');
     default:
       return err.message;
   }
@@ -81,6 +95,8 @@ function LevelNameModal({
   onSubmit: (name: string) => Promise<void>;
   onClose: () => void;
 }) {
+  const t = useTranslations('Configuration.niveaux');
+  const tCommon = useTranslations('Common');
   const [value, setValue] = useState(initialName);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +106,7 @@ function LevelNameModal({
     setError(null);
     const name = value.trim();
     if (!name) {
-      setError('Le nom est requis.');
+      setError(t('nameRequired'));
       return;
     }
     setSubmitting(true);
@@ -98,7 +114,7 @@ function LevelNameModal({
       await onSubmit(name);
       onClose();
     } catch (err) {
-      setError(errorMessage(err));
+      setError(errorMessage(err, t, tCommon));
     } finally {
       setSubmitting(false);
     }
@@ -108,11 +124,11 @@ function LevelNameModal({
     <Modal title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <Field
-          label="Nom du niveau"
+          label={t('nameLabel')}
           name="levelName"
           autoFocus
           maxLength={40}
-          placeholder="Ex. 6ème"
+          placeholder={t('namePlaceholder')}
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
@@ -123,7 +139,7 @@ function LevelNameModal({
         )}
         <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button type="submit" loading={submitting} className="w-fit">
             {submitLabel}
@@ -140,12 +156,14 @@ function SortableLevelRow({
   disabled,
   onRename,
   onDelete,
+  t,
 }: {
   level: GradeLevel;
   index: number;
   disabled: boolean;
   onRename: () => void;
   onDelete: () => void;
+  t: LevelRowT;
 }) {
   const {
     attributes,
@@ -169,7 +187,7 @@ function SortableLevelRow({
       <button
         ref={setActivatorNodeRef}
         type="button"
-        aria-label={`Réordonner ${level.name}`}
+        aria-label={t('reorderAria', { name: level.name })}
         className={cn(
           'flex h-8 w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none active:cursor-grabbing',
           disabled && 'cursor-not-allowed opacity-50',
@@ -189,7 +207,7 @@ function SortableLevelRow({
           variant="ghost"
           size="sm"
           className="w-fit px-2"
-          aria-label={`Renommer ${level.name}`}
+          aria-label={t('renameAria', { name: level.name })}
           onClick={onRename}
         >
           <Pencil size={14} />
@@ -198,7 +216,7 @@ function SortableLevelRow({
           variant="ghost"
           size="sm"
           className="w-fit px-2 text-destructive-foreground hover:text-destructive-foreground"
-          aria-label={`Supprimer ${level.name}`}
+          aria-label={t('deleteAria', { name: level.name })}
           onClick={onDelete}
         >
           <Trash2 size={14} />
@@ -213,6 +231,8 @@ export default function NiveauxPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.niveaux');
+  const tCommon = useTranslations('Common');
 
   const [levels, setLevels] = useState<GradeLevel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -237,9 +257,9 @@ export default function NiveauxPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les niveaux.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   async function addLevel(name: string) {
     const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
@@ -247,7 +267,7 @@ export default function NiveauxPage() {
       body: { name },
     });
     setLevels((prev) => [...(prev ?? []), res.level]);
-    toast('Niveau ajouté.', 'success');
+    toast(t('levelAdded'), 'success');
   }
 
   async function renameLevel(level: GradeLevel, name: string) {
@@ -256,7 +276,7 @@ export default function NiveauxPage() {
       body: { name },
     });
     setLevels((prev) => (prev ? prev.map((l) => (l.id === res.level.id ? res.level : l)) : prev));
-    toast('Niveau renommé.', 'success');
+    toast(t('levelRenamed'), 'success');
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -279,21 +299,21 @@ export default function NiveauxPage() {
       setLevels(res.levels);
     } catch (err) {
       setLevels(previous);
-      toast(errorMessage(err), 'error');
+      toast(errorMessage(err, t, tCommon), 'error');
     } finally {
       setSaving(false);
     }
   }
 
   async function onDelete(level: GradeLevel) {
-    if (!(await confirm({ message: `Supprimer le niveau « ${level.name} » ?`, danger: true })))
+    if (!(await confirm({ message: t('deleteConfirm', { name: level.name }), danger: true })))
       return;
     try {
       await api(`/api/school/grade-levels/${level.id}`, { method: 'DELETE' });
       setLevels((prev) => (prev ? prev.filter((l) => l.id !== level.id) : prev));
-      toast('Niveau supprimé.', 'success');
+      toast(t('levelDeleted'), 'success');
     } catch (err) {
-      toast(errorMessage(err), 'error');
+      toast(errorMessage(err, t, tCommon), 'error');
     }
   }
 
@@ -301,15 +321,12 @@ export default function NiveauxPage() {
     <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Niveaux</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Ordre des niveaux scolaires, du premier au dernier — glisse une ligne pour réordonner.
-            Utilisé pour suggérer les promotions lors du passage à l&apos;année suivante.
-          </p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button className="w-fit" onClick={() => setAdding(true)}>
           <Plus size={14} />
-          Ajouter un niveau
+          {t('addLevel')}
         </Button>
       </div>
 
@@ -330,9 +347,7 @@ export default function NiveauxPage() {
       {levels !== null && (
         <Card className="max-w-2xl p-4 sm:p-6">
           {levels.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Aucun niveau configuré — ajoute ton premier niveau avec le bouton ci-dessus.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('empty')}</p>
           ) : (
             <DndContext
               sensors={sensors}
@@ -353,6 +368,7 @@ export default function NiveauxPage() {
                       disabled={saving}
                       onRename={() => setRenaming(level)}
                       onDelete={() => onDelete(level)}
+                      t={t}
                     />
                   ))}
                 </ol>
@@ -364,8 +380,8 @@ export default function NiveauxPage() {
 
       {adding && (
         <LevelNameModal
-          title="Ajouter un niveau"
-          submitLabel="Ajouter"
+          title={t('addModalTitle')}
+          submitLabel={t('addModalSubmit')}
           initialName=""
           onSubmit={addLevel}
           onClose={() => setAdding(false)}
@@ -374,8 +390,8 @@ export default function NiveauxPage() {
 
       {renaming && (
         <LevelNameModal
-          title="Renommer le niveau"
-          submitLabel="Enregistrer"
+          title={t('renameModalTitle')}
+          submitLabel={t('renameModalSubmit')}
           initialName={renaming.name}
           onSubmit={(name) => renameLevel(renaming, name)}
           onClose={() => setRenaming(null)}

@@ -14,7 +14,13 @@
    real generics as a last resort after it. */
 #app-body {
   font-family:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+    var(--font-inter),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif;
 }
 
 /* Schoolgesti design tokens — from Banani "Lavender SaaS" theme, shared across

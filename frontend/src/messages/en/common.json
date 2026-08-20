@@ -2,5 +2,10 @@
   "errors": {
     "generic": "Something went wrong. Try again.",
     "network": "Network error. Try again."
+  },
+  "roles": {
+    "OWNER": "Director",
+    "ADMIN": "Administrator",
+    "MEMBER": "Member"
   }
 }

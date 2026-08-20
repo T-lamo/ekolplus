@@ -1,0 +1,214 @@
+{
+  "title": "Paramètres",
+  "subtitle": "Gérez les informations de votre établissement, les préférences et la sécurité du compte.",
+  "loadError": "Impossible de charger les informations de l'établissement.",
+  "tabs": {
+    "profil": "Profil",
+    "apparence": "Apparence",
+    "langue": "Langue",
+    "etablissement": "Établissement",
+    "annee": "Année scolaire",
+    "admins": "Administrateurs",
+    "notifications": "Notifications"
+  },
+  "administrateurs": {
+    "title": "Administrateurs",
+    "description": "Comptes ayant accès à l'espace de gestion de l'établissement.",
+    "since": "Depuis le {date}"
+  },
+  "anneeScolaire": {
+    "title": "Année scolaire & Calendrier",
+    "subtitle": "Définissez les trimestres et périodes d'évaluation.",
+    "newTerm": "Nouvelle période",
+    "activeYearLabel": "Année scolaire active",
+    "gradingScaleLabel": "Système de notation",
+    "gradingScaleUndefined": "Non défini",
+    "noTermsConfigured": "Aucune période configurée pour l'instant — ajoutez la première avec « Nouvelle période ».",
+    "noYearConfigured": "Aucune année scolaire configurée — créez la première période avec « Nouvelle période ».",
+    "statusLabel": {
+      "DONE": "Terminé",
+      "CURRENT": "En cours",
+      "UPCOMING": "À venir"
+    },
+    "editTermAriaLabel": "Modifier {label}",
+    "editGradingScaleModal": {
+      "title": "Modifier le système de notation",
+      "fieldLabel": "Système de notation",
+      "placeholder": "Sur 20 points",
+      "updated": "Système de notation mis à jour.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "termTypeAndToggle": {
+      "typeLabel": "Type de période",
+      "gradeEntryTitle": "Saisie des notes activée",
+      "gradeEntryDesc": "Permettre aux enseignants de saisir les notes pour cette période."
+    },
+    "editTermModal": {
+      "title": "Modifier la période",
+      "labelField": "Nom de la période",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "updated": "Période mise à jour.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "newTermModal": {
+      "title": "Nouvelle période scolaire",
+      "intro": "Ajoutez un trimestre ou semestre à l'année {academicYearLabel}",
+      "termNumberLabel": "Numéro de la période",
+      "displayLabelField": "Libellé affiché",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "initialStatus": "Statut initial",
+      "statusHint": "Calculé automatiquement à partir des dates ci-dessus.",
+      "info": "Une fois créée, la période apparaîtra dans le calendrier scolaire et sera disponible pour la saisie de notes, la gestion des présences et la génération des bulletins.",
+      "missingFields": "Merci de remplir tous les champs.",
+      "created": "Période ajoutée.",
+      "cancel": "Annuler",
+      "create": "Créer la période"
+    }
+  },
+  "apparence": {
+    "title": "Thème de couleur",
+    "description": "Choisissez la palette de l'application. Préférence personnelle : elle s'applique immédiatement, sur tous vos appareils, et ne change rien pour les autres membres."
+  },
+  "etablissement": {
+    "title": "Informations de l'établissement",
+    "subtitle": "Ces informations apparaissent sur les bulletins et documents officiels.",
+    "logoLabel": "Logo",
+    "logoHint": "PNG, JPG ou WebP",
+    "logoUpdated": "Logo mis à jour.",
+    "infoUpdated": "Informations mises à jour.",
+    "nameLabel": "Nom de l'établissement",
+    "codeLabel": "Code ou matricule officiel",
+    "statuteLabel": "Type d'établissement",
+    "schoolTypeLabel": "Niveaux d'enseignement",
+    "addressLabel": "Adresse",
+    "phoneLabel": "Téléphone",
+    "emailLabel": "Courriel officiel",
+    "websiteLabel": "Site web (optionnel)",
+    "save": "Enregistrer les modifications",
+    "saving": "Enregistrement…"
+  },
+  "langue": {
+    "title": "Langue de l'interface",
+    "description": "Choisissez la langue de l'application. Préférence personnelle : elle s'applique immédiatement, sur tous vos appareils, et ne change rien pour les autres membres."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Choisissez les événements pour lesquels vous souhaitez être notifié·e, par courriel ou dans l'application.",
+    "channelEmail": "Courriel",
+    "channelApp": "App",
+    "emailAriaLabel": "{label} — courriel",
+    "appAriaLabel": "{label} — dans l'application",
+    "events": {
+      "BULLETIN_GENERATED": {
+        "label": "Bulletins générés",
+        "desc": "Quand un bulletin est prêt à consulter."
+      },
+      "UNEXCUSED_ABSENCE": {
+        "label": "Absences non justifiées",
+        "desc": "Quand un élève est marqué absent sans justification."
+      },
+      "RENEWAL_REMINDER": {
+        "label": "Rappel de renouvellement",
+        "desc": "Avant l'expiration de l'abonnement de l'établissement."
+      },
+      "TEACHER_ACTIVITY_DIGEST": {
+        "label": "Activité des enseignants",
+        "desc": "Résumé des saisies (notes, présences) par l'équipe pédagogique."
+      },
+      "WEEKLY_SUMMARY": {
+        "label": "Résumé hebdomadaire",
+        "desc": "Un récapitulatif de l'activité de l'établissement chaque semaine."
+      }
+    }
+  },
+  "profil": {
+    "info": {
+      "title": "Mon profil",
+      "subtitle": "Informations du compte administrateur",
+      "avatarLabel": "Photo de profil",
+      "avatarHint": "PNG, JPG ou WebP",
+      "nameLabel": "Nom complet",
+      "emailLabel": "Adresse courriel",
+      "phoneLabel": "Téléphone",
+      "roleLabel": "Rôle",
+      "avatarUpdated": "Photo de profil mise à jour.",
+      "profileUpdated": "Profil mis à jour.",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement…"
+    },
+    "password": {
+      "strength": {
+        "weak": "Faible",
+        "medium": "Moyen",
+        "strong": "Fort"
+      },
+      "lastChangedToday": "Aujourd'hui",
+      "lastChangedMonthsAgo": {
+        "one": "Il y a 1 mois",
+        "other": "Il y a {months} mois"
+      },
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe",
+      "titleChange": "Mot de passe",
+      "titleSet": "Définir un mot de passe",
+      "subtitleChange": "Modifiez votre mot de passe de connexion",
+      "subtitleSet": "Vous vous êtes connecté·e via Google. Définissez un mot de passe pour pouvoir aussi vous connecter par email.",
+      "lastChangedLabel": "Dernière modification",
+      "currentPasswordLabel": "Mot de passe actuel",
+      "newPasswordLabel": "Nouveau mot de passe",
+      "confirmPasswordLabel": "Confirmer le nouveau mot de passe",
+      "hint": "Min. 8 caractères, une majuscule, un chiffre",
+      "passwordsMatch": "Les mots de passe correspondent",
+      "errorMissingNew": "Saisissez un nouveau mot de passe.",
+      "errorMismatch": "La confirmation ne correspond pas au nouveau mot de passe.",
+      "updatedToast": "Mot de passe mis à jour.",
+      "setToast": "Mot de passe défini. Vous pouvez maintenant vous connecter par email.",
+      "errors": {
+        "invalidCredentials": "Mot de passe actuel incorrect.",
+        "passwordBanned": "Ce mot de passe est trop courant.",
+        "passwordTooShort": "Mot de passe trop court.",
+        "passwordPwned": "Ce mot de passe a fuité — choisissez-en un autre.",
+        "passwordAlreadySet": "Un mot de passe est déjà défini. Utilisez « changer le mot de passe ».",
+        "validationFailed": "Champs invalides."
+      },
+      "save": "Enregistrer le mot de passe",
+      "define": "Définir le mot de passe",
+      "saving": "Enregistrement…",
+      "generate": "Générer un mot de passe",
+      "logoutWarning": "Après modification, vous serez déconnecté·e de toutes les sessions actives."
+    }
+  },
+  "zoneDangereuse": {
+    "title": "Zone dangereuse",
+    "subtitle": "Ces actions sont irréversibles. Procédez avec précaution.",
+    "confirmFieldLabel": "Tapez « {schoolName} » pour confirmer",
+    "cancel": "Annuler",
+    "export": {
+      "title": "Exporter toutes les données",
+      "desc": "Télécharger un fichier ZIP complet avec tous les élèves, notes, bulletins et paramètres.",
+      "action": "Exporter"
+    },
+    "resetYear": {
+      "title": "Réinitialiser l'année scolaire",
+      "desc": "Effacer toutes les notes et présences de l'année en cours. Les élèves et enseignants seront conservés.",
+      "action": "Réinitialiser",
+      "modalTitle": "Réinitialiser l'année scolaire",
+      "warning": "Toutes les notes, évaluations, présences, objectifs et appréciations de l'année scolaire active seront supprimés définitivement. Les élèves, enseignants, classes et matières seront conservés. Cette action est irréversible.",
+      "confirmLabel": "Réinitialiser définitivement",
+      "success": "Année scolaire réinitialisée ({total} enregistrements supprimés)."
+    },
+    "deleteSchool": {
+      "title": "Supprimer le compte de l'établissement",
+      "desc": "Cette action supprimera définitivement toutes les données, élèves, enseignants, bulletins et paramètres. Aucune récupération possible.",
+      "action": "Supprimer",
+      "modalTitle": "Supprimer l'établissement",
+      "warning": "L'établissement et toutes ses données (élèves, enseignants, classes, notes, bulletins...) seront supprimés définitivement. Votre compte utilisateur restera actif mais perdra l'accès à cet établissement. Cette action est irréversible.",
+      "confirmLabel": "Supprimer définitivement",
+      "success": "Établissement supprimé."
+    }
+  }
+}

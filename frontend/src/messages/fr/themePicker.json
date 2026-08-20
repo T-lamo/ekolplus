@@ -1,0 +1,30 @@
+{
+  "groupLabel": "Thème de couleur",
+  "default": "Par défaut",
+  "previewAlt": "Aperçu du thème {label}",
+  "applied": "Thème « {label} » appliqué.",
+  "saveError": "Thème appliqué sur cet appareil, mais impossible de l'enregistrer sur votre compte.",
+  "contrastNote": "Toutes les palettes respectent le contraste WCAG AA (texte ≥ 4,5:1) — les couleurs d'état (succès, alerte, erreur) et des matières restent identiques.",
+  "themes": {
+    "lavande": {
+      "label": "Lavande",
+      "description": "Le thème Schoolgesti d'origine — violet profond, fonds gris-lilas."
+    },
+    "ocean": {
+      "label": "Océan",
+      "description": "Bleu marine posé, fonds gris-bleu — sobre et institutionnel."
+    },
+    "foret": {
+      "label": "Forêt",
+      "description": "Vert émeraude, fonds gris-vert — calme et naturel."
+    },
+    "ardoise": {
+      "label": "Ardoise",
+      "description": "Gris-bleu neutre — discret, idéal pour les longues sessions."
+    },
+    "terracotta": {
+      "label": "Terre cuite",
+      "description": "Orange brûlé, fonds sable — chaleureux et contrasté."
+    }
+  }
+}

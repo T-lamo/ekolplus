@@ -1,30 +1,31 @@
+'use client';
+
+import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
+import { LOCALE_BCP47 } from '@/lib/locales';
+import { roleLabel } from './role-label';
 import type { MemberData } from './types';
-
-export const ROLE_LABEL: Record<MemberData['role'], string> = {
-  OWNER: 'Directeur / Directrice',
-  ADMIN: 'Administrateur / Administratrice',
-  MEMBER: 'Membre',
-};
-
-function fmt(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
 
 // Read-only for V1 — add/remove is an invite flow, deferred (see
 // school-settings.md).
 export function AdministrateursTab({ members }: { members: MemberData[] }) {
+  const t = useTranslations('Settings.administrateurs');
+  const tRoles = useTranslations('Common.roles');
+  const locale = useLocale();
+
+  function fmt(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString(LOCALE_BCP47[locale], {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-caption font-bold text-foreground">Administrateurs</h2>
-        <p className="text-2xs text-muted-foreground">
-          Comptes ayant accès à l&apos;espace de gestion de l&apos;établissement.
-        </p>
+        <h2 className="text-caption font-bold text-foreground">{t('title')}</h2>
+        <p className="text-2xs text-muted-foreground">{t('description')}</p>
       </div>
       <div className="flex flex-col divide-y divide-border">
         {members.map((m) => (
@@ -37,9 +38,11 @@ export function AdministrateursTab({ members }: { members: MemberData[] }) {
             </div>
             <div className="flex shrink-0 flex-col items-end gap-0.5">
               <span className="rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-secondary-foreground">
-                {ROLE_LABEL[m.role]}
+                {roleLabel(m.role, tRoles)}
               </span>
-              <span className="text-[10px] text-muted-foreground">Depuis le {fmt(m.joinedAt)}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {t('since', { date: fmt(m.joinedAt) })}
+              </span>
             </div>
           </div>
         ))}

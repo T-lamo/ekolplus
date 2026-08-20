@@ -3,5 +3,10 @@
   "errors": {
     "generic": "Gen yon erè ki pase. Eseye ankò.",
     "network": "Erè rezo. Eseye ankò."
+  },
+  "roles": {
+    "OWNER": "Direktè / Direktris",
+    "ADMIN": "Administratè / Administratris",
+    "MEMBER": "Manm"
   }
 }

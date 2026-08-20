@@ -4,6 +4,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle, Eye, EyeOff, RefreshCw, ShieldAlert } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, type User } from '@/contexts/AuthContext';
@@ -14,12 +15,16 @@ import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Button } from '@/components/ui/Button';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { cn } from '@/lib/utils';
-import { ROLE_LABEL } from './AdministrateursTab';
+import { LOCALE_BCP47 } from '@/lib/locales';
+import { roleLabel } from './role-label';
 import type { MemberData } from './types';
 
 function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['role'] | null }) {
   const { refresh } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations('Settings.profil.info');
+  const tCommon = useTranslations('Common');
+  const tRoles = useTranslations('Common.roles');
 
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [name, setName] = useState(user.name ?? '');
@@ -33,10 +38,10 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
     try {
       await api('/api/auth/me', { method: 'PATCH', body: { avatarUrl: url } });
       await refresh();
-      toast('Photo de profil mise à jour.', 'success');
+      toast(t('avatarUpdated'), 'success');
     } catch (err) {
       setAvatarUrl(previous);
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -50,9 +55,9 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
         body: { name: name.trim() || null, phone: phone || null },
       });
       await refresh();
-      toast('Profil mis à jour.', 'success');
+      toast(t('profileUpdated'), 'success');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
@@ -61,26 +66,26 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
   return (
     <Card className="gap-3 p-5">
       <div className="border-b border-border pb-3.5">
-        <h2 className="text-caption font-bold text-foreground">Mon profil</h2>
-        <p className="text-2xs text-muted-foreground">Informations du compte administrateur</p>
+        <h2 className="text-caption font-bold text-foreground">{t('title')}</h2>
+        <p className="text-2xs text-muted-foreground">{t('subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="w-32">
           <ImageUploader
-            label="Photo de profil"
-            hint="PNG, JPG ou WebP"
+            label={t('avatarLabel')}
+            hint={t('avatarHint')}
             value={avatarUrl}
             onChange={saveAvatar}
           />
         </div>
-        <Field label="Nom complet" value={name} onChange={(e) => setName(e.target.value)} />
-        <Field label="Adresse courriel" value={user.email} disabled />
+        <Field label={t('nameLabel')} value={name} onChange={(e) => setName(e.target.value)} />
+        <Field label={t('emailLabel')} value={user.email} disabled />
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <PhoneInput label="Téléphone" value={phone} onChange={setPhone} />
+          <PhoneInput label={t('phoneLabel')} value={phone} onChange={setPhone} />
           <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-xs font-semibold text-foreground">Rôle</span>
+            <span className="text-xs font-semibold text-foreground">{t('roleLabel')}</span>
             <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-muted px-3 text-foreground">
-              {myRole ? ROLE_LABEL[myRole] : '—'}
+              {myRole ? roleLabel(myRole, tRoles) : '—'}
             </span>
           </label>
         </div>
@@ -90,7 +95,7 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
           </p>
         )}
         <Button type="submit" loading={submitting} className="w-fit">
-          {submitting ? 'Enregistrement…' : 'Enregistrer les modifications'}
+          {submitting ? t('saving') : t('save')}
         </Button>
       </form>
     </Card>
@@ -110,14 +115,6 @@ function passwordStrength(pwd: string): number {
   return score;
 }
 
-const STRENGTH_META = [
-  { label: '', color: 'var(--color-muted)' },
-  { label: 'Faible', color: 'var(--color-destructive-foreground)' },
-  { label: 'Moyen', color: 'var(--color-warning-foreground)' },
-  { label: 'Moyen', color: 'var(--color-warning-foreground)' },
-  { label: 'Fort', color: 'var(--color-success-foreground)' },
-];
-
 function generatePassword(): string {
   const chars =
     'abcdefghijkmnopqrstuvwxyz' + 'ABCDEFGHJKLMNPQRSTUVWXYZ' + '23456789' + '!@#$%&*-_+=';
@@ -126,29 +123,13 @@ function generatePassword(): string {
   return Array.from(bytes, (b) => chars[b % chars.length]).join('');
 }
 
-function formatLastChanged(iso: string | null): string | null {
-  if (!iso) return null;
-  const date = new Date(iso);
-  const months = Math.max(
-    0,
-    Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30)),
-  );
-  const relative =
-    months === 0 ? "Aujourd'hui" : months === 1 ? 'Il y a 1 mois' : `Il y a ${months} mois`;
-  const absolute = date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-  return `${relative} · ${absolute}`;
-}
-
 function VisibilityToggle({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  const t = useTranslations('Settings.profil.password');
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+      aria-label={visible ? t('hidePassword') : t('showPassword')}
       className="flex h-full w-9 shrink-0 items-center justify-center text-muted-foreground"
     >
       {visible ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -159,6 +140,9 @@ function VisibilityToggle({ visible, onToggle }: { visible: boolean; onToggle: (
 function PasswordCard({ user }: { user: User }) {
   const { refresh } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations('Settings.profil.password');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -171,8 +155,33 @@ function PasswordCard({ user }: { user: User }) {
 
   const hasPassword = user.hasPassword;
   const strength = useMemo(() => passwordStrength(newPassword), [newPassword]);
-  const strengthMeta = STRENGTH_META[strength]!;
+  const strengthMeta = [
+    { label: '', color: 'var(--color-muted)' },
+    { label: t('strength.weak'), color: 'var(--color-destructive-foreground)' },
+    { label: t('strength.medium'), color: 'var(--color-warning-foreground)' },
+    { label: t('strength.medium'), color: 'var(--color-warning-foreground)' },
+    { label: t('strength.strong'), color: 'var(--color-success-foreground)' },
+  ][strength]!;
   const passwordsMatch = confirmPassword.length > 0 && newPassword === confirmPassword;
+
+  function formatLastChanged(iso: string | null): string | null {
+    if (!iso) return null;
+    const date = new Date(iso);
+    const months = Math.max(
+      0,
+      Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30)),
+    );
+    const relative =
+      months === 0
+        ? t('lastChangedToday')
+        : t(months === 1 ? 'lastChangedMonthsAgo.one' : 'lastChangedMonthsAgo.other', { months });
+    const absolute = date.toLocaleDateString(LOCALE_BCP47[locale], {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+    return `${relative} · ${absolute}`;
+  }
   const lastChanged = formatLastChanged(user.passwordChangedAt);
 
   function onGenerate() {
@@ -186,11 +195,11 @@ function PasswordCard({ user }: { user: User }) {
     setError(null);
 
     if (newPassword.length === 0) {
-      setError('Saisis un nouveau mot de passe.');
+      setError(t('errorMissingNew'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('La confirmation ne correspond pas au nouveau mot de passe.');
+      setError(t('errorMismatch'));
       return;
     }
 
@@ -201,13 +210,13 @@ function PasswordCard({ user }: { user: User }) {
           method: 'PUT',
           body: { currentPassword, newPassword },
         });
-        toast('Mot de passe mis à jour.', 'success');
+        toast(t('updatedToast'), 'success');
       } else {
         await api('/api/auth/set-password', {
           method: 'POST',
           body: { newPassword },
         });
-        toast('Mot de passe défini. Tu peux maintenant te connecter par email.', 'success');
+        toast(t('setToast'), 'success');
       }
       setCurrentPassword('');
       setNewPassword('');
@@ -216,17 +225,16 @@ function PasswordCard({ user }: { user: User }) {
     } catch (err) {
       if (err instanceof ApiError) {
         const map: Record<string, string> = {
-          INVALID_CREDENTIALS: 'Mot de passe actuel incorrect.',
-          PASSWORD_BANNED: 'Ce mot de passe est trop courant.',
-          PASSWORD_TOO_SHORT: err.message || 'Mot de passe trop court.',
-          PASSWORD_PWNED: 'Ce mot de passe a fuité — choisis-en un autre.',
-          PASSWORD_ALREADY_SET:
-            'Un mot de passe est déjà défini. Utilise « changer le mot de passe ».',
-          VALIDATION_FAILED: 'Champs invalides.',
+          INVALID_CREDENTIALS: t('errors.invalidCredentials'),
+          PASSWORD_BANNED: t('errors.passwordBanned'),
+          PASSWORD_TOO_SHORT: err.message || t('errors.passwordTooShort'),
+          PASSWORD_PWNED: t('errors.passwordPwned'),
+          PASSWORD_ALREADY_SET: t('errors.passwordAlreadySet'),
+          VALIDATION_FAILED: t('errors.validationFailed'),
         };
         setError(map[err.code] ?? err.message);
       } else {
-        setError('Erreur réseau. Réessaie.');
+        setError(tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -237,12 +245,10 @@ function PasswordCard({ user }: { user: User }) {
     <Card className="gap-3 p-5">
       <div className="border-b border-border pb-3.5">
         <h2 className="text-caption font-bold text-foreground">
-          {hasPassword ? 'Mot de passe' : 'Définir un mot de passe'}
+          {hasPassword ? t('titleChange') : t('titleSet')}
         </h2>
         <p className="text-2xs text-muted-foreground">
-          {hasPassword
-            ? 'Modifie ton mot de passe de connexion'
-            : 'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.'}
+          {hasPassword ? t('subtitleChange') : t('subtitleSet')}
         </p>
       </div>
 
@@ -250,7 +256,7 @@ function PasswordCard({ user }: { user: User }) {
         <div className="flex items-center gap-2.5 rounded-md bg-secondary px-3.5 py-3">
           <ShieldAlert size={16} className="shrink-0 text-primary" />
           <div>
-            <div className="text-xs font-semibold text-primary">Dernière modification</div>
+            <div className="text-xs font-semibold text-primary">{t('lastChangedLabel')}</div>
             <div className="mt-0.5 text-2xs text-muted-foreground">{lastChanged}</div>
           </div>
         </div>
@@ -259,7 +265,7 @@ function PasswordCard({ user }: { user: User }) {
       <form onSubmit={onSubmitPassword} className="flex flex-col gap-4">
         {hasPassword && (
           <Field
-            label="Mot de passe actuel"
+            label={t('currentPasswordLabel')}
             type={showCurrent ? 'text' : 'password'}
             required
             autoComplete="current-password"
@@ -272,7 +278,7 @@ function PasswordCard({ user }: { user: User }) {
         )}
         <div>
           <Field
-            label="Nouveau mot de passe"
+            label={t('newPasswordLabel')}
             type={showNew ? 'text' : 'password'}
             required
             autoComplete="new-password"
@@ -297,13 +303,11 @@ function PasswordCard({ user }: { user: User }) {
               </span>
             </div>
           )}
-          <p className="mt-1 text-2xs text-muted-foreground">
-            Min. 8 caractères, une majuscule, un chiffre
-          </p>
+          <p className="mt-1 text-2xs text-muted-foreground">{t('hint')}</p>
         </div>
         <div>
           <Field
-            label="Confirmer le nouveau mot de passe"
+            label={t('confirmPasswordLabel')}
             type={showConfirm ? 'text' : 'password'}
             required
             autoComplete="new-password"
@@ -317,7 +321,7 @@ function PasswordCard({ user }: { user: User }) {
             <div className="mt-1 flex items-center gap-1.5">
               <CheckCircle size={11} className="text-success-foreground" />
               <span className="text-2xs font-medium text-success-foreground">
-                Les mots de passe correspondent
+                {t('passwordsMatch')}
               </span>
             </div>
           )}
@@ -329,23 +333,17 @@ function PasswordCard({ user }: { user: User }) {
         )}
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" loading={submitting} className="w-fit">
-            {submitting
-              ? 'Enregistrement…'
-              : hasPassword
-                ? 'Enregistrer le mot de passe'
-                : 'Définir le mot de passe'}
+            {submitting ? t('saving') : hasPassword ? t('save') : t('define')}
           </Button>
           <Button type="button" variant="outline" className="w-fit gap-1.5" onClick={onGenerate}>
             <RefreshCw size={13} />
-            Générer un mot de passe
+            {t('generate')}
           </Button>
         </div>
         {hasPassword && (
           <div className={cn('flex items-start gap-2 rounded-md bg-warning px-3.5 py-2.5')}>
             <ShieldAlert size={14} className="mt-0.5 shrink-0 text-warning-foreground" />
-            <p className="text-2xs leading-relaxed text-warning-foreground">
-              Après modification, tu seras déconnecté·e de toutes les sessions actives.
-            </p>
+            <p className="text-2xs leading-relaxed text-warning-foreground">{t('logoutWarning')}</p>
           </div>
         )}
       </form>

@@ -12,13 +12,14 @@
 // preview IS the content; the selected state is the usual primary ring.
 import { useId, useState, type KeyboardEvent } from 'react';
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/contexts/ToastContext';
-import { APPEARANCE as T } from '@/lib/constants';
 import { DEFAULT_THEME, THEMES, THEME_KEYS, type ThemeDef, type ThemeKey } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 
 export function ThemePicker({ className }: { className?: string }) {
+  const t = useTranslations('ThemePicker');
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const groupId = useId();
@@ -26,15 +27,15 @@ export function ThemePicker({ className }: { className?: string }) {
 
   async function select(next: ThemeKey) {
     if (next === theme || busy) return;
-    const label = THEMES.find((t) => t.key === next)?.label ?? next;
+    const label = t(`themes.${next}.label`);
     setBusy(next);
     try {
       await setTheme(next);
-      toast(T.applied(label), 'success');
+      toast(t('applied', { label }), 'success');
     } catch {
       // The theme is already applied on this device (DOM + localStorage);
       // only the account write failed — say so, don't revert.
-      toast(T.saveError, 'warning');
+      toast(t('saveError'), 'warning');
     } finally {
       setBusy(null);
     }
@@ -58,22 +59,22 @@ export function ThemePicker({ className }: { className?: string }) {
     <div className={cn('flex flex-col gap-3', className)}>
       <div
         role="radiogroup"
-        aria-label={T.groupLabel}
+        aria-label={t('groupLabel')}
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
       >
-        {THEMES.map((t) => (
+        {THEMES.map((def) => (
           <ThemeTile
-            key={t.key}
-            id={`${groupId}-${t.key}`}
-            def={t}
-            selected={theme === t.key}
-            busy={busy === t.key}
-            onSelect={() => void select(t.key)}
-            onKeyDown={(e) => onKeyDown(e, t.key)}
+            key={def.key}
+            id={`${groupId}-${def.key}`}
+            def={def}
+            selected={theme === def.key}
+            busy={busy === def.key}
+            onSelect={() => void select(def.key)}
+            onKeyDown={(e) => onKeyDown(e, def.key)}
           />
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">{T.contrastNote}</p>
+      <p className="text-xs text-muted-foreground">{t('contrastNote')}</p>
     </div>
   );
 }
@@ -93,6 +94,7 @@ function ThemeTile({
   onSelect: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => void;
 }) {
+  const t = useTranslations('ThemePicker');
   return (
     <button
       type="button"
@@ -114,13 +116,13 @@ function ThemeTile({
       <span className="flex items-start justify-between gap-2">
         <span className="min-w-0">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            {def.label}
+            {t(`themes.${def.key}.label`)}
             {def.key === DEFAULT_THEME && (
-              <span className="text-2xs font-medium text-muted-foreground">· {T.default}</span>
+              <span className="text-2xs font-medium text-muted-foreground">· {t('default')}</span>
             )}
           </span>
           <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
-            {def.description}
+            {t(`themes.${def.key}.description`)}
           </span>
         </span>
         <span
@@ -142,11 +144,12 @@ function ThemeTile({
 /** Miniature shell painted with the theme's own colours (not the live tokens,
  * so every tile shows its own palette regardless of the active theme). */
 function ThemePreview({ def }: { def: ThemeDef }) {
+  const t = useTranslations('ThemePicker');
   const { primary, secondary, sidebarDark } = def.swatch;
   return (
     <span
       role="img"
-      aria-label={T.previewAlt(def.label)}
+      aria-label={t('previewAlt', { label: t(`themes.${def.key}.label`) })}
       className="flex h-16 w-full overflow-hidden rounded-lg border border-border"
       style={{ background: '#f4f4f8' }}
     >

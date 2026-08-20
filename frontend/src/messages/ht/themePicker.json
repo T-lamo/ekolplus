@@ -1,0 +1,25 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "groupLabel": "Tèm koulè",
+  "default": "Pa defo",
+  "previewAlt": "Apèsi tèm {label}",
+  "applied": "Tèm « {label} » aplike.",
+  "saveError": "Tèm aplike sou aparèy sa a, men nou pa t ka anrejistre l sou kont ou.",
+  "contrastNote": "Tout palèt yo respekte kontras WCAG AA (tèks ≥ 4,5:1) — koulè estati yo (siksè, avètisman, erè) ak koulè matyè yo rete idantik.",
+  "themes": {
+    "lavande": {
+      "label": "Lavann",
+      "description": "Tèm orijinal Schoolgesti a — mov fonse, fon gri-lila."
+    },
+    "ocean": {
+      "label": "Oseyan",
+      "description": "Ble maren kalm, fon gri-ble — sobri ak enstitisyonèl."
+    },
+    "foret": { "label": "Forè", "description": "Vèt emwo, fon gri-vèt — kalm ak natirèl." },
+    "ardoise": { "label": "Adwaz", "description": "Gri-ble net — diskrè, ideyal pou sesyon long." },
+    "terracotta": {
+      "label": "Tèrakota",
+      "description": "Oranj boule, fon sab — chalere ak kontras."
+    }
+  }
+}

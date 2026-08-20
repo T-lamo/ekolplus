@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Download, RotateCcw, Trash2 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +32,8 @@ function ConfirmNameModal({
   onConfirm: () => Promise<void>;
   onClose: () => void;
 }) {
+  const t = useTranslations('Settings.zoneDangereuse');
+  const tCommon = useTranslations('Common');
   const [value, setValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ function ConfirmNameModal({
     try {
       await onConfirm();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       setSubmitting(false);
     }
   }
@@ -52,7 +55,7 @@ function ConfirmNameModal({
       <div className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">{warning}</p>
         <Field
-          label={`Tape « ${schoolName} » pour confirmer`}
+          label={t('confirmFieldLabel', { schoolName })}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoComplete="off"
@@ -64,7 +67,7 @@ function ConfirmNameModal({
         )}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button
             type="button"
@@ -102,6 +105,7 @@ function DangerItem({
 }
 
 export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
+  const t = useTranslations('Settings.zoneDangereuse');
   const { toast } = useToast();
   const { logout } = useAuth();
   const router = useRouter();
@@ -113,13 +117,13 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
       body: { confirmName: schoolName },
     });
     const total = Object.values(res.deleted).reduce((a, b) => a + b, 0);
-    toast(`Année scolaire réinitialisée (${total} enregistrements supprimés).`, 'success');
+    toast(t('resetYear.success', { total }), 'success');
     setOpenModal(null);
   }
 
   async function onDeleteSchool() {
     await api('/api/school', { method: 'DELETE', body: { confirmName: schoolName } });
-    toast('Établissement supprimé.', 'success');
+    toast(t('deleteSchool.success'), 'success');
     setOpenModal(null);
     await logout();
     router.replace('/login');
@@ -130,30 +134,28 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
       <Card className="border-destructive-foreground/30">
         <div className="flex items-center justify-between gap-3 border-b border-destructive-foreground/30 bg-destructive px-5 py-3.5">
           <div>
-            <h2 className="text-caption font-bold text-destructive-foreground">Zone dangereuse</h2>
-            <p className="text-2xs text-muted-foreground">
-              Ces actions sont irréversibles. Procédez avec précaution.
-            </p>
+            <h2 className="text-caption font-bold text-destructive-foreground">{t('title')}</h2>
+            <p className="text-2xs text-muted-foreground">{t('subtitle')}</p>
           </div>
           <AlertTriangle size={18} className="shrink-0 text-destructive-foreground" />
         </div>
         <div className="flex flex-col divide-y divide-border">
           <DangerItem
-            title="Exporter toutes les données"
-            desc="Télécharger un fichier ZIP complet avec tous les élèves, notes, bulletins et paramètres."
+            title={t('export.title')}
+            desc={t('export.desc')}
             action={
               <a
                 href="/api/school/export"
                 className="flex min-h-11 w-fit items-center gap-1.5 rounded-md border border-border px-4 text-sm font-medium text-foreground"
               >
                 <Download size={12} />
-                Exporter
+                {t('export.action')}
               </a>
             }
           />
           <DangerItem
-            title="Réinitialiser l'année scolaire"
-            desc="Effacer toutes les notes et présences de l'année en cours. Les élèves et enseignants seront conservés."
+            title={t('resetYear.title')}
+            desc={t('resetYear.desc')}
             action={
               <Button
                 type="button"
@@ -161,13 +163,13 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
                 onClick={() => setOpenModal('reset')}
               >
                 <RotateCcw size={12} />
-                Réinitialiser
+                {t('resetYear.action')}
               </Button>
             }
           />
           <DangerItem
-            title="Supprimer le compte de l'établissement"
-            desc="Cette action supprimera définitivement toutes les données, élèves, enseignants, bulletins et paramètres. Aucune récupération possible."
+            title={t('deleteSchool.title')}
+            desc={t('deleteSchool.desc')}
             action={
               <Button
                 type="button"
@@ -175,7 +177,7 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
                 onClick={() => setOpenModal('delete')}
               >
                 <Trash2 size={12} />
-                Supprimer
+                {t('deleteSchool.action')}
               </Button>
             }
           />
@@ -184,10 +186,10 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
 
       {openModal === 'reset' && (
         <ConfirmNameModal
-          title="Réinitialiser l'année scolaire"
-          warning="Toutes les notes, évaluations, présences, objectifs et appréciations de l'année scolaire active seront supprimés définitivement. Les élèves, enseignants, classes et matières seront conservés. Cette action est irréversible."
+          title={t('resetYear.modalTitle')}
+          warning={t('resetYear.warning')}
           schoolName={schoolName}
-          confirmLabel="Réinitialiser définitivement"
+          confirmLabel={t('resetYear.confirmLabel')}
           confirmClassName={WARNING_BTN}
           onConfirm={onResetYear}
           onClose={() => setOpenModal(null)}
@@ -195,10 +197,10 @@ export function ZoneDangereuseSection({ schoolName }: { schoolName: string }) {
       )}
       {openModal === 'delete' && (
         <ConfirmNameModal
-          title="Supprimer l'établissement"
-          warning="L'établissement et toutes ses données (élèves, enseignants, classes, notes, bulletins...) seront supprimés définitivement. Ton compte utilisateur restera actif mais perdra l'accès à cet établissement. Cette action est irréversible."
+          title={t('deleteSchool.modalTitle')}
+          warning={t('deleteSchool.warning')}
           schoolName={schoolName}
-          confirmLabel="Supprimer définitivement"
+          confirmLabel={t('deleteSchool.confirmLabel')}
           confirmClassName={DESTRUCTIVE_BTN}
           onConfirm={onDeleteSchool}
           onClose={() => setOpenModal(null)}

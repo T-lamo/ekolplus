@@ -18,6 +18,8 @@ import type verifyEmail from '@/messages/fr/verifyEmail.json';
 import type dashboard from '@/messages/fr/dashboard.json';
 import type adminDashboard from '@/messages/fr/adminDashboard.json';
 import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
+import type settings from '@/messages/fr/settings.json';
+import type themePicker from '@/messages/fr/themePicker.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -37,6 +39,8 @@ declare module 'next-intl' {
       Dashboard: typeof dashboard;
       AdminDashboard: typeof adminDashboard;
       SchoolPlanCard: typeof schoolPlanCard;
+      Settings: typeof settings;
+      ThemePicker: typeof themePicker;
     };
   }
 }

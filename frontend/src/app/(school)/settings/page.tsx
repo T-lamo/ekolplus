@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Tabs } from '@/components/ui/Tabs';
@@ -13,23 +14,21 @@ import { AdministrateursTab } from './AdministrateursTab';
 import { NotificationsTab } from './NotificationsTab';
 import { ApparenceTab } from './ApparenceTab';
 import { LangueTab } from './LangueTab';
-import { APPEARANCE } from '@/lib/constants';
 import { ZoneDangereuseSection } from './ZoneDangereuseSection';
 import type { SchoolResponse, TermData } from './types';
 
-const TABS = [
-  { key: 'profil', label: 'Profil' },
-  { key: 'apparence', label: APPEARANCE.tab },
-  { key: 'langue', label: 'Langue' },
-  { key: 'etablissement', label: 'Établissement' },
-  { key: 'annee', label: 'Année scolaire' },
-  { key: 'admins', label: 'Administrateurs' },
-  { key: 'notifications', label: 'Notifications' },
+const TAB_KEYS = [
+  'profil',
+  'apparence',
+  'langue',
+  'etablissement',
+  'annee',
+  'admins',
+  'notifications',
 ];
 // « Abonnement » left this page on 2026-08-18 — it is now its own screen at
 // /abonnement (sidebar Compte › Abonnement); next.config.ts redirects the
 // old ?tab=subscription deep links there.
-const TAB_KEYS = TABS.map((t) => t.key);
 
 export default function SettingsPage() {
   return (
@@ -40,6 +39,7 @@ export default function SettingsPage() {
 }
 
 function SettingsForm() {
+  const t = useTranslations('Settings');
   const user = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +47,16 @@ function SettingsForm() {
   const [tab, setTab] = useState(
     initialTab && TAB_KEYS.includes(initialTab) ? initialTab : 'profil',
   );
+
+  const TABS = [
+    { key: 'profil', label: t('tabs.profil') },
+    { key: 'apparence', label: t('tabs.apparence') },
+    { key: 'langue', label: t('tabs.langue') },
+    { key: 'etablissement', label: t('tabs.etablissement') },
+    { key: 'annee', label: t('tabs.annee') },
+    { key: 'admins', label: t('tabs.admins') },
+    { key: 'notifications', label: t('tabs.notifications') },
+  ];
 
   function changeTab(next: string) {
     setTab(next);
@@ -65,10 +75,10 @@ function SettingsForm() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les informations de l’établissement.');
+        setError(t('loadError'));
       })
       .finally(() => setLoading(false));
-  }, [user, router]);
+  }, [user, router, t]);
 
   if (!user) {
     return (
@@ -83,10 +93,8 @@ function SettingsForm() {
   return (
     <div className="flex max-w-4xl flex-col gap-5">
       <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-foreground">Paramètres</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Gère les informations de ton établissement, les préférences et la sécurité du compte.
-        </p>
+        <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <Tabs tabs={TABS} active={tab} onChange={changeTab} />

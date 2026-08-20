@@ -2,5 +2,10 @@
   "errors": {
     "generic": "Une erreur est survenue. Réessayez.",
     "network": "Erreur réseau. Réessayez."
+  },
+  "roles": {
+    "OWNER": "Directeur / Directrice",
+    "ADMIN": "Administrateur / Administratrice",
+    "MEMBER": "Membre"
   }
 }

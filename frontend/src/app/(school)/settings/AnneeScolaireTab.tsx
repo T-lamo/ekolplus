@@ -15,6 +15,7 @@ import {
   PlusCircle,
   ArrowRight,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -24,14 +25,9 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Switch } from '@/components/ui/Switch';
 import { cn } from '@/lib/utils';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { TERM_TYPES, ORDINAL_LABELS, ACADEMIC_YEAR_ROLLOVER } from '@/lib/constants';
 import type { AcademicYearData, TermData } from './types';
-
-const STATUS_LABEL: Record<TermData['status'], string> = {
-  DONE: 'Terminé',
-  CURRENT: 'En cours',
-  UPCOMING: 'À venir',
-};
 
 const STATUS_BADGE_CLASS: Record<TermData['status'], string> = {
   DONE: 'bg-success text-success-foreground',
@@ -53,19 +49,14 @@ const STATUS_ROW_CLASS: Record<TermData['status'], string> = {
 
 const TERM_TYPE_ICON = { calendar: Calendar, 'calendar-range': CalendarRange, layers: Layers };
 
+// Composites with the fenced ORDINAL_LABELS constant to build generated
+// term names ("1er Trimestre") — stays French, see this plan's Global
+// Constraints (cross-dependency fences).
 const TERM_TYPE_LABEL: Record<TermData['type'], string> = {
   TRIMESTRE: 'Trimestre',
   SEMESTRE: 'Semestre',
   LIBRE: 'Période libre',
 };
-
-function fmt(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
 
 function toDateInput(dateStr: string): string {
   return dateStr.slice(0, 10);
@@ -82,6 +73,7 @@ function computeStatus(startDate: string, endDate: string): TermData['status'] {
 }
 
 function StatusBadge({ status }: { status: TermData['status'] }) {
+  const t = useTranslations('Settings.anneeScolaire.statusLabel');
   return (
     <span
       className={cn(
@@ -90,7 +82,7 @@ function StatusBadge({ status }: { status: TermData['status'] }) {
       )}
     >
       {status === 'DONE' && <CheckCircle size={10} />}
-      {STATUS_LABEL[status]}
+      {t(status)}
     </span>
   );
 }
@@ -105,6 +97,8 @@ function EditGradingScaleModal({
   onClose: () => void;
 }) {
   const { toast } = useToast();
+  const t = useTranslations('Settings.anneeScolaire.editGradingScaleModal');
+  const tCommon = useTranslations('Common');
   const [value, setValue] = useState(gradingScale ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,22 +113,22 @@ function EditGradingScaleModal({
         { method: 'PATCH', body: { gradingScale: value.trim() || null } },
       );
       onUpdated(res.academicYear.gradingScale);
-      toast('Système de notation mis à jour.', 'success');
+      toast(t('updated'), 'success');
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Modifier le système de notation" onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
         <Field
-          label="Système de notation"
+          label={t('fieldLabel')}
           autoFocus
-          placeholder="Sur 20 points"
+          placeholder={t('placeholder')}
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
@@ -145,10 +139,10 @@ function EditGradingScaleModal({
         )}
         <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button type="submit" loading={submitting} className="w-fit">
-            Enregistrer
+            {t('save')}
           </Button>
         </div>
       </form>
@@ -163,18 +157,19 @@ function GradingScaleEditor({
   gradingScale: string | null;
   onUpdated: (gradingScale: string | null) => void;
 }) {
+  const t = useTranslations('Settings.anneeScolaire');
   const [editing, setEditing] = useState(false);
 
   return (
     <div className="flex flex-col gap-1.5 text-sm">
-      <span className="text-xs font-semibold text-foreground">Système de notation</span>
+      <span className="text-xs font-semibold text-foreground">{t('gradingScaleLabel')}</span>
       <button
         type="button"
         onClick={() => setEditing(true)}
         className="flex h-10 items-center justify-between gap-2 rounded-md border border-border bg-input px-3 text-left text-sm text-foreground"
       >
         <span className={gradingScale ? '' : 'text-muted-foreground'}>
-          {gradingScale ?? 'Non défini'}
+          {gradingScale ?? t('gradingScaleUndefined')}
         </span>
         <Pencil size={13} className="shrink-0 text-muted-foreground" />
       </button>
@@ -200,19 +195,20 @@ function TermTypeAndToggleFields({
   gradeEntryEnabled: boolean;
   onGradeEntryEnabledChange: (v: boolean) => void;
 }) {
+  const t = useTranslations('Settings.anneeScolaire.termTypeAndToggle');
   return (
     <>
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-foreground">Type de période</span>
+        <span className="text-xs font-semibold text-foreground">{t('typeLabel')}</span>
         <div className="grid grid-cols-3 gap-2">
-          {TERM_TYPES.map((t) => {
-            const Icon = TERM_TYPE_ICON[t.icon];
-            const selected = type === t.value;
+          {TERM_TYPES.map((tt) => {
+            const Icon = TERM_TYPE_ICON[tt.icon];
+            const selected = type === tt.value;
             return (
               <button
-                key={t.value}
+                key={tt.value}
                 type="button"
-                onClick={() => onTypeChange(t.value)}
+                onClick={() => onTypeChange(tt.value)}
                 className={cn(
                   'flex flex-col items-center gap-1.5 rounded-md border-[1.5px] px-2 py-3 text-center',
                   selected ? 'border-primary bg-secondary' : 'border-border',
@@ -232,9 +228,9 @@ function TermTypeAndToggleFields({
                     selected ? 'text-primary' : 'text-foreground',
                   )}
                 >
-                  {t.label}
+                  {tt.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{t.sub}</span>
+                <span className="text-[10px] text-muted-foreground">{tt.sub}</span>
               </button>
             );
           })}
@@ -242,15 +238,13 @@ function TermTypeAndToggleFields({
       </div>
       <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-background px-3.5 py-2.5">
         <div>
-          <div className="text-xs font-semibold text-foreground">Saisie des notes activée</div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">
-            Permettre aux enseignants de saisir les notes pour cette période.
-          </div>
+          <div className="text-xs font-semibold text-foreground">{t('gradeEntryTitle')}</div>
+          <div className="mt-0.5 text-[11px] text-muted-foreground">{t('gradeEntryDesc')}</div>
         </div>
         <Switch
           checked={gradeEntryEnabled}
           onChange={onGradeEntryEnabledChange}
-          label="Saisie des notes activée"
+          label={t('gradeEntryTitle')}
         />
       </div>
     </>
@@ -267,6 +261,8 @@ function EditTermModal({
   onClose: () => void;
 }) {
   const { toast } = useToast();
+  const t = useTranslations('Settings.anneeScolaire.editTermModal');
+  const tCommon = useTranslations('Common');
   const [label, setLabel] = useState(term.label);
   const [startDate, setStartDate] = useState(toDateInput(term.startDate));
   const [endDate, setEndDate] = useState(toDateInput(term.endDate));
@@ -285,22 +281,22 @@ function EditTermModal({
         body: { label, startDate, endDate, type, gradeEntryEnabled },
       });
       onSaved(res.term);
-      toast('Période mise à jour.', 'success');
+      toast(t('updated'), 'success');
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Modifier la période" onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
-        <Field label="Nom de la période" value={label} onChange={(e) => setLabel(e.target.value)} />
+        <Field label={t('labelField')} value={label} onChange={(e) => setLabel(e.target.value)} />
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <DateField label="Date de début" value={startDate} onChange={setStartDate} />
-          <DateField label="Date de fin" value={endDate} onChange={setEndDate} />
+          <DateField label={t('startDate')} value={startDate} onChange={setStartDate} />
+          <DateField label={t('endDate')} value={endDate} onChange={setEndDate} />
         </div>
         <TermTypeAndToggleFields
           type={type}
@@ -315,10 +311,10 @@ function EditTermModal({
         )}
         <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button type="submit" loading={submitting} className="w-fit">
-            Enregistrer
+            {t('save')}
           </Button>
         </div>
       </form>
@@ -327,7 +323,17 @@ function EditTermModal({
 }
 
 function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) => void }) {
+  const t = useTranslations('Settings.anneeScolaire');
+  const locale = useLocale();
   const [editing, setEditing] = useState(false);
+
+  function fmt(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString(LOCALE_BCP47[locale], {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
 
   return (
     <>
@@ -355,7 +361,7 @@ function TermRow({ term, onSaved }: { term: TermData; onSaved: (term: TermData) 
         <button
           type="button"
           onClick={() => setEditing(true)}
-          aria-label={`Modifier ${term.label}`}
+          aria-label={t('editTermAriaLabel', { label: term.label })}
           className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <Pencil size={13} className={term.status === 'CURRENT' ? 'text-primary' : ''} />
@@ -378,6 +384,9 @@ function NouvellePeriodeModal({
   onClose: () => void;
 }) {
   const { toast } = useToast();
+  const t = useTranslations('Settings.anneeScolaire.newTermModal');
+  const tStatus = useTranslations('Settings.anneeScolaire.statusLabel');
+  const tCommon = useTranslations('Common');
   const [type, setType] = useState<TermData['type']>('TRIMESTRE');
   const ordinalIndex = Math.min(nextOrder - 1, ORDINAL_LABELS.length - 1);
   const defaultLabel = `${ORDINAL_LABELS[ordinalIndex]} ${TERM_TYPE_LABEL[type]}`;
@@ -400,7 +409,7 @@ function NouvellePeriodeModal({
     e.preventDefault();
     setError(null);
     if (!label || !startDate || !endDate) {
-      setError('Merci de remplir tous les champs.');
+      setError(t('missingFields'));
       return;
     }
     setSubmitting(true);
@@ -410,19 +419,19 @@ function NouvellePeriodeModal({
         body: { label, startDate, endDate, type, gradeEntryEnabled },
       });
       onCreated(res.term);
-      toast('Période ajoutée.', 'success');
+      toast(t('created'), 'success');
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Nouvelle période scolaire" onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       <p className="-mt-2.5 mb-4 text-xs text-muted-foreground">
-        Ajoutez un trimestre ou semestre à l&apos;année {academicYearLabel}
+        {t('intro', { academicYearLabel })}
       </p>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <TermTypeAndToggleFields
@@ -434,13 +443,13 @@ function NouvellePeriodeModal({
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           <Field
-            label="Numéro de la période"
+            label={t('termNumberLabel')}
             value={`${ORDINAL_LABELS[ordinalIndex]} ${TERM_TYPE_LABEL[type]}`}
             readOnly
             disabled
           />
           <Field
-            label="Libellé affiché"
+            label={t('displayLabelField')}
             value={label}
             onChange={(e) => {
               setLabel(e.target.value);
@@ -450,12 +459,12 @@ function NouvellePeriodeModal({
         </div>
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <DateField label="Date de début" required value={startDate} onChange={setStartDate} />
-          <DateField label="Date de fin" required value={endDate} onChange={setEndDate} />
+          <DateField label={t('startDate')} required value={startDate} onChange={setStartDate} />
+          <DateField label={t('endDate')} required value={endDate} onChange={setEndDate} />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-foreground">Statut initial</span>
+          <span className="text-xs font-semibold text-foreground">{t('initialStatus')}</span>
           <div className="flex gap-2.5">
             <span
               className={cn(
@@ -465,7 +474,8 @@ function NouvellePeriodeModal({
                   : 'border-border text-muted-foreground',
               )}
             >
-              <Clock size={13} />À venir
+              <Clock size={13} />
+              {tStatus('UPCOMING')}
             </span>
             <span
               className={cn(
@@ -476,7 +486,7 @@ function NouvellePeriodeModal({
               )}
             >
               <PlayCircle size={13} />
-              En cours
+              {tStatus('CURRENT')}
             </span>
             <span
               className={cn(
@@ -487,20 +497,15 @@ function NouvellePeriodeModal({
               )}
             >
               <CheckCircle size={13} />
-              Terminé
+              {tStatus('DONE')}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Calculé automatiquement à partir des dates ci-dessus.
-          </p>
+          <p className="text-[11px] text-muted-foreground">{t('statusHint')}</p>
         </div>
 
         <div className="flex items-start gap-2.5 rounded-md border border-primary/30 bg-secondary px-3.5 py-2.5">
           <Info size={14} className="mt-0.5 shrink-0 text-primary" />
-          <p className="text-[11px] leading-relaxed text-primary">
-            Une fois créée, la période apparaîtra dans le calendrier scolaire et sera disponible
-            pour la saisie de notes, la gestion des présences et la génération des bulletins.
-          </p>
+          <p className="text-[11px] leading-relaxed text-primary">{t('info')}</p>
         </div>
 
         {error && (
@@ -511,11 +516,11 @@ function NouvellePeriodeModal({
 
         <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button type="submit" loading={submitting} className="w-fit gap-1.5">
             <PlusCircle size={13} />
-            Créer la période
+            {t('create')}
           </Button>
         </div>
       </form>
@@ -536,6 +541,7 @@ export function AnneeScolaireTab({
   onTermUpdated: (term: TermData) => void;
   onGradingScaleUpdated: (gradingScale: string | null) => void;
 }) {
+  const t = useTranslations('Settings.anneeScolaire');
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
@@ -543,10 +549,8 @@ export function AnneeScolaireTab({
     <Card>
       <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
         <div>
-          <h2 className="text-[13px] font-bold text-foreground">Année scolaire &amp; Calendrier</h2>
-          <p className="text-[11px] text-muted-foreground">
-            Définissez les trimestres et périodes d&apos;évaluation.
-          </p>
+          <h2 className="text-[13px] font-bold text-foreground">{t('title')}</h2>
+          <p className="text-[11px] text-muted-foreground">{t('subtitle')}</p>
         </div>
         <button
           type="button"
@@ -554,7 +558,7 @@ export function AnneeScolaireTab({
           className="flex min-h-11 items-center gap-1.5 rounded-md bg-secondary px-3.5 text-xs font-semibold text-primary"
         >
           <Plus size={14} />
-          Nouvelle période
+          {t('newTerm')}
         </button>
       </div>
 
@@ -563,7 +567,9 @@ export function AnneeScolaireTab({
           <>
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5 text-sm">
-                <span className="text-xs font-semibold text-foreground">Année scolaire active</span>
+                <span className="text-xs font-semibold text-foreground">
+                  {t('activeYearLabel')}
+                </span>
                 <span className="flex h-10 items-center rounded-md border border-border bg-input px-3 font-semibold text-foreground">
                   {academicYear.label}
                 </span>
@@ -575,10 +581,7 @@ export function AnneeScolaireTab({
             </div>
 
             {academicYear.terms.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucune période configurée pour l&apos;instant — ajoute la première avec « Nouvelle
-                période ».
-              </p>
+              <p className="text-sm text-muted-foreground">{t('noTermsConfigured')}</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {academicYear.terms.map((term) => (
@@ -588,9 +591,7 @@ export function AnneeScolaireTab({
             )}
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Aucune année scolaire configurée — crée la première période avec « Nouvelle période ».
-          </p>
+          <p className="text-sm text-muted-foreground">{t('noYearConfigured')}</p>
         )}
 
         {role === 'OWNER' && academicYear && (

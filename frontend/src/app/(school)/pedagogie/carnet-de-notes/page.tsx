@@ -495,7 +495,7 @@ export default function GradeNotebookPage() {
                 icon={Calendar}
                 tone="warning"
                 label={t('period')}
-                value={terms.find((t) => t.id === unified.resolvedTermId)?.label ?? '—'}
+                value={terms.find((term) => term.id === unified.resolvedTermId)?.label ?? '—'}
                 sub=""
               />
             </div>
@@ -534,9 +534,9 @@ export default function GradeNotebookPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={termId} onValueChange={setTermId}>
-              {terms.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.label}
+              {terms.map((term) => (
+                <SelectItem key={term.id} value={term.id}>
+                  {term.label}
                 </SelectItem>
               ))}
             </FilterSelect>

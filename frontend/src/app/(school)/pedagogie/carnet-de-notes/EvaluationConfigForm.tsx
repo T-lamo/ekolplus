@@ -76,9 +76,9 @@ export function EvaluationConfigForm({
 
       <div className="grid grid-cols-2 gap-3.5">
         <Select label={t('termLabel')} value={value.termId} onValueChange={(v) => set('termId', v)}>
-          {terms.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.label}
+          {terms.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.label}
             </SelectItem>
           ))}
         </Select>

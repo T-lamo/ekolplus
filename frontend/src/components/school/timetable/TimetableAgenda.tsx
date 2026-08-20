@@ -42,7 +42,7 @@ export function TimetableAgenda({
     );
   }
   return (
-    <div className="min-h-0 overflow-auto rounded-2xl border border-border bg-card">
+    <div className="rounded-2xl border border-border bg-card">
       {days.map((day) => {
         const list = sessionsOn(sessions, day);
         if (list.length === 0) return null;

@@ -499,7 +499,7 @@ export default function PresencesPage() {
                 </div>
               </div>
 
-              <Card className="min-h-0 flex-1">
+              <Card>
                 {filtered.length === 0 ? (
                   <p className="p-5 text-sm text-muted-foreground">
                     {data.students.length === 0

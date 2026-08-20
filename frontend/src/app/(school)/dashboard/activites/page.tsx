@@ -117,7 +117,7 @@ export default function ActivityLogPage() {
               <p className="p-5 text-sm text-muted-foreground">{t('empty')}</p>
             </Card>
           ) : (
-            <Card className="min-h-0 flex-1">
+            <Card>
               <div className={TABLE_SCROLL}>
                 <div className="flex flex-col divide-y divide-border">
                   {data.items.map((item, i) => {

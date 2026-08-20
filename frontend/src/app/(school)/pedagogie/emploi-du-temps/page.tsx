@@ -452,12 +452,8 @@ export default function EmploiDuTempsPage() {
           ))}
         </div>
       ) : (
-        // Shrinkable (min-h-0, no flex-1): the timetable takes at most the
-        // room left under the header and scrolls inside — the page itself
-        // never scrolls, header + filters + legend stay visible (user
-        // decision 2026-08-17, same rule as the list pages).
         <div
-          className={cn('flex min-h-0 flex-col transition-opacity', loading && 'opacity-60')}
+          className={cn('flex flex-col transition-opacity', loading && 'opacity-60')}
           aria-busy={loading}
         >
           {view === 'agenda' ? (

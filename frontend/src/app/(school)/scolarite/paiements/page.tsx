@@ -384,7 +384,7 @@ export default function FeeManagementPage() {
               <p className="p-5 text-sm text-muted-foreground">Aucun résultat.</p>
             </Card>
           ) : (
-            <Card className="min-h-0 flex-1">
+            <Card>
               {/* md+: table. Below that a table needs constant horizontal
                   scrolling to read a single student's balance — cards show
                   the numbers that matter (reste dû, statut) without it,
@@ -446,12 +446,7 @@ export default function FeeManagementPage() {
               </div>
 
               {/* < md: cards */}
-              <div
-                className={cn(
-                  'flex flex-col gap-2.5 overflow-y-auto p-3.5 md:hidden',
-                  'min-h-0 flex-1',
-                )}
-              >
+              <div className="flex flex-col gap-2.5 p-3.5 md:hidden">
                 {data.students.map((s) => (
                   <div key={s.studentId} className="rounded-md border border-border p-3">
                     <div className="flex items-start justify-between gap-2">

@@ -612,7 +612,7 @@ export default function GradeNotebookPage() {
           ) : view === 'byEval' ? (
             <ParEvaluationTab unified={unified} />
           ) : (
-            <Card className="min-h-0 flex-1 gap-0 overflow-visible">
+            <Card className="gap-0 overflow-visible">
               <div className={TABLE_SCROLL}>
                 <table
                   style={{ width: '100%', minWidth: tableWidth, tableLayout: 'fixed' }}

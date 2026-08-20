@@ -25,40 +25,35 @@ export const CARD_GRID =
   'grid grid-cols-1 content-start gap-3 @min-[566px]/cards:grid-cols-2 @min-[855px]/cards:grid-cols-3 @min-[1144px]/cards:grid-cols-4';
 
 // Pages « liste » (élèves, enseignants, classes, matières, affectations,
-// paiements, relances, présences, appréciations, carnet…) — décision
-// utilisateur 2026-08-17 : la page ne défile JAMAIS dans son ensemble ; le
-// tableau (ou la grille de cartes) défile dans sa propre zone, l'en-tête, la
-// recherche et les filtres restent visibles. Recette :
-//   racine  `flex h-full min-h-0 flex-col …`  (LIST_PAGE : hauteur = <main>)
-//   carte   `<Card className="min-h-0 flex-1">`
-//   zone    `<div className={TABLE_SCROLL}>` autour du <table> (défile en x et y)
-//   en-tête `<thead className={STICKY_THEAD}>` (reste visible en défilant)
-//   grille  `<CardGrid className={GRID_SCROLL}>` en vue cartes
-// `min-h-full` not `h-full` below `lg`: on a page whose header/KPI/filter
-// chrome is tall relative to a short mobile viewport, a hard `h-full` forces
-// the `min-h-0 flex-1` Card down to near-zero height, and content that isn't
-// part of its own internal scroll area (the Pager, sitting beside
-// TABLE_SCROLL) then paints past that squeezed box into territory the outer
-// scroller doesn't count toward its scrollable height — reachable by no
-// amount of scrolling, and covered by the fixed mobile bottom nav (confirmed
-// via elementFromPoint on /scolarite/paiements at 360×760). `min-h-full`
-// behaves identically whenever content actually fits (the common case) and
-// only kicks in to let the page grow — and become scrollable — instead of
-// silently trapping content when it doesn't.
+// paiements, relances, présences, appréciations, carnet…). Décision
+// utilisateur 2026-08-20, qui REMPLACE la précédente (2026-08-17 / 08-19,
+// gardée ci-dessous pour mémoire) : plus d'« inner scrolling » — pas de boîte
+// interne `overflow-auto` à hauteur contrainte pour le tableau/la grille. Sur
+// un écran bas (viewport court, ou chrome au-dessus — titre, KPI, bannière,
+// filtres — haut relativement à la fenêtre), une telle boîte pouvait se
+// réduire à quasi 0 px et rendre le tableau presque invisible. La page suit
+// maintenant le flux normal du document ; c'est le scroller natif déjà
+// présent dans `(school)/layout.tsx` (le div `overflow-y-auto` autour de
+// `{children}`) qui gère tout le défilement de la zone centrale — un seul
+// scroller, un comportement natif du navigateur, jamais de contenu piégé
+// dans une sous-boîte trop petite. Recette :
+//   racine  `<div className={LIST_PAGE}>`               (flux normal, aucune hauteur imposée)
+//   carte   `<Card>`                                     (hauteur naturelle du contenu)
+//   zone    `<div className={TABLE_SCROLL}>` autour du <table> (scroll horizontal seulement, pour les tableaux plus larges que l'écran — ça ne masque jamais une ligne, contrairement au scroll vertical interne)
+//   en-tête `<thead className={STICKY_THEAD}>` (`position: sticky` colle l'en-tête au scroller natif — ce n'est PAS un scroll imbriqué, donc ça reste)
+//   grille  `<CardGrid className={GRID_SCROLL}>` en vue cartes (no-op désormais — la grille suit aussi le flux normal)
 //
-// `lg:h-full` restores the hard cap on desktop (user decision 2026-08-19):
-// with a `min-height`-only root, a flex container whose own height is
-// indeterminate sizes its `flex-1` children to their natural content height
-// instead of the remaining space, so TABLE_SCROLL/GRID_SCROLL never actually
-// clip+scroll — the outer shell scroller ends up scrolling the whole page
-// (header, KPIs, search) as one blob instead of just the table. Desktop has
-// enough width for header chrome to lay out in one row (no wrapping stack
-// like mobile), so the near-zero-squeeze failure mode above doesn't recur
-// there — the hard cap is safe from `lg` up and makes the header/search
-// truly sticky while only the table/card area scrolls.
-export const LIST_PAGE = 'flex min-h-full flex-col lg:h-full';
-export const TABLE_SCROLL = 'min-h-0 flex-1 overflow-auto';
-export const GRID_SCROLL = 'min-h-0 flex-1 overflow-y-auto';
+// Ancienne recette (2026-08-17 → 2026-08-19, abandonnée) : racine `flex h-full
+// min-h-0 flex-col` + carte `min-h-0 flex-1` + zone `overflow-auto` +
+// `lg:h-full` pour forcer le cap desktop. Le but était que « la page ne
+// défile jamais dans son ensemble » ; la protection contre le mobile squeeze
+// (`min-h-full` plutôt que `h-full` en dessous de `lg`) restait un correctif
+// local au symptôme, pas à la cause — la boîte interne pouvait toujours finir
+// trop petite. Le nouveau design supprime la cause : plus de hauteur imposée
+// à aucun niveau, donc plus de boîte qui peut se réduire à rien.
+export const LIST_PAGE = 'flex flex-col';
+export const TABLE_SCROLL = 'overflow-x-auto';
+export const GRID_SCROLL = '';
 // Le filet sous l'en-tête est une ombre interne : en `border-collapse` la
 // bordure du <tr> ne suit pas l'en-tête collant.
 export const STICKY_THEAD =

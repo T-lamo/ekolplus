@@ -413,14 +413,17 @@ export default function AppreciationsListPage() {
           </div>
 
           {!data ? (
-            // min-h-0 flex-1 matches the real table Card below (line ~435) —
-            // without it this skeleton sizes to its own content (~8 rows)
-            // while the real table can run to PAGE_SIZE (20) rows, so the
-            // skeleton→data swap was shifting everything below it down by
-            // several hundred px (Lighthouse CLS 0.29 on this page).
-            <Card className="min-h-0 flex-1 gap-0 overflow-visible p-4">
+            // Renders PAGE_SIZE skeleton rows, not an arbitrary count — the
+            // page no longer force-matches skeleton/real heights via a
+            // shared `flex-1` box (that caused its own bug: on a short
+            // viewport the shared box could squeeze to near-zero and hide
+            // the table). Matching the row COUNT instead keeps the
+            // skeleton's natural height close to a full page of real rows,
+            // so the skeleton→data swap still doesn't jump the page around
+            // (Lighthouse CLS 0.29 was the original regression this guards).
+            <Card className="gap-0 overflow-visible p-4">
               <div className="flex flex-col gap-2.5">
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                   <Skeleton key={i} className="h-9 w-full" />
                 ))}
               </div>
@@ -437,7 +440,7 @@ export default function AppreciationsListPage() {
               </p>
             </Card>
           ) : (
-            <Card className="min-h-0 flex-1 gap-0 overflow-visible">
+            <Card className="gap-0 overflow-visible">
               <div className={cn('hidden md:block', TABLE_SCROLL)}>
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>

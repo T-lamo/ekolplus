@@ -325,7 +325,7 @@ export default function RoomsPage() {
               })}
             </CardGrid>
           ) : (
-            <Card className="min-h-0 flex-1">
+            <Card>
               <div className={TABLE_SCROLL}>
                 <table className="w-full min-w-[860px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>

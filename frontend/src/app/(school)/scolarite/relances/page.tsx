@@ -308,8 +308,8 @@ export default function OverdueFeesPage() {
             ]}
           />
 
-          <div className={`${ASIDE_GRID} min-h-0 flex-1 lg:grid-rows-[minmax(0,1fr)]`}>
-            <div className="flex min-h-0 min-w-0 flex-col gap-3.5">
+          <div className={ASIDE_GRID}>
+            <div className="flex min-w-0 flex-col gap-3.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <SearchInput
                   value={search}
@@ -337,7 +337,7 @@ export default function OverdueFeesPage() {
                   <p className="p-5 text-sm text-muted-foreground">Aucun retard de paiement.</p>
                 </Card>
               ) : (
-                <Card className="min-h-0 flex-1">
+                <Card>
                   <div className={cn('hidden md:block', TABLE_SCROLL)}>
                     <table className="w-full min-w-[920px] border-collapse text-sm">
                       <thead className={STICKY_THEAD}>
@@ -472,7 +472,7 @@ export default function OverdueFeesPage() {
               )}
             </div>
 
-            <div className="flex min-h-0 flex-col gap-5 lg:overflow-y-auto">
+            <div className="flex flex-col gap-5">
               <Card className="gap-3.5 p-4">
                 <div>
                   <h2 className="text-sm font-bold text-foreground">{t.automationTitle}</h2>

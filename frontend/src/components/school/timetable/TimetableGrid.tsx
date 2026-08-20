@@ -46,10 +46,13 @@ export function TimetableGrid({
   const single = days.length === 1;
 
   return (
-    // Shrinkable card: the rows scroll inside (x and y) while the day header
-    // stays pinned — the page around never scrolls.
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      <div className={cn('min-h-0 overflow-auto', !single && 'min-w-0')}>
+    // No inner vertical scrollbox (decision 2026-08-20, see layout.ts) — the
+    // grid takes its natural height and the app's native page scroll carries
+    // it. `overflow-x-auto` below is horizontal-only, for the <640px case
+    // (grid never squeezes); the day header stays pinned via `sticky top-0`
+    // against that same native scroll.
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      <div className={cn('overflow-x-auto', !single && 'min-w-0')}>
         <div className={cn(!single && 'min-w-[640px]')}>
           <div className={cn('sticky top-0 z-20 grid border-b border-border bg-card', cols)}>
             <div className="flex items-center justify-center border-r border-border bg-muted px-2 py-2.5">

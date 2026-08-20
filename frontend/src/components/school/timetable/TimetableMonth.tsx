@@ -27,8 +27,8 @@ export function TimetableMonth({
   const grid = monthGrid(anchor);
   const month = anchor.slice(0, 7);
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="min-h-0 overflow-auto">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-x-auto">
         <div className="min-w-[640px]">
           <div className="sticky top-0 z-20 grid grid-cols-7 border-b border-border bg-muted">
             {WEEKDAY_HEADERS.map((h, i) => (

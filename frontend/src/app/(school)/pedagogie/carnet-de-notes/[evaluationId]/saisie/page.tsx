@@ -326,7 +326,7 @@ export default function GradeEntryPage() {
         {evaluation.status === 'DRAFT' && <Badge warning>Brouillon</Badge>}
       </Card>
 
-      <Card className="min-h-0 flex-1 gap-0 overflow-visible">
+      <Card className="gap-0 overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-foreground">

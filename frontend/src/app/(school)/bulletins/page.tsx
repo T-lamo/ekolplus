@@ -223,7 +223,7 @@ export default function BulletinsListPage() {
         </span>
       </Card>
 
-      <Card className="min-h-0 flex-1 overflow-hidden">
+      <Card className="overflow-hidden">
         <div className={cn('hidden md:block', TABLE_SCROLL)}>
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead className={STICKY_THEAD}>
@@ -253,7 +253,7 @@ export default function BulletinsListPage() {
         </div>
 
         {/* < md: cards */}
-        <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3.5 md:hidden">
+        <div className="flex flex-col gap-2.5 p-3.5 md:hidden">
           {filteredStudents.length === 0 ? (
             <p className="p-5 text-center text-sm text-muted-foreground">Aucun élève trouvé.</p>
           ) : (

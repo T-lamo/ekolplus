@@ -1,0 +1,10 @@
+{
+  "mention": {
+    "TRES_BIEN": "Excellent",
+    "BIEN": "Good",
+    "ASSEZ_BIEN": "Fairly good",
+    "PASSABLE": "Passing",
+    "INSUFFISANT": "Insufficient",
+    "FAIBLE": "Weak"
+  }
+}

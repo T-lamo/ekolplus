@@ -1,6 +1,22 @@
 export type Mention = 'TRES_BIEN' | 'BIEN' | 'ASSEZ_BIEN' | 'PASSABLE' | 'INSUFFISANT' | 'FAIBLE';
 export type AppreciationStatus = 'NONE' | 'DRAFT' | 'PUBLISHED';
 
+/** Display order for every mention picker, filter and chart in this module.
+ * The labels themselves live in the `appreciations.mention.*` message
+ * namespace — read them with `useTranslations('Appreciations.mention')`
+ * and `t(mention)`. */
+export const MENTIONS: Mention[] = [
+  'TRES_BIEN',
+  'BIEN',
+  'ASSEZ_BIEN',
+  'PASSABLE',
+  'INSUFFISANT',
+  'FAIBLE',
+];
+
+/** @deprecated Being replaced by `MENTIONS` + the `appreciations.mention.*`
+ * message namespace. Still imported by the files this module's i18n
+ * migration has not reached yet; deleted once the last one migrates. */
 export const MENTION_LABEL: Record<Mention, string> = {
   TRES_BIEN: 'Très Bien',
   BIEN: 'Bien',

@@ -25,6 +25,7 @@ import type enseignants from '@/messages/fr/enseignants.json';
 import type eleves from '@/messages/fr/eleves.json';
 import type configuration from '@/messages/fr/configuration.json';
 import type gradebook from '@/messages/fr/gradebook.json';
+import type appreciations from '@/messages/fr/appreciations.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -51,6 +52,7 @@ declare module 'next-intl' {
       Eleves: typeof eleves;
       Configuration: typeof configuration;
       Gradebook: typeof gradebook;
+      Appreciations: typeof appreciations;
     };
   }
 }

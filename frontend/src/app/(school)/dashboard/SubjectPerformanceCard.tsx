@@ -1,22 +1,21 @@
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { DASHBOARD } from '@/lib/constants';
 import type { DashboardData } from './types';
-
-const t = DASHBOARD.subjectPerformance;
 
 export function SubjectPerformanceCard({
   subjects,
 }: {
   subjects: DashboardData['subjectPerformance'];
 }) {
+  const t = useTranslations('Dashboard.subjectPerformance');
   return (
     <Card className="gap-3 p-4 sm:p-5">
       <div>
-        <div className="text-caption font-semibold text-foreground">{t.title}</div>
-        <div className="text-2xs text-muted-foreground">{t.subtitle}</div>
+        <div className="text-caption font-semibold text-foreground">{t('title')}</div>
+        <div className="text-2xs text-muted-foreground">{t('subtitle')}</div>
       </div>
       {subjects.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucune note publiée sur la période.</p>
+        <p className="text-sm text-muted-foreground">{t('empty')}</p>
       ) : (
         <div className="flex flex-col gap-2.5">
           {subjects.map((s) => (

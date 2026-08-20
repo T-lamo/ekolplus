@@ -3,12 +3,14 @@
 // Banani legend row under the grid: one 10px square swatch per subject
 // present in the visible sessions, and the CM · TD · TP · EXAM pills with
 // their long labels on the right (wraps under 1024px).
+import { useLocale } from 'next-intl';
 import type { TimetableSession } from './types';
 import { SESSION_TYPES, TYPE_META, legendSubjects } from './timetable-utils';
 import { cn } from '@/lib/utils';
 
 export function TimetableLegend({ sessions }: { sessions: TimetableSession[] }) {
-  const subjects = legendSubjects(sessions);
+  const locale = useLocale();
+  const subjects = legendSubjects(sessions, locale);
   return (
     <div className="mt-3.5 flex flex-col gap-2 px-0.5 lg:flex-row lg:items-center lg:justify-between lg:gap-3">
       <div className="flex flex-wrap items-center gap-2" aria-label="Légende des matières">

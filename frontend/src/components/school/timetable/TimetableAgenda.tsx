@@ -4,6 +4,7 @@
 // by day — time range, colour band, subject + « Classe · Enseignant · Salle »,
 // type pill. Same data as the grid; reads better on a phone.
 import { CalendarX2 } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import type { TimetableSession } from './types';
 import {
   cardColors,
@@ -27,7 +28,8 @@ export function TimetableAgenda({
   today: string;
   onSessionClick: (session: TimetableSession) => void;
 }) {
-  const total = days.reduce((n, d) => n + sessionsOn(sessions, d).length, 0);
+  const locale = useLocale();
+  const total = days.reduce((n, d) => n + sessionsOn(sessions, d, locale).length, 0);
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-10 text-center">
@@ -44,7 +46,7 @@ export function TimetableAgenda({
   return (
     <div className="rounded-2xl border border-border bg-card">
       {days.map((day) => {
-        const list = sessionsOn(sessions, day);
+        const list = sessionsOn(sessions, day, locale);
         if (list.length === 0) return null;
         const isToday = day === today;
         return (
@@ -61,9 +63,9 @@ export function TimetableAgenda({
                   isToday ? 'text-primary' : 'text-foreground',
                 )}
               >
-                {formatDayName(day)}
+                {formatDayName(day, locale)}
               </span>
-              <span className="text-2xs text-muted-foreground">{formatDayShort(day)}</span>
+              <span className="text-2xs text-muted-foreground">{formatDayShort(day, locale)}</span>
               {isToday && (
                 <span className="ml-auto rounded-full bg-card px-2 py-px text-[10px] font-semibold text-primary">
                   Aujourd’hui

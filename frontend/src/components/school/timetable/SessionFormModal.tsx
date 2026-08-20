@@ -9,6 +9,7 @@
 // TIMETABLE_CONFLICT is surfaced inline with the offending slot.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import {
   AlertTriangle,
@@ -118,6 +119,7 @@ export function SessionFormModal({
 }) {
   const editing = initial.session ?? null;
   const mode = editing ? 'edit' : 'create';
+  const locale = useLocale();
 
   const [subjectId, setSubjectId] = useState(editing?.subjectId ?? '');
   // Only a real per-session override seeds the picker. Seeding from the
@@ -409,7 +411,7 @@ export function SessionFormModal({
       title={editing ? 'Modifier la séance' : 'Nouveau cours'}
       subtitle={
         editing
-          ? `${editing.subject.name} · ${editing.class.name} · ${formatLong(editing.date)}`
+          ? `${editing.subject.name} · ${editing.class.name} · ${formatLong(editing.date, locale)}`
           : 'Ajouter une séance à l’emploi du temps'
       }
       medium
@@ -821,8 +823,9 @@ export function SessionFormModal({
                           </strong>{' '}
                           de {minutesToHHMM(startMinutes)} à {minutesToHHMM(endMinutes)}
                           {until
-                            ? ` · jusqu’au ${formatLong(until).replace(/^\S+ /, '')}`
-                            : ''} —{' '}
+                            ? ` · jusqu’au ${formatLong(until, locale).replace(/^\S+ /, '')}`
+                            : ''}{' '}
+                          —{' '}
                           <strong className="font-semibold text-foreground">
                             {occurrences} occurrence{occurrences > 1 ? 's' : ''}
                           </strong>

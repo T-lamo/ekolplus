@@ -8,6 +8,7 @@
 // falls on one), Day view = the same grid with a single column. The card
 // scrolls horizontally under 640px so the grid never squeezes.
 import { Clock } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { CourseCard } from './CourseCard';
 import type { TimetableSession } from './types';
 import {
@@ -41,7 +42,8 @@ export function TimetableGrid({
   /** Click on the empty part of a cell → create a session there. */
   onSlotClick?: (day: string, startMinutes: number) => void;
 }) {
-  const rows = buildRows(sessions, days);
+  const locale = useLocale();
+  const rows = buildRows(sessions, days, locale);
   const cols = COLS[days.length] ?? COLS[5];
   const single = days.length === 1;
 
@@ -75,9 +77,11 @@ export function TimetableGrid({
                       isToday ? 'text-primary' : 'text-foreground',
                     )}
                   >
-                    {formatDayName(day)}
+                    {formatDayName(day, locale)}
                   </div>
-                  <div className="mt-px text-2xs text-muted-foreground">{formatDayShort(day)}</div>
+                  <div className="mt-px text-2xs text-muted-foreground">
+                    {formatDayShort(day, locale)}
+                  </div>
                 </div>
               );
             })}
@@ -107,7 +111,7 @@ export function TimetableGrid({
                       <button
                         type="button"
                         onClick={() => onSlotClick(day, row.start)}
-                        aria-label={`Ajouter un cours ${formatLong(day)} à ${minutesToHHMM(row.start)}`}
+                        aria-label={`Ajouter un cours ${formatLong(day, locale)} à ${minutesToHHMM(row.start)}`}
                         className="absolute inset-0 rounded-sm focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none focus-visible:ring-inset"
                       />
                     )}

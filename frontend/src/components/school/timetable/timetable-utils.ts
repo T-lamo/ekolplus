@@ -2,8 +2,9 @@
 // arithmetic on 'YYYY-MM-DD' strings, week/month ranges, the derived grid
 // rows (one per distinct start slot), recurrence summary, weekly volume, CSV
 // rows. No React, no DOM — see timetable-utils.test.ts.
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { format, type Locale } from 'date-fns';
+import { enUS, fr } from 'date-fns/locale';
+import { LOCALE_BCP47, type LocaleKey } from '@/lib/locales';
 import { subjectAccentColor } from '@/lib/subject-visuals';
 import type { SessionType, TimetableSession } from './types';
 
@@ -58,34 +59,70 @@ export function monthGrid(day: string): string[][] {
 // ─── Labels ────────────────────────────────────────────────────────────────
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-export function formatLong(day: string): string {
-  // "Lundi 17 août 2026"
-  return cap(format(fromDay(day), 'EEEE d MMMM yyyy', { locale: fr }));
+// Haitian Creole has no distinct calendar-formatting convention in wide
+// practical use (same reasoning as locales.ts's LOCALE_BCP47 and
+// DateField.tsx's own CALENDAR_LOCALE: 'ht' maps to the French locale, not a
+// bare 'ht' the engine would silently fall back on), so day/month names stay
+// French between fr/ht and only switch for en.
+const CALENDAR_LOCALE: Record<LocaleKey, Locale> = {
+  fr,
+  ht: fr,
+  en: enUS,
+};
+
+export function formatLong(day: string, locale: LocaleKey): string {
+  // "Lundi 17 août 2026" / "Monday 17 August 2026"
+  return cap(format(fromDay(day), 'EEEE d MMMM yyyy', { locale: CALENDAR_LOCALE[locale] }));
 }
-export function formatDayName(day: string): string {
-  return cap(format(fromDay(day), 'EEEE', { locale: fr }));
+export function formatDayName(day: string, locale: LocaleKey): string {
+  return cap(format(fromDay(day), 'EEEE', { locale: CALENDAR_LOCALE[locale] }));
 }
-export function formatDayShort(day: string): string {
+export function formatDayShort(day: string, locale: LocaleKey): string {
   // "17 Août" — the mock capitalises the month in the column head
-  const [n, ...rest] = format(fromDay(day), 'd MMMM', { locale: fr }).split(' ');
+  const [n, ...rest] = format(fromDay(day), 'd MMMM', {
+    locale: CALENDAR_LOCALE[locale],
+  }).split(' ');
   return `${n} ${cap(rest.join(' '))}`;
 }
-export function formatMonthYear(day: string): string {
-  return cap(format(fromDay(day), 'MMMM yyyy', { locale: fr }));
+export function formatMonthYear(day: string, locale: LocaleKey): string {
+  return cap(format(fromDay(day), 'MMMM yyyy', { locale: CALENDAR_LOCALE[locale] }));
 }
 /** "16 – 20 Juin 2025" or "29 Sept. – 3 Oct. 2025" across two months. */
-export function formatWeekRange(days: string[]): string {
+export function formatWeekRange(days: string[], locale: LocaleKey): string {
   const first = days[0];
   const last = days[days.length - 1];
   if (!first || !last) return '';
   const a = fromDay(first);
   const b = fromDay(last);
-  const month = (d: Date) => cap(format(d, 'MMMM', { locale: fr }));
-  const monthShort = (d: Date) => cap(format(d, 'MMM', { locale: fr }));
+  const dateLocale = CALENDAR_LOCALE[locale];
+  const month = (d: Date) => cap(format(d, 'MMMM', { locale: dateLocale }));
+  const monthShort = (d: Date) => cap(format(d, 'MMM', { locale: dateLocale }));
   if (a.getUTCMonth() === b.getUTCMonth()) {
     return `${a.getUTCDate()} – ${b.getUTCDate()} ${month(a)} ${b.getUTCFullYear()}`;
   }
   return `${a.getUTCDate()} ${monthShort(a)} – ${b.getUTCDate()} ${monthShort(b)} ${b.getUTCFullYear()}`;
+}
+
+// Any real Monday works — only the weekday names are read off it. Routed
+// through mondayOf() so the constant stays a Monday even if someone edits it.
+const HEADER_WEEK_MONDAY = mondayOf('2026-08-17');
+/**
+ * Mon → Sun column heads of the month view — « Lun · Mar … » in fr/ht,
+ * « Mon · Tue … » in en. date-fns's 'EEE' yields 'lun.' (lowercase, trailing
+ * period) in French and 'Mon' in English; cap() + the period strip normalise
+ * both to the style the month grid has always shown (the fixups are no-ops
+ * for English). Replaces TimetableMonth.tsx's hardcoded French array.
+ */
+export function weekdayHeaders(locale: LocaleKey): string[] {
+  const dateLocale = CALENDAR_LOCALE[locale];
+  return Array.from({ length: 7 }, (_, i) =>
+    cap(
+      format(fromDay(addDays(HEADER_WEEK_MONDAY, i)), 'EEE', { locale: dateLocale }).replace(
+        /\.$/,
+        '',
+      ),
+    ),
+  );
 }
 export function minutesToHHMM(m: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -181,7 +218,12 @@ export interface GridRow {
  * slots (including the whole default range when nothing is scheduled) just
  * render as blank cells. Empty range → the default 5 rows.
  */
-export function buildRows(sessions: TimetableSession[], days: string[]): GridRow[] {
+export function buildRows(
+  sessions: TimetableSession[],
+  days: string[],
+  locale: LocaleKey,
+): GridRow[] {
+  const collation = LOCALE_BCP47[locale];
   const daySet = new Set(days);
   const visible = sessions.filter((s) => daySet.has(s.date));
   const starts = [...new Set(visible.map((s) => s.startMinutes))].sort((a, b) => a - b);
@@ -192,23 +234,30 @@ export function buildRows(sessions: TimetableSession[], days: string[]): GridRow
     const inRow = visible.filter((s) => s.startMinutes === start);
     for (const s of inRow) cells.get(s.date)?.push(s);
     for (const list of cells.values()) {
-      list.sort((a, b) => a.class.name.localeCompare(b.class.name, 'fr'));
+      list.sort((a, b) => a.class.name.localeCompare(b.class.name, collation));
     }
     return { start, cells };
   });
 }
 
-export function sessionsOn(sessions: TimetableSession[], day: string): TimetableSession[] {
+export function sessionsOn(
+  sessions: TimetableSession[],
+  day: string,
+  locale: LocaleKey,
+): TimetableSession[] {
+  const collation = LOCALE_BCP47[locale];
   return sessions
     .filter((s) => s.date === day)
     .sort(
-      (a, b) => a.startMinutes - b.startMinutes || a.class.name.localeCompare(b.class.name, 'fr'),
+      (a, b) =>
+        a.startMinutes - b.startMinutes || a.class.name.localeCompare(b.class.name, collation),
     );
 }
 
 /** Distinct subjects of the visible sessions, for the legend. */
 export function legendSubjects(
   sessions: TimetableSession[],
+  locale: LocaleKey,
 ): { id: string; name: string; color: string }[] {
   const seen = new Map<string, { id: string; name: string; color: string }>();
   for (const s of sessions) {
@@ -220,7 +269,7 @@ export function legendSubjects(
       });
     }
   }
-  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, LOCALE_BCP47[locale]));
 }
 
 // ─── Recurrence ────────────────────────────────────────────────────────────
@@ -286,19 +335,23 @@ export const CSV_HEADERS = [
   'Salle',
   'Description',
 ];
-export function csvRows(sessions: TimetableSession[]): (string | number)[][] {
-  return [...sessions]
-    .sort((a, b) => a.date.localeCompare(b.date) || a.startMinutes - b.startMinutes)
-    .map((s) => [
-      s.date,
-      formatDayName(s.date),
-      minutesToHHMM(s.startMinutes),
-      minutesToHHMM(s.endMinutes),
-      s.class.name,
-      s.subject.name,
-      typeMeta(s.type).short,
-      s.teacher?.name ?? '',
-      s.room ?? '',
-      s.description ?? '',
-    ]);
+export function csvRows(sessions: TimetableSession[], locale: LocaleKey): (string | number)[][] {
+  return (
+    [...sessions]
+      // Chronological, not lexicographic-by-locale: 'YYYY-MM-DD' ordinal
+      // comparison is intentionally locale-independent here.
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startMinutes - b.startMinutes)
+      .map((s) => [
+        s.date,
+        formatDayName(s.date, locale),
+        minutesToHHMM(s.startMinutes),
+        minutesToHHMM(s.endMinutes),
+        s.class.name,
+        s.subject.name,
+        typeMeta(s.type).short,
+        s.teacher?.name ?? '',
+        s.room ?? '',
+        s.description ?? '',
+      ])
+  );
 }

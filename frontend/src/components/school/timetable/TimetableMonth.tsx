@@ -3,12 +3,12 @@
 // Month view (emploi-du-temps.md): 7-column calendar (Mon → Sun), each day
 // shows up to 3 compact course chips + « +N » ; clicking a day opens it in
 // the Day view. Outside-month days are dimmed, today gets the primary disc.
+import { useLocale } from 'next-intl';
 import { CourseCard } from './CourseCard';
 import type { TimetableSession } from './types';
-import { monthGrid, sessionsOn } from './timetable-utils';
+import { monthGrid, sessionsOn, weekdayHeaders } from './timetable-utils';
 import { cn } from '@/lib/utils';
 
-const WEEKDAY_HEADERS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MAX_CHIPS = 3;
 
 export function TimetableMonth({
@@ -24,14 +24,16 @@ export function TimetableMonth({
   onDayClick: (day: string) => void;
   onSessionClick: (session: TimetableSession) => void;
 }) {
+  const locale = useLocale();
   const grid = monthGrid(anchor);
   const month = anchor.slice(0, 7);
+  const headers = weekdayHeaders(locale);
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">
           <div className="sticky top-0 z-20 grid grid-cols-7 border-b border-border bg-muted">
-            {WEEKDAY_HEADERS.map((h, i) => (
+            {headers.map((h, i) => (
               <div
                 key={h}
                 className={cn(
@@ -46,7 +48,7 @@ export function TimetableMonth({
           {grid.map((week, w) => (
             <div key={w} className="grid grid-cols-7 border-b border-border last:border-b-0">
               {week.map((day, i) => {
-                const list = sessionsOn(sessions, day);
+                const list = sessionsOn(sessions, day, locale);
                 const inMonth = day.slice(0, 7) === month;
                 const isToday = day === today;
                 const extra = list.length - MAX_CHIPS;

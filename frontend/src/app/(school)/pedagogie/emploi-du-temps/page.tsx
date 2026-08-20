@@ -7,6 +7,7 @@
 // grid (or agenda / month), the legend. Data: GET /api/school/timetable for
 // the visible range; filters apply client-side (a week is ~150 rows at most).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale } from 'next-intl';
 import {
   BookOpen,
   Calendar,
@@ -87,6 +88,7 @@ interface Meta {
 
 export default function EmploiDuTempsPage() {
   const { toast } = useToast();
+  const locale = useLocale();
   const today = todayDay();
   const [view, setView] = useState<TimetableView>('week');
   const [anchor, setAnchor] = useState(today);
@@ -232,10 +234,10 @@ export default function EmploiDuTempsPage() {
 
   const navLabel =
     view === 'month'
-      ? formatMonthYear(anchor)
+      ? formatMonthYear(anchor, locale)
       : view === 'day'
-        ? formatLong(anchor)
-        : formatWeekRange(days);
+        ? formatLong(anchor, locale)
+        : formatWeekRange(days, locale);
 
   const step = useCallback(
     (dir: 1 | -1) => {
@@ -269,7 +271,11 @@ export default function EmploiDuTempsPage() {
       toast('Aucune séance à exporter sur cette période.', 'info');
       return;
     }
-    exportToCsv(`emploi-du-temps-${range.from}_${range.to}.csv`, CSV_HEADERS, csvRows(filtered));
+    exportToCsv(
+      `emploi-du-temps-${range.from}_${range.to}.csv`,
+      CSV_HEADERS,
+      csvRows(filtered, locale),
+    );
   }
 
   const subtitleView = VIEWS.find((v) => v.key === view)?.subtitle ?? '';

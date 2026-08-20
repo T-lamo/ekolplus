@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
 import { LandingHeader } from '@/components/landing/landing-header';
 import { HeroSection } from '@/components/landing/hero-section';
-import { StatsSection } from '@/components/landing/stats-section';
-import { PillarsSection } from '@/components/landing/pillars-section';
-import { RolePortalsSection } from '@/components/landing/role-portals-section';
-import { HowItWorksSection } from '@/components/landing/how-it-works-section';
+import { StatsBand } from '@/components/landing/stats-section';
+import { FeaturesSection } from '@/components/landing/features-section';
+import { RolesSection } from '@/components/landing/roles-section';
+import { StepsSection } from '@/components/landing/steps-section';
 import { PricingSection } from '@/components/landing/pricing-section';
 import { DemoRequestSection } from '@/components/landing/demo-request-section';
 import { FaqSection } from '@/components/landing/faq-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
-import { RevealObserver } from '@/components/landing/reveal-observer';
 
 const TITLE = 'Schoolgesti, le système d’information scolaire (SIS) tout-en-un';
 const DESCRIPTION =
@@ -80,45 +79,36 @@ const JSON_LD = {
 };
 
 /**
- * Public marketing landing (route `/`). Built modularly — one component per
- * section under `components/landing/`. Self-contained light theme (explicit
- * violet/slate/white via stock Tailwind utilities), lucide icons — renders
- * identically regardless of the app's own dark-sidebar tokens. Inter comes
- * from the root layout (already global), no separate font load here.
+ * Public marketing landing (route `/`). Rebuilt pixel-perfect from the
+ * Banani "Lavande Douce" export (.planning/banani/landing-page.md) — a
+ * self-contained DARK theme distinct from the app's own light shell,
+ * scoped entirely via `#landing-root` in globals.css so it renders
+ * identically regardless of the app's theme. One component per section
+ * under `components/landing/`; scroll-reveal + micro-interactions are
+ * framer-motion (see landing-motion.ts), not the old IntersectionObserver
+ * `.reveal-up` class.
  */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white text-slate-800 antialiased">
+    <div
+      id="landing-root"
+      className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased"
+    >
       {/* Static, hardcoded object above — never user/DB input — but escape
           `<` anyway so a stray "</script>" can never break out of the tag. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, '\\u003c') }}
       />
-      <RevealObserver />
       <LandingHeader />
-      <main className="pt-20">
-        <div className="reveal-up">
-          <HeroSection />
-        </div>
-        <div className="reveal-up">
-          <StatsSection />
-        </div>
-        <div className="reveal-up">
-          <PillarsSection />
-        </div>
-        <div className="reveal-up">
-          <RolePortalsSection />
-        </div>
-        <div className="reveal-up">
-          <HowItWorksSection />
-        </div>
-        <div className="reveal-up">
-          <PricingSection />
-        </div>
-        <div className="reveal-up">
-          <DemoRequestSection />
-        </div>
+      <main>
+        <HeroSection />
+        <StatsBand />
+        <FeaturesSection />
+        <RolesSection />
+        <StepsSection />
+        <PricingSection />
+        <DemoRequestSection />
         <FaqSection />
       </main>
       <LandingFooter />

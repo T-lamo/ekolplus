@@ -10,11 +10,11 @@ const COLUMNS = [
     ],
   },
   {
-    title: 'Aide',
+    title: 'Entreprise',
     links: [
+      { label: 'Démo', href: '#contact-demo' },
+      { label: 'Contact', href: '#contact-demo' },
       { label: 'Support', href: '#' },
-      { label: 'API', href: '#' },
-      { label: 'Blog', href: '#' },
     ],
   },
   {
@@ -26,44 +26,47 @@ const COLUMNS = [
   },
 ];
 
+/** `#footer`/`#footerShell` — brand block + 3 link columns in a rounded
+ * glass panel, matching the nav pill's material. */
 export function LandingFooter() {
   return (
-    <footer className="mt-16 border-t border-white/10 bg-slate-900 py-16 text-slate-400">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-4">
-        <div className="md:col-span-1">
-          <div className="mb-6 flex items-center">
+    <footer className="px-4 pt-8 pb-11 sm:px-6 lg:px-10">
+      <div className="mx-auto max-w-[1280px] rounded-[24px_18px_28px_20px] border border-border bg-white/[0.04] p-6 sm:rounded-[32px_22px_34px_24px] sm:p-7">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1fr] lg:gap-7">
+          <div>
             <Image
               src="/logos/schoolgesti-lockup-blanc.svg"
               alt="Schoolgesti"
-              width={164}
-              height={44}
-              className="h-9 w-auto"
+              width={118}
+              height={32}
+              className="h-6 w-auto"
             />
+            <p className="mt-3 max-w-[280px] text-[13px] text-secondary-foreground">
+              Le SIS premium pour piloter dossiers élèves, notes, finances, présences et bulletins
+              dans une seule expérience mémorable.
+            </p>
           </div>
-          <p className="text-sm leading-relaxed text-slate-400">
-            Le système d&apos;information scolaire des établissements qui veulent un dossier de
-            scolarité fiable, du premier jour au diplôme.
-          </p>
-        </div>
-        {COLUMNS.map((col) => (
-          <div key={col.title}>
-            <h3 className="mb-6 text-xs font-bold uppercase tracking-widest text-white">
-              {col.title}
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+          {COLUMNS.map((col) => (
+            <div key={col.title}>
+              <div className="mb-3 text-[11px] font-bold whitespace-nowrap text-accent">
+                {col.title}
+              </div>
               {col.links.map((link) => (
-                <li key={link.label}>
-                  <a href={link.href} className="transition-colors hover:text-violet-400">
-                    {link.label}
-                  </a>
-                </li>
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="mb-2.5 block text-[13px] whitespace-nowrap text-secondary-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </a>
               ))}
-            </ul>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="mx-auto mt-16 max-w-7xl border-t border-white/10 px-6 pt-6 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} Schoolgesti. Tous droits réservés.
+      <div className="mx-auto mt-4 flex max-w-[1280px] flex-col items-center gap-2 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
+        <span>© {new Date().getFullYear()} SchoolGesti. Tous droits réservés.</span>
+        <span>Conçu pour une gestion scolaire claire, premium et moderne.</span>
       </div>
     </footer>
   );

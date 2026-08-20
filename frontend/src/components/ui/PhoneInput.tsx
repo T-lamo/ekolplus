@@ -51,6 +51,7 @@ export function PhoneInput({
   placeholder,
   id,
   name,
+  portalContainer,
 }: {
   label?: string;
   value: string;
@@ -58,6 +59,9 @@ export function PhoneInput({
   placeholder?: string;
   id?: string;
   name?: string;
+  /** Element to portal the country popover into, instead of `document.body`
+   * — see `Select`'s `portalContainer` for why. */
+  portalContainer?: HTMLElement | null;
 }) {
   const autoId = useId();
   const inputId = id ?? name ?? autoId;
@@ -117,7 +121,7 @@ export function PhoneInput({
             <span className="text-xs font-medium text-muted-foreground">{country.dialCode}</span>
             <ChevronDown size={12} className="text-muted-foreground" />
           </Popover.Trigger>
-          <Popover.Portal>
+          <Popover.Portal container={portalContainer}>
             <Popover.Content
               align="start"
               sideOffset={4}

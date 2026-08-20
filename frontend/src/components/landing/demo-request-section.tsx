@@ -1,36 +1,83 @@
-import { CalendarCheck, CheckCircle2 } from 'lucide-react';
-import { DemoRequestForm } from './demo-request-form';
+'use client';
 
-/** Final CTA turned into a demo-request form (replaces the plain CTA block). */
+import { motion } from 'framer-motion';
+import { ClipboardPenLine, Clock3, PanelTopOpen, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { DemoRequestForm } from './demo-request-form';
+import { IconPlate, SectionHead } from './landing-ui';
+import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+
+interface Point {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+}
+
+// `#demoZone .demo-copy` — verbatim Banani copy ("Démonstration sur rendez-vous").
+const POINTS: Point[] = [
+  {
+    icon: Clock3,
+    title: 'Retour rapide',
+    text: 'Un expert vous recontacte avec un parcours adapté à votre structure et vos usages.',
+  },
+  {
+    icon: PanelTopOpen,
+    title: 'Scénarios concrets',
+    text: 'Notes, finances, emplois du temps, bulletins et gestion administrative dans la même présentation.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Confiance & accompagnement',
+    text: 'Un onboarding cadré pour mettre votre équipe à l’aise dès les premiers jours.',
+  },
+];
+
 export function DemoRequestSection() {
   return (
-    <section id="contact-demo" className="mx-auto max-w-7xl scroll-mt-20 px-6 py-16">
-      <div className="rounded-2xl bg-violet-600 p-6 text-white shadow-xl md:p-16">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="space-y-6 text-left">
-            <span className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-1 text-2xs font-semibold uppercase tracking-wider">
-              <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> Démo gratuite
-            </span>
-            <h2 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-              Découvrez Schoolgesti en action
-            </h2>
-            <p className="text-lg text-white/80">
-              Remplissez le formulaire et un expert en gestion scolaire vous recontactera sous 24h
-              pour une présentation personnalisée de la plateforme.
-            </p>
-            <ul className="space-y-3 pt-4">
-              <li className="flex items-center gap-3 text-sm text-white/90">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-300" aria-hidden="true" />
-                Démonstration sur-mesure de 20 min
-              </li>
-              <li className="flex items-center gap-3 text-sm text-white/90">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-300" aria-hidden="true" />
-                Réponses à toutes vos questions techniques et tarifs
-              </li>
-            </ul>
-          </div>
+    <section id="contact-demo" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24 lg:px-10">
+      <div className="mx-auto max-w-[1280px]">
+        <div className="grid grid-cols-1 items-center gap-9 lg:grid-cols-2">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={staggerContainer(0.1)}
+            className="lg:pr-4"
+          >
+            <motion.div variants={fadeUp}>
+              <SectionHead
+                icon={ClipboardPenLine}
+                kicker="Démonstration sur rendez-vous"
+                title={
+                  <>
+                    Découvrez SchoolGesti
+                    <br />
+                    en action
+                  </>
+                }
+                text="Une demande de démo transformée en objet physique : presse-papiers, texture, lumière et une promesse très concrète de clarté pour votre établissement."
+              />
+            </motion.div>
+            <div className="mt-6 flex flex-col gap-4">
+              {POINTS.map((point) => (
+                <motion.div key={point.title} variants={fadeUp} className="flex items-start gap-3">
+                  <IconPlate icon={point.icon} size="sm" />
+                  <div>
+                    <div className="text-sm font-bold text-foreground">{point.title}</div>
+                    <div className="text-[13px] text-secondary-foreground">{point.text}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
 
-          <DemoRequestForm />
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeUp}
+          >
+            <DemoRequestForm />
+          </motion.div>
         </div>
       </div>
     </section>

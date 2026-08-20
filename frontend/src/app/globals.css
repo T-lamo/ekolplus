@@ -14,7 +14,13 @@
    real generics as a last resort after it. */
 #app-body {
   font-family:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+    var(--font-inter),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif;
 }
 
 /* Schoolgesti design tokens — from Banani "Lavender SaaS" theme, shared across
@@ -257,63 +263,66 @@
   }
 }
 
-/* Landing scroll-reveal + micro-animations (frontend/src/app/page.tsx,
-   components/landing/*). Content is VISIBLE by default; the hidden/animated
-   state only applies once JS adds `.reveal-ready` on <html> (RevealObserver)
-   — so no-JS users and crawlers still see everything, and there's no risk of
-   a permanently-invisible page. Reduced-motion users get the instant variant
-   via the prefers-reduced-motion rule above. */
-.reveal-ready .reveal-up {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.7s cubic-bezier(0.5, 0, 0, 1),
-    transform 0.7s cubic-bezier(0.5, 0, 0, 1);
-}
-.reveal-ready .reveal-up.active {
-  opacity: 1;
-  transform: none;
-}
-.reveal-up.stagger-1 {
-  transition-delay: 80ms;
-}
-.reveal-up.stagger-2 {
-  transition-delay: 160ms;
-}
-.reveal-up.stagger-3 {
-  transition-delay: 240ms;
-}
-.reveal-up.stagger-4 {
-  transition-delay: 320ms;
-}
-.reveal-up.stagger-5 {
-  transition-delay: 400ms;
-}
-
-/* Gentle vertical float (hero product mockup). */
-@keyframes ekol-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
-}
-.animate-float {
-  animation: ekol-float 6s ease-in-out infinite;
+/* ── Landing page (marketing, route "/") — self-contained DARK theme ──────
+   Banani "Lavande Douce" export (.planning/banani/landing-page.md). Scoped
+   to #landing-root so it never leaks into the app shell's own light
+   @theme above — same "renders identically regardless of the app's theme"
+   precedent the old landing page followed. Radii are already numerically
+   identical (4/6/8/12px) across both themes, so only colors are redefined
+   here; every Tailwind utility that reads a --color-* token (bg-input,
+   text-foreground, border-border, …) picks up the dark values automatically
+   for any component rendered inside this subtree, including shared
+   primitives like Field/PhoneInput/Select. */
+#landing-root {
+  --color-background: #1e1630;
+  --color-foreground: #fbf8ff;
+  --color-border: #ffffff1a;
+  --color-input: #261c39;
+  --color-primary: #c7a7ff;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #241a38;
+  --color-secondary-foreground: #e8ddf8;
+  --color-muted: #2c2140;
+  --color-muted-foreground: #c7bdd8;
+  --color-accent: #e7d8ff;
+  --color-accent-foreground: #24173a;
+  --color-card: #231937;
+  --color-card-foreground: #fbf8ff;
+  --color-destructive-foreground: #dc2626;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(199, 167, 255, 0.24), transparent 26%),
+    radial-gradient(circle at 78% 10%, rgba(231, 216, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 50% 44%, rgba(199, 167, 255, 0.1), transparent 32%),
+    linear-gradient(180deg, #181126 0%, #211633 30%, #1b132b 100%);
+  color: var(--color-foreground);
 }
 
-/* Slow drifting glow behind the hero. */
-@keyframes ekol-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1.5);
-  }
-  50% {
-    transform: translate(5%, -5%) scale(1.7);
-  }
+/* The demo-request "clipboard" card (DemoRequestForm) is a light paper
+   card floating on the dark landing page — re-scope the same token names
+   back to a cream palette so the shared Field/PhoneInput/Select primitives
+   restyle automatically without duplicating their markup or logic. */
+.landing-clipboard {
+  --color-border: rgba(36, 26, 21, 0.1);
+  --color-input: rgba(255, 255, 255, 0.62);
+  --color-primary: #9b6bff;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #efe6d9;
+  --color-secondary-foreground: #6b5c51;
+  --color-muted: #efe6d9;
+  --color-muted-foreground: #8a7b70;
+  --color-card: #faf6ef;
+  --color-foreground: #241a15;
+  --radius-md: 14px;
+  color: var(--color-foreground);
 }
-.animate-drift {
-  animation: ekol-drift 14s ease-in-out infinite;
+
+/* Fixed-nav scroll blur (LandingHeader) — content sliding up under the
+   floating pill nav dissolves into a soft frosted fade instead of hard-
+   clipping behind it. A `mask-image` gradient (opaque at the very top →
+   fully transparent lower down) applied to a fixed, full-width
+   backdrop-blur layer gives a graduated edge; the pill itself sits above
+   this layer (higher z-index) so its own background/blur is untouched. */
+.landing-scroll-blur {
+  -webkit-mask-image: linear-gradient(to bottom, black, black 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black, black 45%, transparent 100%);
 }

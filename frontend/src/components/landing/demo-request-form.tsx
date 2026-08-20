@@ -21,9 +21,18 @@ const SIZE_TO_COUNT: Record<string, number | null> = {
  * Landing demo-request form → POST /api/demo-requests (public, pre-session —
  * same CSRF carve-out as /api/auth/signup, no cookie exists yet to verify).
  * Anti-spam: hidden honeypot (`company`) + per-email rate limit server-side.
- * Light theme, self-contained (doesn't touch the app's dark sidebar tokens).
+ *
+ * Visual shell is Banani's "clipboard" (`.landing-clipboard` in globals.css
+ * re-scopes the shared Field/PhoneInput/Select tokens to the cream paper
+ * palette) — state machine and submit logic are unchanged from before the
+ * redesign.
  */
 export function DemoRequestForm() {
+  // Callback ref (not useRef): Select/PhoneInput's Radix portals need the
+  // real DOM node to render into (see portalContainer doc below) — a plain
+  // ref wouldn't trigger the re-render needed to hand it to them once the
+  // clipboard card mounts.
+  const [clipboardEl, setClipboardEl] = useState<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
@@ -58,19 +67,37 @@ export function DemoRequestForm() {
 
   if (status === 'sent') {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl bg-white p-6 text-center text-slate-800 shadow-md md:p-10">
-        <CheckCircle2 className="h-12 w-12 text-emerald-500" aria-hidden="true" />
-        <h3 className="text-lg font-bold">Merci ! Demande envoyée.</h3>
-        <p className="text-sm text-slate-500">
-          Un expert Schoolgesti vous recontactera sous 24h pour votre démonstration personnalisée.
+      <div className="landing-clipboard relative rounded-[26px_30px_32px_22px] bg-[linear-gradient(180deg,rgba(250,246,239,0.98),rgba(237,230,220,0.95))] p-8 text-center text-foreground shadow-[0_30px_74px_rgba(0,0,0,0.20)] sm:p-10">
+        <CheckCircle2 className="mx-auto h-12 w-12 text-primary" aria-hidden="true" />
+        <h3 className="mt-3 text-lg font-extrabold">Merci ! Demande envoyée.</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Un expert SchoolGesti vous recontactera sous 24h pour votre démonstration personnalisée.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl bg-white p-6 text-slate-800 shadow-md md:p-10">
-      <form className="space-y-6" onSubmit={handleSubmit} suppressHydrationWarning>
+    <div
+      ref={setClipboardEl}
+      className="landing-clipboard relative rounded-[26px_30px_32px_22px] bg-[linear-gradient(180deg,rgba(250,246,239,0.98),rgba(237,230,220,0.95))] p-6 text-foreground shadow-[0_30px_74px_rgba(0,0,0,0.20)] sm:p-[30px_26px_26px]"
+    >
+      {/* Clipboard clip + pencil + chain — purely decorative, hidden on the
+          narrowest screens where there isn't room for the overhang. */}
+      <div
+        aria-hidden="true"
+        className="absolute -top-5 left-1/2 hidden h-[38px] w-[126px] -translate-x-1/2 rounded-[14px] bg-[linear-gradient(180deg,#786a5c,#53483d)] shadow-[inset_0_2px_0_rgba(255,255,255,0.18)] sm:block"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-[34px] right-3 hidden h-[76px] w-px border-l-2 border-dashed border-[rgba(65,50,36,0.36)] lg:block"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-[86px] -right-[18px] hidden h-40 w-[22px] rotate-[14deg] rounded-[18px] bg-[linear-gradient(180deg,#b59c7e,#8f7557)] shadow-[0_8px_20px_rgba(0,0,0,0.16)] lg:block"
+      />
+
+      <form className="space-y-0" onSubmit={handleSubmit} suppressHydrationWarning>
         {/* Honeypot — hidden from users; bots fill it and get dropped server-side. */}
         <input
           type="text"
@@ -83,58 +110,78 @@ export function DemoRequestForm() {
           className="hidden"
         />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <h3 className="text-lg font-extrabold">Réserver une démo</h3>
+
+        <div className="mt-[18px] grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field
-            label="Prénom & Nom"
+            label="Prénom & nom"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Jean Dupont"
           />
-          <PhoneInput label="Téléphone" value={phone} onChange={setPhone} />
-        </div>
+          <PhoneInput
+            label="Téléphone"
+            value={phone}
+            onChange={setPhone}
+            portalContainer={clipboardEl}
+          />
 
-        <Field
-          label="Email professionnel"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="j.dupont@ecole.com"
-        />
+          <div className="sm:col-span-2">
+            <Field
+              label="Email professionnel"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="jean@ecole.edu"
+            />
+          </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
-            label="Nom de l'établissement"
+            label="Établissement"
             required
             value={school}
             onChange={(e) => setSchool(e.target.value)}
-            placeholder="Lycée d'Excellence"
+            placeholder="Institution Nouvelle Vision"
           />
-          <Select label="Nombre d'élèves" value={size} onValueChange={setSize}>
+          <Select
+            label="Nombre d'élèves"
+            value={size}
+            onValueChange={setSize}
+            portalContainer={clipboardEl}
+          >
             <SelectItem value="small">Moins de 200</SelectItem>
             <SelectItem value="medium">200 - 500</SelectItem>
             <SelectItem value="large">500 - 1000</SelectItem>
             <SelectItem value="xlarge">Plus de 1000</SelectItem>
           </Select>
+
+          <div className="sm:col-span-2">
+            <Select
+              label="Plan souhaité"
+              value={plan}
+              onValueChange={setPlan}
+              portalContainer={clipboardEl}
+            >
+              <SelectItem value="starter">Starter (gratuit)</SelectItem>
+              <SelectItem value="pro">Établissement Pro</SelectItem>
+              <SelectItem value="enterprise">Enterprise (sur mesure)</SelectItem>
+            </Select>
+          </div>
         </div>
 
-        <Select label="Plan souhaité" value={plan} onValueChange={setPlan}>
-          <SelectItem value="starter">Starter (gratuit)</SelectItem>
-          <SelectItem value="pro">Établissement Pro</SelectItem>
-          <SelectItem value="enterprise">Enterprise (sur mesure)</SelectItem>
-        </Select>
-
         {plan === 'pro' && (
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <span className="text-sm font-bold text-slate-500">Estimation plan Pro</span>
+          <div className="mt-3 flex items-center justify-between rounded-[14px] border border-border bg-white/40 px-3.5 py-3">
+            <span className="text-xs font-bold text-muted-foreground">Estimation plan Pro</span>
             {estimate === null ? (
-              <span className="text-sm font-semibold text-violet-600">
+              <span className="text-xs font-semibold text-primary">
                 Tarif entreprise, sur devis
               </span>
             ) : (
-              <span className="text-xl font-bold text-violet-600">
-                ~{estimate} $ <span className="text-sm font-normal text-slate-500">/mois</span>
+              <span className="text-base font-bold text-primary">
+                ~{estimate} ${' '}
+                <span className="text-xs font-normal text-muted-foreground">/mois</span>
               </span>
             )}
           </div>
@@ -143,13 +190,15 @@ export function DemoRequestForm() {
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-6 py-3 text-sm font-bold text-white shadow transition-colors hover:bg-violet-700 disabled:opacity-60"
+          className="mt-[18px] flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-primary to-accent px-[18px] py-3.5 text-sm font-bold text-primary-foreground transition-opacity disabled:opacity-60"
         >
           <span>{status === 'sending' ? 'Envoi…' : 'Réserver ma démo'}</span>
           {status !== 'sending' && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
         </button>
 
-        {status === 'error' && errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
+        {status === 'error' && errorMsg && (
+          <p className="mt-3 text-sm text-destructive-foreground">{errorMsg}</p>
+        )}
       </form>
     </div>
   );

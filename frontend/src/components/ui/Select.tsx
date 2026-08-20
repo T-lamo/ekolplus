@@ -20,6 +20,12 @@ interface SelectProps {
   id?: string;
   name?: string;
   title?: string;
+  /** Element to portal the popover content into, instead of `document.body`.
+   * Needed on surfaces that scope the `--color-*` theme tokens locally (e.g.
+   * the landing page's dark/cream scopes) — a `document.body` portal would
+   * otherwise escape that scope and pick up the app's global `:root`
+   * theme (the logged-in user's saved color preference) instead. */
+  portalContainer?: HTMLElement | null;
   children: ReactNode;
 }
 
@@ -39,6 +45,7 @@ export function Select({
   id,
   name,
   title,
+  portalContainer,
   children,
 }: SelectProps) {
   return (
@@ -70,7 +77,7 @@ export function Select({
             />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
-        <SelectPrimitive.Portal>
+        <SelectPrimitive.Portal container={portalContainer}>
           <SelectPrimitive.Content
             position="popper"
             sideOffset={4}

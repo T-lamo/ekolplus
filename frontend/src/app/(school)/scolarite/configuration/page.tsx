@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Copy, Pencil, Plus, Save, Split, Trash2 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -11,8 +12,8 @@ import { Field } from '@/components/ui/Field';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { FEES } from '@/lib/constants';
 import { ASIDE_GRID } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 import { fmtMoney, fmtDateShort } from '@/lib/fees-format';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
@@ -25,12 +26,12 @@ import {
 import { ClassDropdownSelector } from './ClassDropdownSelector';
 import { TrancheFormModal, type TrancheFormValues } from './TrancheFormModal';
 
-const t = FEES.configuration;
-
 // Fixed 3-tone purple palette Banani uses for the tranche distribution bar +
 // per-tranche accent color — cycles for classes with more than 3 tranches.
 const TRANCHE_PALETTE = ['#6c2bd9', '#a855f7', '#c4b5fd'];
 const TRANCHE_PALETTE_TEXT = ['#6c2bd9', '#a855f7', '#7c3aed'];
+
+const CURRENCY_CODES = ['HTG', 'USD', 'XOF', 'XAF', 'EUR'] as const;
 
 interface StructureResponse {
   class: { id: string; name: string };
@@ -65,10 +66,6 @@ interface AutomationSettings {
   currency: string;
 }
 
-function ordinalTrancheLabel(n: number): string {
-  return `${n}${n === 1 ? 'ère' : 'ème'} Tranche`;
-}
-
 function toDraft(
   tranches: NonNullable<StructureResponse['feeStructure']>['tranches'],
 ): DraftTranche[] {
@@ -85,6 +82,10 @@ function toDraft(
 export default function PaymentConfigurationPage() {
   const user = useUser();
   const { toast } = useToast();
+  const t = useTranslations('Fees.configuration');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [classes, setClasses] = useState<FeeClassOption[] | null>(null);
   const [filter, setFilter] = useState<ClassFilter>('all');
   const [academicYearLabel, setAcademicYearLabel] = useState<string | null>(null);
@@ -112,11 +113,11 @@ export default function PaymentConfigurationPage() {
         setAcademicYearLabel(res.academicYearLabel);
         if (res.classes[0]) setSelectedId(res.classes[0].id);
       })
-      .catch(() => setError('Impossible de charger les classes.'));
+      .catch(() => setError(t('loadClassesError')));
     api<{ settings: AutomationSettings }>('/api/school/fees/automation-settings')
       .then((res) => setAutomation(res.settings))
       .catch(() => {});
-  }, [user]);
+  }, [user, t]);
 
   const loadStructure = useCallback(
     (classId: string) => {
@@ -128,9 +129,9 @@ export default function PaymentConfigurationPage() {
           setRegistrationFee(String(res.feeStructure?.registrationFee ?? 0));
           setTranches(res.feeStructure ? toDraft(res.feeStructure.tranches) : []);
         })
-        .catch(() => toast('Impossible de charger la configuration de cette classe.', 'error'));
+        .catch(() => toast(t('loadStructureError'), 'error'));
     },
-    [toast],
+    [toast, t],
   );
 
   useEffect(() => {
@@ -177,7 +178,7 @@ export default function PaymentConfigurationPage() {
       await api('/api/school/fees/automation-settings', { method: 'PATCH', body: patch });
     } catch (err) {
       setAutomation(automation);
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -195,7 +196,7 @@ export default function PaymentConfigurationPage() {
   async function onSave() {
     if (!selectedId) return;
     if (tranches.length === 0) {
-      toast('Ajoutez au moins une tranche.', 'error');
+      toast(t('emptyClassPrompt'), 'error');
       return;
     }
     setSaving(true);
@@ -216,11 +217,11 @@ export default function PaymentConfigurationPage() {
           })),
         },
       });
-      toast('Configuration enregistrée.', 'success');
+      toast(t('savedToast'), 'success');
       loadStructure(selectedId);
       refreshClassesList();
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setSaving(false);
     }
@@ -241,13 +242,13 @@ export default function PaymentConfigurationPage() {
         method: 'POST',
         body: { sourceClassId: copySourceId },
       });
-      toast('Configuration copiée.', 'success');
+      toast(t('copiedToast'), 'success');
       setCopySourceId('');
       setCopyPickerOpen(false);
       loadStructure(selectedId);
       refreshClassesList();
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setCopying(false);
     }
@@ -267,11 +268,13 @@ export default function PaymentConfigurationPage() {
     );
   }
 
+  const selectedStudentCount = classes?.find((c) => c.id === selectedId)?.studentCount ?? 0;
+
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
+        <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <FeesTabs active="configuration" />
@@ -307,7 +310,7 @@ export default function PaymentConfigurationPage() {
 
             <Card className="gap-3.5 p-4">
               <h2 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-                {t.globalSettingsTitle}
+                {t('globalSettingsTitle')}
               </h2>
               {!automation ? (
                 <Skeleton className="h-24 w-full" />
@@ -316,42 +319,42 @@ export default function PaymentConfigurationPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-semibold text-foreground">
-                        {t.latePenaltyToggle}
+                        {t('latePenaltyToggle')}
                       </div>
                       <div className="text-2xs text-muted-foreground">
-                        {t.latePenaltyToggleDesc}
+                        {t('latePenaltyToggleDesc')}
                       </div>
                     </div>
                     <Switch
                       checked={automation.lateFeeEnabled}
                       onChange={(v) => patchAutomation({ lateFeeEnabled: v })}
-                      label={t.latePenaltyToggle}
+                      label={t('latePenaltyToggle')}
                     />
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-semibold text-foreground">
-                        {t.autoRemindersToggle}
+                        {t('autoRemindersToggle')}
                       </div>
                       <div className="text-2xs text-muted-foreground">
-                        {t.autoRemindersToggleDesc}
+                        {t('autoRemindersToggleDesc')}
                       </div>
                     </div>
                     <Switch
                       checked={automation.autoRemindersEnabled}
                       onChange={(v) => patchAutomation({ autoRemindersEnabled: v })}
-                      label={t.autoRemindersToggle}
+                      label={t('autoRemindersToggle')}
                     />
                   </div>
                   <div className="border-t border-border pt-3">
                     <Select
-                      label={t.currencyLabel}
+                      label={t('currencyLabel')}
                       value={automation.currency}
                       onValueChange={(v) => patchAutomation({ currency: v })}
                     >
-                      {t.currencyOptions.map((c) => (
-                        <SelectItem key={c.code} value={c.code}>
-                          {c.label}
+                      {CURRENCY_CODES.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {t(`currencyOptions.${code}`)}
                         </SelectItem>
                       ))}
                     </Select>
@@ -365,7 +368,7 @@ export default function PaymentConfigurationPage() {
           <div className="flex min-w-0 flex-col gap-4 lg:order-1">
             {!selectedId ? (
               <Card className="p-5">
-                <p className="text-sm text-muted-foreground">{t.selectClassPrompt}</p>
+                <p className="text-sm text-muted-foreground">{t('selectClassPrompt')}</p>
               </Card>
             ) : structure === null ? (
               <Skeleton className="h-80 w-full" />
@@ -378,10 +381,15 @@ export default function PaymentConfigurationPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-[17px] font-bold tracking-tight text-foreground">
-                        Configuration — {structure.class.name}
+                        {t('configHeadingPrefix', { className: structure.class.name })}
                       </h2>
                       <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-primary">
-                        {classes?.find((c) => c.id === selectedId)?.studentCount ?? 0} élèves
+                        {t(
+                          selectedStudentCount > 1
+                            ? 'studentCountBadge.other'
+                            : 'studentCountBadge.one',
+                          { n: selectedStudentCount },
+                        )}
                       </span>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${
@@ -390,10 +398,10 @@ export default function PaymentConfigurationPage() {
                             : 'bg-warning text-warning-foreground'
                         }`}
                       >
-                        {structure.feeStructure ? t.editorConfigured : t.editorPending}
+                        {structure.feeStructure ? t('editorConfigured') : t('editorPending')}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{t.editorSubtitle}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{t('editorSubtitle')}</p>
                   </div>
                   <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                     {copySources.length > 0 && (
@@ -403,15 +411,15 @@ export default function PaymentConfigurationPage() {
                         onClick={() => setCopyPickerOpen((v) => !v)}
                       >
                         <Copy size={13} />
-                        {t.copyFromClass}
+                        {t('copyFromClass')}
                       </Button>
                     )}
                     <Button variant="ghost" className="w-fit" onClick={onCancel}>
-                      {t.cancel}
+                      {t('cancel')}
                     </Button>
                     <Button className="w-fit" loading={saving} onClick={onSave}>
                       <Save size={13} />
-                      {t.save}
+                      {t('save')}
                     </Button>
                   </div>
                 </Card>
@@ -420,7 +428,7 @@ export default function PaymentConfigurationPage() {
                   <Card className="flex-row flex-wrap items-end gap-2 p-3.5">
                     <div className="min-w-[220px] flex-1">
                       <Select
-                        label={t.copyFromClass}
+                        label={t('copyFromClass')}
                         value={copySourceId}
                         onValueChange={setCopySourceId}
                       >
@@ -440,7 +448,7 @@ export default function PaymentConfigurationPage() {
                       onClick={onCopyFrom}
                     >
                       <Copy size={13} />
-                      {t.copyFromClass}
+                      {t('copyFromClass')}
                     </Button>
                   </Card>
                 )}
@@ -448,25 +456,25 @@ export default function PaymentConfigurationPage() {
                 <Card className="gap-3.5 p-4">
                   <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                     <Pencil size={13} className="text-primary" />
-                    {t.generalInfoTitle}
+                    {t('generalInfoTitle')}
                   </h3>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <Field
-                      label={t.totalAmountLabel}
+                      label={t('totalAmountLabel')}
                       type="number"
                       min={0}
                       value={totalAmount}
                       onChange={(e) => setTotalAmount(e.target.value)}
                     />
                     <Field
-                      label={t.registrationFeeLabel}
+                      label={t('registrationFeeLabel')}
                       type="number"
                       min={0}
                       value={registrationFee}
                       onChange={(e) => setRegistrationFee(e.target.value)}
                     />
                     <Field
-                      label={t.academicYearLabel}
+                      label={t('academicYearLabel')}
                       value={academicYearLabel ?? '—'}
                       disabled
                       readOnly
@@ -479,13 +487,13 @@ export default function PaymentConfigurationPage() {
                     <div className="flex flex-col items-start gap-3">
                       <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                         <Split size={13} className="text-primary" />
-                        {t.tranchesBuilderTitle}
+                        {t('tranchesBuilderTitle')}
                       </h3>
                       <div className="flex w-full flex-col items-start gap-3 rounded-md border border-dashed border-border p-4">
-                        <p className="text-sm text-muted-foreground">{t.emptyClassPrompt}</p>
+                        <p className="text-sm text-muted-foreground">{t('emptyClassPrompt')}</p>
                         <Button variant="outline" className="w-fit" onClick={openAddTrancheModal}>
                           <Plus size={14} />
-                          {t.addTranche}
+                          {t('addTranche')}
                         </Button>
                       </div>
                     </div>
@@ -495,17 +503,22 @@ export default function PaymentConfigurationPage() {
                         <div>
                           <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                             <Split size={13} className="text-primary" />
-                            {t.tranchesBuilderTitle}
+                            {t('tranchesBuilderTitle')}
                           </h3>
                           <p className="mt-0.5 text-2xs text-muted-foreground">
-                            {t.tranchesBuilderSubtitle(
-                              fmtMoney(allocated, automation?.currency),
-                              tranches.length,
+                            {t(
+                              tranches.length > 1
+                                ? 'tranchesBuilderSubtitle.other'
+                                : 'tranchesBuilderSubtitle.one',
+                              {
+                                total: fmtMoney(allocated, automation?.currency),
+                                count: tranches.length,
+                              },
                             )}
                           </p>
                         </div>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {t.distributionPrefix}{' '}
+                          {t('distributionPrefix')}{' '}
                           <span className="font-bold text-success-foreground">
                             {distributionPercent}%
                           </span>
@@ -535,7 +548,8 @@ export default function PaymentConfigurationPage() {
                                 className="h-[9px] w-[9px] shrink-0 rounded-sm"
                                 style={{ background: TRANCHE_PALETTE[i % TRANCHE_PALETTE.length] }}
                               />
-                              {tr.label || `Tranche ${i + 1}`} · {trancheAmountPercent(tr)}%
+                              {tr.label || t('trancheFallbackLabel', { n: i + 1 })} ·{' '}
+                              {trancheAmountPercent(tr)}%
                             </div>
                           ))}
                         </div>
@@ -562,22 +576,24 @@ export default function PaymentConfigurationPage() {
                                 <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-x-1.5">
                                     <span className="truncate text-sm font-bold text-foreground">
-                                      {tr.label || `Tranche ${i + 1}`}
+                                      {tr.label || t('trancheFallbackLabel', { n: i + 1 })}
                                     </span>
                                     {hasPenalty && (
                                       <span className="text-2xs whitespace-nowrap text-muted-foreground">
                                         ·{' '}
-                                        {t.trancheLatePenaltySummary(
-                                          Number(tr.latePenaltyPercent),
-                                          tr.latePenaltyGraceDays === ''
-                                            ? null
-                                            : Number(tr.latePenaltyGraceDays),
-                                        )}
+                                        {tr.latePenaltyGraceDays === ''
+                                          ? t('trancheLatePenaltySummaryNoGrace', {
+                                              percent: Number(tr.latePenaltyPercent),
+                                            })
+                                          : t('trancheLatePenaltySummaryWithGrace', {
+                                              percent: Number(tr.latePenaltyPercent),
+                                              graceDays: Number(tr.latePenaltyGraceDays),
+                                            })}
                                       </span>
                                     )}
                                   </div>
                                   <div className="text-2xs text-muted-foreground">
-                                    {fmtDateShort(tr.dueDate)}
+                                    {fmtDateShort(tr.dueDate, bcp47)}
                                   </div>
                                 </div>
                               </div>
@@ -591,7 +607,7 @@ export default function PaymentConfigurationPage() {
                                 <button
                                   type="button"
                                   onClick={() => openEditTrancheModal(i)}
-                                  aria-label={t.editTranche}
+                                  aria-label={t('editTranche')}
                                   className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
                                 >
                                   <Pencil size={14} />
@@ -599,7 +615,7 @@ export default function PaymentConfigurationPage() {
                                 <button
                                   type="button"
                                   onClick={() => removeTranche(i)}
-                                  aria-label="Supprimer la tranche"
+                                  aria-label={t('deleteTrancheAria')}
                                   className="flex h-7 w-7 items-center justify-center rounded-md text-destructive-foreground hover:bg-muted"
                                 >
                                   <Trash2 size={14} />
@@ -610,7 +626,7 @@ export default function PaymentConfigurationPage() {
                         })}
                         <Button variant="outline" className="w-fit" onClick={openAddTrancheModal}>
                           <Plus size={14} />
-                          {t.addTranche}
+                          {t('addTranche')}
                         </Button>
                       </div>
                     </div>
@@ -625,7 +641,10 @@ export default function PaymentConfigurationPage() {
       {trancheModalOpen && (
         <TrancheFormModal
           tranche={editingTrancheIndex !== null ? (tranches[editingTrancheIndex] ?? null) : null}
-          defaultLabel={ordinalTrancheLabel(tranches.length + 1)}
+          defaultLabel={t(
+            tranches.length + 1 > 1 ? 'trancheDefaultLabel.other' : 'trancheDefaultLabel.one',
+            { n: tranches.length + 1 },
+          )}
           lateFeeEnabled={automation?.lateFeeEnabled ?? true}
           totalAmount={totalAmountNum}
           onClose={() => setTrancheModalOpen(false)}

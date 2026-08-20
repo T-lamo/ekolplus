@@ -142,5 +142,59 @@
     "reasonLabel": "Rezon (opsyonèl)",
     "confirm": "Make kòm kontestasyon",
     "cancel": "Anile"
+  },
+  "configuration": {
+    "title": "Konfigirasyon Frè Eskolarite",
+    "subtitle": "Defini frè eskolarite ak vèsman pa klas pou ane akademik la",
+    "loadClassesError": "Nou pa ka chaje klas yo.",
+    "loadStructureError": "Nou pa ka chaje konfigirasyon klas sa a.",
+    "globalSettingsTitle": "Paramèt jeneral",
+    "latePenaltyToggle": "Penalite reta",
+    "latePenaltyToggleDesc": "Aplike yon frè apre dat limit la",
+    "autoRemindersToggle": "Rapèl otomatik",
+    "autoRemindersToggleDesc": "Notifye anvan echeyans lan",
+    "currencyLabel": "Lajan prensipal",
+    "currencyOptions": {
+      "HTG": "HTG — Goud ayisyen",
+      "USD": "USD — Dola ameriken",
+      "XOF": "XOF — Frank CFA (UEMOA)",
+      "XAF": "XAF — Frank CFA (CEMAC)",
+      "EUR": "EUR — Ewo"
+    },
+    "selectClassPrompt": "Chwazi yon klas.",
+    "editorConfigured": "Konfigire",
+    "editorPending": "Ann atann",
+    "editorSubtitle": "Defini montan total ak vèsman yo pou klas sa a",
+    "copyFromClass": "Kopye soti nan yon klas",
+    "cancel": "Anile",
+    "save": "Anrejistre",
+    "generalInfoTitle": "Enfòmasyon jeneral",
+    "totalAmountLabel": "Montan total anyèl",
+    "registrationFeeLabel": "Frè enskripsyon",
+    "academicYearLabel": "Ane akademik",
+    "tranchesBuilderTitle": "Konfiguratè Vèsman",
+    "tranchesBuilderSubtitle": {
+      "one": "Total repati : {total} sou {count} vèsman",
+      "other": "Total repati : {total} sou {count} vèsman"
+    },
+    "distributionPrefix": "Repatisyon :",
+    "addTranche": "Ajoute yon vèsman",
+    "editTranche": "Modifye vèsman an",
+    "deleteTrancheAria": "Efase vèsman an",
+    "emptyClassPrompt": "Poko konfigire — defini montan total la pou kòmanse.",
+    "configHeadingPrefix": "Konfigirasyon — {className}",
+    "studentCountBadge": {
+      "one": "{n} elèv",
+      "other": "{n} elèv"
+    },
+    "trancheDefaultLabel": {
+      "one": "Vèsman {n}",
+      "other": "Vèsman {n}"
+    },
+    "trancheFallbackLabel": "Vèsman {n}",
+    "trancheLatePenaltySummaryWithGrace": "{percent}% apre {graceDays} j.",
+    "trancheLatePenaltySummaryNoGrace": "{percent}%",
+    "savedToast": "Konfigirasyon anrejistre.",
+    "copiedToast": "Konfigirasyon kopye."
   }
 }

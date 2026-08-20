@@ -141,5 +141,59 @@
     "reasonLabel": "Reason (optional)",
     "confirm": "Mark as disputed",
     "cancel": "Cancel"
+  },
+  "configuration": {
+    "title": "Tuition Fee Configuration",
+    "subtitle": "Set tuition fees and installments per class for the academic year",
+    "loadClassesError": "Unable to load classes.",
+    "loadStructureError": "Unable to load this class's configuration.",
+    "globalSettingsTitle": "Global settings",
+    "latePenaltyToggle": "Late penalties",
+    "latePenaltyToggleDesc": "Apply a fee after the due date",
+    "autoRemindersToggle": "Automatic reminders",
+    "autoRemindersToggleDesc": "Notify before the due date",
+    "currencyLabel": "Main currency",
+    "currencyOptions": {
+      "HTG": "HTG — Haitian Gourde",
+      "USD": "USD — US Dollar",
+      "XOF": "XOF — CFA Franc (UEMOA)",
+      "XAF": "XAF — CFA Franc (CEMAC)",
+      "EUR": "EUR — Euro"
+    },
+    "selectClassPrompt": "Select a class.",
+    "editorConfigured": "Configured",
+    "editorPending": "Pending",
+    "editorSubtitle": "Set the total amount and installments for this class",
+    "copyFromClass": "Copy from a class",
+    "cancel": "Cancel",
+    "save": "Save",
+    "generalInfoTitle": "General information",
+    "totalAmountLabel": "Total annual amount",
+    "registrationFeeLabel": "Registration fee",
+    "academicYearLabel": "Academic year",
+    "tranchesBuilderTitle": "Installment Builder",
+    "tranchesBuilderSubtitle": {
+      "one": "Allocated: {total} across {count} installment",
+      "other": "Allocated: {total} across {count} installments"
+    },
+    "distributionPrefix": "Allocated:",
+    "addTranche": "Add an installment",
+    "editTranche": "Edit installment",
+    "deleteTrancheAria": "Delete installment",
+    "emptyClassPrompt": "Not configured yet — set the total amount to get started.",
+    "configHeadingPrefix": "Configuration — {className}",
+    "studentCountBadge": {
+      "one": "{n} student",
+      "other": "{n} students"
+    },
+    "trancheDefaultLabel": {
+      "one": "Installment {n}",
+      "other": "Installment {n}"
+    },
+    "trancheFallbackLabel": "Installment {n}",
+    "trancheLatePenaltySummaryWithGrace": "{percent}% after {graceDays}d",
+    "trancheLatePenaltySummaryNoGrace": "{percent}%",
+    "savedToast": "Configuration saved.",
+    "copiedToast": "Configuration copied."
   }
 }

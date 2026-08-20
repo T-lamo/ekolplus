@@ -1,0 +1,176 @@
+{
+  "status": {
+    "ACTIVE": "Actif(ve)",
+    "ON_LEAVE": "En congé",
+    "INACTIVE": "Inactif(ve)"
+  },
+  "list": {
+    "title": "Enseignants",
+    "countRegistered": {
+      "one": "{count} enseignant enregistré",
+      "other": "{count} enseignants enregistrés"
+    },
+    "loadError": "Impossible de charger les enseignants.",
+    "import": "Importer",
+    "importSoon": "Import CSV — bientôt disponible.",
+    "export": "Exporter",
+    "addTeacher": "Ajouter un enseignant",
+    "searchPlaceholder": "Rechercher un enseignant...",
+    "allSubjects": "Toutes les matières",
+    "allStatuses": "Tous les statuts",
+    "resultsCount": {
+      "one": "{count} résultat",
+      "other": "{count} résultats"
+    },
+    "emptyNone": "Aucun enseignant — ajoutez le premier.",
+    "emptyFiltered": "Aucun résultat.",
+    "noSubject": "Aucune matière",
+    "noSubjectShort": "Aucune",
+    "noClassLabel": "Aucune classe",
+    "table": {
+      "teacher": "Enseignant",
+      "subjects": "Matière(s)",
+      "classes": "Classes assignées",
+      "status": "Statut",
+      "weeklyHours": "Heures/sem.",
+      "contact": "Contact"
+    },
+    "csv": {
+      "teacher": "Enseignant",
+      "subjects": "Matières",
+      "classes": "Classes",
+      "status": "Statut",
+      "weeklyHours": "Heures/sem.",
+      "contact": "Contact"
+    },
+    "menu": {
+      "viewProfile": "Voir le profil",
+      "edit": "Modifier",
+      "manageAssignments": "Gérer les affectations",
+      "viewAttendance": "Voir les présences",
+      "viewAttendanceSoon": "Disponible avec Epic 8 (Présences).",
+      "sendWhatsapp": "Envoyer un message WhatsApp",
+      "deactivate": "Désactiver",
+      "delete": "Supprimer"
+    },
+    "deleteConfirm": "Supprimer « {name} » ?",
+    "toasts": {
+      "deleted": "Enseignant supprimé.",
+      "deactivated": "Enseignant désactivé.",
+      "whatsappSent": "Message WhatsApp envoyé.",
+      "whatsappNoPhone": "Aucun numéro de téléphone renseigné pour cet enseignant.",
+      "whatsappNotConfigured": "L'envoi WhatsApp n'est pas encore configuré.",
+      "whatsappFailed": "Envoi WhatsApp impossible. Réessayez."
+    }
+  },
+  "form": {
+    "steps": {
+      "identite": "Identité & Photo",
+      "coordonnees": "Coordonnées",
+      "poste": "Poste & Matières"
+    },
+    "editTitle": "Modifier l'enseignant",
+    "addTitle": "Ajouter un enseignant",
+    "submitEdit": "Enregistrer",
+    "submitCreate": "Créer l'enseignant",
+    "loadErrorWithCode": "Impossible de charger la fiche ({code}).",
+    "loadError": "Impossible de charger la fiche.",
+    "nameRequired": "Le prénom et le nom sont requis.",
+    "invalidWeeklyHours": "Heures / semaine invalides.",
+    "photoUpdated": "Photo mise à jour.",
+    "updated": "Enseignant mis à jour.",
+    "created": "Enseignant ajouté.",
+    "noneYet": "Aucune pour l'instant.",
+    "identity": {
+      "title": "Identité & Photo",
+      "subtitle": "Informations d'identification de l'enseignant",
+      "photoLabel": "Photo de profil",
+      "photoHint": "PNG, JPG ou WebP — format carré recommandé",
+      "civility": "Civilité",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "ex: Jean-Pierre",
+      "lastName": "Nom de famille",
+      "lastNamePlaceholder": "ex: Dupont",
+      "dateOfBirth": "Date de naissance",
+      "gender": "Genre",
+      "genderSelect": "Sélectionner",
+      "nationality": "Nationalité",
+      "nationalityPlaceholder": "ex: Haïtienne",
+      "idNumber": "Numéro d'identification",
+      "idNumberPlaceholder": "ex: NIF-2024-0042"
+    },
+    "contact": {
+      "title": "Coordonnées",
+      "subtitle": "Informations de contact de l'enseignant",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "prenom.nom@exemple.ht",
+      "phone": "Téléphone principal",
+      "secondaryPhone": "Téléphone secondaire",
+      "address": "Adresse",
+      "addressPlaceholder": "Rue, ville"
+    },
+    "position": {
+      "title": "Poste & Matières enseignées",
+      "subtitle": "Rôle, spécialité et classes assignées",
+      "status": "Statut",
+      "contractType": "Type de contrat",
+      "hiredAt": "Date d'embauche",
+      "weeklyHoursTarget": "Heures / semaine (contrat)",
+      "weeklyHoursPlaceholder": "ex: 18",
+      "subjectsTaught": "Matières enseignées",
+      "assignedClasses": "Classes assignées",
+      "configureHint": "Les matières et classes se configurent depuis la page <link>Matières</link>.",
+      "configureLinkLabel": "Matières"
+    },
+    "access": {
+      "title": "Accès à la plateforme",
+      "subtitle": "Compte utilisateur et permissions",
+      "body": "Les comptes de connexion pour les enseignants arrivent dans une prochaine version.",
+      "soon": "Bientôt disponible"
+    }
+  },
+  "profile": {
+    "backToList": "Retour aux enseignants",
+    "manageAssignments": "Gérer les affectations",
+    "editProfile": "Modifier le profil",
+    "notFound": "Enseignant introuvable.",
+    "loadError": "Impossible de charger le profil.",
+    "tabs": {
+      "info": "Informations",
+      "assignments": "Matières & Classes"
+    },
+    "stats": {
+      "subjects": "Matières",
+      "classes": "Classes",
+      "weeklyHours": "Heures / semaine"
+    },
+    "sinceDate": "Depuis le {date}",
+    "personalInfo": "Informations personnelles",
+    "contactContract": "Coordonnées & Contrat",
+    "edit": "Modifier",
+    "assignedSubjectsClasses": "Matières & Classes assignées",
+    "manage": "Gérer",
+    "noAssignments": "Aucune affectation pour l'instant — elles se configurent depuis la page <link>Matières</link>.",
+    "fields": {
+      "fullName": "Nom complet",
+      "dateOfBirth": "Date de naissance",
+      "gender": "Genre",
+      "nationality": "Nationalité",
+      "idNumber": "N° d'identification",
+      "address": "Adresse",
+      "status": "Statut",
+      "email": "Adresse e-mail",
+      "phone": "Téléphone principal",
+      "secondaryPhone": "Téléphone secondaire",
+      "contractType": "Type de contrat",
+      "hiredAt": "Date d'embauche",
+      "weeklyHoursTarget": "Heures / sem. (contrat)"
+    },
+    "assignmentsTable": {
+      "subject": "Matière",
+      "class": "Classe",
+      "weeklyHours": "Heures / sem.",
+      "coefficient": "Coefficient"
+    }
+  }
+}

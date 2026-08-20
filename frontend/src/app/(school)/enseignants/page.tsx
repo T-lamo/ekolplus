@@ -14,6 +14,7 @@ import {
   Mail,
   UserX,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -34,6 +35,7 @@ import { exportToCsv } from '@/lib/csv-export';
 import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { teacherStatusLabel } from './status-label';
 // Code-split: only shown after a click ("Ajouter" / row "Modifier") —
 // see the matching StudentFormModal split in eleves/page.tsx for why.
 const TeacherFormModal = dynamic(
@@ -49,11 +51,6 @@ interface SubjectOption {
   name: string;
 }
 
-const STATUS_LABEL: Record<TeacherStatus, string> = {
-  ACTIVE: 'Actif(ve)',
-  ON_LEAVE: 'En congé',
-  INACTIVE: 'Inactif(ve)',
-};
 const STATUS_TONE: Record<TeacherStatus, 'success' | 'warning' | 'secondary'> = {
   ACTIVE: 'success',
   ON_LEAVE: 'warning',
@@ -65,6 +62,9 @@ export default function TeachersPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Enseignants.list');
+  const tStatus = useTranslations('Enseignants.status');
+  const tCommon = useTranslations('Common');
   const [teachers, setTeachers] = useState<TeacherListItem[] | null>(null);
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -91,9 +91,9 @@ export default function TeachersPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les enseignants.');
+        setError(t('loadError'));
       });
-  }, [user, router, refreshKey]);
+  }, [user, router, refreshKey, t]);
 
   const filtered = useMemo(() => {
     return (teachers ?? []).filter((t) => {
@@ -110,100 +110,110 @@ export default function TeachersPage() {
 
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  async function onDelete(t: TeacherListItem) {
-    if (!(await confirm({ message: `Supprimer « ${t.name} » ?`, danger: true }))) return;
+  async function onDelete(row: TeacherListItem) {
+    if (!(await confirm({ message: t('deleteConfirm', { name: row.name }), danger: true }))) return;
     try {
-      await api(`/api/school/teachers/${t.id}`, { method: 'DELETE' });
-      setTeachers((prev) => (prev ? prev.filter((x) => x.id !== t.id) : prev));
-      toast('Enseignant supprimé.', 'success');
+      await api(`/api/school/teachers/${row.id}`, { method: 'DELETE' });
+      setTeachers((prev) => (prev ? prev.filter((x) => x.id !== row.id) : prev));
+      toast(t('toasts.deleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
-  async function onDeactivate(t: TeacherListItem) {
+  async function onDeactivate(row: TeacherListItem) {
     try {
-      await api(`/api/school/teachers/${t.id}`, { method: 'PATCH', body: { status: 'INACTIVE' } });
+      await api(`/api/school/teachers/${row.id}`, {
+        method: 'PATCH',
+        body: { status: 'INACTIVE' },
+      });
       setTeachers((prev) =>
-        prev ? prev.map((x) => (x.id === t.id ? { ...x, status: 'INACTIVE' } : x)) : prev,
+        prev ? prev.map((x) => (x.id === row.id ? { ...x, status: 'INACTIVE' } : x)) : prev,
       );
-      toast('Enseignant désactivé.', 'success');
+      toast(t('toasts.deactivated'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
-  async function onSendWhatsapp(t: TeacherListItem) {
+  async function onSendWhatsapp(row: TeacherListItem) {
     try {
-      await api(`/api/school/teachers/${t.id}/send-whatsapp`, { method: 'POST' });
-      toast('Message WhatsApp envoyé.', 'success');
+      await api(`/api/school/teachers/${row.id}/send-whatsapp`, { method: 'POST' });
+      toast(t('toasts.whatsappSent'), 'success');
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.code === 'NO_TEACHER_PHONE') {
-          toast('Aucun numéro de téléphone renseigné pour cet enseignant.', 'error');
+          toast(t('toasts.whatsappNoPhone'), 'error');
           return;
         }
         if (err.code === 'NOT_CONFIGURED') {
-          toast("L'envoi WhatsApp n'est pas encore configuré.", 'error');
+          toast(t('toasts.whatsappNotConfigured'), 'error');
           return;
         }
       }
-      toast('Envoi WhatsApp impossible. Réessaie.', 'error');
+      toast(t('toasts.whatsappFailed'), 'error');
     }
   }
 
   function onExport() {
     exportToCsv(
       'enseignants.csv',
-      ['Enseignant', 'Matières', 'Classes', 'Statut', 'Heures/sem.', 'Contact'],
+      [
+        t('csv.teacher'),
+        t('csv.subjects'),
+        t('csv.classes'),
+        t('csv.status'),
+        t('csv.weeklyHours'),
+        t('csv.contact'),
+      ],
       filtered.map((t) => [
         t.name,
         t.subjects.map((s) => s.name).join('; '),
         t.classes.map((c) => c.name).join('; '),
-        STATUS_LABEL[t.status],
+        teacherStatusLabel(t.status, tStatus),
         t.weeklyHours,
         t.email ?? '',
       ]),
     );
   }
 
-  function menuItemsFor(t: TeacherListItem) {
+  function menuItemsFor(row: TeacherListItem) {
     return [
       {
-        label: 'Voir le profil',
+        label: t('menu.viewProfile'),
         icon: <Eye size={14} />,
-        onClick: () => router.push(`/enseignants/${t.id}`),
+        onClick: () => router.push(`/enseignants/${row.id}`),
       },
       {
-        label: 'Modifier',
+        label: t('menu.edit'),
         icon: <Pencil size={14} />,
-        onClick: () => setEditing(t.id),
+        onClick: () => setEditing(row.id),
       },
       {
-        label: 'Gérer les affectations',
+        label: t('menu.manageAssignments'),
         icon: <LinkIcon size={14} />,
         onClick: () => router.push('/configuration/matieres'),
       },
       {
-        label: 'Voir les présences',
+        label: t('menu.viewAttendance'),
         icon: <CalendarCheck size={14} />,
-        onClick: () => toast('Disponible avec Epic 8 (Présences).', 'info'),
+        onClick: () => toast(t('menu.viewAttendanceSoon'), 'info'),
       },
       {
-        label: 'Envoyer un message WhatsApp',
+        label: t('menu.sendWhatsapp'),
         icon: <Mail size={14} />,
-        onClick: () => onSendWhatsapp(t),
+        onClick: () => onSendWhatsapp(row),
       },
       {
-        label: 'Désactiver',
+        label: t('menu.deactivate'),
         icon: <UserX size={14} />,
-        onClick: () => onDeactivate(t),
+        onClick: () => onDeactivate(row),
         divider: true,
       },
       {
-        label: 'Supprimer',
+        label: t('menu.delete'),
         icon: <Trash2 size={14} />,
-        onClick: () => onDelete(t),
+        onClick: () => onDelete(row),
         tone: 'danger' as const,
       },
     ];
@@ -221,10 +231,12 @@ export default function TeachersPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Enseignants</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
           {teachers ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {teachers.length} enseignants enregistrés
+              {t(teachers.length > 1 ? 'countRegistered.other' : 'countRegistered.one', {
+                count: teachers.length,
+              })}
             </p>
           ) : (
             <Skeleton className="mt-1.5 h-3 w-32" />
@@ -234,18 +246,18 @@ export default function TeachersPage() {
           <Button
             variant="outline"
             className="w-fit"
-            onClick={() => toast('Import CSV — bientôt disponible.', 'info')}
+            onClick={() => toast(t('importSoon'), 'info')}
           >
             <Upload size={14} />
-            Importer
+            {t('import')}
           </Button>
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => setEditing('new')}>
             <UserPlus size={14} />
-            Ajouter un enseignant
+            {t('addTeacher')}
           </Button>
         </div>
       </div>
@@ -271,11 +283,11 @@ export default function TeachersPage() {
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un enseignant..."
+              placeholder={t('searchPlaceholder')}
               className="max-w-[300px]"
             />
             <FilterSelect value={subjectFilter} onValueChange={setSubjectFilter}>
-              <SelectItem value="">Toutes les matières</SelectItem>
+              <SelectItem value="">{t('allSubjects')}</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -283,12 +295,16 @@ export default function TeachersPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={status} onValueChange={(v) => setStatus(v as '' | TeacherStatus)}>
-              <SelectItem value="">Tous les statuts</SelectItem>
-              <SelectItem value="ACTIVE">Actif(ve)</SelectItem>
-              <SelectItem value="ON_LEAVE">En congé</SelectItem>
-              <SelectItem value="INACTIVE">Inactif(ve)</SelectItem>
+              <SelectItem value="">{t('allStatuses')}</SelectItem>
+              <SelectItem value="ACTIVE">{tStatus('ACTIVE')}</SelectItem>
+              <SelectItem value="ON_LEAVE">{tStatus('ON_LEAVE')}</SelectItem>
+              <SelectItem value="INACTIVE">{tStatus('INACTIVE')}</SelectItem>
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{filtered.length} résultats</span>
+            <span className="text-sm text-muted-foreground">
+              {t(filtered.length > 1 ? 'resultsCount.other' : 'resultsCount.one', {
+                count: filtered.length,
+              })}
+            </span>
             {/* Table view needs real width to be usable — mobile always
                 gets the card grid instead, so the toggle (and the way to
                 reach the table) only shows from `md` up. */}
@@ -300,23 +316,21 @@ export default function TeachersPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="p-5 text-sm text-muted-foreground">
-                {teachers.length === 0
-                  ? 'Aucun enseignant — ajoute le premier.'
-                  : 'Aucun résultat.'}
+                {teachers.length === 0 ? t('emptyNone') : t('emptyFiltered')}
               </p>
             </Card>
           ) : view === 'grid' ? (
             <CardGrid className={GRID_SCROLL}>
-              {paged.map((t) => (
+              {paged.map((row) => (
                 <ListCard
-                  key={t.id}
-                  tile={<Avatar name={t.name} size={38} src={t.photoUrl} />}
-                  title={t.name}
-                  subtitle={t.email ?? '—'}
-                  menu={<ActionMenu items={menuItemsFor(t)} />}
+                  key={row.id}
+                  tile={<Avatar name={row.name} size={38} src={row.photoUrl} />}
+                  title={row.name}
+                  subtitle={row.email ?? '—'}
+                  menu={<ActionMenu items={menuItemsFor(row)} />}
                   metaLeft={
                     <OverflowTags
-                      items={t.subjects}
+                      items={row.subjects}
                       keyOf={(s) => s.id}
                       renderItem={(s) => {
                         const v = getSubjectVisual(s.name);
@@ -329,17 +343,21 @@ export default function TeachersPage() {
                           </span>
                         );
                       }}
-                      emptyLabel="Aucune matière"
+                      emptyLabel={t('noSubject')}
                     />
                   }
-                  metaRight={<Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>}
+                  metaRight={
+                    <Badge tone={STATUS_TONE[row.status]}>
+                      {teacherStatusLabel(row.status, tStatus)}
+                    </Badge>
+                  }
                   footerLeft={
                     <span className="truncate text-muted-foreground">
-                      {t.classes.map((c) => c.name).join(', ') || 'Aucune classe'}
+                      {row.classes.map((c) => c.name).join(', ') || t('noClassLabel')}
                     </span>
                   }
                   footerRight={
-                    <span className="font-semibold text-foreground">{t.weeklyHours}h/sem.</span>
+                    <span className="font-semibold text-foreground">{row.weeklyHours}h/sem.</span>
                   }
                 />
               ))}
@@ -350,27 +368,27 @@ export default function TeachersPage() {
                 <table className="w-full min-w-[960px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>Enseignant</Th>
-                      <Th>Matière(s)</Th>
-                      <Th>Classes assignées</Th>
-                      <Th>Statut</Th>
-                      <Th>Heures/sem.</Th>
-                      <Th>Contact</Th>
+                      <Th>{t('table.teacher')}</Th>
+                      <Th>{t('table.subjects')}</Th>
+                      <Th>{t('table.classes')}</Th>
+                      <Th>{t('table.status')}</Th>
+                      <Th>{t('table.weeklyHours')}</Th>
+                      <Th>{t('table.contact')}</Th>
                       <Th className="w-[70px]" />
                     </tr>
                   </thead>
                   <tbody>
-                    {paged.map((t) => (
-                      <tr key={t.id} className="border-b border-border last:border-none">
+                    {paged.map((row) => (
+                      <tr key={row.id} className="border-b border-border last:border-none">
                         <td className="px-3.5 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <Avatar name={t.name} size={32} src={t.photoUrl} />
-                            <div className="font-semibold text-foreground">{t.name}</div>
+                            <Avatar name={row.name} size={32} src={row.photoUrl} />
+                            <div className="font-semibold text-foreground">{row.name}</div>
                           </div>
                         </td>
                         <td className="px-3.5 py-2.5">
                           <OverflowTags
-                            items={t.subjects}
+                            items={row.subjects}
                             keyOf={(s) => s.id}
                             renderItem={(s) => {
                               const v = getSubjectVisual(s.name);
@@ -383,12 +401,12 @@ export default function TeachersPage() {
                                 </span>
                               );
                             }}
-                            emptyLabel="Aucune"
+                            emptyLabel={t('noSubjectShort')}
                           />
                         </td>
                         <td className="px-3.5 py-2.5">
                           <OverflowTags
-                            items={t.classes}
+                            items={row.classes}
                             keyOf={(c) => c.id}
                             renderItem={(c) => (
                               <span className="inline-flex rounded-full bg-info px-2 py-0.5 text-2xs font-semibold whitespace-nowrap text-info-foreground">
@@ -399,14 +417,16 @@ export default function TeachersPage() {
                           />
                         </td>
                         <td className="px-3.5 py-2.5">
-                          <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
+                          <Badge tone={STATUS_TONE[row.status]}>
+                            {teacherStatusLabel(row.status, tStatus)}
+                          </Badge>
                         </td>
                         <td className="px-3.5 py-2.5 font-semibold text-foreground">
-                          {t.weeklyHours}h
+                          {row.weeklyHours}h
                         </td>
-                        <td className="px-3.5 py-2.5 text-muted-foreground">{t.email ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-muted-foreground">{row.email ?? '—'}</td>
                         <td className="px-3.5 py-2.5">
-                          <ActionMenu items={menuItemsFor(t)} />
+                          <ActionMenu items={menuItemsFor(row)} />
                         </td>
                       </tr>
                     ))}

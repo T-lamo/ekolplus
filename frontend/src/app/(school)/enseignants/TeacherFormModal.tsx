@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Briefcase, Link as LinkIcon, Phone, Shield, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -20,22 +21,20 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { FormStepsBar } from '@/components/school/FormStepsBar';
 import { FormSectionCard } from '@/components/school/FormSectionCard';
 import { WizardNav } from '@/components/school/WizardNav';
+import { teacherStatusLabel } from './status-label';
 import type { TeacherDetail, TeacherStatus } from './types';
 
 const FORM_ID = 'teacher-wizard';
 
-const STEPS = [
-  { id: 'identite', label: 'Identité & Photo' },
-  { id: 'coordonnees', label: 'Coordonnées' },
-  { id: 'poste', label: 'Poste & Matières' },
-];
+const STATUS_OPTIONS: TeacherStatus[] = ['ACTIVE', 'ON_LEAVE', 'INACTIVE'];
 
-const STATUS_LABEL: Record<TeacherStatus, string> = {
-  ACTIVE: 'Actif(ve)',
-  ON_LEAVE: 'En congé',
-  INACTIVE: 'Inactif(ve)',
-};
-
+// Civilité/Genre/Type de contrat are free-text values stored and echoed
+// back verbatim by the API (no enum in the schema) — kept French by
+// design, same carve-out as Settings' SCHOOL_STATUTES: translating the
+// display label would desync it from what's actually stored and shown
+// elsewhere (teacher profile, CSV export).
+const CIVILITY_OPTIONS = ['M.', 'Mme'];
+const GENDER_OPTIONS = ['Féminin', 'Masculin'];
 const CONTRACT_TYPES = ['Temps plein', 'Temps partiel', 'Vacataire'];
 
 interface FormState {
@@ -102,12 +101,14 @@ function toForm(t: TeacherDetail): FormState {
 function TagList({
   items,
   tone,
+  emptyLabel,
 }: {
   items: { id: string; name: string }[];
   tone: 'primary' | 'info';
+  emptyLabel: string;
 }) {
   if (items.length === 0) {
-    return <p className="text-xs text-muted-foreground">Aucune pour l'instant.</p>;
+    return <p className="text-xs text-muted-foreground">{emptyLabel}</p>;
   }
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -135,6 +136,9 @@ export function TeacherFormModal({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
+  const t = useTranslations('Enseignants.form');
+  const tStatus = useTranslations('Enseignants.status');
+  const tCommon = useTranslations('Common');
   const isEdit = teacherId !== null;
 
   const [detail, setDetail] = useState<TeacherDetail | null>(null);
@@ -145,6 +149,12 @@ export function TeacherFormModal({
   const [stepIndex, setStepIndex] = useState(0);
   const [maxReached, setMaxReached] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
+
+  const STEPS = [
+    { id: 'identite', label: t('steps.identite') },
+    { id: 'coordonnees', label: t('steps.coordonnees') },
+    { id: 'poste', label: t('steps.poste') },
+  ];
 
   useEffect(() => {
     if (!teacherId) return;
@@ -158,16 +168,14 @@ export function TeacherFormModal({
       .catch((err) => {
         if (!cancelled) {
           setLoadError(
-            err instanceof ApiError
-              ? `Impossible de charger la fiche (${err.code}).`
-              : 'Impossible de charger la fiche.',
+            err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
           );
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [teacherId]);
+  }, [teacherId, t]);
 
   function patch(p: Partial<FormState>) {
     setForm((f) => (f ? { ...f, ...p } : f));
@@ -181,9 +189,9 @@ export function TeacherFormModal({
     if (!teacherId) return;
     try {
       await api(`/api/school/teachers/${teacherId}`, { method: 'PATCH', body: { photoUrl: url } });
-      toast('Photo mise à jour.', 'success');
+      toast(t('photoUpdated'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -191,7 +199,7 @@ export function TeacherFormModal({
 
   function validateStep(index: number): string | null {
     if (!form) return null;
-    if (index === 0 && fullName.length < 2) return 'Le prénom et le nom sont requis.';
+    if (index === 0 && fullName.length < 2) return t('nameRequired');
     return null;
   }
 
@@ -233,7 +241,7 @@ export function TeacherFormModal({
       weeklyHoursTarget !== null &&
       (!Number.isInteger(weeklyHoursTarget) || weeklyHoursTarget < 0)
     ) {
-      setError('Heures / semaine invalides.');
+      setError(t('invalidWeeklyHours'));
       return;
     }
     setError(null);
@@ -260,15 +268,15 @@ export function TeacherFormModal({
       };
       if (teacherId) {
         await api(`/api/school/teachers/${teacherId}`, { method: 'PATCH', body });
-        toast('Enseignant mis à jour.', 'success');
+        toast(t('updated'), 'success');
       } else {
         await api('/api/school/teachers', { method: 'POST', body });
-        toast('Enseignant ajouté.', 'success');
+        toast(t('created'), 'success');
       }
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       setSubmitting(false);
     }
   }
@@ -277,7 +285,7 @@ export function TeacherFormModal({
 
   return (
     <Modal
-      title={isEdit ? "Modifier l'enseignant" : 'Ajouter un enseignant'}
+      title={isEdit ? t('editTitle') : t('addTitle')}
       onClose={onClose}
       xwide
       header={
@@ -294,7 +302,7 @@ export function TeacherFormModal({
             stepIndex={stepIndex}
             stepCount={STEPS.length}
             submitting={submitting}
-            submitLabel={isEdit ? 'Enregistrer' : "Créer l'enseignant"}
+            submitLabel={isEdit ? t('submitEdit') : t('submitCreate')}
             formId={FORM_ID}
             onCancel={onClose}
             onPrev={() => goTo(Math.max(0, stepIndex - 1))}
@@ -321,67 +329,73 @@ export function TeacherFormModal({
             <FormSectionCard
               id="identite"
               icon={<User size={15} />}
-              title="Identité & Photo"
-              subtitle="Informations d'identification de l'enseignant"
+              title={t('identity.title')}
+              subtitle={t('identity.subtitle')}
             >
               <div className="flex flex-col gap-3.5">
                 <ImageUploader
-                  label="Photo de profil"
-                  hint="PNG, JPG ou WebP — format carré recommandé"
+                  label={t('identity.photoLabel')}
+                  hint={t('identity.photoHint')}
                   value={form.photoUrl}
                   onChange={(url) => void handlePhotoChange(url)}
                 />
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-[110px_1fr_1fr]">
                   <Select
-                    label="Civilité"
+                    label={t('identity.civility')}
                     value={form.civility}
                     onValueChange={(v) => patch({ civility: v })}
                   >
                     <SelectItem value="">—</SelectItem>
-                    <SelectItem value="M.">M.</SelectItem>
-                    <SelectItem value="Mme">Mme</SelectItem>
+                    {CIVILITY_OPTIONS.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
                   </Select>
                   <Field
-                    label="Prénom"
+                    label={t('identity.firstName')}
                     required
-                    placeholder="ex: Jean-Pierre"
+                    placeholder={t('identity.firstNamePlaceholder')}
                     value={form.firstName}
                     onChange={(e) => patch({ firstName: e.target.value })}
                   />
                   <Field
-                    label="Nom de famille"
+                    label={t('identity.lastName')}
                     required
-                    placeholder="ex: Dupont"
+                    placeholder={t('identity.lastNamePlaceholder')}
                     value={form.lastName}
                     onChange={(e) => patch({ lastName: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <DateField
-                    label="Date de naissance"
+                    label={t('identity.dateOfBirth')}
                     value={form.dateOfBirth}
                     onChange={(v) => patch({ dateOfBirth: v })}
                   />
                   <Select
-                    label="Genre"
+                    label={t('identity.gender')}
                     value={form.gender}
                     onValueChange={(v) => patch({ gender: v })}
                   >
-                    <SelectItem value="">Sélectionner</SelectItem>
-                    <SelectItem value="Féminin">Féminin</SelectItem>
-                    <SelectItem value="Masculin">Masculin</SelectItem>
+                    <SelectItem value="">{t('identity.genderSelect')}</SelectItem>
+                    {GENDER_OPTIONS.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
                   </Select>
                 </div>
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <Field
-                    label="Nationalité"
-                    placeholder="ex: Haïtienne"
+                    label={t('identity.nationality')}
+                    placeholder={t('identity.nationalityPlaceholder')}
                     value={form.nationality}
                     onChange={(e) => patch({ nationality: e.target.value })}
                   />
                   <Field
-                    label="Numéro d'identification"
-                    placeholder="ex: NIF-2024-0042"
+                    label={t('identity.idNumber')}
+                    placeholder={t('identity.idNumberPlaceholder')}
                     value={form.idNumber}
                     onChange={(e) => patch({ idNumber: e.target.value })}
                   />
@@ -394,33 +408,33 @@ export function TeacherFormModal({
             <FormSectionCard
               id="coordonnees"
               icon={<Phone size={15} />}
-              title="Coordonnées"
-              subtitle="Informations de contact de l'enseignant"
+              title={t('contact.title')}
+              subtitle={t('contact.subtitle')}
             >
               <div className="flex flex-col gap-3.5">
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <Field
-                    label="Adresse e-mail"
+                    label={t('contact.email')}
                     type="email"
-                    placeholder="prenom.nom@exemple.ht"
+                    placeholder={t('contact.emailPlaceholder')}
                     value={form.email}
                     onChange={(e) => patch({ email: e.target.value })}
                   />
                   <PhoneInput
-                    label="Téléphone principal"
+                    label={t('contact.phone')}
                     value={form.phone}
                     onChange={(v) => patch({ phone: v })}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <PhoneInput
-                    label="Téléphone secondaire"
+                    label={t('contact.secondaryPhone')}
                     value={form.secondaryPhone}
                     onChange={(v) => patch({ secondaryPhone: v })}
                   />
                   <Field
-                    label="Adresse"
-                    placeholder="Rue, ville"
+                    label={t('contact.address')}
+                    placeholder={t('contact.addressPlaceholder')}
                     value={form.address}
                     onChange={(e) => patch({ address: e.target.value })}
                   />
@@ -434,45 +448,45 @@ export function TeacherFormModal({
               <FormSectionCard
                 id="poste"
                 icon={<Briefcase size={15} />}
-                title="Poste & Matières enseignées"
-                subtitle="Rôle, spécialité et classes assignées"
+                title={t('position.title')}
+                subtitle={t('position.subtitle')}
               >
                 <div className="flex flex-col gap-3.5">
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <Select
-                      label="Statut"
+                      label={t('position.status')}
                       value={form.status}
                       onValueChange={(v) => patch({ status: v as TeacherStatus })}
                     >
-                      {(Object.keys(STATUS_LABEL) as TeacherStatus[]).map((s) => (
+                      {STATUS_OPTIONS.map((s) => (
                         <SelectItem key={s} value={s}>
-                          {STATUS_LABEL[s]}
+                          {teacherStatusLabel(s, tStatus)}
                         </SelectItem>
                       ))}
                     </Select>
                     <Select
-                      label="Type de contrat"
+                      label={t('position.contractType')}
                       value={form.contractType}
                       onValueChange={(v) => patch({ contractType: v })}
                     >
                       <SelectItem value="">—</SelectItem>
-                      {CONTRACT_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
+                      {CONTRACT_TYPES.map((ct) => (
+                        <SelectItem key={ct} value={ct}>
+                          {ct}
                         </SelectItem>
                       ))}
                     </Select>
                   </div>
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <DateField
-                      label="Date d'embauche"
+                      label={t('position.hiredAt')}
                       value={form.hiredAt}
                       onChange={(v) => patch({ hiredAt: v })}
                     />
                     <Field
-                      label="Heures / semaine (contrat)"
+                      label={t('position.weeklyHoursTarget')}
                       inputMode="numeric"
-                      placeholder="ex: 18"
+                      placeholder={t('position.weeklyHoursPlaceholder')}
                       value={form.weeklyHoursTarget}
                       onChange={(e) => patch({ weeklyHoursTarget: e.target.value })}
                     />
@@ -480,22 +494,31 @@ export function TeacherFormModal({
 
                   <div>
                     <div className="mb-1.5 text-xs font-semibold text-foreground">
-                      Matières enseignées
+                      {t('position.subjectsTaught')}
                     </div>
-                    <TagList items={detail?.subjects ?? []} tone="primary" />
+                    <TagList
+                      items={detail?.subjects ?? []}
+                      tone="primary"
+                      emptyLabel={t('noneYet')}
+                    />
                   </div>
                   <div>
                     <div className="mb-1.5 text-xs font-semibold text-foreground">
-                      Classes assignées
+                      {t('position.assignedClasses')}
                     </div>
-                    <TagList items={detail?.classes ?? []} tone="info" />
+                    <TagList items={detail?.classes ?? []} tone="info" emptyLabel={t('noneYet')} />
                     <p className="mt-1.5 flex items-center gap-1 text-2xs text-muted-foreground">
                       <LinkIcon size={11} />
-                      Les matières et classes se configurent depuis la page{' '}
-                      <Link href="/configuration/matieres" className="font-semibold text-primary">
-                        Matières
-                      </Link>
-                      .
+                      {t.rich('position.configureHint', {
+                        link: (chunks) => (
+                          <Link
+                            href="/configuration/matieres"
+                            className="font-semibold text-primary"
+                          >
+                            {chunks}
+                          </Link>
+                        ),
+                      })}
                     </p>
                   </div>
                 </div>
@@ -505,16 +528,13 @@ export function TeacherFormModal({
               <FormSectionCard
                 id="acces"
                 icon={<Shield size={15} />}
-                title="Accès à la plateforme"
-                subtitle="Compte utilisateur et permissions"
+                title={t('access.title')}
+                subtitle={t('access.subtitle')}
               >
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3.5 py-3">
-                  <p className="text-caption text-muted-foreground">
-                    Les comptes de connexion pour les enseignants arrivent dans une prochaine
-                    version.
-                  </p>
+                  <p className="text-caption text-muted-foreground">{t('access.body')}</p>
                   <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-2xs font-semibold text-muted-foreground">
-                    Bientôt disponible
+                    {t('access.soon')}
                   </span>
                 </div>
               </FormSectionCard>

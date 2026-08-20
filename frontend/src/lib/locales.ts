@@ -59,6 +59,7 @@ export const MESSAGE_NAMESPACES = [
   'settings',
   'themePicker',
   'presences',
+  'enseignants',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

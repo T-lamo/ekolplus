@@ -39,6 +39,7 @@ export default getRequestConfig(async () => {
     settings,
     themePicker,
     presences,
+    enseignants,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -56,6 +57,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/settings.json`),
     import(`../messages/${locale}/themePicker.json`),
     import(`../messages/${locale}/presences.json`),
+    import(`../messages/${locale}/enseignants.json`),
   ]);
 
   return {
@@ -77,6 +79,7 @@ export default getRequestConfig(async () => {
       Settings: settings.default,
       ThemePicker: themePicker.default,
       Presences: presences.default,
+      Enseignants: enseignants.default,
     },
   };
 });

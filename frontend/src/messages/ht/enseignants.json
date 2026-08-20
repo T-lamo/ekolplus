@@ -1,0 +1,177 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "status": {
+    "ACTIVE": "Aktif",
+    "ON_LEAVE": "An konje",
+    "INACTIVE": "Inaktif"
+  },
+  "list": {
+    "title": "Pwofesè",
+    "countRegistered": {
+      "one": "{count} pwofesè anrejistre",
+      "other": "{count} pwofesè anrejistre"
+    },
+    "loadError": "Nou pa ka chaje pwofesè yo.",
+    "import": "Enpòte",
+    "importSoon": "Enpòtasyon CSV — pral disponib byento.",
+    "export": "Ekspòte",
+    "addTeacher": "Ajoute yon pwofesè",
+    "searchPlaceholder": "Chèche yon pwofesè...",
+    "allSubjects": "Tout matyè yo",
+    "allStatuses": "Tout estati yo",
+    "resultsCount": {
+      "one": "{count} rezilta",
+      "other": "{count} rezilta"
+    },
+    "emptyNone": "Pa gen pwofesè — ajoute premye a.",
+    "emptyFiltered": "Pa gen rezilta.",
+    "noSubject": "Pa gen matyè",
+    "noSubjectShort": "Okenn",
+    "noClassLabel": "Pa gen klas",
+    "table": {
+      "teacher": "Pwofesè",
+      "subjects": "Matyè",
+      "classes": "Klas asiyen",
+      "status": "Estati",
+      "weeklyHours": "Èdtan/sem.",
+      "contact": "Kontak"
+    },
+    "csv": {
+      "teacher": "Pwofesè",
+      "subjects": "Matyè",
+      "classes": "Klas",
+      "status": "Estati",
+      "weeklyHours": "Èdtan/sem.",
+      "contact": "Kontak"
+    },
+    "menu": {
+      "viewProfile": "Wè pwofil la",
+      "edit": "Modifye",
+      "manageAssignments": "Jere afektasyon yo",
+      "viewAttendance": "Wè prezans yo",
+      "viewAttendanceSoon": "Disponib avèk Epic 8 (Prezans).",
+      "sendWhatsapp": "Voye yon mesaj WhatsApp",
+      "deactivate": "Dezaktive",
+      "delete": "Efase"
+    },
+    "deleteConfirm": "Efase « {name} » ?",
+    "toasts": {
+      "deleted": "Pwofesè efase.",
+      "deactivated": "Pwofesè dezaktive.",
+      "whatsappSent": "Mesaj WhatsApp voye.",
+      "whatsappNoPhone": "Pa gen nimewo telefòn anrejistre pou pwofesè sa a.",
+      "whatsappNotConfigured": "Voye WhatsApp poko konfigire.",
+      "whatsappFailed": "Nou pa ka voye mesaj WhatsApp la. Eseye ankò."
+    }
+  },
+  "form": {
+    "steps": {
+      "identite": "Idantite & Foto",
+      "coordonnees": "Kontak",
+      "poste": "Pòs & Matyè"
+    },
+    "editTitle": "Modifye pwofesè a",
+    "addTitle": "Ajoute yon pwofesè",
+    "submitEdit": "Anrejistre",
+    "submitCreate": "Kreye pwofesè a",
+    "loadErrorWithCode": "Nou pa ka chaje fich la ({code}).",
+    "loadError": "Nou pa ka chaje fich la.",
+    "nameRequired": "Prenon ak non fanmi obligatwa.",
+    "invalidWeeklyHours": "Èdtan / semenn envalid.",
+    "photoUpdated": "Foto mete ajou.",
+    "updated": "Pwofesè mete ajou.",
+    "created": "Pwofesè ajoute.",
+    "noneYet": "Pa gen okenn pou kounye a.",
+    "identity": {
+      "title": "Idantite & Foto",
+      "subtitle": "Enfòmasyon idantifikasyon pwofesè a",
+      "photoLabel": "Foto pwofil",
+      "photoHint": "PNG, JPG oswa WebP — fòma kare rekòmande",
+      "civility": "Sivilite",
+      "firstName": "Prenon",
+      "firstNamePlaceholder": "egz: Jean-Pierre",
+      "lastName": "Non fanmi",
+      "lastNamePlaceholder": "egz: Dupont",
+      "dateOfBirth": "Dat nesans",
+      "gender": "Sèks",
+      "genderSelect": "Chwazi",
+      "nationality": "Nasyonalite",
+      "nationalityPlaceholder": "egz: Ayisyen",
+      "idNumber": "Nimewo idantifikasyon",
+      "idNumberPlaceholder": "egz: NIF-2024-0042"
+    },
+    "contact": {
+      "title": "Kontak",
+      "subtitle": "Enfòmasyon kontak pwofesè a",
+      "email": "Adrès imèl",
+      "emailPlaceholder": "prenon.non@egzanp.ht",
+      "phone": "Telefòn prensipal",
+      "secondaryPhone": "Telefòn segondè",
+      "address": "Adrès",
+      "addressPlaceholder": "Ri, vil"
+    },
+    "position": {
+      "title": "Pòs & Matyè li anseye",
+      "subtitle": "Wòl, espesyalite ak klas asiyen",
+      "status": "Estati",
+      "contractType": "Kalite kontra",
+      "hiredAt": "Dat anbochaj",
+      "weeklyHoursTarget": "Èdtan / semenn (kontra)",
+      "weeklyHoursPlaceholder": "egz: 18",
+      "subjectsTaught": "Matyè li anseye",
+      "assignedClasses": "Klas asiyen",
+      "configureHint": "Matyè ak klas yo konfigire nan paj <link>Matyè</link>.",
+      "configureLinkLabel": "Matyè"
+    },
+    "access": {
+      "title": "Aksè nan platfòm nan",
+      "subtitle": "Kont itilizatè ak pèmisyon",
+      "body": "Kont koneksyon pou pwofesè yo ap vini nan yon pwochen vèsyon.",
+      "soon": "Pral disponib byento"
+    }
+  },
+  "profile": {
+    "backToList": "Retounen nan pwofesè yo",
+    "manageAssignments": "Jere afektasyon yo",
+    "editProfile": "Modifye pwofil la",
+    "notFound": "Pwofesè a pa jwenn.",
+    "loadError": "Nou pa ka chaje pwofil la.",
+    "tabs": {
+      "info": "Enfòmasyon",
+      "assignments": "Matyè & Klas"
+    },
+    "stats": {
+      "subjects": "Matyè",
+      "classes": "Klas",
+      "weeklyHours": "Èdtan / semenn"
+    },
+    "sinceDate": "Depi {date}",
+    "personalInfo": "Enfòmasyon pèsonèl",
+    "contactContract": "Kontak & Kontra",
+    "edit": "Modifye",
+    "assignedSubjectsClasses": "Matyè & Klas asiyen",
+    "manage": "Jere",
+    "noAssignments": "Pa gen afektasyon pou kounye a — yo konfigire nan paj <link>Matyè</link>.",
+    "fields": {
+      "fullName": "Non konplè",
+      "dateOfBirth": "Dat nesans",
+      "gender": "Sèks",
+      "nationality": "Nasyonalite",
+      "idNumber": "Nimewo idantifikasyon",
+      "address": "Adrès",
+      "status": "Estati",
+      "email": "Adrès imèl",
+      "phone": "Telefòn prensipal",
+      "secondaryPhone": "Telefòn segondè",
+      "contractType": "Kalite kontra",
+      "hiredAt": "Dat anbochaj",
+      "weeklyHoursTarget": "Èdtan / sem. (kontra)"
+    },
+    "assignmentsTable": {
+      "subject": "Matyè",
+      "class": "Klas",
+      "weeklyHours": "Èdtan / sem.",
+      "coefficient": "Kowefisyan"
+    }
+  }
+}

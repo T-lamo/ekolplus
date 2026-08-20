@@ -1,0 +1,176 @@
+{
+  "status": {
+    "ACTIVE": "Active",
+    "ON_LEAVE": "On leave",
+    "INACTIVE": "Inactive"
+  },
+  "list": {
+    "title": "Teachers",
+    "countRegistered": {
+      "one": "{count} teacher registered",
+      "other": "{count} teachers registered"
+    },
+    "loadError": "Unable to load teachers.",
+    "import": "Import",
+    "importSoon": "CSV import — coming soon.",
+    "export": "Export",
+    "addTeacher": "Add a teacher",
+    "searchPlaceholder": "Search for a teacher...",
+    "allSubjects": "All subjects",
+    "allStatuses": "All statuses",
+    "resultsCount": {
+      "one": "{count} result",
+      "other": "{count} results"
+    },
+    "emptyNone": "No teacher yet — add the first one.",
+    "emptyFiltered": "No results.",
+    "noSubject": "No subject",
+    "noSubjectShort": "None",
+    "noClassLabel": "No class",
+    "table": {
+      "teacher": "Teacher",
+      "subjects": "Subject(s)",
+      "classes": "Assigned classes",
+      "status": "Status",
+      "weeklyHours": "Hours/wk",
+      "contact": "Contact"
+    },
+    "csv": {
+      "teacher": "Teacher",
+      "subjects": "Subjects",
+      "classes": "Classes",
+      "status": "Status",
+      "weeklyHours": "Hours/week",
+      "contact": "Contact"
+    },
+    "menu": {
+      "viewProfile": "View profile",
+      "edit": "Edit",
+      "manageAssignments": "Manage assignments",
+      "viewAttendance": "View attendance",
+      "viewAttendanceSoon": "Available with Epic 8 (Attendance).",
+      "sendWhatsapp": "Send a WhatsApp message",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "deleteConfirm": "Delete \"{name}\"?",
+    "toasts": {
+      "deleted": "Teacher deleted.",
+      "deactivated": "Teacher deactivated.",
+      "whatsappSent": "WhatsApp message sent.",
+      "whatsappNoPhone": "No phone number on file for this teacher.",
+      "whatsappNotConfigured": "WhatsApp sending isn't configured yet.",
+      "whatsappFailed": "Couldn't send the WhatsApp message. Please try again."
+    }
+  },
+  "form": {
+    "steps": {
+      "identite": "Identity & Photo",
+      "coordonnees": "Contact details",
+      "poste": "Position & Subjects"
+    },
+    "editTitle": "Edit teacher",
+    "addTitle": "Add a teacher",
+    "submitEdit": "Save",
+    "submitCreate": "Create teacher",
+    "loadErrorWithCode": "Unable to load the profile ({code}).",
+    "loadError": "Unable to load the profile.",
+    "nameRequired": "First and last name are required.",
+    "invalidWeeklyHours": "Invalid weekly hours.",
+    "photoUpdated": "Photo updated.",
+    "updated": "Teacher updated.",
+    "created": "Teacher added.",
+    "noneYet": "None yet.",
+    "identity": {
+      "title": "Identity & Photo",
+      "subtitle": "Teacher's identifying information",
+      "photoLabel": "Profile photo",
+      "photoHint": "PNG, JPG or WebP — square format recommended",
+      "civility": "Title",
+      "firstName": "First name",
+      "firstNamePlaceholder": "e.g. Jean-Pierre",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "e.g. Dupont",
+      "dateOfBirth": "Date of birth",
+      "gender": "Gender",
+      "genderSelect": "Select",
+      "nationality": "Nationality",
+      "nationalityPlaceholder": "e.g. Haitian",
+      "idNumber": "ID number",
+      "idNumberPlaceholder": "e.g. NIF-2024-0042"
+    },
+    "contact": {
+      "title": "Contact details",
+      "subtitle": "Teacher's contact information",
+      "email": "Email address",
+      "emailPlaceholder": "firstname.lastname@example.ht",
+      "phone": "Primary phone",
+      "secondaryPhone": "Secondary phone",
+      "address": "Address",
+      "addressPlaceholder": "Street, city"
+    },
+    "position": {
+      "title": "Position & Subjects taught",
+      "subtitle": "Role, specialty, and assigned classes",
+      "status": "Status",
+      "contractType": "Contract type",
+      "hiredAt": "Hire date",
+      "weeklyHoursTarget": "Hours / week (contract)",
+      "weeklyHoursPlaceholder": "e.g. 18",
+      "subjectsTaught": "Subjects taught",
+      "assignedClasses": "Assigned classes",
+      "configureHint": "Subjects and classes are configured from the <link>Subjects</link> page.",
+      "configureLinkLabel": "Subjects"
+    },
+    "access": {
+      "title": "Platform access",
+      "subtitle": "User account and permissions",
+      "body": "Login accounts for teachers are coming in a future release.",
+      "soon": "Coming soon"
+    }
+  },
+  "profile": {
+    "backToList": "Back to teachers",
+    "manageAssignments": "Manage assignments",
+    "editProfile": "Edit profile",
+    "notFound": "Teacher not found.",
+    "loadError": "Unable to load the profile.",
+    "tabs": {
+      "info": "Information",
+      "assignments": "Subjects & Classes"
+    },
+    "stats": {
+      "subjects": "Subjects",
+      "classes": "Classes",
+      "weeklyHours": "Hours / week"
+    },
+    "sinceDate": "Since {date}",
+    "personalInfo": "Personal information",
+    "contactContract": "Contact & Contract",
+    "edit": "Edit",
+    "assignedSubjectsClasses": "Assigned subjects & classes",
+    "manage": "Manage",
+    "noAssignments": "No assignments yet — they're configured from the <link>Subjects</link> page.",
+    "fields": {
+      "fullName": "Full name",
+      "dateOfBirth": "Date of birth",
+      "gender": "Gender",
+      "nationality": "Nationality",
+      "idNumber": "ID number",
+      "address": "Address",
+      "status": "Status",
+      "email": "Email address",
+      "phone": "Primary phone",
+      "secondaryPhone": "Secondary phone",
+      "contractType": "Contract type",
+      "hiredAt": "Hire date",
+      "weeklyHoursTarget": "Hours / week (contract)"
+    },
+    "assignmentsTable": {
+      "subject": "Subject",
+      "class": "Class",
+      "weeklyHours": "Hours / week",
+      "coefficient": "Coefficient"
+    }
+  }
+}

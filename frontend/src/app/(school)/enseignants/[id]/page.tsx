@@ -20,6 +20,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -27,57 +28,58 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { TeacherFormModal } from '../TeacherFormModal';
+import { teacherStatusLabel } from '../status-label';
 import type { TeacherDetail, TeacherStatus } from '../types';
 
-const STATUS_LABEL: Record<TeacherStatus, string> = {
-  ACTIVE: 'Actif(ve)',
-  ON_LEAVE: 'En congé',
-  INACTIVE: 'Inactif(ve)',
-};
 const STATUS_DOT: Record<TeacherStatus, string> = {
   ACTIVE: '#16A34A',
   ON_LEAVE: '#F59E0B',
   INACTIVE: '#9CA3AF',
 };
 
-function fmtDate(d: string): string {
-  return new Date(d).toLocaleDateString('fr-FR', {
+function fmtDate(d: string, locale: string): string {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
 }
 
-const TABS = [
-  { key: 'info', label: 'Informations', icon: UserCheck },
-  { key: 'assignments', label: 'Matières & Classes', icon: BookOpen },
-] as const;
-
 export default function TeacherProfilePage() {
   const user = useUser();
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const t = useTranslations('Enseignants.profile');
+  const tStatus = useTranslations('Enseignants.status');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('info');
+  const [tab, setTab] = useState<'info' | 'assignments'>('info');
   const [editing, setEditing] = useState(false);
+
+  const TABS = [
+    { key: 'info' as const, label: t('tabs.info'), icon: UserCheck },
+    { key: 'assignments' as const, label: t('tabs.assignments'), icon: BookOpen },
+  ];
 
   const load = useCallback(() => {
     api<{ teacher: TeacherDetail }>(`/api/school/teachers/${params.id}`)
-      .then(({ teacher: t }) => setTeacher(t))
+      .then(({ teacher: teacherData }) => setTeacher(teacherData))
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
           router.replace('/');
           return;
         }
         if (err instanceof ApiError && err.status === 404) {
-          setError('Enseignant introuvable.');
+          setError(t('notFound'));
           return;
         }
-        setError('Impossible de charger le profil.');
+        setError(t('loadError'));
       });
-  }, [params.id, router]);
+  }, [params.id, router, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -135,7 +137,7 @@ export default function TeacherProfilePage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux enseignants
+          {t('backToList')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -154,7 +156,7 @@ export default function TeacherProfilePage() {
           className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux enseignants
+          {t('backToList')}
         </Link>
         <div className="flex items-center gap-2">
           <Link
@@ -162,11 +164,11 @@ export default function TeacherProfilePage() {
             className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
           >
             <LinkIcon size={14} />
-            Gérer les affectations
+            {t('manageAssignments')}
           </Link>
           <Button className="w-fit" onClick={() => setEditing(true)}>
             <Pencil size={14} />
-            Modifier le profil
+            {t('editProfile')}
           </Button>
         </div>
       </div>
@@ -220,7 +222,7 @@ export default function TeacherProfilePage() {
                 {teacher.hiredAt && (
                   <span className="flex items-center gap-1">
                     <Calendar size={12} />
-                    Depuis le {fmtDate(teacher.hiredAt)}
+                    {t('sinceDate', { date: fmtDate(teacher.hiredAt, bcp47) })}
                   </span>
                 )}
               </div>
@@ -230,37 +232,39 @@ export default function TeacherProfilePage() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: STATUS_DOT[teacher.status] }}
                   />
-                  {STATUS_LABEL[teacher.status]}
+                  {teacherStatusLabel(teacher.status, tStatus)}
                 </span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-5 sm:gap-6">
-            <Stat label="Matières" value={String(teacher.subjects.length)} />
+            <Stat label={t('stats.subjects')} value={String(teacher.subjects.length)} />
             <div className="h-9 w-px bg-border" />
-            <Stat label="Classes" value={String(teacher.classes.length)} />
+            <Stat label={t('stats.classes')} value={String(teacher.classes.length)} />
             <div className="h-9 w-px bg-border" />
-            <Stat label="Heures / semaine" value={`${teacher.weeklyHours} h`} />
+            <Stat label={t('stats.weeklyHours')} value={`${teacher.weeklyHours} h`} />
           </div>
         </div>
       </Card>
 
       <div role="tablist" className="flex w-fit gap-1 overflow-x-auto rounded-lg bg-card p-1">
-        {TABS.map((t) => {
-          const Icon = t.icon;
+        {TABS.map((tabItem) => {
+          const Icon = tabItem.icon;
           return (
             <button
-              key={t.key}
+              key={tabItem.key}
               type="button"
               role="tab"
-              aria-selected={tab === t.key}
-              onClick={() => setTab(t.key)}
+              aria-selected={tab === tabItem.key}
+              onClick={() => setTab(tabItem.key)}
               className={`flex shrink-0 items-center gap-1.5 rounded-md px-3.5 py-2 text-caption font-medium whitespace-nowrap ${
-                tab === t.key ? 'bg-secondary font-semibold text-primary' : 'text-muted-foreground'
+                tab === tabItem.key
+                  ? 'bg-secondary font-semibold text-primary'
+                  : 'text-muted-foreground'
               }`}
             >
               <Icon size={13} />
-              {t.label}
+              {tabItem.label}
             </button>
           );
         })}
@@ -272,44 +276,48 @@ export default function TeacherProfilePage() {
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <UserCheck size={14} className="text-primary" />
-                Informations personnelles
+                {t('personalInfo')}
               </div>
               <button onClick={() => setEditing(true)} className="text-xs font-medium text-primary">
-                Modifier
+                {t('edit')}
               </button>
             </div>
-            <InfoRow label="Nom complet" value={displayName} />
+            <InfoRow label={t('fields.fullName')} value={displayName} />
             <InfoRow
-              label="Date de naissance"
-              value={teacher.dateOfBirth ? fmtDate(teacher.dateOfBirth) : '—'}
+              label={t('fields.dateOfBirth')}
+              value={teacher.dateOfBirth ? fmtDate(teacher.dateOfBirth, bcp47) : '—'}
             />
-            <InfoRow label="Genre" value={teacher.gender ?? '—'} />
-            <InfoRow label="Nationalité" value={teacher.nationality ?? '—'} />
-            <InfoRow label="N° d'identification" value={teacher.idNumber ?? '—'} />
-            <InfoRow label="Adresse" value={teacher.address ?? '—'} />
-            <InfoRow label="Statut" value={STATUS_LABEL[teacher.status]} last />
+            <InfoRow label={t('fields.gender')} value={teacher.gender ?? '—'} />
+            <InfoRow label={t('fields.nationality')} value={teacher.nationality ?? '—'} />
+            <InfoRow label={t('fields.idNumber')} value={teacher.idNumber ?? '—'} />
+            <InfoRow label={t('fields.address')} value={teacher.address ?? '—'} />
+            <InfoRow
+              label={t('fields.status')}
+              value={teacherStatusLabel(teacher.status, tStatus)}
+              last
+            />
           </Card>
 
           <Card className="p-5">
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <Briefcase size={14} className="text-primary" />
-                Coordonnées & Contrat
+                {t('contactContract')}
               </div>
               <button onClick={() => setEditing(true)} className="text-xs font-medium text-primary">
-                Modifier
+                {t('edit')}
               </button>
             </div>
-            <InfoRow label="Adresse e-mail" value={teacher.email ?? '—'} />
-            <InfoRow label="Téléphone principal" value={teacher.phone ?? '—'} />
-            <InfoRow label="Téléphone secondaire" value={teacher.secondaryPhone ?? '—'} />
-            <InfoRow label="Type de contrat" value={teacher.contractType ?? '—'} />
+            <InfoRow label={t('fields.email')} value={teacher.email ?? '—'} />
+            <InfoRow label={t('fields.phone')} value={teacher.phone ?? '—'} />
+            <InfoRow label={t('fields.secondaryPhone')} value={teacher.secondaryPhone ?? '—'} />
+            <InfoRow label={t('fields.contractType')} value={teacher.contractType ?? '—'} />
             <InfoRow
-              label="Date d'embauche"
-              value={teacher.hiredAt ? fmtDate(teacher.hiredAt) : '—'}
+              label={t('fields.hiredAt')}
+              value={teacher.hiredAt ? fmtDate(teacher.hiredAt, bcp47) : '—'}
             />
             <InfoRow
-              label="Heures / sem. (contrat)"
+              label={t('fields.weeklyHoursTarget')}
               value={teacher.weeklyHoursTarget !== null ? `${teacher.weeklyHoursTarget} h` : '—'}
               last
             />
@@ -322,29 +330,31 @@ export default function TeacherProfilePage() {
           <div className="mb-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <BookOpen size={14} className="text-primary" />
-              Matières & Classes assignées
+              {t('assignedSubjectsClasses')}
             </div>
             <Link href="/configuration/matieres" className="text-xs font-medium text-primary">
-              Gérer
+              {t('manage')}
             </Link>
           </div>
           {teacher.assignments.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Aucune affectation pour l'instant — elles se configurent depuis la page{' '}
-              <Link href="/configuration/matieres" className="font-semibold text-primary">
-                Matières
-              </Link>
-              .
+              {t.rich('noAssignments', {
+                link: (chunks) => (
+                  <Link href="/configuration/matieres" className="font-semibold text-primary">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[520px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-border text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    <th className="py-2 pr-3">Matière</th>
-                    <th className="py-2 pr-3">Classe</th>
-                    <th className="py-2 pr-3">Heures / sem.</th>
-                    <th className="py-2">Coefficient</th>
+                    <th className="py-2 pr-3">{t('assignmentsTable.subject')}</th>
+                    <th className="py-2 pr-3">{t('assignmentsTable.class')}</th>
+                    <th className="py-2 pr-3">{t('assignmentsTable.weeklyHours')}</th>
+                    <th className="py-2">{t('assignmentsTable.coefficient')}</th>
                   </tr>
                 </thead>
                 <tbody>

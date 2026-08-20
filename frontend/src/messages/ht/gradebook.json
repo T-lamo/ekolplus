@@ -67,5 +67,25 @@
     "bestScore": "Pi bon nòt",
     "worstScore": "Pi ba nòt",
     "gradedCount": "Nòt antre"
+  },
+  "statistiques": {
+    "emptyState": "Pa gen done pou klas sa a.",
+    "passRate": "To reyisit",
+    "passRateSub": "elèv ak mwayèn ≥ 10",
+    "absencesRecorded": "Absans anrejistre",
+    "absencesRecordedSub": "sou tout evalyasyon yo",
+    "bestEvaluation": "Pi bon evalyasyon",
+    "worstEvaluation": "Evalyasyon ki pi difisil",
+    "noPublishedGrade": "Pa gen nòt pibliye",
+    "distributionTitle": "Distribisyon nòt yo",
+    "distributionSub": "Tout nòt ki antre yo, ranmennen sou 20 — {count} nòt antou.",
+    "distributionAriaLabel": "Distribisyon nòt yo pa tranch",
+    "byEvaluationTitle": "Mwayèn pa evalyasyon",
+    "byEvaluationSub": "Mwayèn klas la pou chak evalyasyon, sou 20.",
+    "byEvaluationEmpty": "Pa gen evalyasyon pou peryòd sa a.",
+    "byEvaluationAriaLabel": "Mwayèn klas la pa evalyasyon",
+    "bySubjectTitle": "Mwayèn pa matyè",
+    "bySubjectSub": "Mwayèn jeneral klas la pou chak matyè, sou 20.",
+    "bySubjectAriaLabel": "Mwayèn klas la pa matyè"
   }
 }

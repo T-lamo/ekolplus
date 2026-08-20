@@ -15,6 +15,7 @@
 
 import { useMemo } from 'react';
 import { Award, CheckCircle2, TrendingDown, UserX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { BarChart, type BarChartPoint } from '@/components/admin/charts/BarChart';
 import type { UnifiedNotebookData } from './types';
@@ -40,6 +41,7 @@ interface EvalStat {
 }
 
 export function StatistiquesTab({ unified }: { unified: UnifiedNotebookData }) {
+  const t = useTranslations('Gradebook.statistiques');
   const { distribution, evalStats, subjectStats, passRate, absentTotal, bestEval, worstEval } =
     useMemo(() => {
       const normalizedScores: number[] = [];
@@ -120,7 +122,7 @@ export function StatistiquesTab({ unified }: { unified: UnifiedNotebookData }) {
   if (unified.totalCount === 0) {
     return (
       <Card className="items-center gap-2 p-10 text-center">
-        <p className="text-sm text-muted-foreground">Aucune donnée pour cette classe.</p>
+        <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
       </Card>
     );
   }
@@ -131,64 +133,59 @@ export function StatistiquesTab({ unified }: { unified: UnifiedNotebookData }) {
         <StatTile
           icon={CheckCircle2}
           tone="success"
-          label="Taux de réussite"
+          label={t('passRate')}
           value={passRate != null ? `${passRate}%` : '—'}
-          sub="élèves avec moyenne ≥ 10"
+          sub={t('passRateSub')}
         />
         <StatTile
           icon={UserX}
           tone="warning"
-          label="Absences enregistrées"
+          label={t('absencesRecorded')}
           value={String(absentTotal)}
-          sub="sur l'ensemble des évaluations"
+          sub={t('absencesRecordedSub')}
         />
         <StatTile
           icon={Award}
           tone="blue"
-          label="Meilleure évaluation"
+          label={t('bestEvaluation')}
           value={bestEval ? fmt(bestEval.average) : '—'}
-          sub={bestEval?.label ?? 'Aucune note publiée'}
+          sub={bestEval?.label ?? t('noPublishedGrade')}
         />
         <StatTile
           icon={TrendingDown}
           tone="destructive"
-          label="Évaluation la plus difficile"
+          label={t('worstEvaluation')}
           value={worstEval ? fmt(worstEval.average) : '—'}
-          sub={worstEval?.label ?? 'Aucune note publiée'}
+          sub={worstEval?.label ?? t('noPublishedGrade')}
         />
       </div>
 
       <Card className="gap-3 p-4">
         <div>
-          <div className="text-caption font-semibold text-foreground">Répartition des notes</div>
+          <div className="text-caption font-semibold text-foreground">{t('distributionTitle')}</div>
           <p className="text-2xs text-muted-foreground">
-            Toutes les notes saisies, ramenées sur 20 —{' '}
-            {distribution.reduce((s, d) => s + d.value, 0)} notes au total.
+            {t('distributionSub', { count: distribution.reduce((s, d) => s + d.value, 0) })}
           </p>
         </div>
         <BarChart
           data={distribution}
           formatValue={(v) => String(Math.round(v))}
-          ariaLabel="Répartition des notes par tranche"
+          ariaLabel={t('distributionAriaLabel')}
         />
       </Card>
 
       <Card className="gap-3 p-4">
         <div>
-          <div className="text-caption font-semibold text-foreground">Moyenne par évaluation</div>
-          <p className="text-2xs text-muted-foreground">
-            Moyenne de la classe pour chaque évaluation, sur 20.
-          </p>
+          <div className="text-caption font-semibold text-foreground">{t('byEvaluationTitle')}</div>
+          <p className="text-2xs text-muted-foreground">{t('byEvaluationSub')}</p>
         </div>
         {evalStats.length === 0 ? (
-          <p className="py-6 text-center text-xs text-muted-foreground">
-            Aucune évaluation pour cette période.
-          </p>
+          <p className="py-6 text-center text-xs text-muted-foreground">{t('byEvaluationEmpty')}</p>
         ) : (
           <BarChart
             data={evalStats.map((e) => ({ label: e.label, value: e.average ?? 0 }))}
             formatValue={(v) => fmt(v)}
-            ariaLabel="Moyenne de la classe par évaluation"
+            ariaLabel={t('byEvaluationAriaLabel')}
           />
         )}
       </Card>
@@ -196,15 +193,13 @@ export function StatistiquesTab({ unified }: { unified: UnifiedNotebookData }) {
       {unified.combined && (
         <Card className="gap-3 p-4">
           <div>
-            <div className="text-caption font-semibold text-foreground">Moyenne par matière</div>
-            <p className="text-2xs text-muted-foreground">
-              Moyenne générale de la classe pour chaque matière, sur 20.
-            </p>
+            <div className="text-caption font-semibold text-foreground">{t('bySubjectTitle')}</div>
+            <p className="text-2xs text-muted-foreground">{t('bySubjectSub')}</p>
           </div>
           <BarChart
             data={subjectStats}
             formatValue={(v) => fmt(v)}
-            ariaLabel="Moyenne de la classe par matière"
+            ariaLabel={t('bySubjectAriaLabel')}
           />
         </Card>
       )}

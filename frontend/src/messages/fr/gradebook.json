@@ -66,5 +66,25 @@
     "bestScore": "Meilleure note",
     "worstScore": "Note la plus basse",
     "gradedCount": "Notes saisies"
+  },
+  "statistiques": {
+    "emptyState": "Aucune donnée pour cette classe.",
+    "passRate": "Taux de réussite",
+    "passRateSub": "élèves avec moyenne ≥ 10",
+    "absencesRecorded": "Absences enregistrées",
+    "absencesRecordedSub": "sur l'ensemble des évaluations",
+    "bestEvaluation": "Meilleure évaluation",
+    "worstEvaluation": "Évaluation la plus difficile",
+    "noPublishedGrade": "Aucune note publiée",
+    "distributionTitle": "Répartition des notes",
+    "distributionSub": "Toutes les notes saisies, ramenées sur 20 — {count} notes au total.",
+    "distributionAriaLabel": "Répartition des notes par tranche",
+    "byEvaluationTitle": "Moyenne par évaluation",
+    "byEvaluationSub": "Moyenne de la classe pour chaque évaluation, sur 20.",
+    "byEvaluationEmpty": "Aucune évaluation pour cette période.",
+    "byEvaluationAriaLabel": "Moyenne de la classe par évaluation",
+    "bySubjectTitle": "Moyenne par matière",
+    "bySubjectSub": "Moyenne générale de la classe pour chaque matière, sur 20.",
+    "bySubjectAriaLabel": "Moyenne de la classe par matière"
   }
 }

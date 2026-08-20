@@ -66,5 +66,25 @@
     "bestScore": "Best score",
     "worstScore": "Lowest score",
     "gradedCount": "Grades entered"
+  },
+  "statistiques": {
+    "emptyState": "No data for this class.",
+    "passRate": "Pass rate",
+    "passRateSub": "students with average ≥ 10",
+    "absencesRecorded": "Absences recorded",
+    "absencesRecordedSub": "across all evaluations",
+    "bestEvaluation": "Best evaluation",
+    "worstEvaluation": "Hardest evaluation",
+    "noPublishedGrade": "No published grade",
+    "distributionTitle": "Grade distribution",
+    "distributionSub": "All grades entered, normalized to 20 — {count} grades total.",
+    "distributionAriaLabel": "Grade distribution by range",
+    "byEvaluationTitle": "Average by evaluation",
+    "byEvaluationSub": "Class average for each evaluation, out of 20.",
+    "byEvaluationEmpty": "No evaluation for this period.",
+    "byEvaluationAriaLabel": "Class average by evaluation",
+    "bySubjectTitle": "Average by subject",
+    "bySubjectSub": "Class general average for each subject, out of 20.",
+    "bySubjectAriaLabel": "Class average by subject"
   }
 }

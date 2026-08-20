@@ -1,0 +1,266 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "mention": {
+    "TRES_BIEN": "Trè byen",
+    "BIEN": "Byen",
+    "ASSEZ_BIEN": "Ase byen",
+    "PASSABLE": "Pasab",
+    "INSUFFISANT": "Ensifizan",
+    "FAIBLE": "Fèb"
+  },
+  "statistiques": {
+    "emptyState": "Pa gen done pou klas sa a.",
+    "completionRate": "To konpletasyon",
+    "completionRateSub": {
+      "one": "{count} sou {total} elèv",
+      "other": "{count} sou {total} elèv"
+    },
+    "classAverage": "Mwayèn klas la",
+    "classAverageSub": "tout apresyasyon yo ansanm",
+    "topMention": "Mansyon ki pi frekan",
+    "topMentionSub": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "noMention": "Pa gen mansyon antre",
+    "toWatch": "Pou siveye",
+    "toWatchSub": "mansyon ensifizan",
+    "mentionChartTitle": "Distribisyon mansyon yo",
+    "mentionChartSub": "Kantite elèv pa mansyon, sou apresyasyon ki antre yo.",
+    "mentionChartAriaLabel": "Distribisyon elèv yo pa mansyon",
+    "averageChartTitle": "Distribisyon mwayèn yo",
+    "averageChartSub": "Mwayèn jeneral elèv yo, sou 20.",
+    "averageChartAriaLabel": "Distribisyon mwayèn jeneral yo",
+    "completionChartTitle": "Konpletasyon pa matyè",
+    "completionChartSub": "Pousantaj apresyasyon ki antre pa matyè.",
+    "completionChartEmpty": "Pa gen matyè konfigire pou klas sa a.",
+    "completionChartAriaLabel": "Pousantaj apresyasyon ki antre pa matyè"
+  },
+  "parMatiere": {
+    "emptyState": "Pa gen matyè konfigire pou klas sa a.",
+    "colSubject": "Matyè",
+    "colTeacher": "Pwofesè",
+    "colCoefficient": "Koef.",
+    "colClassAverage": "Mwayèn klas",
+    "colRecorded": "Apresyasyon ki antre",
+    "colStatus": "Estati",
+    "statusComplete": "Konplè",
+    "statusInProgress": "An kou",
+    "statusTodo": "Pou fè"
+  },
+  "list": {
+    "title": "Apresyasyon",
+    "subtitle": "Antre ak jesyon apresyasyon yo — Ane eskolè {year}",
+    "export": "Ekspòte",
+    "newEntry": "Antre apresyasyon",
+    "loadError": "Nou pa t kapab chaje apresyasyon yo.",
+    "noClasses": "Konfigire klas ak elèv anvan ou antre apresyasyon.",
+    "deleteConfirm": "Efase apresyasyon jeneral {name} an?",
+    "deletedToast": "Apresyasyon efase.",
+    "deleteErrorToast": "Erè pandan efasman an.",
+    "menuView": "Wè apresyasyon an",
+    "menuEdit": "Modifye apresyasyon an",
+    "menuDelete": "Efase apresyasyon an",
+    "summary": {
+      "totalStudents": "Total elèv",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Apresyasyon ki antre",
+      "recordedSub": {
+        "one": "sou {count} elèv",
+        "other": "sou {count} elèv"
+      },
+      "pending": "An atant",
+      "pendingSub": "pou konplete",
+      "positive": "Trè byen / Byen",
+      "positiveSub": "mansyon pozitif",
+      "alert": "Pou siveye",
+      "alertSub": "mansyon ensifizan"
+    },
+    "searchPlaceholder": "Chèche yon elèv...",
+    "allMentions": "Tout mansyon",
+    "resultsCount": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "tabs": {
+      "byStudent": "Pa elèv",
+      "bySubject": "Pa matyè",
+      "statistics": "Estatistik",
+      "pending": "An atant"
+    },
+    "noStudents": "Pa gen elèv enskri nan klas sa a.",
+    "table": {
+      "student": "Elèv",
+      "average": "Mwayèn",
+      "mention": "Mansyon",
+      "generalAppreciation": "Apresyasyon jeneral",
+      "homeroomTeacher": "Pwofesè prensipal",
+      "status": "Estati"
+    },
+    "notProvided": "Pa ranpli",
+    "noAppreciation": "Pa gen apresyasyon antre pou elèv sa a.",
+    "statusRecorded": "Antre",
+    "statusPending": "An atant",
+    "paginationRange": "N ap montre {from} rive {to} sou {total} elèv —",
+    "paginationRecorded": "{count} apresyasyon ki antre",
+    "paginationPending": ", {count} an atant",
+    "csv": {
+      "filenamePrefix": "apresyasyon",
+      "colStudent": "Elèv",
+      "colNumber": "N°",
+      "colAverage": "Mwayèn",
+      "colMention": "Mansyon",
+      "colGeneralAppreciation": "Apresyasyon jeneral",
+      "colHomeroomTeacher": "Pwofesè prensipal",
+      "colStatus": "Estati",
+      "statusRecorded": "Antre",
+      "statusPending": "An atant"
+    }
+  },
+  "detail": {
+    "back": "Retounen nan apresyasyon yo",
+    "studentNotFound": "Nou pa jwenn elèv la.",
+    "loadError": "Nou pa t kapab chaje apresyasyon an.",
+    "deleteConfirm": "Efase apresyasyon jeneral elèv sa a?",
+    "deletedToast": "Apresyasyon efase.",
+    "deleteErrorToast": "Erè pandan efasman an.",
+    "position": "Elèv {index} sou {total} — {className} · {term}",
+    "messagingSoon": "Mesajri — l ap disponib byento.",
+    "reportCardsSoon": "Disponib ak Bilten yo (Epic 7).",
+    "classCouncilSoon": "Disponib ak Konsèy klas la (k ap vini).",
+    "auditHistorySoon": "Istorik detaye a ap vini ak modil odit la (k ap vini).",
+    "notifyGuardian": "Avèti responsab la",
+    "generateReportCard": "Jenere bilten an",
+    "editAppreciation": "Modifye apresyasyon an",
+    "generalTitle": "Apresyasyon jeneral",
+    "writtenBy": "Ekri pa :",
+    "enteredOn": "Antre le {date}",
+    "statusRecorded": "Antre",
+    "statusDraft": "Bouyon",
+    "generalEmpty": "Pa gen apresyasyon jeneral antre pou elèv sa a.",
+    "bySubjectTitle": "Apresyasyon pa matyè",
+    "bySubject": {
+      "subject": "Matyè",
+      "coefficient": "Koef.",
+      "average": "Mwa.",
+      "mention": "Mansyon",
+      "appreciation": "Apresyasyon",
+      "teacher": "Pwofesè"
+    },
+    "overallAverage": "Mwayèn jeneral",
+    "rankLine": "— Ran : {rank} / {rankedCount}",
+    "classCouncilTitle": "Desizyon konsèy klas la",
+    "statsTitle": "Estatistik trimès la",
+    "stats": {
+      "average": "Mwayèn",
+      "rank": "Ran",
+      "minScore": "Nòt minimòm",
+      "maxScore": "Nòt maksimòm",
+      "rankValue": {
+        "one": "{rank}e",
+        "other": "{rank}e"
+      }
+    },
+    "info": {
+      "classAverage": "Mwa. klas la",
+      "absences": "Absans",
+      "lateArrivals": "Reta",
+      "gradedSubjects": "Matyè evalye",
+      "enteredOn": "Antre le",
+      "lastModified": "Dènye modifikasyon"
+    },
+    "homeroomTitle": "Pwofesè prensipal",
+    "notSet": "Pa defini",
+    "historyTitle": "Istorik modifikasyon yo",
+    "quickActionsTitle": "Aksyon rapid",
+    "generateReportCardPdf": "Jenere bilten PDF la",
+    "sendToGuardian": "Voye bay responsab legal la",
+    "deleteAppreciation": "Efase apresyasyon an"
+  },
+  "saisie": {
+    "title": "Antre yon apresyasyon",
+    "backToList": "Retounen nan lis la",
+    "studentNotFound": "Nou pa jwenn elèv la.",
+    "loadError": "Nou pa t kapab chaje fòm apresyasyon an.",
+    "saveDraft": "Anrejistre bouyon",
+    "validate": "Valide apresyasyon an",
+    "validateAndNext": "Valide epi pase nan pwochen an",
+    "validatedToast": "Apresyasyon valide.",
+    "draftSavedToast": "Bouyon anrejistre.",
+    "classProgress": "Pwogrè klas la :",
+    "progressCount": {
+      "one": "{count} / {total} elèv",
+      "other": "{count} / {total} elèv"
+    },
+    "contextTitle": "Kontèks saizi a",
+    "classLabel": "Klas",
+    "termLabel": "Trimès",
+    "studentLabel": "Elèv",
+    "selectedStudent": "Elèv chwazi a",
+    "previous": "Anvan",
+    "next": "Apre",
+    "studentMeta": "N° {number} · {className}",
+    "provisionalRank": {
+      "one": "Ran pwovizwa : {rank}e",
+      "other": "Ran pwovizwa : {rank}e"
+    },
+    "overallAverage": "Mwayèn jeneral",
+    "generalTitle": "Apresyasyon jeneral",
+    "mentionLabel": "Mansyon jeneral",
+    "commentLabel": "Kòmantè jeneral",
+    "commentHint": "(l ap parèt sou bilten an)",
+    "charCount": "{count} / {max} karaktè",
+    "commentPlaceholder": "Ekri yon kòmantè konstriktif ak byenveyan.",
+    "comportementLabel": "Konpòtman",
+    "investissementLabel": "Angajman",
+    "assiduiteLabel": "Asidwite",
+    "comportement": {
+      "EXCELLENT": "Ekselan",
+      "SATISFAISANT": "Satisfezan",
+      "A_AMELIORER": "Pou amelyore",
+      "PERTURBATEUR": "Deranjan"
+    },
+    "investissement": {
+      "EXCELLENT": "Ekselan",
+      "SATISFAISANT": "Satisfezan",
+      "A_AMELIORER": "Pou amelyore",
+      "INSUFFISANT": "Ensifizan"
+    },
+    "assiduite": {
+      "REGULIER": "Regilye",
+      "IRREGULIER": "Iregilye",
+      "ABSENCES_REPETEES": "Absans repete"
+    },
+    "bySubjectTitle": "Apresyasyon pa matyè",
+    "subjectsCount": {
+      "one": "{count} matyè · Antre : {filled}/{count}",
+      "other": "{count} matyè · Antre : {filled}/{count}"
+    },
+    "subjectPlaceholder": "Klike pou ekri yon apresyasyon...",
+    "prevStudent": "Anvan : {name}",
+    "nextStudent": "Apre : {name}",
+    "summaryTitle": "Rezime elèv la",
+    "info": {
+      "overallAverage": "Mwayèn jeneral",
+      "rank": "Ran",
+      "absences": "Absans",
+      "lateArrivals": "Reta",
+      "classAverage": "Mwa. klas"
+    },
+    "rankValue": {
+      "one": "{rank}e / {total}",
+      "other": "{rank}e / {total}"
+    },
+    "subjectGrades": "Nòt pa matyè",
+    "quickPhrasesTitle": "Fraz tou pare",
+    "quickPhrasesSubtitle": "Klike pou mete l nan kòmantè a",
+    "quickPhrases": {
+      "serious": "Elèv serye ki angaje, li dwe kontinye konsa.",
+      "efforts": "Gen efò ki remakab, men gen lakin ki rete.",
+      "insufficient": "Rezilta yo ensifizan. Nou rekòmande yon sipò eskolè.",
+      "satisfactory": "Trimès satisfezan, li ka vize pi wo toujou.",
+      "exemplary": "Konpòtman egzanplè, patisipasyon ekselan.",
+      "regularity": "Li dwe montre plis regilarite nan travay li."
+    }
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "mention": {
+    "TRES_BIEN": "Excellent",
+    "BIEN": "Good",
+    "ASSEZ_BIEN": "Fairly good",
+    "PASSABLE": "Passing",
+    "INSUFFISANT": "Insufficient",
+    "FAIBLE": "Weak"
+  },
+  "statistiques": {
+    "emptyState": "No data for this class.",
+    "completionRate": "Completion rate",
+    "completionRateSub": {
+      "one": "{count} of {total} student",
+      "other": "{count} of {total} students"
+    },
+    "classAverage": "Class average",
+    "classAverageSub": "across all appreciations",
+    "topMention": "Most frequent mention",
+    "topMentionSub": {
+      "one": "{count} student",
+      "other": "{count} students"
+    },
+    "noMention": "No mention recorded",
+    "toWatch": "To watch",
+    "toWatchSub": "insufficient mentions",
+    "mentionChartTitle": "Mention distribution",
+    "mentionChartSub": "Number of students per mention, across recorded appreciations.",
+    "mentionChartAriaLabel": "Distribution of students by mention",
+    "averageChartTitle": "Average distribution",
+    "averageChartSub": "Students' general averages, out of 20.",
+    "averageChartAriaLabel": "Distribution of general averages",
+    "completionChartTitle": "Completion by subject",
+    "completionChartSub": "Percentage of appreciations recorded per subject.",
+    "completionChartEmpty": "No subject configured for this class.",
+    "completionChartAriaLabel": "Percentage of appreciations recorded per subject"
+  },
+  "parMatiere": {
+    "emptyState": "No subject configured for this class.",
+    "colSubject": "Subject",
+    "colTeacher": "Teacher",
+    "colCoefficient": "Coeff.",
+    "colClassAverage": "Class average",
+    "colRecorded": "Appreciations recorded",
+    "colStatus": "Status",
+    "statusComplete": "Complete",
+    "statusInProgress": "In progress",
+    "statusTodo": "To do"
+  },
+  "list": {
+    "title": "Appreciations",
+    "subtitle": "Recording and managing appreciations — School year {year}",
+    "export": "Export",
+    "newEntry": "Enter appreciations",
+    "loadError": "Unable to load the appreciations.",
+    "noClasses": "Set up classes and students first, before recording appreciations.",
+    "deleteConfirm": "Delete {name}'s general appreciation?",
+    "deletedToast": "Appreciation deleted.",
+    "deleteErrorToast": "Deletion failed.",
+    "menuView": "View appreciation",
+    "menuEdit": "Edit appreciation",
+    "menuDelete": "Delete appreciation",
+    "summary": {
+      "totalStudents": "Total students",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Appreciations recorded",
+      "recordedSub": {
+        "one": "of {count} student",
+        "other": "of {count} students"
+      },
+      "pending": "Pending",
+      "pendingSub": "to complete",
+      "positive": "Excellent / Good",
+      "positiveSub": "positive mentions",
+      "alert": "To watch",
+      "alertSub": "insufficient mentions"
+    },
+    "searchPlaceholder": "Search for a student...",
+    "allMentions": "All mentions",
+    "resultsCount": {
+      "one": "{count} student",
+      "other": "{count} students"
+    },
+    "tabs": {
+      "byStudent": "By student",
+      "bySubject": "By subject",
+      "statistics": "Statistics",
+      "pending": "Pending"
+    },
+    "noStudents": "No student enrolled in this class.",
+    "table": {
+      "student": "Student",
+      "average": "Average",
+      "mention": "Mention",
+      "generalAppreciation": "General appreciation",
+      "homeroomTeacher": "Homeroom teacher",
+      "status": "Status"
+    },
+    "notProvided": "Not provided",
+    "noAppreciation": "No appreciation recorded for this student.",
+    "statusRecorded": "Recorded",
+    "statusPending": "Pending",
+    "paginationRange": "Showing {from} to {to} of {total} students —",
+    "paginationRecorded": "{count} appreciations recorded",
+    "paginationPending": ", {count} pending",
+    "csv": {
+      "filenamePrefix": "appreciations",
+      "colStudent": "Student",
+      "colNumber": "No.",
+      "colAverage": "Average",
+      "colMention": "Mention",
+      "colGeneralAppreciation": "General appreciation",
+      "colHomeroomTeacher": "Homeroom teacher",
+      "colStatus": "Status",
+      "statusRecorded": "Recorded",
+      "statusPending": "Pending"
+    }
+  },
+  "detail": {
+    "back": "Back to appreciations",
+    "studentNotFound": "Student not found.",
+    "loadError": "Unable to load the appreciation.",
+    "deleteConfirm": "Delete this student's general appreciation?",
+    "deletedToast": "Appreciation deleted.",
+    "deleteErrorToast": "Deletion failed.",
+    "position": "Student {index} of {total} — {className} · {term}",
+    "messagingSoon": "Messaging — coming soon.",
+    "reportCardsSoon": "Available with Report cards (Epic 7).",
+    "classCouncilSoon": "Available with the Class council (coming soon).",
+    "auditHistorySoon": "The detailed history arrives with the audit module (coming soon).",
+    "notifyGuardian": "Notify the guardian",
+    "generateReportCard": "Generate report card",
+    "editAppreciation": "Edit appreciation",
+    "generalTitle": "General appreciation",
+    "writtenBy": "Written by:",
+    "enteredOn": "Entered on {date}",
+    "statusRecorded": "Recorded",
+    "statusDraft": "Draft",
+    "generalEmpty": "No general appreciation entered for this student.",
+    "bySubjectTitle": "Appreciations by subject",
+    "bySubject": {
+      "subject": "Subject",
+      "coefficient": "Coeff.",
+      "average": "Avg.",
+      "mention": "Mention",
+      "appreciation": "Appreciation",
+      "teacher": "Teacher"
+    },
+    "overallAverage": "Overall average",
+    "rankLine": "— Rank: {rank} / {rankedCount}",
+    "classCouncilTitle": "Class council decision",
+    "statsTitle": "Term statistics",
+    "stats": {
+      "average": "Average",
+      "rank": "Rank",
+      "minScore": "Lowest score",
+      "maxScore": "Highest score",
+      "rankValue": {
+        "one": "#{rank}",
+        "other": "#{rank}"
+      }
+    },
+    "info": {
+      "classAverage": "Class avg.",
+      "absences": "Absences",
+      "lateArrivals": "Late arrivals",
+      "gradedSubjects": "Graded subjects",
+      "enteredOn": "Entered on",
+      "lastModified": "Last modified"
+    },
+    "homeroomTitle": "Homeroom teacher",
+    "notSet": "Not set",
+    "historyTitle": "Change history",
+    "quickActionsTitle": "Quick actions",
+    "generateReportCardPdf": "Generate report card PDF",
+    "sendToGuardian": "Send to legal guardian",
+    "deleteAppreciation": "Delete appreciation"
+  },
+  "saisie": {
+    "title": "Enter an appreciation",
+    "backToList": "Back to the list",
+    "studentNotFound": "Student not found.",
+    "loadError": "Unable to load the appreciation form.",
+    "saveDraft": "Save draft",
+    "validate": "Validate appreciation",
+    "validateAndNext": "Validate and go to next",
+    "validatedToast": "Appreciation validated.",
+    "draftSavedToast": "Draft saved.",
+    "classProgress": "Class progress:",
+    "progressCount": {
+      "one": "{count} / {total} student",
+      "other": "{count} / {total} students"
+    },
+    "contextTitle": "Entry context",
+    "classLabel": "Class",
+    "termLabel": "Term",
+    "studentLabel": "Student",
+    "selectedStudent": "Selected student",
+    "previous": "Previous",
+    "next": "Next",
+    "studentMeta": "No. {number} · {className}",
+    "provisionalRank": {
+      "one": "Provisional rank: #{rank}",
+      "other": "Provisional rank: #{rank}"
+    },
+    "overallAverage": "Overall average",
+    "generalTitle": "General appreciation",
+    "mentionLabel": "Overall mention",
+    "commentLabel": "General comment",
+    "commentHint": "(shown on the report card)",
+    "charCount": "{count} / {max} characters",
+    "commentPlaceholder": "Write a constructive, supportive comment.",
+    "comportementLabel": "Behaviour",
+    "investissementLabel": "Commitment",
+    "assiduiteLabel": "Attendance",
+    "comportement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfactory",
+      "A_AMELIORER": "Needs improvement",
+      "PERTURBATEUR": "Disruptive"
+    },
+    "investissement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfactory",
+      "A_AMELIORER": "Needs improvement",
+      "INSUFFISANT": "Insufficient"
+    },
+    "assiduite": {
+      "REGULIER": "Regular",
+      "IRREGULIER": "Irregular",
+      "ABSENCES_REPETEES": "Repeated absences"
+    },
+    "bySubjectTitle": "Appreciations by subject",
+    "subjectsCount": {
+      "one": "{count} subject · Recorded: {filled}/{count}",
+      "other": "{count} subjects · Recorded: {filled}/{count}"
+    },
+    "subjectPlaceholder": "Click to write an appreciation...",
+    "prevStudent": "Previous: {name}",
+    "nextStudent": "Next: {name}",
+    "summaryTitle": "Student summary",
+    "info": {
+      "overallAverage": "Overall average",
+      "rank": "Rank",
+      "absences": "Absences",
+      "lateArrivals": "Late arrivals",
+      "classAverage": "Class avg."
+    },
+    "rankValue": {
+      "one": "#{rank} / {total}",
+      "other": "#{rank} / {total}"
+    },
+    "subjectGrades": "Grades by subject",
+    "quickPhrasesTitle": "Ready-made phrases",
+    "quickPhrasesSubtitle": "Click to insert into the comment",
+    "quickPhrases": {
+      "serious": "A serious, committed student who should keep it up.",
+      "efforts": "Notable efforts, but gaps remain.",
+      "insufficient": "Insufficient results. Academic support is recommended.",
+      "satisfactory": "A satisfactory term; can aim even higher.",
+      "exemplary": "Exemplary behaviour, excellent participation.",
+      "regularity": "Must show more consistency in their work."
+    }
+  }
+}

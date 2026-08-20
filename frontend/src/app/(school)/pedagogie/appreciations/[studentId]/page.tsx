@@ -23,40 +23,21 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { ASIDE_GRID } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { MENTION_LABEL, type Mention, type StudentAppreciationData } from '../types';
+import { fmtAverage, mentionClass } from '../format';
+import type { StudentAppreciationData } from '../types';
 
-function mentionClass(m: Mention | null): string {
-  switch (m) {
-    case 'TRES_BIEN':
-      return 'bg-success text-success-foreground';
-    case 'BIEN':
-      return 'bg-info text-info-foreground';
-    case 'ASSEZ_BIEN':
-      return 'bg-warning text-warning-foreground';
-    case 'PASSABLE':
-      return 'bg-muted text-muted-foreground';
-    case 'INSUFFISANT':
-    case 'FAIBLE':
-      return 'bg-destructive text-destructive-foreground';
-    default:
-      return 'bg-muted text-muted-foreground';
-  }
-}
-
-function fmt(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
-function fmtDate(iso: string | undefined): string {
+function fmtDate(iso: string | undefined, locale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -64,6 +45,10 @@ function fmtDate(iso: string | undefined): string {
 }
 
 export default function AppreciationDetailPage() {
+  const t = useTranslations('Appreciations.detail');
+  const tMention = useTranslations('Appreciations.mention');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -81,18 +66,18 @@ export default function AppreciationDetailPage() {
       .then(setData)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError('Élève introuvable.');
+          setError(t('studentNotFound'));
           return;
         }
-        setError("Impossible de charger l'appréciation.");
+        setError(t('loadError'));
       });
-  }, [user, params.studentId, termId]);
+  }, [user, params.studentId, termId, t]);
 
   async function onDelete() {
     if (!data) return;
     if (
       !(await confirm({
-        message: "Supprimer l'appréciation générale de cet élève ?",
+        message: t('deleteConfirm'),
         danger: true,
       }))
     )
@@ -104,10 +89,10 @@ export default function AppreciationDetailPage() {
           method: 'DELETE',
         },
       );
-      toast('Appréciation supprimée.', 'success');
+      toast(t('deletedToast'), 'success');
       router.push('/pedagogie/appreciations');
     } catch {
-      toast('Erreur lors de la suppression.', 'error');
+      toast(t('deleteErrorToast'), 'error');
     }
   }
 
@@ -126,7 +111,7 @@ export default function AppreciationDetailPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux appréciations
+          {t('back')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -150,15 +135,19 @@ export default function AppreciationDetailPage() {
         className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
       >
         <ArrowLeft size={13} />
-        Retour aux appréciations
+        {t('back')}
       </Link>
 
       <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3 px-4">
         <span className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Users size={12} className="shrink-0" />
           <span className="truncate">
-            Élève {data.studentIndex ?? '—'} sur {data.classSize} — {data.className} ·{' '}
-            {data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? ''}
+            {t('position', {
+              index: data.studentIndex ?? '—',
+              total: data.classSize,
+              className: data.className,
+              term: data.terms.find((term) => term.id === data.resolvedTermId)?.label ?? '',
+            })}
           </span>
         </span>
         <div className="flex items-center gap-1">
@@ -213,7 +202,7 @@ export default function AppreciationDetailPage() {
             <span className="text-border">·</span>
             <span className="flex items-center gap-1">
               <Calendar size={11} />
-              {data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? ''}
+              {data.terms.find((term) => term.id === data.resolvedTermId)?.label ?? ''}
             </span>
             {data.general?.mention && (
               <>
@@ -221,7 +210,7 @@ export default function AppreciationDetailPage() {
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
-                  {MENTION_LABEL[data.general.mention]}
+                  {tMention(data.general.mention)}
                 </span>
               </>
             )}
@@ -233,26 +222,26 @@ export default function AppreciationDetailPage() {
               two buttons that don't do anything yet. */}
           <button
             type="button"
-            onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
+            onClick={() => toast(t('messagingSoon'), 'info')}
             className="hidden items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground sm:flex"
           >
             <Mail size={13} />
-            Notifier le tuteur
+            {t('notifyGuardian')}
           </button>
           <button
             type="button"
-            onClick={() => toast('Disponible avec les Bulletins (Epic 7).', 'info')}
+            onClick={() => toast(t('reportCardsSoon'), 'info')}
             className="hidden items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-caption font-semibold text-foreground sm:flex"
           >
             <FileText size={13} />
-            Générer le bulletin
+            {t('generateReportCard')}
           </button>
           <Link
             href={`/pedagogie/appreciations/${data.studentId}/saisie?termId=${data.resolvedTermId}`}
             className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-caption font-semibold text-primary-foreground"
           >
             <Pencil size={13} />
-            Modifier l&apos;appréciation
+            {t('editAppreciation')}
           </Link>
         </div>
       </Card>
@@ -262,7 +251,7 @@ export default function AppreciationDetailPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Star size={14} className="text-primary" />
-              Appréciation générale
+              {t('generalTitle')}
             </div>
             {data.general ? (
               <>
@@ -271,52 +260,50 @@ export default function AppreciationDetailPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span>
-                    Rédigé par :{' '}
+                    {t('writtenBy')}{' '}
                     <strong className="text-foreground">{data.general.authorName ?? '—'}</strong>
                   </span>
                   <span className="text-border">·</span>
-                  <span>Saisie le {fmtDate(data.general.createdAt)}</span>
+                  <span>{t('enteredOn', { date: fmtDate(data.general.createdAt, bcp47) })}</span>
                   <span className="text-border">·</span>
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
                   >
-                    {data.general.status === 'PUBLISHED' ? 'Saisie' : 'Brouillon'}
+                    {data.general.status === 'PUBLISHED' ? t('statusRecorded') : t('statusDraft')}
                   </span>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Aucune appréciation générale saisie pour cet élève.
-              </p>
+              <p className="text-sm text-muted-foreground italic">{t('generalEmpty')}</p>
             )}
           </Card>
 
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <BookOpen size={14} className="text-primary" />
-              Appréciations par matière
+              {t('bySubjectTitle')}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Matière
+                      {t('bySubject.subject')}
                     </th>
                     <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
-                      Coeff.
+                      {t('bySubject.coefficient')}
                     </th>
                     <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
-                      Moy.
+                      {t('bySubject.average')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Mention
+                      {t('bySubject.mention')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Appréciation
+                      {t('bySubject.appreciation')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Enseignant
+                      {t('bySubject.teacher')}
                     </th>
                   </tr>
                 </thead>
@@ -330,14 +317,16 @@ export default function AppreciationDetailPage() {
                         {s.coefficient ?? '—'}
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <span className="text-sm font-bold text-foreground">{fmt(s.average)}</span>
+                        <span className="text-sm font-bold text-foreground">
+                          {fmtAverage(s.average, locale)}
+                        </span>
                       </td>
                       <td className="px-2 py-2">
                         {s.mention ? (
                           <span
                             className={`rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
                           >
-                            {MENTION_LABEL[s.mention]}
+                            {tMention(s.mention)}
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
@@ -358,20 +347,20 @@ export default function AppreciationDetailPage() {
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
               <span className="text-caption font-medium text-muted-foreground">
-                Moyenne générale
+                {t('overallAverage')}
               </span>
               <span className="text-xl font-extrabold text-foreground">
-                {fmt(data.overallAverage)} / 20
+                {fmtAverage(data.overallAverage, locale)} / 20
               </span>
               {data.general?.mention && (
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
-                  {MENTION_LABEL[data.general.mention]}
+                  {tMention(data.general.mention)}
                 </span>
               )}
               <span className="text-xs text-muted-foreground">
-                — Rang : {data.rank ?? '—'} / {data.rankedCount}
+                {t('rankLine', { rank: data.rank ?? '—', rankedCount: data.rankedCount })}
               </span>
             </div>
           </Card>
@@ -379,11 +368,9 @@ export default function AppreciationDetailPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <AlertTriangle size={14} className="text-destructive-foreground" />
-              Décision du conseil de classe
+              {t('classCouncilTitle')}
             </div>
-            <p className="text-sm text-muted-foreground italic">
-              Disponible avec le Conseil de classe (à venir).
-            </p>
+            <p className="text-sm text-muted-foreground italic">{t('classCouncilSoon')}</p>
           </Card>
         </div>
 
@@ -391,20 +378,32 @@ export default function AppreciationDetailPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <BarChart2 size={14} className="text-muted-foreground" />
-              Statistiques du trimestre
+              {t('statsTitle')}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <StatBox label="Moyenne" value={fmt(data.overallAverage)} />
-              <StatBox label="Rang" value={data.rank ? `${data.rank}e` : '—'} />
-              <StatBox label="Note min" value={fmt(minScore)} />
-              <StatBox label="Note max" value={fmt(maxScore)} />
+              <StatBox label={t('stats.average')} value={fmtAverage(data.overallAverage, locale)} />
+              <StatBox
+                label={t('stats.rank')}
+                value={
+                  data.rank
+                    ? t(data.rank === 1 ? 'stats.rankValue.one' : 'stats.rankValue.other', {
+                        rank: data.rank,
+                      })
+                    : '—'
+                }
+              />
+              <StatBox label={t('stats.minScore')} value={fmtAverage(minScore, locale)} />
+              <StatBox label={t('stats.maxScore')} value={fmtAverage(maxScore, locale)} />
             </div>
             <div className="h-px bg-border" />
-            <InfoRow label="Moy. de classe" value={`${fmt(data.classAverage)} / 20`} />
-            <InfoRow label="Absences" value="—" />
-            <InfoRow label="Retards" value="—" />
             <InfoRow
-              label="Matières évaluées"
+              label={t('info.classAverage')}
+              value={`${fmtAverage(data.classAverage, locale)} / 20`}
+            />
+            <InfoRow label={t('info.absences')} value="—" />
+            <InfoRow label={t('info.lateArrivals')} value="—" />
+            <InfoRow
+              label={t('info.gradedSubjects')}
               value={`${gradedSubjects.length} / ${data.subjects.length}`}
             />
           </Card>
@@ -412,7 +411,7 @@ export default function AppreciationDetailPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <UserCheck size={14} className="text-primary" />
-              Enseignant principal
+              {t('homeroomTitle')}
             </div>
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-bold text-primary">
@@ -420,46 +419,47 @@ export default function AppreciationDetailPage() {
               </div>
               <div>
                 <div className="text-caption font-bold text-foreground">
-                  {data.homeroomTeacherName ?? 'Non défini'}
+                  {data.homeroomTeacherName ?? t('notSet')}
                 </div>
                 <div className="text-xs text-muted-foreground">{data.className}</div>
               </div>
             </div>
             <div className="h-px bg-border" />
-            <InfoRow label="Saisie le" value={fmtDate(data.general?.createdAt)} />
-            <InfoRow label="Dernière modification" value={fmtDate(data.general?.updatedAt)} />
+            <InfoRow label={t('info.enteredOn')} value={fmtDate(data.general?.createdAt, bcp47)} />
+            <InfoRow
+              label={t('info.lastModified')}
+              value={fmtDate(data.general?.updatedAt, bcp47)}
+            />
           </Card>
 
           <Card className="gap-2.5 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <History size={14} className="text-muted-foreground" />
-              Historique des modifications
+              {t('historyTitle')}
             </div>
-            <p className="text-xs text-muted-foreground italic">
-              L&apos;historique détaillé arrive avec le module d&apos;audit (à venir).
-            </p>
+            <p className="text-xs text-muted-foreground italic">{t('auditHistorySoon')}</p>
           </Card>
 
           <Card className="gap-1 p-2">
             <div className="flex items-center gap-2 px-2 pt-2 text-sm font-bold text-foreground">
               <Zap size={14} className="text-muted-foreground" />
-              Actions rapides
+              {t('quickActionsTitle')}
             </div>
             <button
               type="button"
-              onClick={() => toast('Disponible avec les Bulletins (Epic 7).', 'info')}
+              onClick={() => toast(t('reportCardsSoon'), 'info')}
               className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-foreground hover:bg-muted"
             >
               <FileText size={14} className="text-muted-foreground" />
-              Générer le bulletin PDF
+              {t('generateReportCardPdf')}
             </button>
             <button
               type="button"
-              onClick={() => toast('Messagerie — bientôt disponible.', 'info')}
+              onClick={() => toast(t('messagingSoon'), 'info')}
               className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-foreground hover:bg-muted"
             >
               <Mail size={14} className="text-muted-foreground" />
-              Envoyer au tuteur légal
+              {t('sendToGuardian')}
             </button>
             <div className="my-1 h-px bg-border" />
             <button
@@ -468,7 +468,7 @@ export default function AppreciationDetailPage() {
               className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-caption font-medium text-destructive-foreground hover:bg-destructive"
             >
               <Trash2 size={14} />
-              Supprimer l&apos;appréciation
+              {t('deleteAppreciation')}
             </button>
           </Card>
         </div>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { submitOrQueue } from '@/lib/offline-queue';
 import { OFFLINE_SYNC } from '@/lib/constants';
@@ -29,17 +30,10 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { fmtAverage } from '../../format';
+import { MENTIONS } from '../../types';
 import type { AppreciationsListData, Mention, StudentAppreciationData } from '../../types';
-import { MENTION_LABEL } from '../../types';
 
-const MENTION_OPTIONS: Mention[] = [
-  'TRES_BIEN',
-  'BIEN',
-  'ASSEZ_BIEN',
-  'PASSABLE',
-  'INSUFFISANT',
-  'FAIBLE',
-];
 const MENTION_BTN_CLASS: Record<Mention, string> = {
   TRES_BIEN: 'border-success bg-success text-success-foreground',
   BIEN: 'border-[#2563eb] bg-info text-info-foreground',
@@ -48,17 +42,40 @@ const MENTION_BTN_CLASS: Record<Mention, string> = {
   INSUFFISANT: 'border-destructive-foreground bg-destructive text-destructive-foreground',
   FAIBLE: 'border-destructive-foreground bg-destructive text-destructive-foreground',
 };
-const COMPORTEMENT_OPTIONS = ['Excellent', 'Satisfaisant', 'À améliorer', 'Perturbateur'];
-const INVESTISSEMENT_OPTIONS = ['Excellent', 'Satisfaisant', 'À améliorer', 'Insuffisant'];
-const ASSIDUITE_OPTIONS = ['Régulier', 'Irrégulier', 'Absences répétées'];
-const QUICK_PHRASES = [
-  'Élève sérieux et investi, encourage à continuer.',
-  'Des efforts notables, mais des lacunes persistent.',
-  'Résultats insuffisants. Un soutien scolaire est recommandé.',
-  'Trimestre satisfaisant, peut viser encore mieux.',
-  'Comportement exemplaire, excellente participation.',
-  'Doit faire preuve de plus de régularité dans son travail.',
-];
+
+// `value` is what gets PERSISTED (the API stores these three fields as free
+// text and hands them straight back to the <Select>), so it stays the exact
+// French string it has always been — renaming it to the enum-ish `key` would
+// orphan every appreciation already saved. `key` is only the translation
+// lookup, same dynamic-key pattern as Gradebook.evaluationType.
+const COMPORTEMENT_OPTIONS = [
+  { value: 'Excellent', key: 'EXCELLENT' },
+  { value: 'Satisfaisant', key: 'SATISFAISANT' },
+  { value: 'À améliorer', key: 'A_AMELIORER' },
+  { value: 'Perturbateur', key: 'PERTURBATEUR' },
+] as const;
+const INVESTISSEMENT_OPTIONS = [
+  { value: 'Excellent', key: 'EXCELLENT' },
+  { value: 'Satisfaisant', key: 'SATISFAISANT' },
+  { value: 'À améliorer', key: 'A_AMELIORER' },
+  { value: 'Insuffisant', key: 'INSUFFISANT' },
+] as const;
+const ASSIDUITE_OPTIONS = [
+  { value: 'Régulier', key: 'REGULIER' },
+  { value: 'Irrégulier', key: 'IRREGULIER' },
+  { value: 'Absences répétées', key: 'ABSENCES_REPETEES' },
+] as const;
+
+const QUICK_PHRASE_KEYS = [
+  'serious',
+  'efforts',
+  'insufficient',
+  'satisfactory',
+  'exemplary',
+  'regularity',
+] as const;
+
+const COMMENT_MAX = 500;
 
 function suggestMention(avg: number | null): Mention | null {
   if (avg == null) return null;
@@ -70,15 +87,19 @@ function suggestMention(avg: number | null): Mention | null {
   return 'TRES_BIEN';
 }
 
-function fmt(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
 interface SubjectRowState {
   text: string;
 }
 
 export default function SaisirAppreciationPage() {
+  const t = useTranslations('Appreciations.saisie');
+  const tMention = useTranslations('Appreciations.mention');
+  const tComportement = useTranslations('Appreciations.saisie.comportement');
+  const tInvestissement = useTranslations('Appreciations.saisie.investissement');
+  const tAssiduite = useTranslations('Appreciations.saisie.assiduite');
+  const tPhrases = useTranslations('Appreciations.saisie.quickPhrases');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -120,12 +141,12 @@ export default function SaisirAppreciationPage() {
       .then(setRoster)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError('Élève introuvable.');
+          setError(t('studentNotFound'));
           return;
         }
-        setError("Impossible de charger la saisie d'appréciation.");
+        setError(t('loadError'));
       });
-  }, [user, params.studentId, termId]);
+  }, [user, params.studentId, termId, t]);
 
   const filledSubjects = useMemo(
     () => Object.values(subjectRows).filter((r) => r.text.trim() !== '').length,
@@ -181,9 +202,9 @@ export default function SaisirAppreciationPage() {
       if (anyQueued) {
         toast(OFFLINE_SYNC.queuedToast, 'info');
       } else if (publish) {
-        toast('Appréciation validée.', 'success');
+        toast(t('validatedToast'), 'success');
       } else {
-        toast('Brouillon enregistré.', 'success');
+        toast(t('draftSavedToast'), 'success');
       }
       if (publish) {
         if (data.nextStudentId) {
@@ -195,7 +216,7 @@ export default function SaisirAppreciationPage() {
         }
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSaving(false);
     }
@@ -216,7 +237,7 @@ export default function SaisirAppreciationPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour à la liste
+          {t('backToList')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -225,7 +246,7 @@ export default function SaisirAppreciationPage() {
     );
   }
 
-  const currentTermLabel = data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? '';
+  const currentTermLabel = data.terms.find((term) => term.id === data.resolvedTermId)?.label ?? '';
   const prevName = roster?.students.find((s) => s.studentId === data.prevStudentId);
   const nextName = roster?.students.find((s) => s.studentId === data.nextStudentId);
 
@@ -233,7 +254,7 @@ export default function SaisirAppreciationPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-foreground">Saisir une appréciation</h1>
+          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
             {currentTermLabel} — {data.className}
           </p>
@@ -244,7 +265,7 @@ export default function SaisirAppreciationPage() {
             className="flex w-fit items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold text-muted-foreground"
           >
             <ArrowLeft size={14} />
-            Retour à la liste
+            {t('backToList')}
           </Link>
           <Button
             variant="ghost"
@@ -253,11 +274,11 @@ export default function SaisirAppreciationPage() {
             loading={saving}
           >
             <Save size={14} />
-            Enregistrer brouillon
+            {t('saveDraft')}
           </Button>
           <Button className="w-fit" onClick={() => save(true)} loading={saving}>
             <Check size={14} />
-            Valider l&apos;appréciation
+            {t('validate')}
           </Button>
         </div>
       </div>
@@ -265,7 +286,7 @@ export default function SaisirAppreciationPage() {
       {roster && (
         <Card className="flex-row items-center gap-3 p-3.5">
           <span className="text-xs whitespace-nowrap text-muted-foreground">
-            Progression de la classe :
+            {t('classProgress')}
           </span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
             <div
@@ -276,7 +297,10 @@ export default function SaisirAppreciationPage() {
             />
           </div>
           <span className="text-xs font-bold whitespace-nowrap text-primary">
-            {roster.saisieCount} / {roster.totalCount} élèves
+            {t(roster.totalCount > 1 ? 'progressCount.other' : 'progressCount.one', {
+              count: roster.saisieCount,
+              total: roster.totalCount,
+            })}
           </span>
         </Card>
       )}
@@ -286,24 +310,26 @@ export default function SaisirAppreciationPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Settings2 size={14} className="text-primary" />
-              Contexte de saisie
+              {t('contextTitle')}
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <div className="mb-1 text-xs font-semibold text-foreground">Classe</div>
+                <div className="mb-1 text-xs font-semibold text-foreground">{t('classLabel')}</div>
                 <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
                   {data.className}
                 </div>
               </div>
-              <Select label="Trimestre" value={termId} onValueChange={setTermId}>
-                {data.terms.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.label}
+              <Select label={t('termLabel')} value={termId} onValueChange={setTermId}>
+                {data.terms.map((term) => (
+                  <SelectItem key={term.id} value={term.id}>
+                    {term.label}
                   </SelectItem>
                 ))}
               </Select>
               <div>
-                <div className="mb-1 text-xs font-semibold text-foreground">Élève</div>
+                <div className="mb-1 text-xs font-semibold text-foreground">
+                  {t('studentLabel')}
+                </div>
                 <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
                   {data.studentIndex} / {data.classSize}
                 </div>
@@ -315,7 +341,7 @@ export default function SaisirAppreciationPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                 <User size={14} className="text-primary" />
-                Élève sélectionné
+                {t('selectedStudent')}
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -330,7 +356,7 @@ export default function SaisirAppreciationPage() {
                   className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground disabled:opacity-40"
                 >
                   <ChevronLeft size={13} />
-                  Précédent
+                  {t('previous')}
                 </button>
                 <button
                   type="button"
@@ -343,7 +369,7 @@ export default function SaisirAppreciationPage() {
                   }
                   className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground disabled:opacity-40"
                 >
-                  Suivant
+                  {t('next')}
                   <ChevronRight size={13} />
                 </button>
               </div>
@@ -359,14 +385,18 @@ export default function SaisirAppreciationPage() {
                   {data.firstName} {data.lastName}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  N° {data.studentNumber} · {data.className}
-                  {data.rank ? ` · Rang provisoire : ${data.rank}e` : ''}
+                  {t('studentMeta', { number: data.studentNumber, className: data.className })}
+                  {data.rank
+                    ? ` · ${t(data.rank === 1 ? 'provisionalRank.one' : 'provisionalRank.other', {
+                        rank: data.rank,
+                      })}`
+                    : ''}
                 </div>
               </div>
               <div className="text-right">
-                <div className="mb-0.5 text-2xs text-muted-foreground">Moyenne générale</div>
+                <div className="mb-0.5 text-2xs text-muted-foreground">{t('overallAverage')}</div>
                 <div className="text-xl font-extrabold text-foreground">
-                  {fmt(data.overallAverage)}
+                  {fmtAverage(data.overallAverage, locale)}
                 </div>
                 <div className="text-2xs text-muted-foreground">/20</div>
               </div>
@@ -395,7 +425,7 @@ export default function SaisirAppreciationPage() {
                       {s.firstName} {s.lastName}
                     </span>
                     <span className="text-xs font-bold text-muted-foreground">
-                      {fmt(s.average)}
+                      {fmtAverage(s.average, locale)}
                     </span>
                     {s.status === 'PUBLISHED' ? (
                       <CheckCircle2 size={13} className="text-success-foreground" />
@@ -411,20 +441,20 @@ export default function SaisirAppreciationPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Star size={14} className="text-primary" />
-              Appréciation générale
+              {t('generalTitle')}
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-foreground">Mention générale</div>
+              <div className="mb-2 text-xs font-semibold text-foreground">{t('mentionLabel')}</div>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {MENTION_OPTIONS.map((m) => (
+                {MENTIONS.map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMention(m)}
                     className={`rounded-md border-2 px-2 py-2 text-center text-xs font-bold ${mention === m ? MENTION_BTN_CLASS[m] : 'border-border bg-card text-muted-foreground'}`}
                   >
-                    {MENTION_LABEL[m]}
+                    {tMention(m)}
                   </button>
                 ))}
               </div>
@@ -435,50 +465,52 @@ export default function SaisirAppreciationPage() {
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs font-semibold text-foreground">
-                  Commentaire général{' '}
-                  <span className="font-normal text-muted-foreground">
-                    (visible sur le bulletin)
-                  </span>
+                  {t('commentLabel')}{' '}
+                  <span className="font-normal text-muted-foreground">{t('commentHint')}</span>
                 </span>
                 <span className="text-2xs text-muted-foreground">
-                  {text.length} / 500 caractères
+                  {t('charCount', { count: text.length, max: COMMENT_MAX })}
                 </span>
               </div>
               <textarea
                 value={text}
-                onChange={(e) => setText(e.target.value.slice(0, 500))}
+                onChange={(e) => setText(e.target.value.slice(0, COMMENT_MAX))}
                 rows={4}
-                placeholder="Rédigez un commentaire constructif et bienveillant."
+                placeholder={t('commentPlaceholder')}
                 className="w-full rounded-md border border-border bg-input px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-3 focus:ring-primary/10"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <Select label="Comportement" value={comportement} onValueChange={setComportement}>
+              <Select
+                label={t('comportementLabel')}
+                value={comportement}
+                onValueChange={setComportement}
+              >
                 <SelectItem value="">—</SelectItem>
                 {COMPORTEMENT_OPTIONS.map((o) => (
-                  <SelectItem key={o} value={o}>
-                    {o}
+                  <SelectItem key={o.key} value={o.value}>
+                    {tComportement(o.key)}
                   </SelectItem>
                 ))}
               </Select>
               <Select
-                label="Investissement"
+                label={t('investissementLabel')}
                 value={investissement}
                 onValueChange={setInvestissement}
               >
                 <SelectItem value="">—</SelectItem>
                 {INVESTISSEMENT_OPTIONS.map((o) => (
-                  <SelectItem key={o} value={o}>
-                    {o}
+                  <SelectItem key={o.key} value={o.value}>
+                    {tInvestissement(o.key)}
                   </SelectItem>
                 ))}
               </Select>
-              <Select label="Assiduité" value={assiduite} onValueChange={setAssiduite}>
+              <Select label={t('assiduiteLabel')} value={assiduite} onValueChange={setAssiduite}>
                 <SelectItem value="">—</SelectItem>
                 {ASSIDUITE_OPTIONS.map((o) => (
-                  <SelectItem key={o} value={o}>
-                    {o}
+                  <SelectItem key={o.key} value={o.value}>
+                    {tAssiduite(o.key)}
                   </SelectItem>
                 ))}
               </Select>
@@ -489,10 +521,13 @@ export default function SaisirAppreciationPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                 <BookOpen size={14} className="text-primary" />
-                Appréciations par matière
+                {t('bySubjectTitle')}
               </div>
               <span className="text-xs text-muted-foreground">
-                {data.subjects.length} matières · Saisies : {filledSubjects}/{data.subjects.length}
+                {t(data.subjects.length > 1 ? 'subjectsCount.other' : 'subjectsCount.one', {
+                  count: data.subjects.length,
+                  filled: filledSubjects,
+                })}
               </span>
             </div>
             <div className="flex flex-col gap-2.5">
@@ -515,7 +550,7 @@ export default function SaisirAppreciationPage() {
                     </span>
                     <span className="sm:pt-1.5">
                       <span className="inline-flex min-w-[44px] items-center justify-center rounded-md bg-muted px-2 py-1 text-xs font-bold text-foreground">
-                        {fmt(s.average)}
+                        {fmtAverage(s.average, locale)}
                       </span>
                     </span>
                   </div>
@@ -528,7 +563,7 @@ export default function SaisirAppreciationPage() {
                       }))
                     }
                     rows={2}
-                    placeholder="Cliquer pour saisir une appréciation..."
+                    placeholder={t('subjectPlaceholder')}
                     className="w-full rounded-md border border-border bg-input px-2.5 py-1.5 text-xs text-foreground outline-none placeholder:text-muted-foreground placeholder:italic focus:border-primary"
                   />
                 </div>
@@ -549,7 +584,7 @@ export default function SaisirAppreciationPage() {
               >
                 <ArrowLeft size={14} className="shrink-0" />
                 <span className="truncate">
-                  Précédent : {prevName.firstName} {prevName.lastName}
+                  {t('prevStudent', { name: `${prevName.firstName} ${prevName.lastName}` })}
                 </span>
               </button>
             ) : (
@@ -566,11 +601,11 @@ export default function SaisirAppreciationPage() {
                 loading={saving}
               >
                 <Save size={14} />
-                Enregistrer brouillon
+                {t('saveDraft')}
               </Button>
               <Button className="w-fit" onClick={() => save(true)} loading={saving}>
                 <Check size={14} />
-                Valider et passer au suivant
+                {t('validateAndNext')}
               </Button>
             </div>
             {nextName ? (
@@ -584,7 +619,7 @@ export default function SaisirAppreciationPage() {
                 className="flex min-w-0 max-w-full items-center gap-1.5 text-sm font-medium text-muted-foreground"
               >
                 <span className="truncate">
-                  Suivant : {nextName.firstName} {nextName.lastName}
+                  {t('nextStudent', { name: `${nextName.firstName} ${nextName.lastName}` })}
                 </span>
                 <ArrowRight size={14} className="shrink-0" />
               </button>
@@ -604,7 +639,7 @@ export default function SaisirAppreciationPage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <BarChart2 size={14} className="text-primary" />
-              Résumé de l&apos;élève
+              {t('summaryTitle')}
             </div>
             <div className="flex flex-col items-center gap-1.5 text-center">
               <div className="flex h-13 w-13 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
@@ -619,20 +654,38 @@ export default function SaisirAppreciationPage() {
               </div>
             </div>
             <div className="h-px bg-border" />
-            <InfoRow label="Moyenne générale" value={`${fmt(data.overallAverage)} / 20`} />
-            <InfoRow label="Rang" value={data.rank ? `${data.rank}e / ${data.rankedCount}` : '—'} />
-            <InfoRow label="Absences" value="—" />
-            <InfoRow label="Retards" value="—" />
-            <InfoRow label="Moy. classe" value={`${fmt(data.classAverage)} / 20`} />
+            <InfoRow
+              label={t('info.overallAverage')}
+              value={`${fmtAverage(data.overallAverage, locale)} / 20`}
+            />
+            <InfoRow
+              label={t('info.rank')}
+              value={
+                data.rank
+                  ? t(data.rank === 1 ? 'rankValue.one' : 'rankValue.other', {
+                      rank: data.rank,
+                      total: data.rankedCount,
+                    })
+                  : '—'
+              }
+            />
+            <InfoRow label={t('info.absences')} value="—" />
+            <InfoRow label={t('info.lateArrivals')} value="—" />
+            <InfoRow
+              label={t('info.classAverage')}
+              value={`${fmtAverage(data.classAverage, locale)} / 20`}
+            />
             {data.subjects.length > 0 && (
               <div className="mt-1">
-                <div className="mb-1.5 text-2xs text-muted-foreground">Notes par matière</div>
+                <div className="mb-1.5 text-2xs text-muted-foreground">{t('subjectGrades')}</div>
                 <div className="flex flex-col gap-1.5">
                   {data.subjects.map((s) => (
                     <div key={s.classSubjectId}>
                       <div className="mb-0.5 flex justify-between text-2xs">
                         <span className="font-medium text-foreground">{s.subjectName}</span>
-                        <span className="font-bold text-foreground">{fmt(s.average)}</span>
+                        <span className="font-bold text-foreground">
+                          {fmtAverage(s.average, locale)}
+                        </span>
                       </div>
                       <div className="h-1 overflow-hidden rounded-full bg-muted">
                         <div
@@ -650,24 +703,27 @@ export default function SaisirAppreciationPage() {
           <Card className="gap-2 p-4">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Zap size={14} className="text-primary" />
-              Phrases types
+              {t('quickPhrasesTitle')}
             </div>
-            <p className="text-2xs text-muted-foreground">
-              Cliquer pour insérer dans le commentaire
-            </p>
+            <p className="text-2xs text-muted-foreground">{t('quickPhrasesSubtitle')}</p>
             <div className="flex flex-col gap-1.5">
-              {QUICK_PHRASES.map((phrase) => (
-                <button
-                  key={phrase}
-                  type="button"
-                  onClick={() =>
-                    setText((prev) => (prev ? `${prev.trim()} ${phrase}` : phrase).slice(0, 500))
-                  }
-                  className="rounded-md border border-border px-2.5 py-2 text-left text-2xs text-foreground hover:bg-muted"
-                >
-                  {phrase}
-                </button>
-              ))}
+              {QUICK_PHRASE_KEYS.map((phraseKey) => {
+                const phrase = tPhrases(phraseKey);
+                return (
+                  <button
+                    key={phraseKey}
+                    type="button"
+                    onClick={() =>
+                      setText((prev) =>
+                        (prev ? `${prev.trim()} ${phrase}` : phrase).slice(0, COMMENT_MAX),
+                      )
+                    }
+                    className="rounded-md border border-border px-2.5 py-2 text-left text-2xs text-foreground hover:bg-muted"
+                  >
+                    {phrase}
+                  </button>
+                );
+              })}
             </div>
           </Card>
         </div>

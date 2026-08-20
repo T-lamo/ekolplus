@@ -19,6 +19,7 @@ import {
   BarChart2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
@@ -35,7 +36,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
-import { MENTION_LABEL, type AppreciationsListData, type Mention, type TermOption } from './types';
+import { fmtAverage, mentionClass, moyColor } from './format';
+import { MENTIONS, type AppreciationsListData, type TermOption } from './types';
 // Code-split: only mounted once the user switches to that tab (default is
 // "Par élève") — same reasoning as the StudentFormModal split in eleves/page.tsx.
 const ParMatiereTab = dynamic(() => import('./ParMatiereTab').then((m) => m.ParMatiereTab), {
@@ -47,37 +49,10 @@ const StatistiquesTab = dynamic(() => import('./StatistiquesTab').then((m) => m.
 
 const PAGE_SIZE = 20;
 
-function mentionClass(m: Mention | null): string {
-  switch (m) {
-    case 'TRES_BIEN':
-      return 'bg-success text-success-foreground';
-    case 'BIEN':
-      return 'bg-info text-info-foreground';
-    case 'ASSEZ_BIEN':
-      return 'bg-warning text-warning-foreground';
-    case 'PASSABLE':
-      return 'bg-muted text-muted-foreground';
-    case 'INSUFFISANT':
-    case 'FAIBLE':
-      return 'bg-destructive text-destructive-foreground';
-    default:
-      return 'bg-muted text-muted-foreground';
-  }
-}
-
-function moyColor(avg: number | null): string {
-  if (avg == null) return 'text-muted-foreground';
-  if (avg < 8) return 'text-destructive-foreground';
-  if (avg < 12) return 'text-warning-foreground';
-  if (avg < 16) return 'text-info-foreground';
-  return 'text-success-foreground';
-}
-
-function fmt(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
 export default function AppreciationsListPage() {
+  const t = useTranslations('Appreciations.list');
+  const tMention = useTranslations('Appreciations.mention');
+  const locale = useLocale();
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -108,9 +83,9 @@ export default function AppreciationsListPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les appréciations.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   useEffect(() => {
     if (!classId) return;
@@ -122,8 +97,8 @@ export default function AppreciationsListPage() {
         setTermId(d.resolvedTermId ?? '');
         setPage(1);
       })
-      .catch(() => setError('Impossible de charger les appréciations.'));
-  }, [classId, termId]);
+      .catch(() => setError(t('loadError')));
+  }, [classId, termId, t]);
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];
@@ -139,10 +114,7 @@ export default function AppreciationsListPage() {
   const enAttenteCount = data ? data.students.filter((s) => s.status !== 'PUBLISHED').length : 0;
 
   async function deleteAppreciation(studentId: string, name: string) {
-    if (
-      !(await confirm({ message: `Supprimer l'appréciation générale de ${name} ?`, danger: true }))
-    )
-      return;
+    if (!(await confirm({ message: t('deleteConfirm', { name }), danger: true }))) return;
     try {
       await api(`/api/school/students/${studentId}/appreciations?termId=${termId}`, {
         method: 'DELETE',
@@ -159,27 +131,27 @@ export default function AppreciationsListPage() {
             }
           : prev,
       );
-      toast('Appréciation supprimée.', 'success');
+      toast(t('deletedToast'), 'success');
     } catch {
-      toast('Erreur lors de la suppression.', 'error');
+      toast(t('deleteErrorToast'), 'error');
     }
   }
 
   function menuItemsFor(s: AppreciationsListData['students'][number]): ActionMenuItem[] {
     return [
       {
-        label: "Voir l'appréciation",
+        label: t('menuView'),
         icon: <Eye size={14} />,
         onClick: () => router.push(`/pedagogie/appreciations/${s.studentId}?termId=${termId}`),
       },
       {
-        label: "Modifier l'appréciation",
+        label: t('menuEdit'),
         icon: <Pencil size={14} />,
         onClick: () =>
           router.push(`/pedagogie/appreciations/${s.studentId}/saisie?termId=${termId}`),
       },
       {
-        label: "Supprimer l'appréciation",
+        label: t('menuDelete'),
         icon: <Trash2 size={14} />,
         tone: 'danger',
         divider: true,
@@ -191,24 +163,24 @@ export default function AppreciationsListPage() {
   function onExport() {
     if (!data) return;
     exportToCsv(
-      `appreciations-${data.className}.csv`.toLowerCase().replace(/\s+/g, '-'),
+      `${t('csv.filenamePrefix')}-${data.className}.csv`.toLowerCase().replace(/\s+/g, '-'),
       [
-        'Élève',
-        'N°',
-        'Moyenne',
-        'Mention',
-        'Appréciation générale',
-        'Enseignant principal',
-        'Statut',
+        t('csv.colStudent'),
+        t('csv.colNumber'),
+        t('csv.colAverage'),
+        t('csv.colMention'),
+        t('csv.colGeneralAppreciation'),
+        t('csv.colHomeroomTeacher'),
+        t('csv.colStatus'),
       ],
       filteredStudents.map((s) => [
         `${s.firstName} ${s.lastName}`,
         s.studentNumber,
         s.average ?? '',
-        s.mention ? MENTION_LABEL[s.mention] : '',
+        s.mention ? tMention(s.mention) : '',
         s.text ?? '',
         data.homeroomTeacherName ?? '',
-        s.status === 'PUBLISHED' ? 'Saisie' : 'En attente',
+        s.status === 'PUBLISHED' ? t('csv.statusRecorded') : t('csv.statusPending'),
       ]),
     );
   }
@@ -225,15 +197,15 @@ export default function AppreciationsListPage() {
     <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-foreground">Appréciations</h1>
+          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
-            Saisie et gestion des appréciations — Année scolaire {terms[0]?.label ?? ''}
+            {t('subtitle', { year: terms[0]?.label ?? '' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button
             className="w-fit"
@@ -246,7 +218,7 @@ export default function AppreciationsListPage() {
             }
           >
             <Plus size={14} />
-            Saisir appréciations
+            {t('newEntry')}
           </Button>
         </div>
       </div>
@@ -260,9 +232,7 @@ export default function AppreciationsListPage() {
       {classes.length === 0 ? (
         <Card className="items-center gap-2 p-10 text-center">
           <Star size={28} className="text-muted-foreground" />
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Configure d&apos;abord des classes et des élèves avant de saisir des appréciations.
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('noClasses')}</p>
         </Card>
       ) : (
         <>
@@ -271,44 +241,50 @@ export default function AppreciationsListPage() {
               <SummaryCard
                 icon={Users}
                 tone="secondary"
-                label="Total élèves"
+                label={t('summary.totalStudents')}
                 value={`${data.totalCount}`}
-                sub={`${data.className} — ${terms[0]?.label ?? ''}`}
+                sub={t('summary.totalStudentsSub', {
+                  className: data.className,
+                  term: terms[0]?.label ?? '',
+                })}
               />
               <SummaryCard
                 icon={CheckCircle2}
                 tone="success"
-                label="Appréciations saisies"
+                label={t('summary.recorded')}
                 value={`${data.saisieCount}`}
-                sub={`sur ${data.totalCount} élèves`}
+                sub={t(
+                  data.totalCount > 1 ? 'summary.recordedSub.other' : 'summary.recordedSub.one',
+                  { count: data.totalCount },
+                )}
               />
               <SummaryCard
                 icon={Clock}
                 tone="warning"
-                label="En attente"
+                label={t('summary.pending')}
                 value={`${data.totalCount - data.saisieCount}`}
-                sub="à compléter"
+                sub={t('summary.pendingSub')}
               />
               <SummaryCard
                 icon={TrendingUp}
                 tone="success"
-                label="Très bien / Bien"
+                label={t('summary.positive')}
                 value={`${data.positiveCount}`}
-                sub="mentions positives"
+                sub={t('summary.positiveSub')}
               />
               <SummaryCard
                 icon={AlertTriangle}
                 tone="destructive"
-                label="À surveiller"
+                label={t('summary.alert')}
                 value={`${data.alertCount}`}
-                sub="mentions insuffisant"
+                sub={t('summary.alertSub')}
               />
             </div>
           )}
 
           <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
             <SearchInput
-              placeholder="Rechercher un élève..."
+              placeholder={t('searchPlaceholder')}
               className="min-w-[200px] max-w-[280px] flex-1"
               value={search}
               onChange={(e) => {
@@ -324,9 +300,9 @@ export default function AppreciationsListPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={termId} onValueChange={setTermId}>
-              {terms.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.label}
+              {terms.map((term) => (
+                <SelectItem key={term.id} value={term.id}>
+                  {term.label}
                 </SelectItem>
               ))}
             </FilterSelect>
@@ -337,15 +313,17 @@ export default function AppreciationsListPage() {
                 setPage(1);
               }}
             >
-              <SelectItem value="">Toutes mentions</SelectItem>
-              {Object.entries(MENTION_LABEL).map(([k, label]) => (
-                <SelectItem key={k} value={k}>
-                  {label}
+              <SelectItem value="">{t('allMentions')}</SelectItem>
+              {MENTIONS.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {tMention(m)}
                 </SelectItem>
               ))}
             </FilterSelect>
             <span className="ml-auto text-xs text-muted-foreground">
-              {filteredStudents.length} élèves
+              {t(filteredStudents.length > 1 ? 'resultsCount.other' : 'resultsCount.one', {
+                count: filteredStudents.length,
+              })}
             </span>
           </Card>
 
@@ -361,7 +339,7 @@ export default function AppreciationsListPage() {
               className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'eleve' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <Table2 size={13} />
-              Par élève
+              {t('tabs.byStudent')}
               {data && (
                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
                   {data.totalCount}
@@ -379,7 +357,7 @@ export default function AppreciationsListPage() {
               className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'matiere' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <BookOpen size={13} />
-              Par matière
+              {t('tabs.bySubject')}
             </button>
             <button
               type="button"
@@ -392,7 +370,7 @@ export default function AppreciationsListPage() {
               className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'stats' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <BarChart2 size={13} />
-              Statistiques
+              {t('tabs.statistics')}
             </button>
             <button
               type="button"
@@ -405,7 +383,7 @@ export default function AppreciationsListPage() {
               className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-caption font-semibold ${tab === 'attente' ? 'border-primary text-primary' : 'border-transparent font-medium text-muted-foreground'}`}
             >
               <Clock size={13} />
-              En attente
+              {t('tabs.pending')}
               <span className="rounded-full bg-warning px-1.5 py-0.5 text-[10px] font-bold text-warning-foreground">
                 {enAttenteCount}
               </span>
@@ -435,9 +413,7 @@ export default function AppreciationsListPage() {
           ) : data.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Aucun élève inscrit dans cette classe.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('noStudents')}</p>
             </Card>
           ) : (
             <Card className="gap-0 overflow-visible">
@@ -446,22 +422,22 @@ export default function AppreciationsListPage() {
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
                       <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Élève
+                        {t('table.student')}
                       </th>
                       <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Moyenne
+                        {t('table.average')}
                       </th>
                       <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Mention
+                        {t('table.mention')}
                       </th>
                       <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Appréciation générale
+                        {t('table.generalAppreciation')}
                       </th>
                       <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Enseignant principal
+                        {t('table.homeroomTeacher')}
                       </th>
                       <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        Statut
+                        {t('table.status')}
                       </th>
                       <th className="w-11" />
                     </tr>
@@ -484,7 +460,7 @@ export default function AppreciationsListPage() {
                         </td>
                         <td className="px-3 py-2.5 text-center">
                           <span className={`text-sm font-bold ${moyColor(s.average)}`}>
-                            {fmt(s.average)}
+                            {fmtAverage(s.average, locale)}
                           </span>
                         </td>
                         <td className="px-3 py-2.5">
@@ -492,11 +468,11 @@ export default function AppreciationsListPage() {
                             <span
                               className={`inline-flex items-center rounded-full px-2.5 py-1 text-2xs font-bold ${mentionClass(s.mention)}`}
                             >
-                              {MENTION_LABEL[s.mention]}
+                              {tMention(s.mention)}
                             </span>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">
-                              Non renseigné
+                              {t('notProvided')}
                             </span>
                           )}
                         </td>
@@ -504,7 +480,7 @@ export default function AppreciationsListPage() {
                           <span className="block truncate text-xs text-foreground">
                             {s.text ?? (
                               <span className="text-muted-foreground italic">
-                                Aucune appréciation saisie pour cet élève.
+                                {t('noAppreciation')}
                               </span>
                             )}
                           </span>
@@ -518,12 +494,12 @@ export default function AppreciationsListPage() {
                           {s.status === 'PUBLISHED' ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
                               <CheckCircle2 size={10} />
-                              Saisie
+                              {t('statusRecorded')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
                               <Clock size={10} />
-                              En attente
+                              {t('statusPending')}
                             </span>
                           )}
                         </td>
@@ -560,21 +536,21 @@ export default function AppreciationsListPage() {
                       {s.status === 'PUBLISHED' ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
                           <CheckCircle2 size={10} />
-                          Saisie
+                          {t('statusRecorded')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
                           <Clock size={10} />
-                          En attente
+                          {t('statusPending')}
                         </span>
                       )}
                       <span className={`text-sm font-bold ${moyColor(s.average)}`}>
-                        {fmt(s.average)}
+                        {fmtAverage(s.average, locale)}
                         {s.mention && (
                           <span
                             className={`ml-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
                           >
-                            {MENTION_LABEL[s.mention]}
+                            {tMention(s.mention)}
                           </span>
                         )}
                       </span>
@@ -585,13 +561,15 @@ export default function AppreciationsListPage() {
 
               <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">
-                  Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}
-                  {Math.min(page * PAGE_SIZE, filteredStudents.length)} sur{' '}
-                  {filteredStudents.length} élèves —{' '}
+                  {t('paginationRange', {
+                    from: (page - 1) * PAGE_SIZE + 1,
+                    to: Math.min(page * PAGE_SIZE, filteredStudents.length),
+                    total: filteredStudents.length,
+                  })}{' '}
                   <strong className="text-foreground">
-                    {data.saisieCount} appréciations saisies
+                    {t('paginationRecorded', { count: data.saisieCount })}
                   </strong>
-                  , {data.totalCount - data.saisieCount} en attente
+                  {t('paginationPending', { count: data.totalCount - data.saisieCount })}
                 </span>
                 <div className="flex items-center gap-1">
                   <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />

@@ -1,0 +1,265 @@
+{
+  "mention": {
+    "TRES_BIEN": "Très Bien",
+    "BIEN": "Bien",
+    "ASSEZ_BIEN": "Assez Bien",
+    "PASSABLE": "Passable",
+    "INSUFFISANT": "Insuffisant",
+    "FAIBLE": "Faible"
+  },
+  "statistiques": {
+    "emptyState": "Aucune donnée pour cette classe.",
+    "completionRate": "Taux de complétion",
+    "completionRateSub": {
+      "one": "{count} sur {total} élève",
+      "other": "{count} sur {total} élèves"
+    },
+    "classAverage": "Moyenne de classe",
+    "classAverageSub": "toutes appréciations confondues",
+    "topMention": "Mention la plus fréquente",
+    "topMentionSub": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "noMention": "Aucune mention saisie",
+    "toWatch": "À surveiller",
+    "toWatchSub": "mentions insuffisant",
+    "mentionChartTitle": "Répartition des mentions",
+    "mentionChartSub": "Nombre d'élèves par mention, sur les appréciations saisies.",
+    "mentionChartAriaLabel": "Répartition des élèves par mention",
+    "averageChartTitle": "Répartition des moyennes",
+    "averageChartSub": "Moyennes générales des élèves, sur 20.",
+    "averageChartAriaLabel": "Répartition des moyennes générales",
+    "completionChartTitle": "Complétion par matière",
+    "completionChartSub": "Pourcentage d'appréciations saisies par matière.",
+    "completionChartEmpty": "Aucune matière configurée pour cette classe.",
+    "completionChartAriaLabel": "Pourcentage d'appréciations saisies par matière"
+  },
+  "parMatiere": {
+    "emptyState": "Aucune matière configurée pour cette classe.",
+    "colSubject": "Matière",
+    "colTeacher": "Enseignant",
+    "colCoefficient": "Coeff.",
+    "colClassAverage": "Moyenne classe",
+    "colRecorded": "Appréciations saisies",
+    "colStatus": "Statut",
+    "statusComplete": "Complet",
+    "statusInProgress": "En cours",
+    "statusTodo": "À faire"
+  },
+  "list": {
+    "title": "Appréciations",
+    "subtitle": "Saisie et gestion des appréciations — Année scolaire {year}",
+    "export": "Exporter",
+    "newEntry": "Saisir appréciations",
+    "loadError": "Impossible de charger les appréciations.",
+    "noClasses": "Configurez d'abord des classes et des élèves avant de saisir des appréciations.",
+    "deleteConfirm": "Supprimer l'appréciation générale de {name} ?",
+    "deletedToast": "Appréciation supprimée.",
+    "deleteErrorToast": "Erreur lors de la suppression.",
+    "menuView": "Voir l'appréciation",
+    "menuEdit": "Modifier l'appréciation",
+    "menuDelete": "Supprimer l'appréciation",
+    "summary": {
+      "totalStudents": "Total élèves",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Appréciations saisies",
+      "recordedSub": {
+        "one": "sur {count} élève",
+        "other": "sur {count} élèves"
+      },
+      "pending": "En attente",
+      "pendingSub": "à compléter",
+      "positive": "Très bien / Bien",
+      "positiveSub": "mentions positives",
+      "alert": "À surveiller",
+      "alertSub": "mentions insuffisant"
+    },
+    "searchPlaceholder": "Rechercher un élève...",
+    "allMentions": "Toutes mentions",
+    "resultsCount": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "tabs": {
+      "byStudent": "Par élève",
+      "bySubject": "Par matière",
+      "statistics": "Statistiques",
+      "pending": "En attente"
+    },
+    "noStudents": "Aucun élève inscrit dans cette classe.",
+    "table": {
+      "student": "Élève",
+      "average": "Moyenne",
+      "mention": "Mention",
+      "generalAppreciation": "Appréciation générale",
+      "homeroomTeacher": "Enseignant principal",
+      "status": "Statut"
+    },
+    "notProvided": "Non renseigné",
+    "noAppreciation": "Aucune appréciation saisie pour cet élève.",
+    "statusRecorded": "Saisie",
+    "statusPending": "En attente",
+    "paginationRange": "Affichage de {from} à {to} sur {total} élèves —",
+    "paginationRecorded": "{count} appréciations saisies",
+    "paginationPending": ", {count} en attente",
+    "csv": {
+      "filenamePrefix": "appreciations",
+      "colStudent": "Élève",
+      "colNumber": "N°",
+      "colAverage": "Moyenne",
+      "colMention": "Mention",
+      "colGeneralAppreciation": "Appréciation générale",
+      "colHomeroomTeacher": "Enseignant principal",
+      "colStatus": "Statut",
+      "statusRecorded": "Saisie",
+      "statusPending": "En attente"
+    }
+  },
+  "detail": {
+    "back": "Retour aux appréciations",
+    "studentNotFound": "Élève introuvable.",
+    "loadError": "Impossible de charger l'appréciation.",
+    "deleteConfirm": "Supprimer l'appréciation générale de cet élève ?",
+    "deletedToast": "Appréciation supprimée.",
+    "deleteErrorToast": "Erreur lors de la suppression.",
+    "position": "Élève {index} sur {total} — {className} · {term}",
+    "messagingSoon": "Messagerie — bientôt disponible.",
+    "reportCardsSoon": "Disponible avec les Bulletins (Epic 7).",
+    "classCouncilSoon": "Disponible avec le Conseil de classe (à venir).",
+    "auditHistorySoon": "L'historique détaillé arrive avec le module d'audit (à venir).",
+    "notifyGuardian": "Notifier le tuteur",
+    "generateReportCard": "Générer le bulletin",
+    "editAppreciation": "Modifier l'appréciation",
+    "generalTitle": "Appréciation générale",
+    "writtenBy": "Rédigé par :",
+    "enteredOn": "Saisie le {date}",
+    "statusRecorded": "Saisie",
+    "statusDraft": "Brouillon",
+    "generalEmpty": "Aucune appréciation générale saisie pour cet élève.",
+    "bySubjectTitle": "Appréciations par matière",
+    "bySubject": {
+      "subject": "Matière",
+      "coefficient": "Coeff.",
+      "average": "Moy.",
+      "mention": "Mention",
+      "appreciation": "Appréciation",
+      "teacher": "Enseignant"
+    },
+    "overallAverage": "Moyenne générale",
+    "rankLine": "— Rang : {rank} / {rankedCount}",
+    "classCouncilTitle": "Décision du conseil de classe",
+    "statsTitle": "Statistiques du trimestre",
+    "stats": {
+      "average": "Moyenne",
+      "rank": "Rang",
+      "minScore": "Note min",
+      "maxScore": "Note max",
+      "rankValue": {
+        "one": "{rank}er",
+        "other": "{rank}e"
+      }
+    },
+    "info": {
+      "classAverage": "Moy. de classe",
+      "absences": "Absences",
+      "lateArrivals": "Retards",
+      "gradedSubjects": "Matières évaluées",
+      "enteredOn": "Saisie le",
+      "lastModified": "Dernière modification"
+    },
+    "homeroomTitle": "Enseignant principal",
+    "notSet": "Non défini",
+    "historyTitle": "Historique des modifications",
+    "quickActionsTitle": "Actions rapides",
+    "generateReportCardPdf": "Générer le bulletin PDF",
+    "sendToGuardian": "Envoyer au tuteur légal",
+    "deleteAppreciation": "Supprimer l'appréciation"
+  },
+  "saisie": {
+    "title": "Saisir une appréciation",
+    "backToList": "Retour à la liste",
+    "studentNotFound": "Élève introuvable.",
+    "loadError": "Impossible de charger la saisie d'appréciation.",
+    "saveDraft": "Enregistrer brouillon",
+    "validate": "Valider l'appréciation",
+    "validateAndNext": "Valider et passer au suivant",
+    "validatedToast": "Appréciation validée.",
+    "draftSavedToast": "Brouillon enregistré.",
+    "classProgress": "Progression de la classe :",
+    "progressCount": {
+      "one": "{count} / {total} élève",
+      "other": "{count} / {total} élèves"
+    },
+    "contextTitle": "Contexte de saisie",
+    "classLabel": "Classe",
+    "termLabel": "Trimestre",
+    "studentLabel": "Élève",
+    "selectedStudent": "Élève sélectionné",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "studentMeta": "N° {number} · {className}",
+    "provisionalRank": {
+      "one": "Rang provisoire : {rank}er",
+      "other": "Rang provisoire : {rank}e"
+    },
+    "overallAverage": "Moyenne générale",
+    "generalTitle": "Appréciation générale",
+    "mentionLabel": "Mention générale",
+    "commentLabel": "Commentaire général",
+    "commentHint": "(visible sur le bulletin)",
+    "charCount": "{count} / {max} caractères",
+    "commentPlaceholder": "Rédigez un commentaire constructif et bienveillant.",
+    "comportementLabel": "Comportement",
+    "investissementLabel": "Investissement",
+    "assiduiteLabel": "Assiduité",
+    "comportement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfaisant",
+      "A_AMELIORER": "À améliorer",
+      "PERTURBATEUR": "Perturbateur"
+    },
+    "investissement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfaisant",
+      "A_AMELIORER": "À améliorer",
+      "INSUFFISANT": "Insuffisant"
+    },
+    "assiduite": {
+      "REGULIER": "Régulier",
+      "IRREGULIER": "Irrégulier",
+      "ABSENCES_REPETEES": "Absences répétées"
+    },
+    "bySubjectTitle": "Appréciations par matière",
+    "subjectsCount": {
+      "one": "{count} matière · Saisies : {filled}/{count}",
+      "other": "{count} matières · Saisies : {filled}/{count}"
+    },
+    "subjectPlaceholder": "Cliquer pour saisir une appréciation...",
+    "prevStudent": "Précédent : {name}",
+    "nextStudent": "Suivant : {name}",
+    "summaryTitle": "Résumé de l'élève",
+    "info": {
+      "overallAverage": "Moyenne générale",
+      "rank": "Rang",
+      "absences": "Absences",
+      "lateArrivals": "Retards",
+      "classAverage": "Moy. classe"
+    },
+    "rankValue": {
+      "one": "{rank}er / {total}",
+      "other": "{rank}e / {total}"
+    },
+    "subjectGrades": "Notes par matière",
+    "quickPhrasesTitle": "Phrases types",
+    "quickPhrasesSubtitle": "Cliquer pour insérer dans le commentaire",
+    "quickPhrases": {
+      "serious": "Élève sérieux et investi, qui doit continuer ainsi.",
+      "efforts": "Des efforts notables, mais des lacunes persistent.",
+      "insufficient": "Résultats insuffisants. Un soutien scolaire est recommandé.",
+      "satisfactory": "Trimestre satisfaisant, peut viser encore mieux.",
+      "exemplary": "Comportement exemplaire, excellente participation.",
+      "regularity": "Doit faire preuve de plus de régularité dans son travail."
+    }
+  }
+}

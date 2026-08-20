@@ -5,6 +5,7 @@
 // s'enregistre avec « Enregistrer ».
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Save } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -28,6 +29,8 @@ export default function ClassDetailPage() {
   const params = useParams<{ id: string }>();
   const classId = params.id;
   const { toast } = useToast();
+  const t = useTranslations('Configuration.classes.detail');
+  const tCommon = useTranslations('Common');
   const { options, error: optionsError, noSchool } = useClassFormData(!!user);
   const [cls, setCls] = useState<ClassDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +41,12 @@ export default function ClassDetailPage() {
       setCls(res.class);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
-        setError('Classe introuvable.');
+        setError(t('notFound'));
         return;
       }
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     }
-  }, [classId]);
+  }, [classId, t, tCommon]);
 
   useEffect(() => {
     if (!user) return;
@@ -56,13 +59,13 @@ export default function ClassDetailPage() {
 
   const onSaved = useCallback(
     (saved: ClassData) => {
-      toast('Classe mise à jour.', 'success');
+      toast(t('updated'), 'success');
       setCls((prev) =>
         prev ? { ...prev, ...saved, homeroomTeacher: prev.homeroomTeacher } : prev,
       );
       void loadDetail();
     },
-    [toast, loadDetail],
+    [toast, loadDetail, t],
   );
 
   const roomIds = useMemo(() => (options?.rooms ?? []).map((r) => r.id), [options?.rooms]);
@@ -79,7 +82,7 @@ export default function ClassDetailPage() {
   const meta = [
     cls?.level,
     cls?.room,
-    cls?.academicYear?.label ? `Année ${cls.academicYear.label}` : null,
+    cls?.academicYear?.label ? t('yearPrefix', { year: cls.academicYear.label }) : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -104,7 +107,7 @@ export default function ClassDetailPage() {
             className="w-fit"
             onClick={() => router.push('/configuration/classes')}
           >
-            Annuler
+            {t('cancel')}
           </Button>
           <Button
             className="w-fit"
@@ -113,7 +116,7 @@ export default function ClassDetailPage() {
             onClick={() => void form.submit()}
           >
             <Save size={14} />
-            Enregistrer
+            {t('save')}
           </Button>
         </>
       }

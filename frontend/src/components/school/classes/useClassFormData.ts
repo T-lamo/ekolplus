@@ -6,6 +6,7 @@
 // (label / grading scale / terms) and the active bulletin template. One hook
 // for create + edit.
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import type { GradeLevelRow } from '@/app/(school)/configuration/classes/types';
 import type { RoomRow } from '@/lib/rooms';
@@ -35,15 +36,22 @@ interface TemplateRow {
   isActive: boolean;
 }
 
-const TERM_TYPE_LABEL: Record<string, string> = {
-  TRIMESTRE: 'trimestre',
-  SEMESTRE: 'semestre',
-  LIBRE: 'période',
-};
-
 export type ClassFormBaseOptions = Omit<ClassFormOptions, 'studentCount'>;
 
+type PeriodTypesT = (key: `periodTypes.${'TRIMESTRE' | 'SEMESTRE' | 'LIBRE'}`) => string;
+
+function termTypeLabels(t: PeriodTypesT): Record<string, string> {
+  return {
+    TRIMESTRE: t('periodTypes.TRIMESTRE'),
+    SEMESTRE: t('periodTypes.SEMESTRE'),
+    LIBRE: t('periodTypes.LIBRE'),
+  };
+}
+
 export function useClassFormData(enabled: boolean) {
+  const t = useTranslations('Configuration.classes.form.notes');
+  const tLoadError = useTranslations('Configuration.classes.form');
+  const TERM_TYPE_LABEL = termTypeLabels(t);
   const [options, setOptions] = useState<ClassFormBaseOptions | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [noSchool, setNoSchool] = useState(false);
@@ -59,7 +67,7 @@ export function useClassFormData(enabled: boolean) {
       api<{ personal: TemplateRow[]; global: TemplateRow[] }>('/api/school/bulletin-templates'),
       api<{ rooms: RoomRow[] }>('/api/school/rooms'),
     ])
-      .then(([s, t, g, school, tpl, rm]) => {
+      .then(([s, teachersRes, g, school, tpl, rm]) => {
         if (cancelled) return;
         const subjects: ClassFormSubject[] = s.subjects
           .filter((row) => row.status === 'ACTIVE' && row.isActive)
@@ -75,7 +83,7 @@ export function useClassFormData(enabled: boolean) {
         const activeTemplate =
           tpl.personal.find((x) => x.isActive) ?? tpl.global.find((x) => x.isActive) ?? null;
         setOptions({
-          teachers: t.teachers.map((row) => ({
+          teachers: teachersRes.teachers.map((row) => ({
             id: row.id,
             name: row.name,
             photoUrl: row.photoUrl,
@@ -88,7 +96,7 @@ export function useClassFormData(enabled: boolean) {
           grading: {
             scale: year?.gradingScale ?? null,
             termCount: year?.terms.length ?? 0,
-            termType: termType ? (TERM_TYPE_LABEL[termType] ?? 'période') : null,
+            termType: termType ? (TERM_TYPE_LABEL[termType] ?? t('periodTypes.LIBRE')) : null,
             bulletinTemplate: activeTemplate?.name ?? null,
           },
         });
@@ -99,12 +107,12 @@ export function useClassFormData(enabled: boolean) {
           setNoSchool(true);
           return;
         }
-        setError('Impossible de charger les données du formulaire.');
+        setError(tLoadError('loadError'));
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, t, tLoadError]);
 
   return { options, error, noSchool };
 }

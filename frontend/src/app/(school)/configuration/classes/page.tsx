@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -53,6 +54,8 @@ export default function ClassesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.classes.list');
+  const tCommon = useTranslations('Common');
   const [classes, setClasses] = useState<ClassData[] | null>(null);
   const [school, setSchool] = useState<SchoolInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,9 +79,9 @@ export default function ClassesPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les classes.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   const levels = useMemo(() => [...new Set((classes ?? []).map((c) => c.level))], [classes]);
 
@@ -111,21 +114,27 @@ export default function ClassesPage() {
   }, [classes]);
 
   async function onDelete(cls: ClassData) {
-    if (!(await confirm({ message: `Supprimer la classe « ${cls.name} » ?`, danger: true })))
-      return;
+    if (!(await confirm({ message: t('deleteConfirm', { name: cls.name }), danger: true }))) return;
     try {
       await api(`/api/school/classes/${cls.id}`, { method: 'DELETE' });
       setClasses((prev) => (prev ? prev.filter((c) => c.id !== cls.id) : prev));
-      toast('Classe supprimée.', 'success');
+      toast(t('classDeleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   function onExport() {
     exportToCsv(
       'classes.csv',
-      ['Classe', 'Niveau', 'Salle', 'Professeur principal', 'Capacité', 'Matières'],
+      [
+        t('csv.class'),
+        t('csv.level'),
+        t('csv.room'),
+        t('csv.homeroomTeacher'),
+        t('csv.capacity'),
+        t('csv.subjects'),
+      ],
       filtered.map((c) => [
         c.name,
         c.level,
@@ -140,37 +149,37 @@ export default function ClassesPage() {
   function menuItemsFor(c: ClassData) {
     return [
       {
-        label: 'Voir la classe',
+        label: t('menu.view'),
         icon: <Eye size={14} />,
         onClick: () => router.push(`/configuration/classes/${c.id}`),
       },
       {
-        label: 'Modifier',
+        label: t('menu.edit'),
         icon: <Pencil size={14} />,
         onClick: () => router.push(`/configuration/classes/${c.id}`),
       },
       {
-        label: 'Gérer les élèves',
+        label: t('menu.manageStudents'),
         icon: <Users size={14} />,
-        onClick: () => toast('Disponible avec Epic 5 (Élèves).', 'info'),
+        onClick: () => toast(t('menu.manageStudentsToast'), 'info'),
       },
       {
-        label: 'Affecter enseignants',
+        label: t('menu.assignTeachers'),
         icon: <UserPlus size={14} />,
         onClick: () => router.push(`/configuration/classes/${c.id}#card-matieres`),
       },
       {
-        label: 'Voir les matières',
+        label: t('menu.viewSubjects'),
         icon: <BookOpen size={14} />,
         onClick: () => router.push(`/configuration/classes/${c.id}#card-matieres`),
       },
       {
-        label: 'Bulletins de la classe',
+        label: t('menu.classBulletins'),
         icon: <FileText size={14} />,
-        onClick: () => toast('Disponible avec Epic 7 (Bulletins).', 'info'),
+        onClick: () => toast(t('menu.classBulletinsToast'), 'info'),
       },
       {
-        label: 'Supprimer la classe',
+        label: t('menu.delete'),
         icon: <Trash2 size={14} />,
         onClick: () => onDelete(c),
         tone: 'danger' as const,
@@ -191,19 +200,17 @@ export default function ClassesPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Classes</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Gestion des classes de l&apos;établissement.
-          </p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => router.push('/configuration/classes/nouvelle')}>
             <Plus size={14} />
-            Ajouter une classe
+            {t('addClass')}
           </Button>
         </div>
       </div>
@@ -227,22 +234,22 @@ export default function ClassesPage() {
       {classes !== null && (
         <>
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            <SummaryCard icon={SchoolIcon} label="Total classes" value={stats.total} />
+            <SummaryCard icon={SchoolIcon} label={t('stats.total')} value={stats.total} />
             <SummaryCard
               icon={Layers}
-              label="Niveaux distincts"
+              label={t('stats.levels')}
               value={stats.levels}
               tone="success"
             />
             <SummaryCard
               icon={UserCheck}
-              label="Prof. principal assigné"
+              label={t('stats.homeroomAssigned')}
               value={`${stats.withHomeroom} / ${stats.total}`}
               tone="blue"
             />
             <SummaryCard
               icon={BookOpen}
-              label="Matières / classe (moy.)"
+              label={t('stats.avgSubjects')}
               value={stats.avgSubjects}
               tone="warning"
             />
@@ -252,11 +259,11 @@ export default function ClassesPage() {
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une classe..."
+              placeholder={t('searchPlaceholder')}
               className="max-w-[260px]"
             />
             <FilterSelect value={level} onValueChange={setLevel}>
-              <SelectItem value="">Tous niveaux</SelectItem>
+              <SelectItem value="">{t('allLevels')}</SelectItem>
               {levels.map((l) => (
                 <SelectItem key={l} value={l}>
                   {l}
@@ -267,13 +274,17 @@ export default function ClassesPage() {
               disabled
               value={school?.academicYear?.label ?? ''}
               onValueChange={() => {}}
-              title="Sélecteur multi-année à venir — une seule année scolaire active pour l'instant"
+              title={t('multiYearComingSoon')}
             >
               <SelectItem value={school?.academicYear?.label ?? ''}>
-                {school?.academicYear?.label ?? 'Aucune année active'}
+                {school?.academicYear?.label ?? t('noActiveYear')}
               </SelectItem>
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{filtered.length} classes</span>
+            <span className="text-sm text-muted-foreground">
+              {t(filtered.length > 1 ? 'resultCount.other' : 'resultCount.one', {
+                count: filtered.length,
+              })}
+            </span>
             {/* Table view needs real width to be usable — mobile always
                 gets the card grid instead, so the toggle (and the way to
                 reach the table) only shows from `md` up. */}
@@ -285,7 +296,7 @@ export default function ClassesPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="p-5 text-sm text-muted-foreground">
-                {classes.length === 0 ? 'Aucune classe — ajoute la première.' : 'Aucun résultat.'}
+                {classes.length === 0 ? t('emptyNoClasses') : t('emptyNoResults')}
               </p>
             </Card>
           ) : view === 'grid' ? (
@@ -304,13 +315,13 @@ export default function ClassesPage() {
                   }
                   title={c.name}
                   href={`/configuration/classes/${c.id}`}
-                  subtitle={[c.room ?? 'Salle non renseignée', c.track].filter(Boolean).join(' · ')}
+                  subtitle={[c.room ?? t('roomUnset'), c.track].filter(Boolean).join(' · ')}
                   menu={<ActionMenu items={menuItemsFor(c)} />}
                   metaLeft={
                     <ListCardPerson
                       name={c.homeroomTeacher?.name}
-                      suffix="· Prof. principal"
-                      emptyLabel="Professeur principal non affecté"
+                      suffix={t('homeroomSuffix')}
+                      emptyLabel={t('homeroomEmpty')}
                     />
                   }
                   metaRight={<Badge>{c.level}</Badge>}
@@ -319,13 +330,15 @@ export default function ClassesPage() {
                       href={`/configuration/classes/${c.id}#card-matieres`}
                       className="font-semibold text-primary hover:underline"
                     >
-                      {c.subjectCount} matières
+                      {t(c.subjectCount > 1 ? 'subjectCount.other' : 'subjectCount.one', {
+                        count: c.subjectCount,
+                      })}
                     </Link>
                   }
                   footerRight={
                     <>
                       <span className="font-bold text-foreground">{c.studentCount}</span>
-                      {c.capacity != null ? ` / ${c.capacity}` : ''} élèves
+                      {c.capacity != null ? ` / ${c.capacity}` : ''} {t('studentCountSuffix')}
                     </>
                   }
                 />
@@ -337,13 +350,13 @@ export default function ClassesPage() {
                 <table className="w-full min-w-[920px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>Classe</Th>
-                      <Th>Niveau</Th>
-                      <Th>Professeur principal</Th>
-                      <Th>Élèves</Th>
-                      <Th>Matières</Th>
-                      <Th>Moyenne générale</Th>
-                      <Th>Statut</Th>
+                      <Th>{t('table.class')}</Th>
+                      <Th>{t('table.level')}</Th>
+                      <Th>{t('table.homeroomTeacher')}</Th>
+                      <Th>{t('table.students')}</Th>
+                      <Th>{t('table.subjects')}</Th>
+                      <Th>{t('table.average')}</Th>
+                      <Th>{t('table.status')}</Th>
                       <Th className="w-[80px]" />
                     </tr>
                   </thead>
@@ -375,14 +388,16 @@ export default function ClassesPage() {
                               <span>{c.homeroomTeacher.name}</span>
                             </div>
                           ) : (
-                            <span className="italic text-muted-foreground">Non affecté</span>
+                            <span className="italic text-muted-foreground">
+                              {t('table.unassigned')}
+                            </span>
                           )}
                         </td>
                         <td className="px-3.5 py-2.5 text-foreground">
                           <span className="font-semibold">{c.studentCount}</span>
                           <span className="text-muted-foreground">
                             {' '}
-                            / {c.capacity ?? '—'} places
+                            / {c.capacity ?? '—'} {t('table.places')}
                           </span>
                         </td>
                         <td className="px-3.5 py-2.5">
@@ -395,7 +410,7 @@ export default function ClassesPage() {
                         </td>
                         <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                         <td className="px-3.5 py-2.5">
-                          <Badge tone="success">Active</Badge>
+                          <Badge tone="success">{t('table.active')}</Badge>
                         </td>
                         <td className="px-3.5 py-2.5">
                           <ActionMenu items={menuItemsFor(c)} />

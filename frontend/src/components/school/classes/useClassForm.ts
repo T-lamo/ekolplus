@@ -6,6 +6,7 @@
 // fly through the class-subjects endpoints (same behaviour as the subject
 // page's « Classes concernées »), a pivot with grades is locked (409 server-side).
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import type { ClassData, ClassDetail } from '@/app/(school)/configuration/classes/types';
 
@@ -87,15 +88,42 @@ export function effectiveRoom(v: ClassFormValues, rooms: { id: string; name: str
   return v.room.trim();
 }
 
-export function validate(v: ClassFormValues): ClassFormErrors {
-  const errors: ClassFormErrors = {};
-  if (v.name.trim().length < 1) errors.name = 'Le nom est requis.';
-  else if (v.name.trim().length > 40) errors.name = '40 caractères maximum.';
-  if (effectiveLevel(v).length < 1) errors.level = 'Le niveau est requis.';
+/** Raw, untranslated codes — `classSectionsDone` only checks presence
+ * (truthy/falsy), and `useClassForm.submit()` translates them into display
+ * text right before showing them, so the codes themselves never reach the UI. */
+export type ClassFormErrorCodes = Partial<
+  Record<'name' | 'level' | 'capacity', 'required' | 'tooLong' | 'range'>
+>;
+
+export function validate(v: ClassFormValues): ClassFormErrorCodes {
+  const errors: ClassFormErrorCodes = {};
+  if (v.name.trim().length < 1) errors.name = 'required';
+  else if (v.name.trim().length > 40) errors.name = 'tooLong';
+  if (effectiveLevel(v).length < 1) errors.level = 'required';
   const cap = Number(v.capacity);
-  if (v.capacity.trim() === '') errors.capacity = 'La capacité est requise.';
-  else if (!Number.isInteger(cap) || cap < 1 || cap > 500)
-    errors.capacity = 'Nombre entier entre 1 et 500.';
+  if (v.capacity.trim() === '') errors.capacity = 'required';
+  else if (!Number.isInteger(cap) || cap < 1 || cap > 500) errors.capacity = 'range';
+  return errors;
+}
+
+type ClassFormErrorsT = (
+  key:
+    | 'errors.nameRequired'
+    | 'errors.nameTooLong'
+    | 'errors.levelRequired'
+    | 'errors.capacityRequired'
+    | 'errors.capacityRange',
+) => string;
+
+function translateErrors(codes: ClassFormErrorCodes, t: ClassFormErrorsT): ClassFormErrors {
+  const errors: ClassFormErrors = {};
+  if (codes.name)
+    errors.name = t(codes.name === 'required' ? 'errors.nameRequired' : 'errors.nameTooLong');
+  if (codes.level) errors.level = t('errors.levelRequired');
+  if (codes.capacity)
+    errors.capacity = t(
+      codes.capacity === 'required' ? 'errors.capacityRequired' : 'errors.capacityRange',
+    );
   return errors;
 }
 
@@ -114,6 +142,8 @@ export function useClassForm({
   subjects: ClassFormSubject[];
   onSaved: (cls: ClassData) => void;
 }) {
+  const t = useTranslations('Configuration.classes.form.info');
+  const tCommon = useTranslations('Common');
   const mode: 'create' | 'edit' = cls ? 'edit' : 'create';
   const [values, setValues] = useState<ClassFormValues>(() =>
     initialValues(cls, levelCatalog, roomIds),
@@ -218,10 +248,10 @@ export function useClassForm({
             ? prev.subjectIds.filter((id) => id !== subjectId)
             : [...new Set([...prev.subjectIds, subjectId])],
         }));
-        setSubjectError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+        setSubjectError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       }
     },
-    [mode, cls, lockedSubjectIds, subjects, pivotBySubject],
+    [mode, cls, lockedSubjectIds, subjects, pivotBySubject, tCommon],
   );
 
   /** Multi-select handler: toggles every id that changed, one at a time. */
@@ -263,19 +293,19 @@ export function useClassForm({
         });
       } catch (err) {
         setPivots((prev) => ({ ...prev, [subjectId]: before }));
-        setSubjectError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+        setSubjectError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       } finally {
         setPivotBusy(null);
       }
     },
-    [cls, pivots],
+    [cls, pivots, tCommon],
   );
 
   const submit = useCallback(async () => {
-    const nextErrors = validate(values);
-    setErrors(nextErrors);
+    const nextErrorCodes = validate(values);
+    setErrors(translateErrors(nextErrorCodes, t));
     setServerError(null);
-    if (Object.keys(nextErrors).length > 0) {
+    if (Object.keys(nextErrorCodes).length > 0) {
       document
         .querySelector<HTMLElement>('[data-field-error]')
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -311,12 +341,12 @@ export function useClassForm({
       });
       return true;
     } catch (err) {
-      setServerError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setServerError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       return false;
     } finally {
       setSubmitting(false);
     }
-  }, [values, cls, onSaved]);
+  }, [values, cls, onSaved, t, tCommon]);
 
   return {
     mode,

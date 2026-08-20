@@ -5,6 +5,7 @@
 // on the new class's page (edit mode, « Navigation rapide » active).
 import { useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Save } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -26,6 +27,7 @@ export default function NouvelleClassePage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations('Configuration.classes.create');
   const { options, error, noSchool } = useClassFormData(!!user);
 
   useEffect(() => {
@@ -34,10 +36,10 @@ export default function NouvelleClassePage() {
 
   const onSaved = useCallback(
     (cls: ClassData) => {
-      toast('Classe créée.', 'success');
+      toast(t('created'), 'success');
       router.push(`/configuration/classes/${cls.id}`);
     },
-    [router, toast],
+    [router, toast, t],
   );
 
   const roomIds = useMemo(() => (options?.rooms ?? []).map((r) => r.id), [options?.rooms]);
@@ -57,7 +59,7 @@ export default function NouvelleClassePage() {
       mode="create"
       name={form.values.name}
       color={form.values.color}
-      meta={`Nouvelle classe${options?.yearLabel ? ` — Année scolaire ${options.yearLabel}` : ''}`}
+      meta={options?.yearLabel ? t('metaWithYear', { year: options.yearLabel }) : t('meta')}
       done={doneKeys}
       ready={!!options}
       counts={
@@ -72,11 +74,11 @@ export default function NouvelleClassePage() {
             className="w-fit"
             onClick={() => router.push('/configuration/classes')}
           >
-            Annuler
+            {t('cancel')}
           </Button>
           <Button className="w-fit" loading={form.submitting} onClick={() => void form.submit()}>
             <Save size={14} />
-            Enregistrer la classe
+            {t('save')}
           </Button>
         </>
       }

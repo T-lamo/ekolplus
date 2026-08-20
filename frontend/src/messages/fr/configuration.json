@@ -120,6 +120,7 @@
       "notFound": "Classe introuvable."
     },
     "form": {
+      "loadError": "Impossible de charger les données du formulaire.",
       "requiredHint": "Les champs marqués",
       "requiredHintSuffix": "sont obligatoires",
       "info": {
@@ -144,6 +145,7 @@
         "roomFreePlaceholder": "Salle 12 — Bât. B",
         "noRoomCatalog": "Aucun catalogue de salles —",
         "noRoomCatalogLink": "définir les salles de l'école",
+        "placesSuffix": "places",
         "roomTooSmall": "Cette salle n'a que {roomCapacity} places pour {classCapacity} élèves.",
         "inactiveSuffix": "· inactive",
         "capacityLabel": "Capacité maximale",
@@ -217,6 +219,11 @@
         "periodCount": {
           "one": "{count} {type}",
           "other": "{count} {type}s"
+        },
+        "periodTypes": {
+          "TRIMESTRE": "trimestre",
+          "SEMESTRE": "semestre",
+          "LIBRE": "période"
         },
         "calcMode": "Mode de calcul",
         "calcModeValue": "Moyenne pondérée par coeff.",

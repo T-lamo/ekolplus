@@ -7,17 +7,11 @@
 // and the badge turns ✓ when the section is complete.
 import { useEffect, useState, type ReactNode } from 'react';
 import { BookOpen, Info, NotebookPen, School, UserCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PageHeaderCard } from '@/components/school/PageHeaderCard';
 import { PageTabsBar, type PageTab } from '@/components/school/PageTabsBar';
 import { tintOf } from '@/lib/subject-visuals';
 import { CLASS_SECTION_IDS, type ClassSection } from './ClassForm';
-
-const TABS: readonly PageTab<ClassSection>[] = [
-  { key: 'info', label: 'Informations générales', Icon: Info },
-  { key: 'prof', label: 'Professeur principal', Icon: UserCheck },
-  { key: 'subjects', label: 'Matières', Icon: BookOpen },
-  { key: 'notes', label: 'Notes & Évaluation', Icon: NotebookPen },
-];
 
 export function ClassPageShell({
   mode,
@@ -41,6 +35,13 @@ export function ClassPageShell({
   actions?: ReactNode;
   children: ReactNode;
 }) {
+  const t = useTranslations('Configuration.classes');
+  const TABS: readonly PageTab<ClassSection>[] = [
+    { key: 'info', label: t('pageShell.tabs.info'), Icon: Info },
+    { key: 'prof', label: t('pageShell.tabs.prof'), Icon: UserCheck },
+    { key: 'subjects', label: t('pageShell.tabs.subjects'), Icon: BookOpen },
+    { key: 'notes', label: t('pageShell.tabs.notes'), Icon: NotebookPen },
+  ];
   const [active, setActive] = useState<ClassSection>('info');
 
   // Scroll-spy on the scrolling <main>: the active tab is the last section
@@ -100,7 +101,7 @@ export function ClassPageShell({
             <School size={18} />
           </div>
         }
-        title={mode === 'create' ? 'Ajouter une classe' : name || '…'}
+        title={mode === 'create' ? t('pageShell.addTitle') : name || '…'}
         meta={meta}
         actions={actions}
         tabs={
@@ -110,7 +111,7 @@ export function ClassPageShell({
             onChange={goTo}
             done={done}
             {...(counts ? { counts } : {})}
-            ariaLabel="Sections de la fiche classe"
+            ariaLabel={t('pageShell.sectionsAriaLabel')}
           />
         }
       />

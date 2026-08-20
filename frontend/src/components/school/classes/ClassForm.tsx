@@ -23,6 +23,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { MultiSelect } from '@/components/ui/MultiSelect';
@@ -115,11 +116,12 @@ export function ClassForm({
   form: ClassFormController;
   options: ClassFormOptions;
 }) {
+  const t = useTranslations('Configuration.classes.form');
   const { values: v, setField, errors, serverError, mode } = form;
   const [detailOpen, setDetailOpen] = useState(false);
 
   const selectedTeacher = useMemo(
-    () => options.teachers.find((t) => t.id === v.homeroomTeacherId) ?? null,
+    () => options.teachers.find((teacher) => teacher.id === v.homeroomTeacherId) ?? null,
     [options.teachers, v.homeroomTeacherId],
   );
   const selectedCount = v.subjectIds.length;
@@ -152,10 +154,12 @@ export function ClassForm({
       ? selectedRoom.capacity
       : null;
   // Under the room select: the room's identity line (type · places · lieu).
+  // roomTypeLabel is a carve-out (shared with the risky Emploi du temps
+  // module) — stays French by design, see CLAUDE.md's i18n carve-outs.
   const roomHint = selectedRoom
     ? [
         roomTypeLabel(selectedRoom.type),
-        selectedRoom.capacity != null ? `${selectedRoom.capacity} places` : null,
+        selectedRoom.capacity != null ? `${selectedRoom.capacity} ${t('info.placesSuffix')}` : null,
         roomLocation(selectedRoom) || null,
       ]
         .filter(Boolean)
@@ -167,8 +171,8 @@ export function ClassForm({
     <div className="flex flex-col gap-3">
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Info size={13} className="shrink-0" />
-        Les champs marqués <span className="font-semibold text-destructive-foreground">*</span> sont
-        obligatoires
+        {t('requiredHint')} <span className="font-semibold text-destructive-foreground">*</span>{' '}
+        {t('requiredHintSuffix')}
       </p>
       {serverError && (
         <p
@@ -185,14 +189,14 @@ export function ClassForm({
           <FormCard
             id={CLASS_SECTION_IDS.info}
             icon={<School size={15} />}
-            title="Informations générales"
-            subtitle="Identité et localisation de la classe."
+            title={t('info.title')}
+            subtitle={t('info.subtitle')}
           >
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
               <FormGroup
-                label="Nom de la classe"
+                label={t('info.nameLabel')}
                 required
-                hint="Ex : 3ème A, NS1, Philo Sciences…"
+                hint={t('info.nameHint')}
                 error={errors.name}
                 htmlFor="class-name"
               >
@@ -200,13 +204,13 @@ export function ClassForm({
                   id="class-name"
                   value={v.name}
                   onChange={(e) => setField('name', e.target.value)}
-                  placeholder="3ème A"
+                  placeholder={t('info.namePlaceholder')}
                   maxLength={40}
                   autoFocus={mode === 'create'}
                 />
               </FormGroup>
               <FormGroup
-                label="Niveau scolaire"
+                label={t('info.levelLabel')}
                 required
                 error={errors.level}
                 htmlFor="class-level"
@@ -217,22 +221,22 @@ export function ClassForm({
                       id="class-level"
                       value={v.level}
                       onValueChange={(val) => setField('level', val)}
-                      placeholder="Sélectionner un niveau"
+                      placeholder={t('info.levelPlaceholder')}
                     >
                       {options.levelCatalog.map((l) => (
                         <SelectItem key={l} value={l}>
                           {l}
                         </SelectItem>
                       ))}
-                      <SelectItem value={OTHER_LEVEL}>Autre…</SelectItem>
+                      <SelectItem value={OTHER_LEVEL}>{t('info.levelOther')}</SelectItem>
                     </BareSelect>
                     {v.level === OTHER_LEVEL && (
                       <TextInput
                         value={v.levelOther}
                         onChange={(e) => setField('levelOther', e.target.value)}
-                        placeholder="Saisir le niveau"
+                        placeholder={t('info.levelOtherPlaceholder')}
                         maxLength={40}
-                        aria-label="Niveau (autre)"
+                        aria-label={t('info.levelOtherAria')}
                       />
                     )}
                   </div>
@@ -242,23 +246,23 @@ export function ClassForm({
                       id="class-level"
                       value={v.level}
                       onChange={(e) => setField('level', e.target.value)}
-                      placeholder="3ème"
+                      placeholder={t('info.levelFreePlaceholder')}
                       maxLength={40}
                     />
                     <span className="text-2xs text-muted-foreground">
-                      Aucun catalogue de niveaux —{' '}
+                      {t('info.noLevelCatalog')}{' '}
                       <Link
                         href="/configuration/niveaux"
                         className="font-medium text-primary hover:underline"
                       >
-                        définir les niveaux de l&apos;école
+                        {t('info.noLevelCatalogLink')}
                       </Link>
                     </span>
                   </>
                 )}
               </FormGroup>
               <FormGroup
-                label="Salle de cours"
+                label={t('info.roomLabel')}
                 optional
                 htmlFor="class-room"
                 {...(roomHint ? { hint: roomHint } : {})}
@@ -269,25 +273,25 @@ export function ClassForm({
                       id="class-room"
                       value={v.roomId}
                       onValueChange={(val) => setField('roomId', val)}
-                      placeholder="Aucune salle attitrée"
+                      placeholder={t('info.roomNone')}
                     >
-                      <SelectItem value="">Aucune salle attitrée</SelectItem>
+                      <SelectItem value="">{t('info.roomNone')}</SelectItem>
                       {roomOptions.map((r) => (
                         <SelectItem key={r.id} value={r.id}>
                           {r.name}
                           {r.capacity != null ? ` · ${r.capacity} pl.` : ''}
-                          {!r.isActive ? ' · inactive' : ''}
+                          {!r.isActive ? ` ${t('info.inactiveSuffix')}` : ''}
                         </SelectItem>
                       ))}
-                      <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
+                      <SelectItem value={OTHER_ROOM}>{t('info.roomOther')}</SelectItem>
                     </BareSelect>
                     {v.roomId === OTHER_ROOM && (
                       <TextInput
                         value={v.room}
                         onChange={(e) => setField('room', e.target.value)}
-                        placeholder="Saisir le lieu (ex. Préau, Salle paroissiale)"
+                        placeholder={t('info.roomOtherPlaceholder')}
                         maxLength={40}
-                        aria-label="Salle (autre lieu)"
+                        aria-label={t('info.roomOtherAria')}
                       />
                     )}
                     {roomTooSmall !== null && (
@@ -296,7 +300,10 @@ export function ClassForm({
                         className="flex items-center gap-1 text-2xs font-medium text-warning-foreground"
                       >
                         <AlertTriangle size={11} aria-hidden />
-                        Cette salle n’a que {roomTooSmall} places pour {capacityNum} élèves.
+                        {t('info.roomTooSmall', {
+                          roomCapacity: roomTooSmall,
+                          classCapacity: capacityNum,
+                        })}
                       </span>
                     )}
                   </div>
@@ -306,25 +313,25 @@ export function ClassForm({
                       id="class-room"
                       value={v.room}
                       onChange={(e) => setField('room', e.target.value)}
-                      placeholder="Salle 12 — Bât. B"
+                      placeholder={t('info.roomFreePlaceholder')}
                       maxLength={40}
                     />
                     <span className="text-2xs text-muted-foreground">
-                      Aucun catalogue de salles —{' '}
+                      {t('info.noRoomCatalog')}{' '}
                       <Link
                         href="/configuration/salles"
                         className="font-medium text-primary hover:underline"
                       >
-                        définir les salles de l&apos;école
+                        {t('info.noRoomCatalogLink')}
                       </Link>
                     </span>
                   </>
                 )}
               </FormGroup>
               <FormGroup
-                label="Capacité maximale"
+                label={t('info.capacityLabel')}
                 required
-                hint="Nombre maximum de places disponibles"
+                hint={t('info.capacityHint')}
                 error={errors.capacity}
                 htmlFor="class-capacity"
               >
@@ -336,27 +343,27 @@ export function ClassForm({
                   max={500}
                   value={v.capacity}
                   onChange={(e) => setField('capacity', e.target.value)}
-                  placeholder="32"
+                  placeholder={t('info.capacityPlaceholder')}
                 />
               </FormGroup>
-              <FormGroup label="Filière / Série" optional htmlFor="class-track">
+              <FormGroup label={t('info.trackLabel')} optional htmlFor="class-track">
                 <TextInput
                   id="class-track"
                   value={v.track}
                   onChange={(e) => setField('track', e.target.value)}
-                  placeholder="Sciences, Lettres, NS…"
+                  placeholder={t('info.trackPlaceholder')}
                   maxLength={60}
                 />
               </FormGroup>
               <FormGroup
-                label="Année scolaire"
+                label={t('info.yearLabel')}
                 required
-                hint="Année active — modifiable dans Paramètres › Année scolaire"
+                hint={t('info.yearHint')}
                 htmlFor="class-year"
               >
                 <TextInput
                   id="class-year"
-                  value={options.yearLabel ?? 'Aucune année active'}
+                  value={options.yearLabel ?? t('info.noActiveYear')}
                   readOnly
                   disabled
                 />
@@ -367,39 +374,37 @@ export function ClassForm({
           <FormCard
             id={CLASS_SECTION_IDS.prof}
             icon={<UserCheck size={15} />}
-            title="Professeur principal"
-            subtitle="Responsable pédagogique de la classe."
+            title={t('prof.title')}
+            subtitle={t('prof.subtitle')}
           >
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
               <FormGroup
-                label="Professeur principal"
+                label={t('prof.teacherLabel')}
                 optional
-                hint="Ce professeur recevra les bulletins et rapports de la classe"
+                hint={t('prof.teacherHint')}
                 htmlFor="class-teacher"
               >
                 <BareSelect
                   id="class-teacher"
                   value={v.homeroomTeacherId ?? ''}
                   onValueChange={(val) => setField('homeroomTeacherId', val || null)}
-                  placeholder="Rechercher un enseignant…"
+                  placeholder={t('prof.teacherPlaceholder')}
                 >
-                  <SelectItem value="">— Aucun —</SelectItem>
-                  {options.teachers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
+                  <SelectItem value="">{t('prof.teacherNone')}</SelectItem>
+                  {options.teachers.map((teacher) => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
                       <span className="flex items-center gap-2">
-                        <Avatar name={t.name} src={t.photoUrl} size={22} />
-                        {t.name}
+                        <Avatar name={teacher.name} src={teacher.photoUrl} size={22} />
+                        {teacher.name}
                       </span>
                     </SelectItem>
                   ))}
                 </BareSelect>
               </FormGroup>
               <FormGroup
-                label="Matières enseignées"
-                labelHint="d'après ses affectations"
-                {...(selectedTeacher
-                  ? {}
-                  : { hint: 'Choisissez un enseignant pour voir ses matières' })}
+                label={t('prof.subjectsLabel')}
+                labelHint={t('prof.subjectsHint')}
+                {...(selectedTeacher ? {} : { hint: t('prof.chooseTeacherHint') })}
               >
                 <div className="flex min-h-[36px] flex-wrap items-center gap-1.5 rounded-md border border-border bg-muted px-3 py-1.5">
                   {selectedTeacher && selectedTeacher.subjects.length > 0 ? (
@@ -415,8 +420,8 @@ export function ClassForm({
           <FormCard
             id={CLASS_SECTION_IDS.subjects}
             icon={<BookOpen size={15} />}
-            title="Matières de la classe"
-            subtitle="Sélectionner les matières enseignées dans cette classe."
+            title={t('subjects.title')}
+            subtitle={t('subjects.subtitle')}
           >
             <MultiSelect
               id="class-subjects"
@@ -424,27 +429,30 @@ export function ClassForm({
                 id: s.id,
                 label: s.name,
                 chip: s.abbreviation ?? s.name,
-                ...(s.defaultCoefficient != null ? { hint: `Coef. ${s.defaultCoefficient}` } : {}),
+                ...(s.defaultCoefficient != null
+                  ? { hint: t('subjects.coefficientHint', { coefficient: s.defaultCoefficient }) }
+                  : {}),
                 color: s.color,
                 locked: form.lockedSubjectIds.has(s.id),
-                lockedHint: 'Des notes existent — la matière ne peut plus être retirée',
+                lockedHint: t('subjects.lockedHint'),
               }))}
               value={v.subjectIds}
               onChange={(ids) => void form.setSubjectIds(ids)}
               placeholder={
                 options.subjects.length === 0
-                  ? 'Aucune matière active — crée d’abord les matières de l’école'
-                  : 'Choisir les matières de la classe…'
+                  ? t('subjects.noSubjectsPlaceholder')
+                  : t('subjects.placeholder')
               }
-              searchPlaceholder="Rechercher une matière…"
-              emptyLabel="Aucune matière trouvée"
+              searchPlaceholder={t('subjects.searchPlaceholder')}
+              emptyLabel={t('subjects.emptyLabel')}
               disabled={options.subjects.length === 0}
             />
             <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
               <span>
-                {selectedCount} matière{selectedCount > 1 ? 's' : ''} sélectionnée
-                {selectedCount > 1 ? 's' : ''} sur {options.subjects.length} disponible
-                {options.subjects.length > 1 ? 's' : ''}
+                {t(
+                  selectedCount > 1 ? 'subjects.selectedCount.other' : 'subjects.selectedCount.one',
+                  { count: selectedCount, total: options.subjects.length },
+                )}
               </span>
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 {mode === 'create' && options.subjects.length > 0 && (
@@ -454,14 +462,14 @@ export function ClassForm({
                       onClick={() => void form.setSubjectIds(options.subjects.map((s) => s.id))}
                       className="font-medium hover:text-foreground"
                     >
-                      Tout sélectionner
+                      {t('subjects.selectAll')}
                     </button>
                     <button
                       type="button"
                       onClick={() => void form.setSubjectIds([])}
                       className="font-medium hover:text-foreground"
                     >
-                      Tout désélectionner
+                      {t('subjects.deselectAll')}
                     </button>
                   </>
                 )}
@@ -470,7 +478,7 @@ export function ClassForm({
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
                   <Plus size={12} />
-                  Créer une nouvelle matière
+                  {t('subjects.createNew')}
                 </Link>
               </span>
             </div>
@@ -487,6 +495,7 @@ export function ClassForm({
                 teachers={options.teachers}
                 form={form}
                 withoutTeacher={withoutTeacher}
+                t={t}
               />
             )}
           </FormCard>
@@ -494,35 +503,41 @@ export function ClassForm({
           <FormCard
             id={CLASS_SECTION_IDS.notes}
             icon={<NotebookPen size={15} />}
-            title="Configuration des notes"
-            subtitle="Paramètres d'évaluation hérités de l'établissement — identiques pour toutes les classes."
+            title={t('notes.title')}
+            subtitle={t('notes.subtitle')}
           >
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               <ReadonlyStat
-                label="Barème"
-                value={options.grading.scale ?? 'Sur 20'}
+                label={t('notes.scale')}
+                value={options.grading.scale ?? t('notes.scaleDefault')}
                 href="/settings?tab=annee"
               />
               <ReadonlyStat
-                label="Périodes"
+                label={t('notes.periods')}
                 value={
                   options.grading.termCount > 0
-                    ? `${options.grading.termCount} ${options.grading.termType ?? 'période'}${
-                        options.grading.termCount > 1 ? 's' : ''
-                      }`
-                    : 'Aucune période'
+                    ? t(
+                        options.grading.termCount > 1
+                          ? 'notes.periodCount.other'
+                          : 'notes.periodCount.one',
+                        {
+                          count: options.grading.termCount,
+                          type: options.grading.termType ?? '',
+                        },
+                      )
+                    : t('notes.periodsNone')
                 }
                 href="/settings?tab=annee"
               />
-              <ReadonlyStat label="Mode de calcul" value="Moyenne pondérée par coeff." />
+              <ReadonlyStat label={t('notes.calcMode')} value={t('notes.calcModeValue')} />
               <ReadonlyStat
-                label="Note de passage"
-                value="Définie par matière"
+                label={t('notes.passingGrade')}
+                value={t('notes.passingGradeValue')}
                 href="/configuration/matieres"
               />
               <ReadonlyStat
-                label="Modèle de bulletin"
-                value={options.grading.bulletinTemplate ?? 'Aucun modèle actif'}
+                label={t('notes.bulletinTemplate')}
+                value={options.grading.bulletinTemplate ?? t('notes.bulletinTemplateNone')}
                 href="/configuration/modele-bulletin"
                 className="sm:col-span-2"
               />
@@ -535,17 +550,17 @@ export function ClassForm({
           <FormCard
             id="card-apparence"
             icon={<Palette size={15} />}
-            title="Apparence"
-            subtitle="Couleur affichée sur les cartes et badges de la classe."
+            title={t('appearance.title')}
+            subtitle={t('appearance.subtitle')}
           >
             <div className="flex flex-col gap-[7px]">
               <span className="text-xs font-semibold text-foreground">
-                Couleur d&apos;identification
+                {t('appearance.colorLabel')}
               </span>
               <div
                 className="flex flex-wrap gap-[7px]"
                 role="radiogroup"
-                aria-label="Couleur d'identification"
+                aria-label={t('appearance.colorLabel')}
               >
                 {SUBJECT_COLORS.map((hex) => {
                   const selected = v.color === hex;
@@ -568,80 +583,89 @@ export function ClassForm({
               </div>
             </div>
             <SectionDivider />
-            <div className="mb-2 text-xs font-semibold text-foreground">Aperçu de la carte</div>
+            <div className="mb-2 text-xs font-semibold text-foreground">
+              {t('appearance.cardPreview')}
+            </div>
             <div className="overflow-hidden rounded-md bg-background">
               <div className="h-[3px]" style={{ background: color }} />
               <div className="px-3 py-2.5">
                 <div className="truncate text-lg leading-tight font-bold text-foreground">
-                  {v.name.trim() || 'Nom de la classe'}
+                  {v.name.trim() || t('appearance.namePlaceholder')}
                 </div>
                 <div className="mt-0.5 truncate text-2xs text-muted-foreground">
-                  {previewSub || 'Salle · niveau'}
+                  {previewSub || t('appearance.subtitlePlaceholder')}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-1.5">
-                  <PreviewStat label="Élèves" value={options.studentCount} />
-                  <PreviewStat label="Matières" value={selectedCount} />
+                  <PreviewStat label={t('appearance.students')} value={options.studentCount} />
+                  <PreviewStat label={t('appearance.subjects')} value={selectedCount} />
                 </div>
               </div>
             </div>
           </FormCard>
 
-          <FormCard id="card-recap" icon={<Info size={15} />} title="Récapitulatif">
-            <InfoRow label="Nom" value={v.name.trim() || '—'} />
-            <InfoRow label="Niveau" value={levelLabel || '—'} />
-            <InfoRow label="Salle" value={roomLabel || '—'} />
+          <FormCard id="card-recap" icon={<Info size={15} />} title={t('recap.title')}>
+            <InfoRow label={t('recap.name')} value={v.name.trim() || '—'} />
+            <InfoRow label={t('recap.level')} value={levelLabel || '—'} />
+            <InfoRow label={t('recap.room')} value={roomLabel || '—'} />
             <InfoRow
-              label="Capacité"
-              value={v.capacity.trim() ? `${v.capacity.trim()} places` : '—'}
+              label={t('recap.capacity')}
+              value={v.capacity.trim() ? `${v.capacity.trim()} ${t('recap.capacitySuffix')}` : '—'}
             />
             <InfoRow
-              label="Matières"
+              label={t('recap.subjects')}
               value={
                 <span className="text-primary">
-                  {selectedCount} sélectionnée{selectedCount > 1 ? 's' : ''}
+                  {t(
+                    selectedCount > 1
+                      ? 'recap.subjectsSelected.other'
+                      : 'recap.subjectsSelected.one',
+                    { count: selectedCount },
+                  )}
                 </span>
               }
             />
             <InfoRow
-              label="Prof. principal"
+              label={t('recap.homeroom')}
               value={
                 selectedTeacher ? (
                   selectedTeacher.name
                 ) : (
-                  <span className="text-muted-foreground">Non assigné</span>
+                  <span className="text-muted-foreground">{t('recap.homeroomEmpty')}</span>
                 )
               }
             />
-            <InfoRow label="Année scolaire" value={options.yearLabel ?? '—'} />
+            <InfoRow label={t('recap.year')} value={options.yearLabel ?? '—'} />
           </FormCard>
 
           <FormCard
             id="card-checklist"
             icon={<CheckCircle2 size={15} className="text-success-foreground" />}
-            title="Checklist"
+            title={t('checklist.title')}
           >
             <ul className="flex flex-col gap-[7px]">
-              <ChecklistItem done={done.checklist.nameOk!}>
-                Nom de la classe renseigné
+              <ChecklistItem done={done.checklist.nameOk!}>{t('checklist.name')}</ChecklistItem>
+              <ChecklistItem done={done.checklist.levelOk!}>{t('checklist.level')}</ChecklistItem>
+              <ChecklistItem done={done.checklist.capacityOk!}>
+                {t('checklist.capacity')}
               </ChecklistItem>
-              <ChecklistItem done={done.checklist.levelOk!}>
-                Niveau scolaire sélectionné
-              </ChecklistItem>
-              <ChecklistItem done={done.checklist.capacityOk!}>Capacité définie</ChecklistItem>
               <ChecklistItem done={done.checklist.subjectsOk!}>
-                Matières assignées{selectedCount > 0 ? ` (${selectedCount})` : ''}
+                {t('checklist.subjects')}
+                {selectedCount > 0 ? t('checklist.subjectsCount', { count: selectedCount }) : ''}
               </ChecklistItem>
-              <ChecklistItem done={done.checklist.profOk!}>
-                Professeur principal assigné
-              </ChecklistItem>
+              <ChecklistItem done={done.checklist.profOk!}>{t('checklist.homeroom')}</ChecklistItem>
               {mode === 'edit' && selectedCount > 0 && (
                 <>
                   <ChecklistItem done={withoutTeacher === 0}>
-                    Toutes les matières ont un enseignant
-                    {withoutTeacher > 0 ? ` (${withoutTeacher} sans)` : ''}
+                    {t('checklist.allSubjectsHaveTeacher')}
+                    {withoutTeacher > 0
+                      ? t('checklist.someWithoutTeacher', { count: withoutTeacher })
+                      : ''}
                   </ChecklistItem>
                   <ChecklistItem done={withoutCoef === 0}>
-                    Coefficients renseignés{withoutCoef > 0 ? ` (${withoutCoef} manquants)` : ''}
+                    {t('checklist.coefficientsFilled')}
+                    {withoutCoef > 0
+                      ? t('checklist.someMissingCoefficients', { count: withoutCoef })
+                      : ''}
                   </ChecklistItem>
                 </>
               )}
@@ -650,7 +674,7 @@ export function ClassForm({
               <div className="mt-2.5 flex items-start gap-1.5 rounded-md bg-warning px-2.5 py-2">
                 <AlertCircle size={13} className="mt-px shrink-0 text-warning-foreground" />
                 <span className="text-2xs text-warning-foreground">
-                  Le professeur principal est recommandé mais optionnel à la création.
+                  {t('checklist.homeroomOptionalHint')}
                 </span>
               </div>
             )}
@@ -659,21 +683,17 @@ export function ClassForm({
           <FormCard
             id="card-next"
             icon={<ArrowRightCircle size={15} />}
-            title={mode === 'create' ? 'Après création' : 'Navigation rapide'}
+            title={mode === 'create' ? t('next.titleCreate') : t('next.titleEdit')}
           >
             <ol className="flex flex-col gap-2.5">
-              <NextStep n={1} href="/eleves" title="Inscrire les élèves">
-                Ajouter ou importer les élèves
+              <NextStep n={1} href="/eleves" title={t('next.enrollTitle')}>
+                {t('next.enrollDesc')}
               </NextStep>
-              <NextStep
-                n={2}
-                href={`#${CLASS_SECTION_IDS.subjects}`}
-                title="Affecter les enseignants"
-              >
-                Associer un enseignant par matière
+              <NextStep n={2} href={`#${CLASS_SECTION_IDS.subjects}`} title={t('next.assignTitle')}>
+                {t('next.assignDesc')}
               </NextStep>
-              <NextStep n={3} href="/scolarite/configuration" title="Configurer la scolarité">
-                Définir les frais et tranches
+              <NextStep n={3} href="/scolarite/configuration" title={t('next.feesTitle')}>
+                {t('next.feesDesc')}
               </NextStep>
             </ol>
           </FormCard>
@@ -694,6 +714,7 @@ function ReadonlyStat({
   href?: string;
   className?: string;
 }) {
+  const t = useTranslations('Configuration.classes.form.notes');
   return (
     <div className={cn('rounded-md bg-background px-3 py-2', className)}>
       <div className="text-2xs text-muted-foreground">{label}</div>
@@ -701,7 +722,7 @@ function ReadonlyStat({
         <span className="truncate text-caption font-semibold text-foreground">{value}</span>
         {href && (
           <Link href={href} className="shrink-0 text-2xs font-medium text-primary hover:underline">
-            Gérer
+            {t('manage')}
           </Link>
         )}
       </div>
@@ -731,6 +752,26 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
  * subject with the pivot's teacher / coefficient / weekly hours, edited in
  * place (upsert). Replaces the former Coefficients & Affectations pages for
  * the class-centric view. */
+type SubjectsDetailT = (
+  key:
+    | 'subjects.detailToggle'
+    | 'subjects.detailToggleHint'
+    | 'subjects.withoutTeacherBadge'
+    | 'subjects.detailTable.subject'
+    | 'subjects.detailTable.teacher'
+    | 'subjects.detailTable.coefficient'
+    | 'subjects.detailTable.weeklyHours'
+    | 'subjects.detailTable.lockAria'
+    | 'subjects.detailTable.teacherNone'
+    | 'subjects.detailTable.teacherPlaceholderMobile'
+    | 'subjects.detailTable.coefficientAria'
+    | 'subjects.detailTable.weeklyHoursAria'
+    | 'subjects.detailTable.lockedAria'
+    | 'subjects.detailTable.coeffLabel'
+    | 'subjects.detailTable.weeklyHoursLabelMobile',
+  values?: { count?: number; subject?: string },
+) => string;
+
 function SubjectsDetail({
   open,
   onToggle,
@@ -738,6 +779,7 @@ function SubjectsDetail({
   teachers,
   form,
   withoutTeacher,
+  t,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -745,6 +787,7 @@ function SubjectsDetail({
   teachers: ClassFormTeacher[];
   form: ClassFormController;
   withoutTeacher: number;
+  t: SubjectsDetailT;
 }) {
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-border">
@@ -760,14 +803,14 @@ function SubjectsDetail({
           className={cn('shrink-0 text-muted-foreground transition-transform', open && 'rotate-90')}
         />
         <span className="text-caption font-semibold text-foreground">
-          Détail des matières ({subjects.length})
+          {t('subjects.detailToggle', { count: subjects.length })}
         </span>
         <span className="hidden text-2xs text-muted-foreground sm:inline">
-          enseignant · coefficient · heures / semaine
+          {t('subjects.detailToggleHint')}
         </span>
         {withoutTeacher > 0 && (
           <span className="ml-auto rounded-full bg-warning px-2 py-px text-2xs font-semibold text-warning-foreground">
-            {withoutTeacher} sans enseignant
+            {t('subjects.withoutTeacherBadge', { count: withoutTeacher })}
           </span>
         )}
       </button>
@@ -778,11 +821,15 @@ function SubjectsDetail({
             <table className="w-full min-w-[520px] border-collapse text-caption">
               <thead>
                 <tr className="border-t border-b border-border bg-card text-left text-2xs font-semibold text-muted-foreground uppercase">
-                  <th className="px-3 py-1.5 font-semibold">Matière</th>
-                  <th className="px-2 py-1.5 font-semibold">Enseignant</th>
-                  <th className="w-[72px] px-2 py-1.5 text-center font-semibold">Coef.</th>
-                  <th className="w-[84px] px-2 py-1.5 text-center font-semibold">h / sem</th>
-                  <th className="w-8 px-2 py-1.5" aria-label="Verrou" />
+                  <th className="px-3 py-1.5 font-semibold">{t('subjects.detailTable.subject')}</th>
+                  <th className="px-2 py-1.5 font-semibold">{t('subjects.detailTable.teacher')}</th>
+                  <th className="w-[72px] px-2 py-1.5 text-center font-semibold">
+                    {t('subjects.detailTable.coefficient')}
+                  </th>
+                  <th className="w-[84px] px-2 py-1.5 text-center font-semibold">
+                    {t('subjects.detailTable.weeklyHours')}
+                  </th>
+                  <th className="w-8 px-2 py-1.5" aria-label={t('subjects.detailTable.lockAria')} />
                 </tr>
               </thead>
               <tbody>
@@ -814,17 +861,17 @@ function SubjectsDetail({
                           className="h-8 py-1 text-xs"
                           disabled={!pivot || busy}
                         >
-                          <SelectItem value="">— Aucun —</SelectItem>
-                          {teachers.map((t) => (
-                            <SelectItem key={t.id} value={t.id}>
-                              {t.name}
+                          <SelectItem value="">{t('subjects.detailTable.teacherNone')}</SelectItem>
+                          {teachers.map((teacher) => (
+                            <SelectItem key={teacher.id} value={teacher.id}>
+                              {teacher.name}
                             </SelectItem>
                           ))}
                         </BareSelect>
                       </td>
                       <td className="px-2 py-1.5">
                         <NumberCell
-                          ariaLabel={`Coefficient de ${s.name}`}
+                          ariaLabel={t('subjects.detailTable.coefficientAria', { subject: s.name })}
                           value={pivot?.coefficient ?? null}
                           min={1}
                           max={10}
@@ -835,7 +882,7 @@ function SubjectsDetail({
                       </td>
                       <td className="px-2 py-1.5">
                         <NumberCell
-                          ariaLabel={`Heures hebdomadaires de ${s.name}`}
+                          ariaLabel={t('subjects.detailTable.weeklyHoursAria', { subject: s.name })}
                           value={pivot?.weeklyHours ?? null}
                           min={0.5}
                           max={60}
@@ -849,7 +896,7 @@ function SubjectsDetail({
                           <Lock
                             size={12}
                             className="inline text-muted-foreground"
-                            aria-label="Des notes existent pour cette matière"
+                            aria-label={t('subjects.detailTable.lockedAria')}
                           />
                         )}
                       </td>
@@ -883,7 +930,7 @@ function SubjectsDetail({
                       <Lock
                         size={12}
                         className="shrink-0 text-muted-foreground"
-                        aria-label="Des notes existent pour cette matière"
+                        aria-label={t('subjects.detailTable.lockedAria')}
                       />
                     )}
                   </div>
@@ -891,23 +938,23 @@ function SubjectsDetail({
                     <BareSelect
                       value={pivot?.teacherId ?? ''}
                       onValueChange={(id) => void form.updatePivot(s.id, { teacherId: id || null })}
-                      placeholder="Enseignant — Aucun"
+                      placeholder={t('subjects.detailTable.teacherPlaceholderMobile')}
                       className="h-8 w-full py-1 text-xs"
                       disabled={!pivot || busy}
                     >
-                      <SelectItem value="">— Aucun —</SelectItem>
-                      {teachers.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name}
+                      <SelectItem value="">{t('subjects.detailTable.teacherNone')}</SelectItem>
+                      {teachers.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>
+                          {teacher.name}
                         </SelectItem>
                       ))}
                     </BareSelect>
                   </div>
                   <div className="mt-2 flex items-center gap-4">
                     <label className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                      Coeff.
+                      {t('subjects.detailTable.coeffLabel')}
                       <NumberCell
-                        ariaLabel={`Coefficient de ${s.name}`}
+                        ariaLabel={t('subjects.detailTable.coefficientAria', { subject: s.name })}
                         value={pivot?.coefficient ?? null}
                         min={1}
                         max={10}
@@ -917,9 +964,9 @@ function SubjectsDetail({
                       />
                     </label>
                     <label className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                      h/sem
+                      {t('subjects.detailTable.weeklyHoursLabelMobile')}
                       <NumberCell
-                        ariaLabel={`Heures hebdomadaires de ${s.name}`}
+                        ariaLabel={t('subjects.detailTable.weeklyHoursAria', { subject: s.name })}
                         value={pivot?.weeklyHours ?? null}
                         min={0.5}
                         max={60}

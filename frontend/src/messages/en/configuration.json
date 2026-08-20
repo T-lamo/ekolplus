@@ -120,6 +120,7 @@
       "notFound": "Class not found."
     },
     "form": {
+      "loadError": "Could not load the form data.",
       "requiredHint": "Fields marked",
       "requiredHintSuffix": "are required",
       "info": {
@@ -144,6 +145,7 @@
         "roomFreePlaceholder": "Room 12 — Bldg. B",
         "noRoomCatalog": "No room catalog —",
         "noRoomCatalogLink": "set the school's rooms",
+        "placesSuffix": "seats",
         "roomTooSmall": "This room only has {roomCapacity} seats for {classCapacity} students.",
         "inactiveSuffix": "· inactive",
         "capacityLabel": "Maximum capacity",
@@ -217,6 +219,11 @@
         "periodCount": {
           "one": "{count} {type}",
           "other": "{count} {type}s"
+        },
+        "periodTypes": {
+          "TRIMESTRE": "term",
+          "SEMESTRE": "semester",
+          "LIBRE": "period"
         },
         "calcMode": "Calculation mode",
         "calcModeValue": "Weighted average by coefficient",

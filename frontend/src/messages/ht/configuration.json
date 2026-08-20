@@ -121,6 +121,7 @@
       "notFound": "Klas la pa jwenn."
     },
     "form": {
+      "loadError": "Nou pa t kapab chaje done fòm lan.",
       "requiredHint": "Chan make ak",
       "requiredHintSuffix": "obligatwa",
       "info": {
@@ -145,6 +146,7 @@
         "roomFreePlaceholder": "Sal 12 — Bilding B",
         "noRoomCatalog": "Pa gen katalòg sal —",
         "noRoomCatalogLink": "defini sal lekòl la",
+        "placesSuffix": "plas",
         "roomTooSmall": "Sal sa a gen sèlman {roomCapacity} plas pou {classCapacity} elèv.",
         "inactiveSuffix": "· inaktif",
         "capacityLabel": "Kapasite maksimòm",
@@ -218,6 +220,11 @@
         "periodCount": {
           "one": "{count} {type}",
           "other": "{count} {type}"
+        },
+        "periodTypes": {
+          "TRIMESTRE": "trimès",
+          "SEMESTRE": "semès",
+          "LIBRE": "peryòd"
         },
         "calcMode": "Mòd kalkil",
         "calcModeValue": "Mwayèn poze pa kwefisyan",

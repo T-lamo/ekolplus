@@ -39,5 +39,46 @@
     "errorNotConfigured": "Anvwa WhatsApp la poko konfigire.",
     "errorSendFailed": "Nou pa t kapab voye mesaj WhatsApp la. Eseye ankò."
   },
+  "overview": {
+    "title": "Jesyon Frè & Eskolarite",
+    "subtitle": "Swivi peman, vèsman ak rapèl",
+    "export": "Ekspòte",
+    "configureFees": "Konfigirasyon plan yo",
+    "loadError": "Nou pa ka chaje frè eskolarite yo.",
+    "alertBanner": {
+      "one": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}",
+      "other": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}"
+    },
+    "alertBannerSub": "Total montan ki poko peye : {amount}",
+    "kpiTotalCollected": "Total Kolekte",
+    "kpiUpToDate": "Elèv Ajou",
+    "kpiOverdue": "An Reta",
+    "kpiNextDueDate": "Pwochen Echeyans",
+    "searchPlaceholder": "Non oswa matrikil...",
+    "classFilterAll": "Tout klas yo",
+    "statusFilterAll": "Tout estati yo",
+    "resultCount": {
+      "one": "{n} elèv",
+      "other": "{n} elèv"
+    },
+    "noResults": "Pa gen rezilta.",
+    "columns": {
+      "student": "Elèv",
+      "class": "Klas",
+      "totalDue": "Total dwe",
+      "paid": "Peye",
+      "remaining": "Rès pou peye",
+      "status": "Estati",
+      "tranches": "Vèsman"
+    },
+    "rowActions": {
+      "registerPayment": "Anrejistre yon peman",
+      "sendWhatsapp": "Voye WhatsApp",
+      "viewHistory": "Wè istorik la",
+      "printReceipt": "Enprime resi a"
+    },
+    "printReceiptNoPayment": "Pa gen peman anrejistre pou elèv sa a.",
+    "printReceiptLoadError": "Nou pa ka chaje resi a."
+  },
   "stub": "Fonksyonalite sa a ap vini byento."
 }

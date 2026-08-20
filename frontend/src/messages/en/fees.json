@@ -38,5 +38,46 @@
     "errorNotConfigured": "WhatsApp sending isn't configured yet.",
     "errorSendFailed": "Couldn't send the WhatsApp message. Try again."
   },
+  "overview": {
+    "title": "Fee & Tuition Management",
+    "subtitle": "Payment tracking, installments, and reminders",
+    "export": "Export",
+    "configureFees": "Plan setup",
+    "loadError": "Unable to load tuition fees.",
+    "alertBanner": {
+      "one": "{n} student overdue — {tranche} was due {dueDate}",
+      "other": "{n} students overdue — {tranche} was due {dueDate}"
+    },
+    "alertBannerSub": "Total unpaid amount: {amount}",
+    "kpiTotalCollected": "Total Collected",
+    "kpiUpToDate": "Students Up to Date",
+    "kpiOverdue": "Overdue",
+    "kpiNextDueDate": "Next Due Date",
+    "searchPlaceholder": "Name or student number...",
+    "classFilterAll": "All classes",
+    "statusFilterAll": "All statuses",
+    "resultCount": {
+      "one": "{n} student",
+      "other": "{n} students"
+    },
+    "noResults": "No results.",
+    "columns": {
+      "student": "Student",
+      "class": "Class",
+      "totalDue": "Total due",
+      "paid": "Paid",
+      "remaining": "Remaining",
+      "status": "Status",
+      "tranches": "Installments"
+    },
+    "rowActions": {
+      "registerPayment": "Register a payment",
+      "sendWhatsapp": "Send WhatsApp",
+      "viewHistory": "View history",
+      "printReceipt": "Print receipt"
+    },
+    "printReceiptNoPayment": "No payment recorded for this student.",
+    "printReceiptLoadError": "Unable to load the receipt."
+  },
   "stub": "This feature is coming soon."
 }

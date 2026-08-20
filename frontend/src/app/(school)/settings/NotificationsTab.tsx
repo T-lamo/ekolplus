@@ -14,6 +14,11 @@ import { Switch } from '@/components/ui/Switch';
 // notification dispatcher (no outbox `kind` or template emits them yet) —
 // same "flagged, not silently faked" precedent as other honest gaps in this
 // codebase. Wiring the actual sends is a separate, future change.
+//
+// `as const` is required here — the dynamic `t(`events.${key}.label`)` /
+// `t(`events.${key}.desc`)` calls below only typecheck against next-intl's
+// generated message keys because `key` is narrowed to a literal union;
+// without `as const` this widens to `string` and the build breaks.
 const EVENT_TYPE_KEYS = [
   'BULLETIN_GENERATED',
   'UNEXCUSED_ABSENCE',

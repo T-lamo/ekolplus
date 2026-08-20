@@ -1,0 +1,7 @@
+{
+  "administrateurs": {
+    "title": "Administrators",
+    "description": "Accounts with access to the school's management workspace.",
+    "since": "Since {date}"
+  }
+}

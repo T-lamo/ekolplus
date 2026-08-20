@@ -5,6 +5,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { CheckCircle, Eye, EyeOff, RefreshCw, ShieldAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, type User } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -14,12 +15,13 @@ import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Button } from '@/components/ui/Button';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { cn } from '@/lib/utils';
-import { ROLE_LABEL } from './AdministrateursTab';
+import { roleLabel } from './role-label';
 import type { MemberData } from './types';
 
 function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['role'] | null }) {
   const { refresh } = useAuth();
   const { toast } = useToast();
+  const tRoles = useTranslations('Common.roles');
 
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [name, setName] = useState(user.name ?? '');
@@ -80,7 +82,7 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-xs font-semibold text-foreground">Rôle</span>
             <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-muted px-3 text-foreground">
-              {myRole ? ROLE_LABEL[myRole] : '—'}
+              {myRole ? roleLabel(myRole, tRoles) : '—'}
             </span>
           </label>
         </div>

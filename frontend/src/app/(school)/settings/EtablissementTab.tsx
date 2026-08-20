@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Mail } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -11,7 +12,7 @@ import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Button } from '@/components/ui/Button';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { ADMIN_CREATE_SCHOOL, SCHOOL_STATUTES } from '@/lib/constants';
-import { ROLE_LABEL } from './AdministrateursTab';
+import { roleLabel } from './role-label';
 import type { SchoolData, MemberData } from './types';
 
 export function EtablissementTab({
@@ -24,6 +25,7 @@ export function EtablissementTab({
   onUpdated: (school: SchoolData) => void;
 }) {
   const { toast } = useToast();
+  const tRoles = useTranslations('Common.roles');
   const [logoUrl, setLogoUrl] = useState(school.logoUrl);
   const [form, setForm] = useState({
     name: school.name,
@@ -168,7 +170,9 @@ export function EtablissementTab({
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           {director && (
             <div className="flex flex-col gap-1.5 text-sm">
-              <span className="text-xs font-semibold text-foreground">{ROLE_LABEL.OWNER}</span>
+              <span className="text-xs font-semibold text-foreground">
+                {roleLabel('OWNER', tRoles)}
+              </span>
               <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-muted px-3 text-foreground">
                 {director.name ?? director.email}
               </span>

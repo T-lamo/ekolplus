@@ -1,0 +1,7 @@
+{
+  "administrateurs": {
+    "title": "Administrateurs",
+    "description": "Comptes ayant accès à l'espace de gestion de l'établissement.",
+    "since": "Depuis le {date}"
+  }
+}

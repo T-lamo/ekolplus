@@ -36,6 +36,7 @@ export default getRequestConfig(async () => {
     dashboard,
     adminDashboard,
     schoolPlanCard,
+    settings,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -50,6 +51,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/dashboard.json`),
     import(`../messages/${locale}/adminDashboard.json`),
     import(`../messages/${locale}/schoolPlanCard.json`),
+    import(`../messages/${locale}/settings.json`),
   ]);
 
   return {
@@ -68,6 +70,7 @@ export default getRequestConfig(async () => {
       Dashboard: dashboard.default,
       AdminDashboard: adminDashboard.default,
       SchoolPlanCard: schoolPlanCard.default,
+      Settings: settings.default,
     },
   };
 });

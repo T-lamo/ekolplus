@@ -20,6 +20,24 @@
     "title": "Colour theme",
     "description": "Choose the app's colour palette. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."
   },
+  "etablissement": {
+    "title": "School information",
+    "subtitle": "This information appears on report cards and official documents.",
+    "logoLabel": "Logo",
+    "logoHint": "PNG, JPG, or WebP",
+    "logoUpdated": "Logo updated.",
+    "infoUpdated": "Information updated.",
+    "nameLabel": "School name",
+    "codeLabel": "Official code or registration number",
+    "statuteLabel": "School type",
+    "schoolTypeLabel": "Education levels",
+    "addressLabel": "Address",
+    "phoneLabel": "Phone",
+    "emailLabel": "Official email",
+    "websiteLabel": "Website (optional)",
+    "save": "Save changes",
+    "saving": "Saving…"
+  },
   "langue": {
     "title": "Interface language",
     "description": "Choose the app's language. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."

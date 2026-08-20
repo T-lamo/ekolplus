@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Mail } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -24,8 +24,10 @@ export function EtablissementTab({
   members: MemberData[];
   onUpdated: (school: SchoolData) => void;
 }) {
-  const { toast } = useToast();
+  const t = useTranslations('Settings.etablissement');
+  const tCommon = useTranslations('Common');
   const tRoles = useTranslations('Common.roles');
+  const { toast } = useToast();
   const [logoUrl, setLogoUrl] = useState(school.logoUrl);
   const [form, setForm] = useState({
     name: school.name,
@@ -55,10 +57,10 @@ export function EtablissementTab({
         body: { logoUrl: url },
       });
       onUpdated(res.school);
-      toast('Logo mis à jour.', 'success');
+      toast(t('logoUpdated'), 'success');
     } catch (err) {
       setLogoUrl(previous);
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     }
   }
 
@@ -81,9 +83,9 @@ export function EtablissementTab({
         },
       });
       onUpdated(res.school);
-      toast('Informations mises à jour.', 'success');
+      toast(t('infoUpdated'), 'success');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
@@ -92,32 +94,28 @@ export function EtablissementTab({
   return (
     <Card>
       <div className="border-b border-border px-5 py-3.5">
-        <h2 className="text-caption font-bold text-foreground">
-          Informations de l&apos;établissement
-        </h2>
-        <p className="text-2xs text-muted-foreground">
-          Ces informations apparaissent sur les bulletins et documents officiels.
-        </p>
+        <h2 className="text-caption font-bold text-foreground">{t('title')}</h2>
+        <p className="text-2xs text-muted-foreground">{t('subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4 p-5">
         <div className="flex flex-col items-start gap-4 sm:flex-row">
           <div className="w-full shrink-0 sm:w-40">
             <ImageUploader
-              label="Logo"
-              hint="PNG, JPG ou WebP"
+              label={t('logoLabel')}
+              hint={t('logoHint')}
               value={logoUrl}
               onChange={saveLogo}
             />
           </div>
           <div className="flex flex-1 flex-col gap-3.5">
             <Field
-              label="Nom de l'établissement"
+              label={t('nameLabel')}
               required
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
             />
             <Field
-              label="Code ou matricule officiel"
+              label={t('codeLabel')}
               value={form.officialCode}
               onChange={(e) => set('officialCode', e.target.value)}
             />
@@ -126,7 +124,7 @@ export function EtablissementTab({
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           <Select
-            label="Type d'établissement"
+            label={t('statuteLabel')}
             value={form.statute}
             onValueChange={(v) => set('statute', v)}
           >
@@ -137,29 +135,33 @@ export function EtablissementTab({
             ))}
           </Select>
           <Select
-            label="Niveaux d'enseignement"
+            label={t('schoolTypeLabel')}
             required
             value={form.schoolType}
             onValueChange={(v) => set('schoolType', v)}
           >
-            {ADMIN_CREATE_SCHOOL.schoolTypes.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
+            {ADMIN_CREATE_SCHOOL.schoolTypes.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
               </SelectItem>
             ))}
           </Select>
         </div>
 
         <Field
-          label="Adresse"
+          label={t('addressLabel')}
           value={form.address}
           onChange={(e) => set('address', e.target.value)}
         />
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <PhoneInput label="Téléphone" value={form.phone} onChange={(v) => set('phone', v)} />
+          <PhoneInput
+            label={t('phoneLabel')}
+            value={form.phone}
+            onChange={(v) => set('phone', v)}
+          />
           <Field
-            label="Courriel officiel"
+            label={t('emailLabel')}
             type="email"
             icon={<Mail size={13} />}
             value={form.officialEmail}
@@ -179,7 +181,7 @@ export function EtablissementTab({
             </div>
           )}
           <Field
-            label="Site web (optionnel)"
+            label={t('websiteLabel')}
             value={form.website}
             onChange={(e) => set('website', e.target.value)}
           />
@@ -192,7 +194,7 @@ export function EtablissementTab({
         )}
 
         <Button type="submit" loading={submitting} className="w-fit">
-          {submitting ? 'Enregistrement…' : 'Enregistrer les modifications'}
+          {submitting ? t('saving') : t('save')}
         </Button>
       </form>
     </Card>

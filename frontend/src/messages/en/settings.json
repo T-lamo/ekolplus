@@ -15,5 +15,13 @@
     "title": "Administrators",
     "description": "Accounts with access to the school's management workspace.",
     "since": "Since {date}"
+  },
+  "apparence": {
+    "title": "Colour theme",
+    "description": "Choose the app's colour palette. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."
+  },
+  "langue": {
+    "title": "Interface language",
+    "description": "Choose the app's language. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."
   }
 }

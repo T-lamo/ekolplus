@@ -16,5 +16,13 @@
     "title": "Administratè yo",
     "description": "Kont ki gen aksè nan espas jesyon lekòl la.",
     "since": "Depi {date}"
+  },
+  "apparence": {
+    "title": "Tèm koulè",
+    "description": "Chwazi palèt koulè aplikasyon an. Preferans pèsonèl : li aplike imedyatman, sou tout aparèy ou yo, e li pa chanje anyen pou lòt manm yo."
+  },
+  "langue": {
+    "title": "Lang enèfas la",
+    "description": "Chwazi lang aplikasyon an. Preferans pèsonèl : li aplike imedyatman, sou tout aparèy ou yo, e li pa chanje anyen pou lòt manm yo."
   }
 }

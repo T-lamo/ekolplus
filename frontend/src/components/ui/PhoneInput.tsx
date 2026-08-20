@@ -4,6 +4,7 @@ import { useId, useLayoutEffect, useRef, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
 import { ChevronDown, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
   COUNTRIES,
@@ -75,6 +76,7 @@ export function PhoneInput({
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingCursorDigits = useRef<number | null>(null);
+  const t = useTranslations('Common.phoneInput');
 
   useLayoutEffect(() => {
     if (pendingCursorDigits.current === null || !inputRef.current) return;
@@ -108,7 +110,7 @@ export function PhoneInput({
         >
           <Popover.Trigger
             type="button"
-            aria-label="Choisir l'indicatif du pays"
+            aria-label={t('chooseCountryCode')}
             className="flex shrink-0 items-center gap-1.5 rounded-l-md border-r border-border px-2.5 text-sm text-foreground outline-none hover:bg-muted data-[state=open]:bg-muted"
           >
             <span className="text-base leading-none">{flagEmoji(country.iso2)}</span>
@@ -129,13 +131,13 @@ export function PhoneInput({
                     autoFocus
                     value={query}
                     onValueChange={setQuery}
-                    placeholder="Rechercher un pays..."
+                    placeholder={t('searchCountry')}
                     className="w-full bg-transparent text-caption text-foreground outline-none placeholder:text-muted-foreground"
                   />
                 </div>
                 <Command.List className="max-h-[min(320px,var(--radix-popover-content-available-height))] overflow-y-auto p-1.5">
                   <Command.Empty className="px-2.5 py-4 text-center text-xs text-muted-foreground">
-                    Aucun pays trouvé.
+                    {t('noCountryFound')}
                   </Command.Empty>
                   {COUNTRIES.map((c) => (
                     <Command.Item
@@ -171,13 +173,13 @@ export function PhoneInput({
             pendingCursorDigits.current = countDigits(e.target.value.slice(0, cursorPos));
             onChange(joinPhoneValue(country, e.target.value));
           }}
-          placeholder={placeholder ?? 'Numéro'}
+          placeholder={placeholder ?? t('numberPlaceholder')}
           className="min-w-0 flex-1 rounded-r-md border-none bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
       </span>
       {invalid && (
         <span className="text-xs text-destructive-foreground">
-          Format invalide pour {country.name}.
+          {t('invalidFormat', { country: country.name })}
         </span>
       )}
     </label>

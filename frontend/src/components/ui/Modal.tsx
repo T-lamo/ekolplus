@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ModalProps {
   title: string;
@@ -43,6 +44,8 @@ export function Modal({
   footer,
   children,
 }: ModalProps) {
+  const t = useTranslations('Common.modal');
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -81,7 +84,7 @@ export function Modal({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Fermer"
+              aria-label={t('close')}
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground hover:text-foreground"
             >
               <X size={16} />
@@ -93,7 +96,7 @@ export function Modal({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Fermer"
+              aria-label={t('close')}
               className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
             >
               <X size={16} />

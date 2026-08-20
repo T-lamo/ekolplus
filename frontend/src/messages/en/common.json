@@ -7,5 +7,41 @@
     "OWNER": "Director",
     "ADMIN": "Administrator",
     "MEMBER": "Member"
+  },
+  "modal": {
+    "close": "Close"
+  },
+  "imageUploader": {
+    "remove": "Remove",
+    "uploading": "Uploading…",
+    "hintDefault": "PNG, JPG or WebP",
+    "unsupportedFormat": "Unsupported format (PNG, JPG or WebP expected).",
+    "tooLarge": "Image too large (max {maxSizeMb} MB).",
+    "uploadFailed": "Upload failed.",
+    "serverUnreachable": "Could not reach the server."
+  },
+  "dateField": {
+    "today": "Today",
+    "clear": "Clear",
+    "backToDays": "Back to days",
+    "openCalendar": "Open calendar",
+    "chooseMonthYear": "Choose month and year",
+    "chooseYear": "Choose year",
+    "previousYears": "12 previous years",
+    "nextYears": "12 next years",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "invalidDate": "Invalid date — use the dd/mm/yyyy format",
+    "invalidDateRange": "(between {min} and {max})"
+  },
+  "phoneInput": {
+    "chooseCountryCode": "Choose the country code",
+    "searchCountry": "Search for a country...",
+    "noCountryFound": "No country found.",
+    "numberPlaceholder": "Number",
+    "invalidFormat": "Invalid format for {country}."
+  },
+  "languagePicker": {
+    "radiogroupLabel": "Application language"
   }
 }

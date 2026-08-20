@@ -14,6 +14,7 @@
 // currently active.
 import { useId, useState, type KeyboardEvent } from 'react';
 import { Check, Languages } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useLocalePreference } from '@/contexts/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { LOCALES, LOCALE_KEYS, type LocaleKey } from '@/lib/locales';
@@ -27,7 +28,7 @@ const TOAST_APPLIED: Record<LocaleKey, string> = {
   en: 'Language applied: English.',
 };
 const SAVE_ERROR: Record<LocaleKey, string> = {
-  fr: 'Langue appliquée sur cet appareil, mais impossible de l’enregistrer sur ton compte.',
+  fr: 'Langue appliquée sur cet appareil, mais impossible de l’enregistrer sur votre compte.',
   ht: 'Lang lan aplike sou aparèy sa a, men nou pa t kapab anrejistre l sou kont ou.',
   en: 'Language applied on this device, but we couldn’t save it to your account.',
 };
@@ -56,6 +57,7 @@ function useApplyLocale() {
 export function LanguagePicker({ className }: { className?: string }) {
   const { locale, busy, apply } = useApplyLocale();
   const groupId = useId();
+  const t = useTranslations('Common.languagePicker');
 
   function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, key: LocaleKey) {
     const idx = LOCALE_KEYS.indexOf(key);
@@ -74,7 +76,7 @@ export function LanguagePicker({ className }: { className?: string }) {
   return (
     <div
       role="radiogroup"
-      aria-label="Langue de l'application"
+      aria-label={t('radiogroupLabel')}
       className={cn('grid gap-3 sm:grid-cols-3', className)}
     >
       {LOCALES.map((l) => {

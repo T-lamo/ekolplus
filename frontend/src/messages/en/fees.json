@@ -194,6 +194,24 @@
     "trancheLatePenaltySummaryWithGrace": "{percent}% after {graceDays}d",
     "trancheLatePenaltySummaryNoGrace": "{percent}%",
     "savedToast": "Configuration saved.",
-    "copiedToast": "Configuration copied."
+    "copiedToast": "Configuration copied.",
+    "classListTitle": "School classes",
+    "classListSubtitle": "Select a class to configure",
+    "filterAll": "All",
+    "filterConfigured": "Configured",
+    "filterPending": "Pending",
+    "classSearchPlaceholder": "Filter classes...",
+    "noClassFound": "No class found.",
+    "trancheCountBadge": {
+      "one": "{n} installment",
+      "other": "{n} installments"
+    },
+    "trancheLabelField": "Label",
+    "trancheDueDateField": "Due date",
+    "trancheAmountField": "Amount / Percentage",
+    "trancheLatePenaltyField": "Late penalty (optional)",
+    "trancheGraceDaysField": "Grace period (days)",
+    "noLatePenalty": "No penalty",
+    "saveTranche": "Save"
   }
 }

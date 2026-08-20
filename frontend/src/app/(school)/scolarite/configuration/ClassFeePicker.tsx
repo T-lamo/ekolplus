@@ -1,8 +1,8 @@
 'use client';
 
 import { School } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { FEES } from '@/lib/constants';
 
 export interface FeeClassOption {
   id: string;
@@ -30,7 +30,7 @@ export function ClassFeeSummaryCard({
   filter: ClassFilter;
   onFilterChange: (filter: ClassFilter) => void;
 }) {
-  const t = FEES.configuration;
+  const t = useTranslations('Fees.configuration');
   const configuredCount = classes.filter((c) => c.configured).length;
   const pct = classes.length > 0 ? Math.round((configuredCount / classes.length) * 100) : 0;
 
@@ -40,13 +40,13 @@ export function ClassFeeSummaryCard({
         <div>
           <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
             <School size={13} className="text-primary" />
-            {t.classListTitle}
+            {t('classListTitle')}
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t.classListSubtitle}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('classListSubtitle')}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
           <span className="text-[10px] font-medium text-muted-foreground">
-            {t.filterConfigured}
+            {t('filterConfigured')}
           </span>
           <span className="text-[17px] font-bold text-primary">
             {configuredCount}
@@ -67,7 +67,7 @@ export function ClassFeeSummaryCard({
           activeClass="bg-primary text-primary-foreground"
           onClick={() => onFilterChange('all')}
         >
-          {t.filterAll}
+          {t('filterAll')}
         </FilterPill>
         <FilterPill
           active={filter === 'configured'}
@@ -75,7 +75,7 @@ export function ClassFeeSummaryCard({
           baseClass="bg-success text-success-foreground"
           onClick={() => onFilterChange('configured')}
         >
-          {t.filterConfigured}
+          {t('filterConfigured')}
         </FilterPill>
         <FilterPill
           active={filter === 'pending'}
@@ -83,7 +83,7 @@ export function ClassFeeSummaryCard({
           baseClass="bg-warning text-warning-foreground"
           onClick={() => onFilterChange('pending')}
         >
-          {t.filterPending}
+          {t('filterPending')}
         </FilterPill>
       </div>
     </Card>

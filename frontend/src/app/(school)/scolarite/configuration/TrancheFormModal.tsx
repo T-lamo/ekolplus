@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Field } from '@/components/ui/Field';
 import { DateField } from '@/components/ui/DateField';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { FEES } from '@/lib/constants';
-
-const t = FEES.configuration;
 
 export interface TrancheFormValues {
   label: string;
@@ -32,6 +30,7 @@ export function TrancheFormModal({
   onClose: () => void;
   onSave: (values: TrancheFormValues) => void;
 }) {
+  const t = useTranslations('Fees.configuration');
   const [label, setLabel] = useState(tranche?.label ?? defaultLabel);
   const [amount, setAmount] = useState(tranche?.amount ?? '0');
   const [dueDate, setDueDate] = useState(tranche?.dueDate ?? new Date().toISOString().slice(0, 10));
@@ -52,18 +51,23 @@ export function TrancheFormModal({
   }
 
   return (
-    <Modal title={tranche ? t.editTranche : t.addTranche} onClose={onClose}>
+    <Modal title={tranche ? t('editTranche') : t('addTranche')} onClose={onClose}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
         <Field
-          label={t.trancheLabelField}
+          label={t('trancheLabelField')}
           required
           value={label}
           onChange={(e) => setLabel(e.target.value)}
         />
         <div className="grid grid-cols-2 gap-3.5">
-          <DateField label={t.trancheDueDateField} required value={dueDate} onChange={setDueDate} />
+          <DateField
+            label={t('trancheDueDateField')}
+            required
+            value={dueDate}
+            onChange={setDueDate}
+          />
           <Field
-            label={t.trancheAmountField}
+            label={t('trancheAmountField')}
             type="number"
             min={0}
             required
@@ -77,16 +81,16 @@ export function TrancheFormModal({
         {lateFeeEnabled && (
           <div className="grid grid-cols-2 gap-3.5">
             <Field
-              label={t.trancheLatePenaltyField}
+              label={t('trancheLatePenaltyField')}
               type="number"
               min={0}
               max={100}
-              placeholder={t.noLatePenalty}
+              placeholder={t('noLatePenalty')}
               value={latePenaltyPercent}
               onChange={(e) => setLatePenaltyPercent(e.target.value)}
             />
             <Field
-              label={t.trancheGraceDaysField}
+              label={t('trancheGraceDaysField')}
               type="number"
               min={0}
               max={90}
@@ -96,7 +100,7 @@ export function TrancheFormModal({
             />
           </div>
         )}
-        <Button type="submit">{t.saveTranche}</Button>
+        <Button type="submit">{t('saveTranche')}</Button>
       </form>
     </Modal>
   );

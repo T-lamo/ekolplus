@@ -195,6 +195,24 @@
     "trancheLatePenaltySummaryWithGrace": "{percent}% apre {graceDays} j.",
     "trancheLatePenaltySummaryNoGrace": "{percent}%",
     "savedToast": "Konfigirasyon anrejistre.",
-    "copiedToast": "Konfigirasyon kopye."
+    "copiedToast": "Konfigirasyon kopye.",
+    "classListTitle": "Klas lekòl la",
+    "classListSubtitle": "Chwazi yon klas pou konfigire",
+    "filterAll": "Tout",
+    "filterConfigured": "Konfigire",
+    "filterPending": "Ann atann",
+    "classSearchPlaceholder": "Filtre klas yo...",
+    "noClassFound": "Pa gen klas ki jwenn.",
+    "trancheCountBadge": {
+      "one": "{n} vèsman",
+      "other": "{n} vèsman"
+    },
+    "trancheLabelField": "Etikèt",
+    "trancheDueDateField": "Dat limit",
+    "trancheAmountField": "Montan / Pousantaj",
+    "trancheLatePenaltyField": "Penalite reta (opsyonèl)",
+    "trancheGraceDaysField": "Delè gras (jou)",
+    "noLatePenalty": "Pa gen penalite",
+    "saveTranche": "Anrejistre"
   }
 }

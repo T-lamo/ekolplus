@@ -116,7 +116,10 @@
       "hint": "The subject color — identifies the course quickly on the grid"
     },
     "rooms": {
-      "capacity": "{count} seats",
+      "capacity": {
+        "one": "{count} seat",
+        "other": "{count} seats"
+      },
       "inactive": "inactive",
       "noCatalogue": "No room catalogue — <link>set up the school's rooms</link>"
     },

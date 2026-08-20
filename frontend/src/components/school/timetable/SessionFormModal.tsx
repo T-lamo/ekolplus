@@ -312,9 +312,9 @@ export function SessionFormModal({
           body,
         });
         onSaved(
-          res.count > 1
-            ? t('toasts.updated.other', { count: res.count })
-            : t('toasts.updated.one', { count: res.count }),
+          res.count === 1
+            ? t('toasts.updated.one', { count: res.count })
+            : t('toasts.updated.other', { count: res.count }),
         );
       } else {
         const res = await api<{ count: number }>('/api/school/timetable', {
@@ -325,9 +325,9 @@ export function SessionFormModal({
           },
         });
         onSaved(
-          res.count > 1
-            ? t('toasts.created.other', { count: res.count })
-            : t('toasts.created.one', { count: res.count }),
+          res.count === 1
+            ? t('toasts.created.one', { count: res.count })
+            : t('toasts.created.other', { count: res.count }),
         );
       }
     } catch (err) {
@@ -665,7 +665,7 @@ export function SessionFormModal({
                         <SelectItem key={r.id} value={r.id}>
                           {r.name}
                           {r.capacity != null
-                            ? ` · ${t('rooms.capacity', { count: r.capacity })}`
+                            ? ` · ${t(r.capacity === 1 ? 'rooms.capacity.one' : 'rooms.capacity.other', { count: r.capacity })}`
                             : ''}
                           {!r.isActive ? ` · ${t('rooms.inactive')}` : ''}
                         </SelectItem>

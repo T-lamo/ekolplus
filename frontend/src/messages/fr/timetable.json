@@ -116,7 +116,10 @@
       "hint": "Couleur de la matière — identifie rapidement le cours sur la grille"
     },
     "rooms": {
-      "capacity": "{count} pl.",
+      "capacity": {
+        "one": "{count} pl.",
+        "other": "{count} pl."
+      },
       "inactive": "inactive",
       "noCatalogue": "Aucun catalogue de salles — <link>définir les salles de l'école</link>"
     },

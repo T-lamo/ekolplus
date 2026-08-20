@@ -117,7 +117,10 @@
       "hint": "Koulè matyè a — li idantifye kou a rapidman sou griy la"
     },
     "rooms": {
-      "capacity": "{count} plas",
+      "capacity": {
+        "one": "{count} plas",
+        "other": "{count} plas"
+      },
       "inactive": "inaktif",
       "noCatalogue": "Pa gen katalòg sal — <link>defini sal lekòl la</link>"
     },

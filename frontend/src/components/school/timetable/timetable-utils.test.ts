@@ -17,6 +17,7 @@ import {
   legendSubjects,
   mondayOf,
   monthGrid,
+  RECURRENCE_DAYS,
   sessionColor,
   sessionsOn,
   weekDays,
@@ -128,6 +129,9 @@ describe('recurrence & volume', () => {
     expect(countOccurrences('2026-08-17', [1], '2026-09-07')).toBe(4);
     expect(countOccurrences('2026-08-17', [], '2026-09-07')).toBe(1);
     expect(countOccurrences('2026-08-17', [1], '2026-08-10')).toBe(1);
+  });
+  it('RECURRENCE_DAYS holds the exact persisted ISO weekday values in order', () => {
+    expect(RECURRENCE_DAYS).toEqual([1, 2, 3, 4, 5, 6]);
   });
   it('joins the selected day names with the caller-supplied conjunction', () => {
     // The day names and the conjunction are translated by the component

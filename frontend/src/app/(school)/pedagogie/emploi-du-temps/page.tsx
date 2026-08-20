@@ -157,10 +157,10 @@ export default function EmploiDuTempsPage() {
             room: c.room ?? null,
             roomId: c.roomId ?? null,
           })),
-          teachers: teachers.teachers.map((t) => ({
-            id: t.id,
-            name: t.name,
-            photoUrl: t.photoUrl ?? null,
+          teachers: teachers.teachers.map((teacher) => ({
+            id: teacher.id,
+            name: teacher.name,
+            photoUrl: teacher.photoUrl ?? null,
           })),
           subjects: subjects.subjects.map((s) => ({
             id: s.id,
@@ -410,9 +410,9 @@ export default function EmploiDuTempsPage() {
             onValueChange={setFilter('teacherId')}
           >
             <SelectItem value="">{t('allTeachers')}</SelectItem>
-            {(meta?.teachers ?? []).map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.name}
+            {(meta?.teachers ?? []).map((teacher) => (
+              <SelectItem key={teacher.id} value={teacher.id}>
+                {teacher.name}
               </SelectItem>
             ))}
           </TimetableFilterSelect>

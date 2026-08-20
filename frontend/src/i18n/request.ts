@@ -34,6 +34,7 @@ export default getRequestConfig(async () => {
     resetPassword,
     verifyEmail,
     dashboard,
+    adminDashboard,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -46,6 +47,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/resetPassword.json`),
     import(`../messages/${locale}/verifyEmail.json`),
     import(`../messages/${locale}/dashboard.json`),
+    import(`../messages/${locale}/adminDashboard.json`),
   ]);
 
   return {
@@ -62,6 +64,7 @@ export default getRequestConfig(async () => {
       ResetPassword: resetPassword.default,
       VerifyEmail: verifyEmail.default,
       Dashboard: dashboard.default,
+      AdminDashboard: adminDashboard.default,
     },
   };
 });

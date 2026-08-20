@@ -103,6 +103,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         html,
         text: `${fullName} (${email}, ${phone || 'sans téléphone'}) — ${school}, ${SIZE_LABEL[size] ?? size}, plan ${PLAN_LABEL[plan] ?? plan}`,
       });
+
+      // Visitor-facing confirmation — the internal email above only reaches
+      // the sales inbox; without this the person who filled the form gets
+      // nothing beyond the on-screen "Merci !" message, with no way to know
+      // their request actually went through once they close the tab.
+      const confirmationHtml = `
+        <h2>Merci pour votre demande, ${escapeHtml(fullName)} !</h2>
+        <p>Nous avons bien reçu votre demande de démonstration pour <strong>${escapeHtml(school)}</strong>.</p>
+        <p>Un expert Schoolgesti vous recontactera sous 24h pour organiser votre démonstration personnalisée.</p>
+        <p><strong>Récapitulatif :</strong></p>
+        <ul>
+          <li><strong>Établissement :</strong> ${escapeHtml(school)}</li>
+          <li><strong>Effectif :</strong> ${escapeHtml(SIZE_LABEL[size] ?? size)}</li>
+          <li><strong>Plan souhaité :</strong> ${escapeHtml(PLAN_LABEL[plan] ?? plan)}</li>
+        </ul>
+        <p>À très bientôt,<br>L'équipe Schoolgesti</p>
+      `.trim();
+      await queue.enqueue({
+        to: email,
+        subject: 'Votre demande de démo Schoolgesti a bien été reçue',
+        html: confirmationHtml,
+        text: `Merci ${fullName} ! Nous avons bien reçu votre demande de démo pour ${school} (${SIZE_LABEL[size] ?? size}, plan ${PLAN_LABEL[plan] ?? plan}). Un expert Schoolgesti vous recontactera sous 24h.`,
+      });
     } else {
       log.warn(
         'demo-request: email queue not configured (RESEND_API_KEY / EMAIL_FROM / Redis) — lead not emailed',

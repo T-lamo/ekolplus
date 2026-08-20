@@ -175,5 +175,91 @@
     "generateReportCardPdf": "Generate report card PDF",
     "sendToGuardian": "Send to legal guardian",
     "deleteAppreciation": "Delete appreciation"
+  },
+  "saisie": {
+    "title": "Enter an appreciation",
+    "backToList": "Back to the list",
+    "studentNotFound": "Student not found.",
+    "loadError": "Unable to load the appreciation form.",
+    "saveDraft": "Save draft",
+    "validate": "Validate appreciation",
+    "validateAndNext": "Validate and go to next",
+    "validatedToast": "Appreciation validated.",
+    "draftSavedToast": "Draft saved.",
+    "classProgress": "Class progress:",
+    "progressCount": {
+      "one": "{count} / {total} student",
+      "other": "{count} / {total} students"
+    },
+    "contextTitle": "Entry context",
+    "classLabel": "Class",
+    "termLabel": "Term",
+    "studentLabel": "Student",
+    "selectedStudent": "Selected student",
+    "previous": "Previous",
+    "next": "Next",
+    "studentMeta": "No. {number} · {className}",
+    "provisionalRank": {
+      "one": "Provisional rank: #{rank}",
+      "other": "Provisional rank: #{rank}"
+    },
+    "overallAverage": "Overall average",
+    "generalTitle": "General appreciation",
+    "mentionLabel": "Overall mention",
+    "commentLabel": "General comment",
+    "commentHint": "(shown on the report card)",
+    "charCount": "{count} / {max} characters",
+    "commentPlaceholder": "Write a constructive, supportive comment.",
+    "comportementLabel": "Behaviour",
+    "investissementLabel": "Commitment",
+    "assiduiteLabel": "Attendance",
+    "comportement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfactory",
+      "A_AMELIORER": "Needs improvement",
+      "PERTURBATEUR": "Disruptive"
+    },
+    "investissement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfactory",
+      "A_AMELIORER": "Needs improvement",
+      "INSUFFISANT": "Insufficient"
+    },
+    "assiduite": {
+      "REGULIER": "Regular",
+      "IRREGULIER": "Irregular",
+      "ABSENCES_REPETEES": "Repeated absences"
+    },
+    "bySubjectTitle": "Appreciations by subject",
+    "subjectsCount": {
+      "one": "{count} subject · Recorded: {filled}/{count}",
+      "other": "{count} subjects · Recorded: {filled}/{count}"
+    },
+    "subjectPlaceholder": "Click to write an appreciation...",
+    "prevStudent": "Previous: {name}",
+    "nextStudent": "Next: {name}",
+    "summaryTitle": "Student summary",
+    "info": {
+      "overallAverage": "Overall average",
+      "rank": "Rank",
+      "absences": "Absences",
+      "lateArrivals": "Late arrivals",
+      "classAverage": "Class avg."
+    },
+    "rankValue": {
+      "one": "#{rank} / {total}",
+      "other": "#{rank} / {total}"
+    },
+    "subjectGrades": "Grades by subject",
+    "quickPhrasesTitle": "Ready-made phrases",
+    "quickPhrasesSubtitle": "Click to insert into the comment",
+    "quickPhrases": {
+      "serious": "A serious, committed student who should keep it up.",
+      "efforts": "Notable efforts, but gaps remain.",
+      "insufficient": "Insufficient results. Academic support is recommended.",
+      "satisfactory": "A satisfactory term; can aim even higher.",
+      "exemplary": "Exemplary behaviour, excellent participation.",
+      "regularity": "Must show more consistency in their work."
+    }
   }
 }

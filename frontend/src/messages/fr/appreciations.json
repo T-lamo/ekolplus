@@ -175,5 +175,91 @@
     "generateReportCardPdf": "Générer le bulletin PDF",
     "sendToGuardian": "Envoyer au tuteur légal",
     "deleteAppreciation": "Supprimer l'appréciation"
+  },
+  "saisie": {
+    "title": "Saisir une appréciation",
+    "backToList": "Retour à la liste",
+    "studentNotFound": "Élève introuvable.",
+    "loadError": "Impossible de charger la saisie d'appréciation.",
+    "saveDraft": "Enregistrer brouillon",
+    "validate": "Valider l'appréciation",
+    "validateAndNext": "Valider et passer au suivant",
+    "validatedToast": "Appréciation validée.",
+    "draftSavedToast": "Brouillon enregistré.",
+    "classProgress": "Progression de la classe :",
+    "progressCount": {
+      "one": "{count} / {total} élève",
+      "other": "{count} / {total} élèves"
+    },
+    "contextTitle": "Contexte de saisie",
+    "classLabel": "Classe",
+    "termLabel": "Trimestre",
+    "studentLabel": "Élève",
+    "selectedStudent": "Élève sélectionné",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "studentMeta": "N° {number} · {className}",
+    "provisionalRank": {
+      "one": "Rang provisoire : {rank}er",
+      "other": "Rang provisoire : {rank}e"
+    },
+    "overallAverage": "Moyenne générale",
+    "generalTitle": "Appréciation générale",
+    "mentionLabel": "Mention générale",
+    "commentLabel": "Commentaire général",
+    "commentHint": "(visible sur le bulletin)",
+    "charCount": "{count} / {max} caractères",
+    "commentPlaceholder": "Rédigez un commentaire constructif et bienveillant.",
+    "comportementLabel": "Comportement",
+    "investissementLabel": "Investissement",
+    "assiduiteLabel": "Assiduité",
+    "comportement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfaisant",
+      "A_AMELIORER": "À améliorer",
+      "PERTURBATEUR": "Perturbateur"
+    },
+    "investissement": {
+      "EXCELLENT": "Excellent",
+      "SATISFAISANT": "Satisfaisant",
+      "A_AMELIORER": "À améliorer",
+      "INSUFFISANT": "Insuffisant"
+    },
+    "assiduite": {
+      "REGULIER": "Régulier",
+      "IRREGULIER": "Irrégulier",
+      "ABSENCES_REPETEES": "Absences répétées"
+    },
+    "bySubjectTitle": "Appréciations par matière",
+    "subjectsCount": {
+      "one": "{count} matière · Saisies : {filled}/{count}",
+      "other": "{count} matières · Saisies : {filled}/{count}"
+    },
+    "subjectPlaceholder": "Cliquer pour saisir une appréciation...",
+    "prevStudent": "Précédent : {name}",
+    "nextStudent": "Suivant : {name}",
+    "summaryTitle": "Résumé de l'élève",
+    "info": {
+      "overallAverage": "Moyenne générale",
+      "rank": "Rang",
+      "absences": "Absences",
+      "lateArrivals": "Retards",
+      "classAverage": "Moy. classe"
+    },
+    "rankValue": {
+      "one": "{rank}er / {total}",
+      "other": "{rank}e / {total}"
+    },
+    "subjectGrades": "Notes par matière",
+    "quickPhrasesTitle": "Phrases types",
+    "quickPhrasesSubtitle": "Cliquer pour insérer dans le commentaire",
+    "quickPhrases": {
+      "serious": "Élève sérieux et investi, qui doit continuer ainsi.",
+      "efforts": "Des efforts notables, mais des lacunes persistent.",
+      "insufficient": "Résultats insuffisants. Un soutien scolaire est recommandé.",
+      "satisfactory": "Trimestre satisfaisant, peut viser encore mieux.",
+      "exemplary": "Comportement exemplaire, excellente participation.",
+      "regularity": "Doit faire preuve de plus de régularité dans son travail."
+    }
   }
 }

@@ -14,18 +14,6 @@ export const MENTIONS: Mention[] = [
   'FAIBLE',
 ];
 
-/** @deprecated Being replaced by `MENTIONS` + the `appreciations.mention.*`
- * message namespace. Still imported by the files this module's i18n
- * migration has not reached yet; deleted once the last one migrates. */
-export const MENTION_LABEL: Record<Mention, string> = {
-  TRES_BIEN: 'Très Bien',
-  BIEN: 'Bien',
-  ASSEZ_BIEN: 'Assez Bien',
-  PASSABLE: 'Passable',
-  INSUFFISANT: 'Insuffisant',
-  FAIBLE: 'Faible',
-};
-
 export interface TermOption {
   id: string;
   label: string;

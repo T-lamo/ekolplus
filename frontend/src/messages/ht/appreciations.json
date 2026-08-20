@@ -176,5 +176,91 @@
     "generateReportCardPdf": "Jenere bilten PDF la",
     "sendToGuardian": "Voye bay responsab legal la",
     "deleteAppreciation": "Efase apresyasyon an"
+  },
+  "saisie": {
+    "title": "Antre yon apresyasyon",
+    "backToList": "Retounen nan lis la",
+    "studentNotFound": "Nou pa jwenn elèv la.",
+    "loadError": "Nou pa t kapab chaje fòm apresyasyon an.",
+    "saveDraft": "Anrejistre bouyon",
+    "validate": "Valide apresyasyon an",
+    "validateAndNext": "Valide epi pase nan pwochen an",
+    "validatedToast": "Apresyasyon valide.",
+    "draftSavedToast": "Bouyon anrejistre.",
+    "classProgress": "Pwogrè klas la :",
+    "progressCount": {
+      "one": "{count} / {total} elèv",
+      "other": "{count} / {total} elèv"
+    },
+    "contextTitle": "Kontèks saizi a",
+    "classLabel": "Klas",
+    "termLabel": "Trimès",
+    "studentLabel": "Elèv",
+    "selectedStudent": "Elèv chwazi a",
+    "previous": "Anvan",
+    "next": "Apre",
+    "studentMeta": "N° {number} · {className}",
+    "provisionalRank": {
+      "one": "Ran pwovizwa : {rank}e",
+      "other": "Ran pwovizwa : {rank}e"
+    },
+    "overallAverage": "Mwayèn jeneral",
+    "generalTitle": "Apresyasyon jeneral",
+    "mentionLabel": "Mansyon jeneral",
+    "commentLabel": "Kòmantè jeneral",
+    "commentHint": "(l ap parèt sou bilten an)",
+    "charCount": "{count} / {max} karaktè",
+    "commentPlaceholder": "Ekri yon kòmantè konstriktif ak byenveyan.",
+    "comportementLabel": "Konpòtman",
+    "investissementLabel": "Angajman",
+    "assiduiteLabel": "Asidwite",
+    "comportement": {
+      "EXCELLENT": "Ekselan",
+      "SATISFAISANT": "Satisfezan",
+      "A_AMELIORER": "Pou amelyore",
+      "PERTURBATEUR": "Deranjan"
+    },
+    "investissement": {
+      "EXCELLENT": "Ekselan",
+      "SATISFAISANT": "Satisfezan",
+      "A_AMELIORER": "Pou amelyore",
+      "INSUFFISANT": "Ensifizan"
+    },
+    "assiduite": {
+      "REGULIER": "Regilye",
+      "IRREGULIER": "Iregilye",
+      "ABSENCES_REPETEES": "Absans repete"
+    },
+    "bySubjectTitle": "Apresyasyon pa matyè",
+    "subjectsCount": {
+      "one": "{count} matyè · Antre : {filled}/{count}",
+      "other": "{count} matyè · Antre : {filled}/{count}"
+    },
+    "subjectPlaceholder": "Klike pou ekri yon apresyasyon...",
+    "prevStudent": "Anvan : {name}",
+    "nextStudent": "Apre : {name}",
+    "summaryTitle": "Rezime elèv la",
+    "info": {
+      "overallAverage": "Mwayèn jeneral",
+      "rank": "Ran",
+      "absences": "Absans",
+      "lateArrivals": "Reta",
+      "classAverage": "Mwa. klas"
+    },
+    "rankValue": {
+      "one": "{rank}e / {total}",
+      "other": "{rank}e / {total}"
+    },
+    "subjectGrades": "Nòt pa matyè",
+    "quickPhrasesTitle": "Fraz tou pare",
+    "quickPhrasesSubtitle": "Klike pou mete l nan kòmantè a",
+    "quickPhrases": {
+      "serious": "Elèv serye ki angaje, li dwe kontinye konsa.",
+      "efforts": "Gen efò ki remakab, men gen lakin ki rete.",
+      "insufficient": "Rezilta yo ensifizan. Nou rekòmande yon sipò eskolè.",
+      "satisfactory": "Trimès satisfezan, li ka vize pi wo toujou.",
+      "exemplary": "Konpòtman egzanplè, patisipasyon ekselan.",
+      "regularity": "Li dwe montre plis regilarite nan travay li."
+    }
   }
 }

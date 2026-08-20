@@ -1,5 +1,22 @@
 @import 'tailwindcss';
 
+/* next/font/google's default stack for `<body className={inter.className}>`
+   is `Inter, "Inter Fallback"` with no trailing generic — "Inter Fallback"
+   is a size-adjusted `local(Arial)` face next/font generates automatically
+   to avoid layout shift while the real woff2 downloads. It only resolves if
+   a font literally named "Arial" is installed locally; on a system without
+   one (common on Linux without MS core fonts) BOTH names fail to match, and
+   with nothing after them in the stack the browser falls through to its own
+   default font (often serif) for the loading window — a visible flash to an
+   unrelated typeface, not the ordinary metrics-matched fallback→webfont swap
+   `display: 'swap'` is meant to produce. #app-body (id, so it wins over the
+   generated class without touching next/font's own CLS-safe fallback) adds
+   real generics as a last resort after it. */
+#app-body {
+  font-family:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+}
+
 /* Schoolgesti design tokens — from Banani "Lavender SaaS" theme, shared across
    every screen export (Login, School Dashboard, SaaS Admin Dashboard). See
    .planning/banani/epic-0-shell.md for the full token mapping table. */

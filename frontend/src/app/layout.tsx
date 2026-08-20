@@ -79,7 +79,7 @@ export default async function RootLayout({
             src/lib/themes.ts THEME_INIT_SCRIPT (tested in themes.test.ts). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className={inter.className}>
+      <body id="app-body" className={inter.className}>
         <ServiceWorkerRegister />
         {/* No `locale`/`messages` props: rendered from a Server Component,
             NextIntlClientProvider automatically inherits both from the

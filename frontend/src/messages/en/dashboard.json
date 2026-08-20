@@ -1,0 +1,105 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Welcome, {name} — here's the overview of your school",
+  "export": "Export",
+  "csvIndicator": "Metric",
+  "csvValue": "Value",
+  "academicYearBadge": "Year {label}",
+  "loadError": "Unable to load the dashboard.",
+  "emptyYear": "No active school year — set up the school year first in \"Settings\".",
+  "kpis": {
+    "students": "Enrolled students",
+    "teachers": "Teachers",
+    "classes": "Active classes",
+    "subjects": "Subjects",
+    "attendanceRate": "Attendance rate",
+    "attendanceRateSub": "This week",
+    "thisMonth": "this month"
+  },
+  "averagesTrend": {
+    "title": "Average grades trend",
+    "subtitle": "School year {yearLabel}",
+    "seriesLabel": "Overall average",
+    "empty": "No averages published for this period.",
+    "noData": "No data"
+  },
+  "levelDistribution": {
+    "title": "Breakdown by level",
+    "subtitle": "Enrolled students",
+    "centerLabel": "students",
+    "empty": "No students enrolled."
+  },
+  "fees": {
+    "title": "Tuition fee tracking",
+    "seeDetails": "See details →",
+    "collected": "Total Collected",
+    "collectedLabel": "collected",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "overdueStudents": "Students Overdue",
+    "overdueLabel": "overdue",
+    "upToDate": "Up to date",
+    "studentsConcerned": {
+      "one": "{n} student concerned",
+      "other": "{n} students concerned"
+    },
+    "nextDue": "Next Due Date",
+    "daysUntil": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inNDays": "In {n} days"
+    },
+    "trancheProgress": "Installment progress",
+    "noFeeData": "No fee structure configured yet."
+  },
+  "attendanceByClass": {
+    "title": "Attendance rate",
+    "subtitle": "By class — this month",
+    "details": "Details →",
+    "empty": "No classes configured."
+  },
+  "subjectPerformance": {
+    "title": "Performance by subject",
+    "subtitle": "Overall average across all classes",
+    "empty": "No grades published for this period."
+  },
+  "todos": {
+    "title": "To do",
+    "evaluationsToGrade": "Assessments to grade",
+    "evaluationsOverdueLabel": "{n} overdue",
+    "unjustifiedAbsences": "Unjustified absences",
+    "unjustifiedAbsencesSub": "This week",
+    "teachersWithoutClass": "Teachers without an assigned class",
+    "teachersWithoutClassSub": "To assign",
+    "overduePayments": "Overdue payments",
+    "overduePaymentsSub": "Reminders to send"
+  },
+  "activity": {
+    "title": "Recent activity",
+    "seeAll": "See all",
+    "empty": "No recent activity.",
+    "relativeTime": {
+      "justNow": "just now",
+      "hoursAgo": "{hours}h ago",
+      "yesterdayAt": "Yesterday, {time}"
+    }
+  },
+  "activityLog": {
+    "title": "Activity log",
+    "subtitle": "Full history of the school's events",
+    "back": "Back to dashboard",
+    "filterAll": "All types",
+    "typeLabel": {
+      "grade": "Grades",
+      "absence": "Absences",
+      "payment": "Payments",
+      "enrollment": "Enrollments"
+    },
+    "empty": "No activity yet.",
+    "resultCount": {
+      "one": "{n} event",
+      "other": "{n} events"
+    },
+    "loadError": "Unable to load the activity."
+  }
+}

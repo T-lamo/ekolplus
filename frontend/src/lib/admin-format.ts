@@ -5,6 +5,12 @@
 //
 // SaaS billing is integer USD cents everywhere (Epic 2 decision Q4) — these
 // helpers are the only place cents become display strings.
+//
+// Locale note: every helper here is hardcoded to French vocabulary and
+// fr-FR number grouping regardless of the active UI locale — deliberate,
+// not an oversight, since this module is shared across all 8 admin screens
+// and only one (the dashboard) is translated so far. Revisit when the rest
+// of /admin/* gets its own i18n migration phase.
 
 /** "$389.60" — table amounts, always 2 decimals, fr grouping (space). */
 export function fmtUsd(cents: number): string {

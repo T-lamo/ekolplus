@@ -8,9 +8,10 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, Plus, School, Users, Activity, CreditCard, Wallet } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useApi } from '@/lib/useApi';
 import type { AdminOverviewResponse } from '@/lib/admin-types';
-import { ADMIN_DASHBOARD as T } from '@/lib/constants';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import {
   couponDiscountLabel,
   fmtAgoCompact,
@@ -72,6 +73,8 @@ const TD_CLASS = 'px-3 py-2.5 text-caption whitespace-nowrap';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const tAdmin = useTranslations('AdminDashboard');
+  const locale = useLocale();
   const { data, loading, error, refresh } = useApi<AdminOverviewResponse>(
     '/api/admin/stats/overview',
   );
@@ -89,14 +92,17 @@ export default function AdminDashboardPage() {
     if (!data) return;
     exportToCsv(
       'rapport-admin.csv',
-      ['Indicateur', 'Valeur'],
+      [tAdmin('csvIndicator'), tAdmin('csvValue')],
       [
-        [T.kpi.totalSchools, String(data.kpis.totalSchools)],
-        [T.kpi.totalUsers, String(data.kpis.totalUsers)],
-        [T.kpi.activeUsers, String(data.kpis.activeUsers)],
-        [T.kpi.activeSubscriptions, String(data.kpis.activeSubscriptions)],
-        [T.kpi.monthRevenue, fmtUsd(data.kpis.monthRevenueCents)],
-        ...data.revenue.series.map((m) => [`Revenus ${m.label}`, fmtUsd(m.cents)]),
+        [tAdmin('kpi.totalSchools'), String(data.kpis.totalSchools)],
+        [tAdmin('kpi.totalUsers'), String(data.kpis.totalUsers)],
+        [tAdmin('kpi.activeUsers'), String(data.kpis.activeUsers)],
+        [tAdmin('kpi.activeSubscriptions'), String(data.kpis.activeSubscriptions)],
+        [tAdmin('kpi.monthRevenue'), fmtUsd(data.kpis.monthRevenueCents)],
+        ...data.revenue.series.map((m) => [
+          `${tAdmin('revenue.csvLabelPrefix')} ${m.label}`,
+          fmtUsd(m.cents),
+        ]),
       ],
     );
   }
@@ -104,9 +110,9 @@ export default function AdminDashboardPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
-        <p className="text-sm text-muted-foreground">{T.loadError}</p>
+        <p className="text-sm text-muted-foreground">{tAdmin('loadError')}</p>
         <Button className="w-auto" onClick={() => void refresh()}>
-          {T.retry}
+          {tAdmin('retry')}
         </Button>
       </div>
     );
@@ -115,17 +121,17 @@ export default function AdminDashboardPage() {
   return (
     <div className="w-full">
       <AdminPageHeader
-        title={T.title}
-        subtitle={T.subtitle}
+        title={tAdmin('title')}
+        subtitle={tAdmin('subtitle')}
         actions={
           <>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
               <Download size={14} />
-              {T.exportReport}
+              {tAdmin('exportReport')}
             </Button>
             <Button className="sm:w-auto" onClick={() => setShowCreateSchool(true)}>
               <Plus size={14} />
-              {T.createSchool}
+              {tAdmin('createSchool')}
             </Button>
           </>
         }
@@ -142,36 +148,36 @@ export default function AdminDashboardPage() {
           {/* KPI row */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             <StatCard
-              label={T.kpi.totalSchools}
+              label={tAdmin('kpi.totalSchools')}
               value={String(data.kpis.totalSchools)}
               icon={<School size={15} />}
               delta={`+${data.kpis.schoolsDeltaMonth}`}
-              sub={T.kpi.thisMonth}
+              sub={tAdmin('kpi.thisMonth')}
             />
             <StatCard
-              label={T.kpi.totalUsers}
-              value={data.kpis.totalUsers.toLocaleString('fr-FR')}
+              label={tAdmin('kpi.totalUsers')}
+              value={data.kpis.totalUsers.toLocaleString(LOCALE_BCP47[locale])}
               icon={<Users size={15} />}
               delta={`+${data.kpis.usersDeltaMonth}`}
-              sub={T.kpi.thisMonth}
+              sub={tAdmin('kpi.thisMonth')}
             />
             <StatCard
-              label={T.kpi.activeUsers}
-              value={data.kpis.activeUsers.toLocaleString('fr-FR')}
+              label={tAdmin('kpi.activeUsers')}
+              value={data.kpis.activeUsers.toLocaleString(LOCALE_BCP47[locale])}
               icon={<Activity size={15} />}
               deltaTone="muted"
-              sub={`${data.kpis.activeUsersPct}% ${T.kpi.ofTotal}`}
+              sub={`${data.kpis.activeUsersPct}% ${tAdmin('kpi.ofTotal')}`}
             />
             <StatCard
-              label={T.kpi.activeSubscriptions}
+              label={tAdmin('kpi.activeSubscriptions')}
               value={String(data.kpis.activeSubscriptions)}
               icon={<CreditCard size={15} />}
               delta={data.kpis.expiringSoon > 0 ? String(data.kpis.expiringSoon) : undefined}
               deltaTone={data.kpis.expiringSoon > 0 ? 'destructive' : 'muted'}
-              sub={data.kpis.expiringSoon > 0 ? T.kpi.expiringSoon : undefined}
+              sub={data.kpis.expiringSoon > 0 ? tAdmin('kpi.expiringSoon') : undefined}
             />
             <StatCard
-              label={T.kpi.monthRevenue}
+              label={tAdmin('kpi.monthRevenue')}
               value={fmtUsdRound(data.kpis.monthRevenueCents)}
               icon={<Wallet size={15} />}
               delta={
@@ -184,34 +190,34 @@ export default function AdminDashboardPage() {
                   ? 'destructive'
                   : 'success'
               }
-              sub={data.kpis.revenueDeltaPct !== null ? T.kpi.vsLastMonth : undefined}
+              sub={data.kpis.revenueDeltaPct !== null ? tAdmin('kpi.vsLastMonth') : undefined}
             />
           </div>
 
           {/* Revenue chart + recent users */}
           <div className="grid min-w-0 gap-4 lg:grid-cols-[2fr_1fr]">
-            <SectionCard title={T.revenue.title} subtitle={T.revenue.subtitle}>
+            <SectionCard title={tAdmin('revenue.title')} subtitle={tAdmin('revenue.subtitle')}>
               <div className="px-4 py-4">
                 <BarChart
                   data={data.revenue.series.map((m) => ({ label: m.label, value: m.cents }))}
                   formatValue={(v) => fmtUsdRound(v)}
-                  ariaLabel={T.revenue.title}
+                  ariaLabel={tAdmin('revenue.title')}
                 />
                 <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-3">
                   <div>
-                    <div className="text-2xs text-muted-foreground">{T.revenue.total}</div>
+                    <div className="text-2xs text-muted-foreground">{tAdmin('revenue.total')}</div>
                     <div className="text-sm font-extrabold text-foreground">
                       {fmtUsdRound(data.revenue.totalCents)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-muted-foreground">{T.revenue.avg}</div>
+                    <div className="text-2xs text-muted-foreground">{tAdmin('revenue.avg')}</div>
                     <div className="text-sm font-extrabold text-foreground">
                       {fmtUsdRound(data.revenue.avgCents)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-muted-foreground">{T.revenue.growth}</div>
+                    <div className="text-2xs text-muted-foreground">{tAdmin('revenue.growth')}</div>
                     <div className="text-sm font-extrabold text-success-foreground">
                       {data.revenue.growthPct !== null
                         ? `${data.revenue.growthPct >= 0 ? '+' : ''}${data.revenue.growthPct}%`
@@ -223,16 +229,16 @@ export default function AdminDashboardPage() {
             </SectionCard>
 
             <SectionCard
-              title={T.recentUsers.title}
-              subtitle={T.recentUsers.subtitle}
+              title={tAdmin('recentUsers.title')}
+              subtitle={tAdmin('recentUsers.subtitle')}
               action={
                 <Link href="/admin/users" className="text-xs font-semibold text-primary">
-                  {T.seeAll}
+                  {tAdmin('seeAll')}
                 </Link>
               }
             >
               {data.recentUsers.length === 0 ? (
-                <EmptyRow>{T.recentUsers.empty}</EmptyRow>
+                <EmptyRow>{tAdmin('recentUsers.empty')}</EmptyRow>
               ) : (
                 <div className="divide-y divide-border">
                   {data.recentUsers.map((u) => (
@@ -262,13 +268,16 @@ export default function AdminDashboardPage() {
 
           {/* Client schools */}
           <SectionCard
-            title={T.schools.title}
-            subtitle={T.schools.subtitle(data.kpis.totalSchools)}
+            title={tAdmin('schools.title')}
+            subtitle={tAdmin(
+              data.kpis.totalSchools > 1 ? 'schools.subtitle.other' : 'schools.subtitle.one',
+              { n: data.kpis.totalSchools },
+            )}
             action={
               <div className="hidden items-center gap-2 sm:flex">
                 <form onSubmit={onSchoolSearch}>
                   <SearchInput
-                    placeholder={T.schools.searchPlaceholder}
+                    placeholder={tAdmin('schools.searchPlaceholder')}
                     value={schoolSearch}
                     onChange={(e) => setSchoolSearch(e.target.value)}
                     className="h-9 w-44 text-xs"
@@ -276,26 +285,32 @@ export default function AdminDashboardPage() {
                 </form>
                 <Button size="sm" className="w-auto" onClick={() => setShowCreateSchool(true)}>
                   <Plus size={13} />
-                  {T.schools.newSchool}
+                  {tAdmin('schools.newSchool')}
                 </Button>
               </div>
             }
           >
             {data.schools.length === 0 ? (
-              <EmptyRow>{T.schools.empty}</EmptyRow>
+              <EmptyRow>{tAdmin('schools.empty')}</EmptyRow>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[820px]">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className={TH_CLASS}>{T.schools.columns.school}</th>
-                      <th className={TH_CLASS}>{T.schools.columns.location}</th>
-                      <th className={TH_CLASS}>{T.schools.columns.plan}</th>
-                      <th className={`${TH_CLASS} text-right`}>{T.schools.columns.students}</th>
-                      <th className={`${TH_CLASS} text-right`}>{T.schools.columns.users}</th>
-                      <th className={`${TH_CLASS} text-right`}>{T.schools.columns.billing}</th>
-                      <th className={TH_CLASS}>{T.schools.columns.status}</th>
-                      <th className={TH_CLASS}>{T.schools.columns.renewal}</th>
+                      <th className={TH_CLASS}>{tAdmin('schools.columns.school')}</th>
+                      <th className={TH_CLASS}>{tAdmin('schools.columns.location')}</th>
+                      <th className={TH_CLASS}>{tAdmin('schools.columns.plan')}</th>
+                      <th className={`${TH_CLASS} text-right`}>
+                        {tAdmin('schools.columns.students')}
+                      </th>
+                      <th className={`${TH_CLASS} text-right`}>
+                        {tAdmin('schools.columns.users')}
+                      </th>
+                      <th className={`${TH_CLASS} text-right`}>
+                        {tAdmin('schools.columns.billing')}
+                      </th>
+                      <th className={TH_CLASS}>{tAdmin('schools.columns.status')}</th>
+                      <th className={TH_CLASS}>{tAdmin('schools.columns.renewal')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -346,30 +361,30 @@ export default function AdminDashboardPage() {
           {/* Transactions + coupons */}
           <div className="grid min-w-0 gap-4 lg:grid-cols-2">
             <SectionCard
-              title={T.transactions.title}
-              subtitle={T.transactions.subtitle}
+              title={tAdmin('transactions.title')}
+              subtitle={tAdmin('transactions.subtitle')}
               action={
                 <Link
                   href="/admin/billing/transactions"
                   className="text-xs font-semibold text-primary"
                 >
-                  {T.seeAll}
+                  {tAdmin('seeAll')}
                 </Link>
               }
             >
               {data.recentTransactions.length === 0 ? (
-                <EmptyRow>{T.transactions.empty}</EmptyRow>
+                <EmptyRow>{tAdmin('transactions.empty')}</EmptyRow>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[420px]">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className={TH_CLASS}>{T.transactions.columns.school}</th>
+                        <th className={TH_CLASS}>{tAdmin('transactions.columns.school')}</th>
                         <th className={`${TH_CLASS} text-right`}>
-                          {T.transactions.columns.amount}
+                          {tAdmin('transactions.columns.amount')}
                         </th>
-                        <th className={TH_CLASS}>{T.transactions.columns.date}</th>
-                        <th className={TH_CLASS}>{T.transactions.columns.status}</th>
+                        <th className={TH_CLASS}>{tAdmin('transactions.columns.date')}</th>
+                        <th className={TH_CLASS}>{tAdmin('transactions.columns.status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -378,7 +393,7 @@ export default function AdminDashboardPage() {
                           <td className={TD_CLASS}>
                             <div className="font-semibold text-foreground">{t.schoolName}</div>
                             <div className="text-2xs text-muted-foreground">
-                              {t.planName ?? '—'} · {t.students} élèves
+                              {t.planName ?? '—'} · {t.students} {tAdmin('studentsSuffix')}
                             </div>
                           </td>
                           <td
@@ -401,26 +416,26 @@ export default function AdminDashboardPage() {
             </SectionCard>
 
             <SectionCard
-              title={T.coupons.title}
-              subtitle={T.coupons.subtitle}
+              title={tAdmin('coupons.title')}
+              subtitle={tAdmin('coupons.subtitle')}
               action={
                 <Link href="/admin/billing/coupons" className="text-xs font-semibold text-primary">
-                  {T.coupons.newCoupon}
+                  {tAdmin('coupons.newCoupon')}
                 </Link>
               }
             >
               {data.coupons.length === 0 ? (
-                <EmptyRow>{T.coupons.empty}</EmptyRow>
+                <EmptyRow>{tAdmin('coupons.empty')}</EmptyRow>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[420px]">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className={TH_CLASS}>{T.coupons.columns.code}</th>
-                        <th className={TH_CLASS}>{T.coupons.columns.discount}</th>
-                        <th className={TH_CLASS}>{T.coupons.columns.uses}</th>
-                        <th className={TH_CLASS}>{T.coupons.columns.expiry}</th>
-                        <th className={TH_CLASS}>{T.coupons.columns.status}</th>
+                        <th className={TH_CLASS}>{tAdmin('coupons.columns.code')}</th>
+                        <th className={TH_CLASS}>{tAdmin('coupons.columns.discount')}</th>
+                        <th className={TH_CLASS}>{tAdmin('coupons.columns.uses')}</th>
+                        <th className={TH_CLASS}>{tAdmin('coupons.columns.expiry')}</th>
+                        <th className={TH_CLASS}>{tAdmin('coupons.columns.status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -436,7 +451,7 @@ export default function AdminDashboardPage() {
                             {c.usedCount} / {c.maxUses ?? '∞'}
                           </td>
                           <td className={`${TD_CLASS} text-muted-foreground`}>
-                            {c.expiresAt ? fmtDateMed(c.expiresAt) : T.coupons.noLimit}
+                            {c.expiresAt ? fmtDateMed(c.expiresAt) : tAdmin('coupons.noLimit')}
                           </td>
                           <td className={TD_CLASS}>
                             <CouponStatusBadge status={c.status} />

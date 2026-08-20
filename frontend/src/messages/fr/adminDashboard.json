@@ -1,0 +1,77 @@
+{
+  "title": "Tableau de bord Administration",
+  "subtitle": "Vue globale de la plateforme",
+  "exportReport": "Exporter le rapport",
+  "createSchool": "Créer une école",
+  "seeAll": "Voir tout",
+  "csvIndicator": "Indicateur",
+  "csvValue": "Valeur",
+  "studentsSuffix": "élèves",
+  "kpi": {
+    "totalSchools": "Écoles actives",
+    "totalUsers": "Utilisateurs totaux",
+    "activeUsers": "Utilisateurs actifs",
+    "activeSubscriptions": "Abonnements actifs",
+    "monthRevenue": "Revenus du mois",
+    "thisMonth": "ce mois",
+    "ofTotal": "du total",
+    "expiringSoon": "expirent bientôt",
+    "vsLastMonth": "vs mois dernier"
+  },
+  "revenue": {
+    "title": "Évolution des revenus",
+    "subtitle": "6 derniers mois · Facturation par élève",
+    "total": "Total 6 mois",
+    "avg": "Moy. mensuelle",
+    "growth": "Croissance",
+    "csvLabelPrefix": "Revenus"
+  },
+  "recentUsers": {
+    "title": "Utilisateurs récents",
+    "subtitle": "Dernières inscriptions",
+    "empty": "Aucun utilisateur pour le moment."
+  },
+  "schools": {
+    "title": "Écoles clientes",
+    "subtitle": {
+      "one": "{n} établissement enregistré sur la plateforme",
+      "other": "{n} établissements enregistrés sur la plateforme"
+    },
+    "searchPlaceholder": "Rechercher...",
+    "newSchool": "Nouvelle école",
+    "columns": {
+      "school": "École",
+      "location": "Pays / Ville",
+      "plan": "Plan",
+      "students": "Élèves",
+      "users": "Utilisateurs",
+      "billing": "Facturation / mois",
+      "status": "Statut",
+      "renewal": "Renouvellement"
+    },
+    "empty": "Aucune école enregistrée pour le moment."
+  },
+  "transactions": {
+    "title": "Transactions récentes",
+    "subtitle": "Historique des paiements",
+    "columns": { "school": "École", "amount": "Montant", "date": "Date", "status": "Statut" },
+    "empty": "Aucune transaction pour le moment."
+  },
+  "coupons": {
+    "title": "Codes promotionnels",
+    "subtitle": "Gérez les coupons de réduction",
+    "newCoupon": "Nouveau coupon",
+    "columns": {
+      "code": "Code",
+      "discount": "Réduction",
+      "uses": "Utilisations",
+      "expiry": "Expiration",
+      "status": "Statut"
+    },
+    "noLimit": "Sans limite",
+    "permanent": "Permanent",
+    "empty": "Aucun coupon créé pour le moment."
+  },
+  "loadError": "Impossible de charger le tableau de bord.",
+  "retry": "Réessayer"
+}

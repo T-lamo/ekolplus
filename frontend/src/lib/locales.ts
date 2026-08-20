@@ -53,8 +53,23 @@ export const MESSAGE_NAMESPACES = [
   'forgotPassword',
   'resetPassword',
   'verifyEmail',
+  'dashboard',
+  'adminDashboard',
+  'schoolPlanCard',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
+
+/** BCP-47 tag for native `Intl`/`toLocaleDateString` calls. Haitian Creole
+ * has no distinct number/date-formatting convention in wide practical use in
+ * Haiti — it maps to French (the shared administrative register) rather
+ * than a bare `'ht'` tag the JS engine would otherwise silently fall back
+ * on. Add call sites here, not ad hoc `'fr-FR'` literals, whenever a new
+ * screen formats a date or number. */
+export const LOCALE_BCP47: Record<LocaleKey, string> = {
+  fr: 'fr-FR',
+  ht: 'fr-FR',
+  en: 'en-US',
+};
 
 export function isLocaleKey(value: unknown): value is LocaleKey {
   return typeof value === 'string' && (LOCALE_KEYS as readonly string[]).includes(value);

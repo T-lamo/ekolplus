@@ -1,11 +1,10 @@
 import { BookOpen, CalendarCheck, School, UserCheck, Users, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { DASHBOARD } from '@/lib/constants';
 import type { DashboardData } from './types';
 
-const t = DASHBOARD.kpis;
-
 export function KpiRow({ kpis }: { kpis: DashboardData['kpis'] }) {
+  const t = useTranslations('Dashboard.kpis');
   return (
     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
       <KpiCard
@@ -13,30 +12,30 @@ export function KpiRow({ kpis }: { kpis: DashboardData['kpis'] }) {
         iconBg="bg-secondary"
         iconFg="text-primary"
         value={String(kpis.studentsCount)}
-        label={t.students}
+        label={t('students')}
         delta={kpis.studentsDeltaThisMonth > 0 ? `+${kpis.studentsDeltaThisMonth}` : undefined}
-        deltaSub={kpis.studentsDeltaThisMonth > 0 ? t.thisMonth : undefined}
+        deltaSub={kpis.studentsDeltaThisMonth > 0 ? t('thisMonth') : undefined}
       />
       <KpiCard
         icon={UserCheck}
         iconBg="bg-info"
         iconFg="text-info-foreground"
         value={String(kpis.teachersCount)}
-        label={t.teachers}
+        label={t('teachers')}
       />
       <KpiCard
         icon={School}
         iconBg="bg-[#e0faf0]"
         iconFg="text-[#059669]"
         value={String(kpis.classesCount)}
-        label={t.classes}
+        label={t('classes')}
       />
       <KpiCard
         icon={BookOpen}
         iconBg="bg-[#fff4e0]"
         iconFg="text-[#d97706]"
         value={String(kpis.subjectsCount)}
-        label={t.subjects}
+        label={t('subjects')}
       />
       <KpiCard
         icon={CalendarCheck}
@@ -44,8 +43,8 @@ export function KpiRow({ kpis }: { kpis: DashboardData['kpis'] }) {
         iconFg="text-primary"
         value={kpis.attendanceRateThisWeek != null ? `${kpis.attendanceRateThisWeek}%` : '—'}
         valueTone="text-primary"
-        label={t.attendanceRate}
-        sub={t.attendanceRateSub}
+        label={t('attendanceRate')}
+        sub={t('attendanceRateSub')}
         delta={
           kpis.attendanceRateDeltaVsLastWeek != null && kpis.attendanceRateDeltaVsLastWeek !== 0
             ? `${kpis.attendanceRateDeltaVsLastWeek > 0 ? '+' : ''}${kpis.attendanceRateDeltaVsLastWeek}%`

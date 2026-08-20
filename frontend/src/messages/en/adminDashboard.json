@@ -1,0 +1,77 @@
+{
+  "title": "Admin Dashboard",
+  "subtitle": "Platform-wide overview",
+  "exportReport": "Export report",
+  "createSchool": "Create a school",
+  "seeAll": "See all",
+  "csvIndicator": "Metric",
+  "csvValue": "Value",
+  "studentsSuffix": "students",
+  "kpi": {
+    "totalSchools": "Active schools",
+    "totalUsers": "Total users",
+    "activeUsers": "Active users",
+    "activeSubscriptions": "Active subscriptions",
+    "monthRevenue": "Monthly revenue",
+    "thisMonth": "this month",
+    "ofTotal": "of total",
+    "expiringSoon": "expiring soon",
+    "vsLastMonth": "vs last month"
+  },
+  "revenue": {
+    "title": "Revenue trend",
+    "subtitle": "Last 6 months · Per-student billing",
+    "total": "6-month total",
+    "avg": "Monthly avg.",
+    "growth": "Growth",
+    "csvLabelPrefix": "Revenue"
+  },
+  "recentUsers": {
+    "title": "Recent users",
+    "subtitle": "Latest sign-ups",
+    "empty": "No users yet."
+  },
+  "schools": {
+    "title": "Client schools",
+    "subtitle": {
+      "one": "{n} school registered on the platform",
+      "other": "{n} schools registered on the platform"
+    },
+    "searchPlaceholder": "Search...",
+    "newSchool": "New school",
+    "columns": {
+      "school": "School",
+      "location": "Country / City",
+      "plan": "Plan",
+      "students": "Students",
+      "users": "Users",
+      "billing": "Billing / month",
+      "status": "Status",
+      "renewal": "Renewal"
+    },
+    "empty": "No schools registered yet."
+  },
+  "transactions": {
+    "title": "Recent transactions",
+    "subtitle": "Payment history",
+    "columns": { "school": "School", "amount": "Amount", "date": "Date", "status": "Status" },
+    "empty": "No transactions yet."
+  },
+  "coupons": {
+    "title": "Promo codes",
+    "subtitle": "Manage discount coupons",
+    "newCoupon": "New coupon",
+    "columns": {
+      "code": "Code",
+      "discount": "Discount",
+      "uses": "Uses",
+      "expiry": "Expiry",
+      "status": "Status"
+    },
+    "noLimit": "No limit",
+    "permanent": "Permanent",
+    "empty": "No coupons created yet."
+  },
+  "loadError": "Unable to load the dashboard.",
+  "retry": "Retry"
+}

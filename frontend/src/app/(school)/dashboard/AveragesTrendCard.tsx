@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { DASHBOARD } from '@/lib/constants';
 import type { DashboardData } from './types';
-
-const t = DASHBOARD.averagesTrend;
 
 // Single-series line chart (school-wide monthly average, /20) — same SVG,
 // no-chart-lib approach as BarChart, translated to a line: straight
@@ -18,6 +16,7 @@ export function AveragesTrendCard({
   yearLabel: string;
   data: DashboardData['averagesTrend'];
 }) {
+  const t = useTranslations('Dashboard.averagesTrend');
   const [hovered, setHovered] = useState<number | null>(null);
 
   const W = 100;
@@ -49,12 +48,12 @@ export function AveragesTrendCard({
   return (
     <Card className="gap-1 p-4 sm:p-5 lg:col-span-1">
       <div>
-        <div className="text-caption font-semibold text-foreground">{t.title}</div>
-        <div className="mb-2 text-2xs text-muted-foreground">{t.subtitle(yearLabel)}</div>
+        <div className="text-caption font-semibold text-foreground">{t('title')}</div>
+        <div className="mb-2 text-2xs text-muted-foreground">{t('subtitle', { yearLabel })}</div>
       </div>
       {!hasAnyData ? (
         <div className="flex h-[110px] items-center justify-center text-xs text-muted-foreground">
-          Aucune moyenne publiée sur la période.
+          {t('empty')}
         </div>
       ) : (
         <div className="relative">
@@ -64,7 +63,7 @@ export function AveragesTrendCard({
             className="block w-full"
             style={{ height: H }}
             role="img"
-            aria-label={`${t.title} — ${t.seriesLabel}`}
+            aria-label={`${t('title')} — ${t('seriesLabel')}`}
           >
             <defs>
               <linearGradient id="dashboardTrendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -127,12 +126,12 @@ export function AveragesTrendCard({
         </div>
       )}
       <table className="sr-only">
-        <caption>{t.title}</caption>
+        <caption>{t('title')}</caption>
         <tbody>
           {data.map((d) => (
             <tr key={d.month}>
               <th scope="row">{d.month}</th>
-              <td>{d.average != null ? `${d.average}/20` : 'Aucune donnée'}</td>
+              <td>{d.average != null ? `${d.average}/20` : t('noData')}</td>
             </tr>
           ))}
         </tbody>

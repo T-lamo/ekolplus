@@ -1,0 +1,78 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Tablo debò Administrasyon",
+  "subtitle": "Apèsi global platfòm lan",
+  "exportReport": "Ekspòte rapò a",
+  "createSchool": "Kreye yon lekòl",
+  "seeAll": "Wè tout",
+  "csvIndicator": "Endikatè",
+  "csvValue": "Valè",
+  "studentsSuffix": "elèv",
+  "kpi": {
+    "totalSchools": "Lekòl aktif",
+    "totalUsers": "Total itilizatè",
+    "activeUsers": "Itilizatè aktif",
+    "activeSubscriptions": "Abònman aktif",
+    "monthRevenue": "Revni mwa a",
+    "thisMonth": "mwa sa a",
+    "ofTotal": "nan total la",
+    "expiringSoon": "ap ekspire byento",
+    "vsLastMonth": "konpare ak mwa pase"
+  },
+  "revenue": {
+    "title": "Evolisyon revni yo",
+    "subtitle": "6 dènye mwa · Fakti pa elèv",
+    "total": "Total 6 mwa",
+    "avg": "Mwayèn chak mwa",
+    "growth": "Kwasans",
+    "csvLabelPrefix": "Revni"
+  },
+  "recentUsers": {
+    "title": "Itilizatè resan",
+    "subtitle": "Dènye enskripsyon",
+    "empty": "Pa gen itilizatè pou kounye a."
+  },
+  "schools": {
+    "title": "Lekòl kliyan",
+    "subtitle": {
+      "one": "{n} etablisman anrejistre sou platfòm lan",
+      "other": "{n} etablisman anrejistre sou platfòm lan"
+    },
+    "searchPlaceholder": "Chèche...",
+    "newSchool": "Nouvo lekòl",
+    "columns": {
+      "school": "Lekòl",
+      "location": "Peyi / Vil",
+      "plan": "Plan",
+      "students": "Elèv",
+      "users": "Itilizatè",
+      "billing": "Fakti / mwa",
+      "status": "Estati",
+      "renewal": "Renouvèlman"
+    },
+    "empty": "Pa gen lekòl anrejistre pou kounye a."
+  },
+  "transactions": {
+    "title": "Tranzaksyon resan",
+    "subtitle": "Istorik peman yo",
+    "columns": { "school": "Lekòl", "amount": "Montan", "date": "Dat", "status": "Estati" },
+    "empty": "Pa gen tranzaksyon pou kounye a."
+  },
+  "coupons": {
+    "title": "Kòd pwomosyonèl",
+    "subtitle": "Jere koupon rabè yo",
+    "newCoupon": "Nouvo koupon",
+    "columns": {
+      "code": "Kòd",
+      "discount": "Rabè",
+      "uses": "Itilizasyon",
+      "expiry": "Ekspirasyon",
+      "status": "Estati"
+    },
+    "noLimit": "San limit",
+    "permanent": "Pèmanan",
+    "empty": "Pa gen koupon kreye pou kounye a."
+  },
+  "loadError": "Nou pa ka chaje tablo debò a.",
+  "retry": "Eseye ankò"
+}

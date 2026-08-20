@@ -15,6 +15,9 @@ import type adminTopbar from '@/messages/fr/adminTopbar.json';
 import type forgotPassword from '@/messages/fr/forgotPassword.json';
 import type resetPassword from '@/messages/fr/resetPassword.json';
 import type verifyEmail from '@/messages/fr/verifyEmail.json';
+import type dashboard from '@/messages/fr/dashboard.json';
+import type adminDashboard from '@/messages/fr/adminDashboard.json';
+import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -31,6 +34,9 @@ declare module 'next-intl' {
       ForgotPassword: typeof forgotPassword;
       ResetPassword: typeof resetPassword;
       VerifyEmail: typeof verifyEmail;
+      Dashboard: typeof dashboard;
+      AdminDashboard: typeof adminDashboard;
+      SchoolPlanCard: typeof schoolPlanCard;
     };
   }
 }

@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { CalendarX, ClipboardCheck, UserX, Wallet, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { DASHBOARD } from '@/lib/constants';
 import type { DashboardData } from './types';
 
-const t = DASHBOARD.todos;
-
 export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
+  const t = useTranslations('Dashboard.todos');
   const items: {
     key: string;
     href: string;
@@ -24,8 +23,11 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
       icon: ClipboardCheck,
       iconBg: 'bg-[#fff4e0]',
       iconFg: 'text-[#d97706]',
-      title: t.evaluationsToGrade,
-      sub: todos.evaluationsOverdue > 0 ? t.evaluationsOverdueLabel(todos.evaluationsOverdue) : '',
+      title: t('evaluationsToGrade'),
+      sub:
+        todos.evaluationsOverdue > 0
+          ? t('evaluationsOverdueLabel', { n: todos.evaluationsOverdue })
+          : '',
       subTone: 'text-destructive-foreground',
       count: todos.evaluationsToGrade,
     },
@@ -35,8 +37,8 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
       icon: CalendarX,
       iconBg: 'bg-destructive',
       iconFg: 'text-destructive-foreground',
-      title: t.unjustifiedAbsences,
-      sub: t.unjustifiedAbsencesSub,
+      title: t('unjustifiedAbsences'),
+      sub: t('unjustifiedAbsencesSub'),
       subTone: 'text-muted-foreground',
       count: todos.unjustifiedAbsencesThisWeek,
     },
@@ -46,8 +48,8 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
       icon: UserX,
       iconBg: 'bg-secondary',
       iconFg: 'text-primary',
-      title: t.teachersWithoutClass,
-      sub: t.teachersWithoutClassSub,
+      title: t('teachersWithoutClass'),
+      sub: t('teachersWithoutClassSub'),
       subTone: 'text-primary',
       count: todos.teachersWithoutClass,
     },
@@ -57,8 +59,8 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
       icon: Wallet,
       iconBg: 'bg-warning',
       iconFg: 'text-warning-foreground',
-      title: t.overduePayments,
-      sub: t.overduePaymentsSub,
+      title: t('overduePayments'),
+      sub: t('overduePaymentsSub'),
       subTone: 'text-warning-foreground',
       count: todos.overduePayments,
     },
@@ -69,7 +71,7 @@ export function TodoListCard({ todos }: { todos: DashboardData['todos'] }) {
   return (
     <Card className="gap-3.5 p-4 sm:p-5">
       <div className="flex items-center justify-between">
-        <span className="text-caption font-semibold text-foreground">{t.title}</span>
+        <span className="text-caption font-semibold text-foreground">{t('title')}</span>
         {activeCount > 0 && (
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ef4444] text-2xs font-bold text-white">
             {activeCount}

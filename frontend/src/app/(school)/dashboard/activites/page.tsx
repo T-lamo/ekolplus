@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
@@ -10,10 +11,7 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Pager } from '@/components/ui/Pager';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { LIST_PAGE, TABLE_SCROLL } from '@/lib/layout';
-import { DASHBOARD } from '@/lib/constants';
-import { ACTIVITY_TYPE_META, relativeTimeFr } from '../activity-shared';
-
-const t = DASHBOARD.activityLog;
+import { ACTIVITY_TYPE_META, relativeTime } from '../activity-shared';
 
 type ActivityType = 'grade' | 'absence' | 'payment' | 'enrollment';
 
@@ -36,6 +34,9 @@ export default function ActivityLogPage() {
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<'' | ActivityType>('');
   const [page, setPage] = useState(1);
+  const t = useTranslations('Dashboard.activityLog');
+  const tRelative = useTranslations('Dashboard.activity.relativeTime');
+  const locale = useLocale();
 
   const load = useCallback(() => {
     const params = new URLSearchParams();
@@ -43,8 +44,8 @@ export default function ActivityLogPage() {
     params.set('page', String(page));
     api<ActivityResponse>(`/api/school/activity?${params.toString()}`)
       .then(setData)
-      .catch(() => setError("Impossible de charger l'activité."));
-  }, [type, page]);
+      .catch(() => setError(t('loadError')));
+  }, [type, page, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -72,11 +73,11 @@ export default function ActivityLogPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          {t.back}
+          {t('back')}
         </Link>
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -99,19 +100,21 @@ export default function ActivityLogPage() {
         <>
           <div className="flex flex-wrap items-center gap-2.5">
             <FilterSelect value={type} onValueChange={updateType}>
-              <SelectItem value="">{t.filterAll}</SelectItem>
-              {Object.entries(t.typeLabel).map(([key, label]) => (
+              <SelectItem value="">{t('filterAll')}</SelectItem>
+              {(['grade', 'absence', 'payment', 'enrollment'] as const).map((key) => (
                 <SelectItem key={key} value={key}>
-                  {label}
+                  {t(`typeLabel.${key}`)}
                 </SelectItem>
               ))}
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{t.resultCount(data.total)}</span>
+            <span className="text-sm text-muted-foreground">
+              {t(data.total > 1 ? 'resultCount.other' : 'resultCount.one', { n: data.total })}
+            </span>
           </div>
 
           {data.items.length === 0 ? (
             <Card>
-              <p className="p-5 text-sm text-muted-foreground">{t.empty}</p>
+              <p className="p-5 text-sm text-muted-foreground">{t('empty')}</p>
             </Card>
           ) : (
             <Card className="min-h-0 flex-1">
@@ -133,7 +136,7 @@ export default function ActivityLogPage() {
                           {item.text}
                         </span>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {relativeTimeFr(item.at)}
+                          {relativeTime(item.at, locale, tRelative)}
                         </span>
                       </div>
                     );

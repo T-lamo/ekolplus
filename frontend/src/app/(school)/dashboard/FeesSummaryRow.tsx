@@ -1,26 +1,27 @@
 import Link from 'next/link';
 import { AlertCircle, CalendarClock, TrendingUp } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
-import { DASHBOARD } from '@/lib/constants';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { DashboardData } from './types';
 
-const t = DASHBOARD.fees;
-
 export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
+  const t = useTranslations('Dashboard.fees');
+  const locale = useLocale();
   const noData =
     fees.tranchesTotal === 0 && fees.nextTranche == null && fees.overdueStudentCount === 0;
 
   return (
     <div>
       <div className="mb-2.5 flex items-center justify-between">
-        <span className="text-caption font-semibold text-foreground">{t.title}</span>
+        <span className="text-caption font-semibold text-foreground">{t('title')}</span>
         <Link href="/scolarite/paiements" className="text-xs font-medium text-primary">
-          {t.seeDetails}
+          {t('seeDetails')}
         </Link>
       </div>
       {noData ? (
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t.noFeeData}</p>
+          <p className="text-sm text-muted-foreground">{t('noFeeData')}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
@@ -29,20 +30,20 @@ export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
               icon={TrendingUp}
               iconBg="bg-success"
               iconFg="text-success-foreground"
-              title={t.collected}
+              title={t('collected')}
             />
             <CircularStat
               percent={fees.collectedPercent}
               color="var(--color-success-foreground)"
-              centerLabel={t.collectedLabel}
+              centerLabel={t('collectedLabel')}
               rows={[
                 {
-                  label: t.paid,
+                  label: t('paid'),
                   value: `${fees.collectedPercent}%`,
                   dot: 'var(--color-success-foreground)',
                 },
                 {
-                  label: t.remaining,
+                  label: t('remaining'),
                   value: `${100 - fees.collectedPercent}%`,
                   dot: 'var(--color-muted-foreground)',
                 },
@@ -56,25 +57,28 @@ export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
               icon={AlertCircle}
               iconBg="bg-destructive"
               iconFg="text-destructive-foreground"
-              title={t.overdueStudents}
+              title={t('overdueStudents')}
             />
             <CircularStat
               percent={fees.overdueStudentPercent}
               color="var(--color-destructive-foreground)"
-              centerLabel={t.overdueLabel}
+              centerLabel={t('overdueLabel')}
               rows={[
                 {
-                  label: t.overdueStudents,
+                  label: t('overdueStudents'),
                   value: `${fees.overdueStudentPercent}%`,
                   dot: 'var(--color-destructive-foreground)',
                 },
                 {
-                  label: t.upToDate,
+                  label: t('upToDate'),
                   value: `${100 - fees.overdueStudentPercent}%`,
                   dot: 'var(--color-success-foreground)',
                 },
               ]}
-              footer={t.studentsConcerned(fees.overdueStudentCount)}
+              footer={t(
+                fees.overdueStudentCount > 1 ? 'studentsConcerned.other' : 'studentsConcerned.one',
+                { n: fees.overdueStudentCount },
+              )}
             />
             <ProgressBar
               percent={fees.overdueStudentPercent}
@@ -87,12 +91,12 @@ export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
               icon={CalendarClock}
               iconBg="bg-secondary"
               iconFg="text-primary"
-              title={t.nextDue}
+              title={t('nextDue')}
             />
             {fees.nextTranche ? (
               <>
                 <div className="mt-1 text-xl font-bold text-foreground">
-                  {new Date(fees.nextTranche.dueDate).toLocaleDateString('fr-FR', {
+                  {new Date(fees.nextTranche.dueDate).toLocaleDateString(LOCALE_BCP47[locale], {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
@@ -100,17 +104,28 @@ export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
                 </div>
                 <div className="text-2xs text-muted-foreground">
                   {fees.nextTranche.label} —{' '}
-                  {t.studentsConcerned(fees.nextTranche.studentsConcerned)}
+                  {t(
+                    fees.nextTranche.studentsConcerned > 1
+                      ? 'studentsConcerned.other'
+                      : 'studentsConcerned.one',
+                    { n: fees.nextTranche.studentsConcerned },
+                  )}
                 </div>
                 {fees.daysUntilNextTranche != null && (
                   <span className="mt-1 w-fit rounded-full bg-warning px-2 py-0.5 text-[10px] font-bold text-warning-foreground">
-                    {t.daysUntil(fees.daysUntilNextTranche)}
+                    {fees.daysUntilNextTranche <= 0
+                      ? t('daysUntil.today')
+                      : fees.daysUntilNextTranche === 1
+                        ? t('daysUntil.tomorrow')
+                        : t('daysUntil.inNDays', { n: fees.daysUntilNextTranche })}
                   </span>
                 )}
                 {fees.tranchesTotal > 0 && (
                   <div className="mt-2">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">{t.trancheProgress}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {t('trancheProgress')}
+                      </span>
                       <span className="text-[10px] font-bold text-primary">
                         {fees.tranchesElapsed} / {fees.tranchesTotal}
                       </span>
@@ -127,7 +142,7 @@ export function FeesSummaryRow({ fees }: { fees: DashboardData['fees'] }) {
                 )}
               </>
             ) : (
-              <p className="mt-1 text-sm text-muted-foreground">{t.noFeeData}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('noFeeData')}</p>
             )}
           </Card>
         </div>

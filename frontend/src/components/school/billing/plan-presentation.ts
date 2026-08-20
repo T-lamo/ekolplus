@@ -30,12 +30,27 @@ export interface PlanPresentation {
 
 const NEAR_CAP_RATIO = 0.8;
 
+// The bivariance-hack shape (extracting a call signature declared with
+// method syntax) — not `(key: string, values?: ...) => string` directly —
+// so a next-intl `Translator<...>` (whose `key` param is narrowed to
+// `NamespacedMessageKeys<...>` via this app's `next-intl.d.ts` AppConfig
+// augmentation) remains assignable here under `strictFunctionTypes`. A
+// plain arrow-function type alias is checked contravariantly and rejects
+// that narrower parameter; this shape restores the same bivariant checking
+// TypeScript already gives interface methods (e.g. how `@types/react`
+// types DOM event handlers) without changing the call syntax below.
+export type PlanCardT = {
+  t(key: string, values?: Record<string, string | number>): string;
+}['t'];
+
 /**
  * Returns null when there is nothing to show: no snapshot (no school /
  * loading / error) or a Starter school on a deployment without Stripe
- * (nothing to sell — the app stays exactly as before).
+ * (nothing to sell — the app stays exactly as before). `t` must be scoped
+ * to the `SchoolPlanCard` namespace (`useTranslations('SchoolPlanCard')`
+ * in the component; `createTranslator(...)` in tests).
  */
-export function planPresentation(s: PlanSnapshot | null): PlanPresentation | null {
+export function planPresentation(s: PlanSnapshot | null, t: PlanCardT): PlanPresentation | null {
   if (!s) return null;
 
   if (s.plan === 'STARTER') {
@@ -43,6 +58,7 @@ export function planPresentation(s: PlanSnapshot | null): PlanPresentation | nul
     const limit = s.studentHardLimit;
     const overCap = limit !== null && s.studentCount >= limit;
     const previouslyPaid = s.subscribedPlan !== null && s.subscribedPlan !== 'STARTER';
+    const plan = PLAN_LABELS.PRO;
 
     if (previouslyPaid && s.status === 'SUSPENDED') {
       // Unpaid Pro (Stripe dunning exhausted) → the school is back on Starter
@@ -51,11 +67,11 @@ export function planPresentation(s: PlanSnapshot | null): PlanPresentation | nul
       const byStripe = s.managedByStripe;
       return {
         kind: 'upsell',
-        title: `${PLAN_LABELS.PRO} suspendu`,
-        subtitle: byStripe ? 'Paiement en échec — régulariser' : 'Suspendu · contactez-nous',
+        title: t('suspendedTitle', { plan }),
+        subtitle: byStripe ? t('paymentFailedRegularize') : t('suspendedContactUs'),
         tone: 'alert',
-        shortLabel: `${PLAN_LABELS.PRO} · À régulariser`,
-        cta: byStripe ? 'Régulariser' : 'Nous contacter',
+        shortLabel: t('regularizeShortLabel', { plan }),
+        cta: byStripe ? t('regularizeCta') : t('contactUsCta'),
         href: PLAN_PAGE_PRO_HREF,
       };
     }
@@ -64,14 +80,14 @@ export function planPresentation(s: PlanSnapshot | null): PlanPresentation | nul
       // A canceled / expired Pro row: the cap applies again — say so when it bites.
       return {
         kind: 'upsell',
-        title: `Réactivez ${PLAN_LABELS.PRO}`,
+        title: t('reactivateTitle', { plan }),
         subtitle:
           overCap && limit !== null
-            ? `${s.studentCount} élèves pour ${limit} places — inscriptions bloquées`
-            : 'Vos données sont conservées · reprise en 1 clic',
+            ? t('overCapBlocked', { count: s.studentCount, limit })
+            : t('dataKept'),
         tone: overCap ? 'alert' : 'gold',
-        shortLabel: `Réactiver ${PLAN_LABELS.PRO}`,
-        cta: 'Réactiver',
+        shortLabel: t('reactivateShortLabel', { plan }),
+        cta: t('reactivateCta'),
         href: PLAN_PAGE_PRO_HREF,
       };
     }
@@ -79,21 +95,28 @@ export function planPresentation(s: PlanSnapshot | null): PlanPresentation | nul
     let subtitle: string;
     let tone: PlanPresentation['tone'] = 'gold';
     if (limit !== null && overCap) {
-      subtitle = `Plafond atteint (${s.studentCount}/${limit}) — inscriptions bloquées`;
+      subtitle = t('capReached', { count: s.studentCount, limit });
       tone = 'alert';
     } else if (limit !== null && s.studentCount >= Math.ceil(limit * NEAR_CAP_RATIO)) {
       const left = limit - s.studentCount;
-      subtitle = `${s.studentCount}/${limit} élèves — plus que ${left} place${left > 1 ? 's' : ''}`;
+      subtitle = t(left > 1 ? 'nearCap.other' : 'nearCap.one', {
+        count: s.studentCount,
+        limit,
+        left,
+      });
     } else {
-      subtitle = `Jusqu'à ${PLAN_STUDENT_SOFT_LIMIT.PRO ?? 1000} élèves · essai ${TRIAL_DAYS} j offert`;
+      subtitle = t('genericPitch', {
+        limit: PLAN_STUDENT_SOFT_LIMIT.PRO ?? 1000,
+        trialDays: TRIAL_DAYS,
+      });
     }
     return {
       kind: 'upsell',
-      title: `Passez à ${PLAN_LABELS.PRO}`,
+      title: t('upsellTitle', { plan }),
       subtitle,
       tone,
-      shortLabel: `Passer à ${PLAN_LABELS.PRO}`,
-      cta: 'Découvrir',
+      shortLabel: t('upsellShortLabel', { plan }),
+      cta: t('discoverCta'),
       href: PLAN_PAGE_PRO_HREF,
     };
   }
@@ -105,34 +128,34 @@ export function planPresentation(s: PlanSnapshot | null): PlanPresentation | nul
   // Sidebar strip is ~150 px wide at 11 px: keep every line ≤ 25 chars —
   // the Abonnement page carries the full sentence.
   if (s.stripeStatus === 'past_due' || s.stripeStatus === 'unpaid') {
-    subtitle = 'Paiement en échec';
+    subtitle = t('paymentFailed');
     tone = 'alert';
   } else if (s.status === 'SUSPENDED') {
-    subtitle = 'Suspendu · contactez-nous';
+    subtitle = t('suspendedContactUs');
     tone = 'alert';
   } else if (s.plan === 'ENTERPRISE' && !s.managedByStripe) {
-    subtitle = 'Contrat Enterprise';
+    subtitle = t('enterpriseContract');
   } else if (s.cancelAtPeriodEnd) {
-    subtitle = `Actif jusqu'au ${fmtDateShort(s.renewsAt)}`;
+    subtitle = t('activeUntil', { date: fmtDateShort(s.renewsAt) });
   } else if (s.status === 'TRIAL' || s.stripeStatus === 'trialing') {
-    subtitle = `Essai jusqu'au ${fmtDateShort(s.trialEndsAt ?? s.renewsAt)}`;
+    subtitle = t('trialUntil', { date: fmtDateShort(s.trialEndsAt ?? s.renewsAt) });
   } else if (s.renewsAt) {
-    subtitle = `Renouvellement ${fmtDateShort(s.renewsAt)}`;
+    subtitle = t('renewalDate', { date: fmtDateShort(s.renewsAt) });
   } else {
-    subtitle = 'Actif';
+    subtitle = t('active');
   }
   const shortState =
     tone === 'alert'
-      ? 'À régulariser'
+      ? t('toRegularize')
       : s.status === 'TRIAL' || s.stripeStatus === 'trialing'
-        ? 'Essai'
-        : 'Actif';
+        ? t('trialState')
+        : t('active');
   return {
     kind: 'paid',
     title: label,
     subtitle,
     tone,
-    shortLabel: `${label} · ${shortState}`,
+    shortLabel: t('paidShortLabel', { plan: label, state: shortState }),
     cta: null,
     href: PLAN_PAGE_HREF,
   };

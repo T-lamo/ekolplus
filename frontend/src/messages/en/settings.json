@@ -16,6 +16,59 @@
     "description": "Accounts with access to the school's management workspace.",
     "since": "Since {date}"
   },
+  "anneeScolaire": {
+    "title": "School Year & Calendar",
+    "subtitle": "Define terms and assessment periods.",
+    "newTerm": "New period",
+    "activeYearLabel": "Active school year",
+    "gradingScaleLabel": "Grading system",
+    "gradingScaleUndefined": "Not set",
+    "noTermsConfigured": "No period configured yet — add the first one with \"New period\".",
+    "noYearConfigured": "No school year configured — create the first period with \"New period\".",
+    "statusLabel": {
+      "DONE": "Done",
+      "CURRENT": "In progress",
+      "UPCOMING": "Upcoming"
+    },
+    "editTermAriaLabel": "Edit {label}",
+    "editGradingScaleModal": {
+      "title": "Edit grading system",
+      "fieldLabel": "Grading system",
+      "placeholder": "Out of 20 points",
+      "updated": "Grading system updated.",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "termTypeAndToggle": {
+      "typeLabel": "Period type",
+      "gradeEntryTitle": "Grade entry enabled",
+      "gradeEntryDesc": "Allow teachers to enter grades for this period."
+    },
+    "editTermModal": {
+      "title": "Edit period",
+      "labelField": "Period name",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "updated": "Period updated.",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "newTermModal": {
+      "title": "New school period",
+      "intro": "Add a term or semester to the {academicYearLabel} year",
+      "termNumberLabel": "Period number",
+      "displayLabelField": "Displayed label",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "initialStatus": "Initial status",
+      "statusHint": "Calculated automatically from the dates above.",
+      "info": "Once created, the period will appear in the school calendar and be available for grade entry, attendance management, and report card generation.",
+      "missingFields": "Please fill in all fields.",
+      "created": "Period added.",
+      "cancel": "Cancel",
+      "create": "Create period"
+    }
+  },
   "apparence": {
     "title": "Colour theme",
     "description": "Choose the app's colour palette. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."

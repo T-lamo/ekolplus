@@ -17,6 +17,59 @@
     "description": "Kont ki gen aksè nan espas jesyon lekòl la.",
     "since": "Depi {date}"
   },
+  "anneeScolaire": {
+    "title": "Ane Eskolè & Kalandriye",
+    "subtitle": "Defini trimès ak peryòd evalyasyon yo.",
+    "newTerm": "Nouvo peryòd",
+    "activeYearLabel": "Ane eskolè aktif",
+    "gradingScaleLabel": "Sistèm notasyon",
+    "gradingScaleUndefined": "Pa defini",
+    "noTermsConfigured": "Pa gen peryòd konfigire pou kounye a — ajoute premye a avèk « Nouvo peryòd ».",
+    "noYearConfigured": "Pa gen ane eskolè konfigire — kreye premye peryòd la avèk « Nouvo peryòd ».",
+    "statusLabel": {
+      "DONE": "Fini",
+      "CURRENT": "An kou",
+      "UPCOMING": "K ap vini"
+    },
+    "editTermAriaLabel": "Modifye {label}",
+    "editGradingScaleModal": {
+      "title": "Modifye sistèm notasyon an",
+      "fieldLabel": "Sistèm notasyon",
+      "placeholder": "Sou 20 pwen",
+      "updated": "Sistèm notasyon an mizajou.",
+      "cancel": "Anile",
+      "save": "Anrejistre"
+    },
+    "termTypeAndToggle": {
+      "typeLabel": "Kalite peryòd",
+      "gradeEntryTitle": "Sezi nòt aktive",
+      "gradeEntryDesc": "Pèmèt pwofesè yo sezi nòt pou peryòd sa a."
+    },
+    "editTermModal": {
+      "title": "Modifye peryòd la",
+      "labelField": "Non peryòd la",
+      "startDate": "Dat kòmansman",
+      "endDate": "Dat fen",
+      "updated": "Peryòd la mizajou.",
+      "cancel": "Anile",
+      "save": "Anrejistre"
+    },
+    "newTermModal": {
+      "title": "Nouvo peryòd eskolè",
+      "intro": "Ajoute yon trimès oswa semès nan ane {academicYearLabel}",
+      "termNumberLabel": "Nimewo peryòd la",
+      "displayLabelField": "Etikèt ki afiche",
+      "startDate": "Dat kòmansman",
+      "endDate": "Dat fen",
+      "initialStatus": "Estati inisyal",
+      "statusHint": "Kalkile otomatikman apati dat ki anwo yo.",
+      "info": "Yon fwa li kreye, peryòd la ap parèt nan kalandriye eskolè a e l ap disponib pou sezi nòt, jesyon presans, ak jenerasyon bilten.",
+      "missingFields": "Tanpri ranpli tout chan yo.",
+      "created": "Peryòd ajoute.",
+      "cancel": "Anile",
+      "create": "Kreye peryòd la"
+    }
+  },
   "apparence": {
     "title": "Tèm koulè",
     "description": "Chwazi palèt koulè aplikasyon an. Preferans pèsonèl : li aplike imedyatman, sou tout aparèy ou yo, e li pa chanje anyen pou lòt manm yo."

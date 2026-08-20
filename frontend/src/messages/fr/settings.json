@@ -16,6 +16,59 @@
     "description": "Comptes ayant accès à l'espace de gestion de l'établissement.",
     "since": "Depuis le {date}"
   },
+  "anneeScolaire": {
+    "title": "Année scolaire & Calendrier",
+    "subtitle": "Définissez les trimestres et périodes d'évaluation.",
+    "newTerm": "Nouvelle période",
+    "activeYearLabel": "Année scolaire active",
+    "gradingScaleLabel": "Système de notation",
+    "gradingScaleUndefined": "Non défini",
+    "noTermsConfigured": "Aucune période configurée pour l'instant — ajoutez la première avec « Nouvelle période ».",
+    "noYearConfigured": "Aucune année scolaire configurée — créez la première période avec « Nouvelle période ».",
+    "statusLabel": {
+      "DONE": "Terminé",
+      "CURRENT": "En cours",
+      "UPCOMING": "À venir"
+    },
+    "editTermAriaLabel": "Modifier {label}",
+    "editGradingScaleModal": {
+      "title": "Modifier le système de notation",
+      "fieldLabel": "Système de notation",
+      "placeholder": "Sur 20 points",
+      "updated": "Système de notation mis à jour.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "termTypeAndToggle": {
+      "typeLabel": "Type de période",
+      "gradeEntryTitle": "Saisie des notes activée",
+      "gradeEntryDesc": "Permettre aux enseignants de saisir les notes pour cette période."
+    },
+    "editTermModal": {
+      "title": "Modifier la période",
+      "labelField": "Nom de la période",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "updated": "Période mise à jour.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "newTermModal": {
+      "title": "Nouvelle période scolaire",
+      "intro": "Ajoutez un trimestre ou semestre à l'année {academicYearLabel}",
+      "termNumberLabel": "Numéro de la période",
+      "displayLabelField": "Libellé affiché",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "initialStatus": "Statut initial",
+      "statusHint": "Calculé automatiquement à partir des dates ci-dessus.",
+      "info": "Une fois créée, la période apparaîtra dans le calendrier scolaire et sera disponible pour la saisie de notes, la gestion des présences et la génération des bulletins.",
+      "missingFields": "Merci de remplir tous les champs.",
+      "created": "Période ajoutée.",
+      "cancel": "Annuler",
+      "create": "Créer la période"
+    }
+  },
   "apparence": {
     "title": "Thème de couleur",
     "description": "Choisissez la palette de l'application. Préférence personnelle : elle s'applique immédiatement, sur tous vos appareils, et ne change rien pour les autres membres."

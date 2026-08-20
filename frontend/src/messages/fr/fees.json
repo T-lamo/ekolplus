@@ -1,7 +1,4 @@
 {
-  "nav": {
-    "label": "Frais & Scolarité"
-  },
   "tabs": {
     "paiements": "Suivi des paiements",
     "relances": "Relances & Impayés",
@@ -77,7 +74,8 @@
       "printReceipt": "Imprimer le reçu"
     },
     "printReceiptNoPayment": "Aucun paiement enregistré pour cet élève.",
-    "printReceiptLoadError": "Impossible de charger le reçu."
+    "printReceiptLoadError": "Impossible de charger le reçu.",
+    "remainingInline": "Reste à payer : {amount}"
   },
   "stub": "Cette fonctionnalité arrive bientôt.",
   "overdue": {

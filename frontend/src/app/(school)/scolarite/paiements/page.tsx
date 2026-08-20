@@ -491,7 +491,7 @@ export default function FeeManagementPage() {
                     <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
                       <StudentStatusBadge status={s.status} />
                       <span className="text-caption font-bold text-foreground">
-                        {t('columns.remaining')} : {fmtMoney(s.remaining, currency)}
+                        {t('remainingInline', { amount: fmtMoney(s.remaining, currency) })}
                       </span>
                     </div>
                   </div>

@@ -43,7 +43,7 @@ export function openReceiptAndPrint(params: ReceiptParams): void {
   const total = params.amount + params.penaltyAmount;
   const { labels } = params;
   win.document
-    .write(`<!doctype html><html><head><meta charset="utf-8"><title>${labels.title}</title>
+    .write(`<!doctype html><html lang="${params.locale}"><head><meta charset="utf-8"><title>${labels.title}</title>
     <style>
       body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
       h1 { font-size: 16px; margin: 0 0 4px; }

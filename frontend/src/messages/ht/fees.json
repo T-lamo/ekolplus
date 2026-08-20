@@ -1,8 +1,5 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
-  "nav": {
-    "label": "Frè & Eskolarite"
-  },
   "tabs": {
     "paiements": "Swivi peman yo",
     "relances": "Rapèl & Enpeye",
@@ -78,7 +75,8 @@
       "printReceipt": "Enprime resi a"
     },
     "printReceiptNoPayment": "Pa gen peman anrejistre pou elèv sa a.",
-    "printReceiptLoadError": "Nou pa ka chaje resi a."
+    "printReceiptLoadError": "Nou pa ka chaje resi a.",
+    "remainingInline": "Rès pou peye : {amount}"
   },
   "stub": "Fonksyonalite sa a ap vini byento.",
   "overdue": {

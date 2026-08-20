@@ -21,6 +21,7 @@ import {
   Table2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -179,6 +180,7 @@ function toUnifiedCombined(d: CombinedNotebookData): UnifiedNotebookData {
 }
 
 export default function GradeNotebookPage() {
+  const t = useTranslations('Gradebook.page');
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -223,9 +225,9 @@ export default function GradeNotebookPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger le carnet de notes.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   useEffect(() => {
     if (!classId || !subjectValue) return;
@@ -244,8 +246,8 @@ export default function GradeNotebookPage() {
         setTermId(u.resolvedTermId ?? '');
         setPage(1);
       })
-      .catch(() => setError('Impossible de charger le carnet de notes.'));
-  }, [classId, subjectValue, termId]);
+      .catch(() => setError(t('loadError')));
+  }, [classId, subjectValue, termId, t]);
 
   const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
   const combined = subjectValue === 'ALL';
@@ -274,7 +276,7 @@ export default function GradeNotebookPage() {
     if (allEvals.length === 0) return;
     if (
       !(await confirm({
-        message: `Supprimer toutes les notes de ${student.firstName} ${student.lastName} pour cette période ?`,
+        message: t('clearGradesConfirm', { name: `${student.firstName} ${student.lastName}` }),
         danger: true,
       }))
     )
@@ -313,9 +315,9 @@ export default function GradeNotebookPage() {
             }
           : prev,
       );
-      toast('Notes supprimées.', 'success');
+      toast(t('gradesDeletedToast'), 'success');
     } catch {
-      toast('Erreur lors de la suppression.', 'error');
+      toast(t('deleteErrorToast'), 'error');
     }
   }
 
@@ -333,38 +335,38 @@ export default function GradeNotebookPage() {
 
     return [
       {
-        label: 'Voir le bulletin',
+        label: t('menuViewReportCard'),
         icon: <Eye size={14} />,
-        onClick: () => toast('Disponible avec Epic 7 (Bulletins).', 'info'),
+        onClick: () => toast(t('menuViewReportCardToast'), 'info'),
       },
       ...(evalMenuItems.length > 0
         ? evalMenuItems
         : [
             {
-              label: 'Modifier les notes',
+              label: t('menuEditGrades'),
               icon: <Pencil size={14} />,
               divider: true,
-              onClick: () => toast("Crée d'abord une évaluation.", 'info'),
+              onClick: () => toast(t('menuEditGradesToast'), 'info'),
             },
           ]),
       {
-        label: 'Historique des notes',
+        label: t('menuHistory'),
         icon: <History size={14} />,
         divider: true,
-        onClick: () => toast('Historique — bientôt disponible.', 'info'),
+        onClick: () => toast(t('menuHistoryToast'), 'info'),
       },
       {
-        label: 'Ajouter appréciation',
+        label: t('menuAddAppreciation'),
         icon: <Star size={14} />,
-        onClick: () => toast('Disponible avec le module Appréciations.', 'info'),
+        onClick: () => toast(t('menuAddAppreciationToast'), 'info'),
       },
       {
-        label: 'Contacter le tuteur',
+        label: t('menuContactGuardian'),
         icon: <Mail size={14} />,
-        onClick: () => toast('Messagerie — bientôt disponible.', 'info'),
+        onClick: () => toast(t('menuContactGuardianToast'), 'info'),
       },
       {
-        label: 'Supprimer les notes',
+        label: t('menuDeleteGrades'),
         icon: <Trash2 size={14} />,
         tone: 'danger',
         divider: true,
@@ -376,16 +378,16 @@ export default function GradeNotebookPage() {
   function onExport() {
     if (!unified) return;
     const header = [
-      'Élève',
-      'N°',
+      t('colStudent'),
+      t('csv.colNumber'),
       ...unified.subjects.flatMap((sub) => [
         ...sub.evaluations.map((ev) =>
           unified.combined ? `${sub.subjectName} — ${ev.label}` : ev.label,
         ),
-        ...(unified.combined ? [`${sub.subjectName} — Moy.`] : []),
+        ...(unified.combined ? [t('csv.subjectAvgColumn', { subject: sub.subjectName })] : []),
       ]),
-      'Moyenne générale',
-      'Rang',
+      t('csv.colGeneralAverage'),
+      t('colRank'),
     ];
     const rows = filteredStudents.map((s) => [
       `${s.firstName} ${s.lastName}`,
@@ -394,15 +396,18 @@ export default function GradeNotebookPage() {
         const cell = s.bySubject[sub.classSubjectId];
         const gradeVals = sub.evaluations.map((ev) => {
           const g = cell?.grades.find((gr) => gr.evaluationId === ev.id);
-          return g?.absent ? 'Abs.' : (g?.score ?? '');
+          return g?.absent ? t('cellAbsent') : (g?.score ?? '');
         });
         return unified.combined ? [...gradeVals, cell?.average ?? ''] : gradeVals;
       }),
       s.generalAverage ?? '',
       s.rank ?? '',
     ]);
+    const subjectSlug = unified.combined
+      ? t('csv.allSubjectsSuffix')
+      : unified.subjects[0]!.subjectName;
     exportToCsv(
-      `carnet-notes-${unified.className}${unified.combined ? '-toutes-matieres' : `-${unified.subjects[0]!.subjectName}`}.csv`
+      `${t('csv.filenamePrefix')}-${unified.className}-${subjectSlug}.csv`
         .toLowerCase()
         .replace(/\s+/g, '-'),
       header,
@@ -422,15 +427,15 @@ export default function GradeNotebookPage() {
     <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-foreground">Carnet de notes</h1>
+          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
-            Saisie et consultation des notes — Année scolaire {terms[0]?.label ?? ''}
+            {t('subtitle', { year: terms[0]?.label ?? '' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button
             className="w-fit"
@@ -438,7 +443,7 @@ export default function GradeNotebookPage() {
             disabled={combined || !subjectValue}
           >
             <Plus size={14} />
-            Saisir évaluation
+            {t('newEvaluation')}
           </Button>
         </div>
       </div>
@@ -452,9 +457,7 @@ export default function GradeNotebookPage() {
       {classes.length === 0 ? (
         <Card className="items-center gap-2 p-10 text-center">
           <NotebookPen size={28} className="text-muted-foreground" />
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Configure d&apos;abord des classes, matières et affectations avant de saisir des notes.
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('noClasses')}</p>
         </Card>
       ) : (
         <>
@@ -463,36 +466,36 @@ export default function GradeNotebookPage() {
               <SummaryCard
                 icon={Users}
                 tone="secondary"
-                label="Élèves notés"
+                label={t('gradedStudents')}
                 value={`${unified.gradedCount}`}
-                sub={`sur ${unified.totalCount} élèves`}
+                sub={t('outOfStudents', { count: unified.totalCount })}
               />
               <SummaryCard
                 icon={BarChart2}
                 tone="blue"
-                label={combined ? 'Moyenne générale de classe' : 'Moyenne de classe'}
+                label={combined ? t('generalClassAverage') : t('classAverage')}
                 value={fmt(unified.classAverage)}
-                sub="sur 20 pts"
+                sub={t('outOf20')}
               />
               <SummaryCard
                 icon={TrendingUp}
                 tone="success"
-                label="Meilleure moyenne"
+                label={t('bestAverage')}
                 value={fmt(unified.bestScore)}
                 sub=""
               />
               <SummaryCard
                 icon={TrendingDown}
                 tone="destructive"
-                label="Note insuffisante"
+                label={t('insufficientGrade')}
                 value={`${unified.students.filter((s) => s.generalAverage != null && s.generalAverage < 8).length}`}
-                sub="élèves sous la moyenne"
+                sub={t('belowAverage')}
               />
               <SummaryCard
                 icon={Calendar}
                 tone="warning"
-                label="Période"
-                value={terms.find((t) => t.id === unified.resolvedTermId)?.label ?? '—'}
+                label={t('period')}
+                value={terms.find((term) => term.id === unified.resolvedTermId)?.label ?? '—'}
                 sub=""
               />
             </div>
@@ -505,7 +508,7 @@ export default function GradeNotebookPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Rechercher un élève..."
+              placeholder={t('searchPlaceholder')}
               className="min-w-[200px] max-w-[280px]"
             />
             <FilterSelect
@@ -523,7 +526,7 @@ export default function GradeNotebookPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={subjectValue} onValueChange={setSubjectValue}>
-              <SelectItem value="ALL">Toutes les matières</SelectItem>
+              <SelectItem value="ALL">{t('allSubjects')}</SelectItem>
               {subjectsForClass.map((cs) => (
                 <SelectItem key={cs.id} value={cs.id}>
                   {cs.subject.name}
@@ -531,14 +534,14 @@ export default function GradeNotebookPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={termId} onValueChange={setTermId}>
-              {terms.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.label}
+              {terms.map((term) => (
+                <SelectItem key={term.id} value={term.id}>
+                  {term.label}
                 </SelectItem>
               ))}
             </FilterSelect>
             <span className="ml-auto text-xs text-muted-foreground">
-              {filteredStudents.length} élèves
+              {t('studentCount', { count: filteredStudents.length })}
             </span>
           </Card>
 
@@ -555,7 +558,7 @@ export default function GradeNotebookPage() {
               }`}
             >
               <Table2 size={13} />
-              Vue tableau
+              {t('tabTable')}
             </button>
             <button
               type="button"
@@ -569,7 +572,7 @@ export default function GradeNotebookPage() {
               }`}
             >
               <BarChart2 size={13} />
-              Statistiques
+              {t('tabStats')}
             </button>
             <button
               type="button"
@@ -583,7 +586,7 @@ export default function GradeNotebookPage() {
               }`}
             >
               <FileText size={13} />
-              Par évaluation
+              {t('tabByEval')}
               {unified && unified.subjects.reduce((n, s) => n + s.evaluations.length, 0) > 0 && (
                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
                   {unified.subjects.reduce((n, s) => n + s.evaluations.length, 0)}
@@ -603,9 +606,7 @@ export default function GradeNotebookPage() {
           ) : unified.totalCount === 0 ? (
             <Card className="items-center gap-2 p-10 text-center">
               <Users size={28} className="text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Aucun élève inscrit dans cette classe.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('noStudentsInClass')}</p>
             </Card>
           ) : view === 'stats' ? (
             <StatistiquesTab unified={unified} />
@@ -649,7 +650,7 @@ export default function GradeNotebookPage() {
                           style={stickyLeftStyle}
                           className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
-                          Élève
+                          {t('colStudent')}
                         </th>
                         {unified.subjects.map((sub) => (
                           <th
@@ -665,14 +666,14 @@ export default function GradeNotebookPage() {
                           style={stickyMoyenneStyle}
                           className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
                         >
-                          Moyenne
+                          {t('colAverage')}
                         </th>
                         <th
                           rowSpan={2}
                           style={stickyRangStyle}
                           className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
-                          Rang
+                          {t('colRank')}
                         </th>
                         <th rowSpan={2} style={stickyKebabStyle} className={STICKY_KEBAB} />
                       </tr>
@@ -683,7 +684,7 @@ export default function GradeNotebookPage() {
                           style={stickyLeftStyle}
                           className={`${STICKY_LEFT} px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                         >
-                          Élève
+                          {t('colStudent')}
                         </th>
                       )}
                       {unified.subjects.map((sub) => (
@@ -693,14 +694,24 @@ export default function GradeNotebookPage() {
                               key={ev.id}
                               style={{ minWidth: EVAL_COL_W }}
                               className="overflow-hidden px-2 py-2.5 text-center"
-                              title={`${ev.label} — Coeff. ${ev.coefficient}${ev.status === 'DRAFT' ? ' (brouillon)' : ''}`}
+                              title={
+                                ev.status === 'DRAFT'
+                                  ? t('evalTooltipDraft', {
+                                      label: ev.label,
+                                      coefficient: ev.coefficient,
+                                    })
+                                  : t('evalTooltip', {
+                                      label: ev.label,
+                                      coefficient: ev.coefficient,
+                                    })
+                              }
                             >
                               <div className="flex flex-col items-center gap-0.5">
                                 <span className="overflow-hidden text-[10px] font-bold tracking-wide text-ellipsis whitespace-nowrap text-muted-foreground uppercase">
                                   {ev.label}
                                 </span>
                                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap text-muted-foreground">
-                                  Coeff. {ev.coefficient}
+                                  {t('colCoefficient', { n: ev.coefficient })}
                                 </span>
                               </div>
                             </th>
@@ -711,7 +722,7 @@ export default function GradeNotebookPage() {
                               style={{ minWidth: SUBJECT_AVG_COL_W }}
                               className="border-r-2 border-border bg-muted/40 px-2 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-muted-foreground uppercase"
                             >
-                              Moy.
+                              {t('colAverageAbbr')}
                             </th>
                           )}
                         </Fragment>
@@ -722,13 +733,13 @@ export default function GradeNotebookPage() {
                             style={stickyMoyenneStyle}
                             className={`${STICKY_MOYENNE} px-3 py-2.5 text-center text-[10px] font-bold tracking-wide whitespace-nowrap text-primary uppercase`}
                           >
-                            Moyenne
+                            {t('colAverage')}
                           </th>
                           <th
                             style={stickyRangStyle}
                             className={`${STICKY_RANG} px-3 py-2.5 text-center text-[10px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase`}
                           >
-                            Rang
+                            {t('colRank')}
                           </th>
                           <th style={stickyKebabStyle} className={STICKY_KEBAB} />
                         </>
@@ -767,7 +778,7 @@ export default function GradeNotebookPage() {
                                       <span
                                         className={`inline-flex min-w-11 items-center justify-center rounded-md px-2 py-1 text-2xs font-semibold ${PILL_CLASS.neutral}`}
                                       >
-                                        Abs.
+                                        {t('cellAbsent')}
                                       </span>
                                     ) : (
                                       <span
@@ -825,10 +836,13 @@ export default function GradeNotebookPage() {
               </div>
               <div className="flex items-center justify-between border-t border-border px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">
-                  Affichage de {(page - 1) * PAGE_SIZE + 1} à{' '}
-                  {Math.min(page * PAGE_SIZE, filteredStudents.length)} sur{' '}
-                  {filteredStudents.length} élèves — Moy. {combined ? 'générale' : 'classe'} :{' '}
-                  <strong className="text-foreground">{fmt(unified.classAverage)}/20</strong>
+                  {t('paginationSummary', {
+                    from: (page - 1) * PAGE_SIZE + 1,
+                    to: Math.min(page * PAGE_SIZE, filteredStudents.length),
+                    total: filteredStudents.length,
+                    kind: combined ? t('avgKindGeneral') : t('avgKindClass'),
+                    value: fmt(unified.classAverage),
+                  })}
                 </span>
                 <div className="flex items-center gap-1">
                   <PageNumbers page={page} totalPages={pageCount} onChange={setPage} />

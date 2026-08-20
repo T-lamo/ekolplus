@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, AlertTriangle, Save, Check, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -15,6 +16,8 @@ import { EvaluationConfigForm } from '../../EvaluationConfigForm';
 import type { ClassSubjectOption, EvaluationConfig, TermOption } from '../../types';
 
 export default function EditEvaluationPage() {
+  const t = useTranslations('Gradebook.editEvaluation');
+  const tCommon = useTranslations('Common');
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -64,13 +67,9 @@ export default function EditEvaluationPage() {
         setTerms(school.academicYear?.terms ?? []);
       })
       .catch((err) => {
-        setError(
-          err instanceof ApiError && err.status === 404
-            ? 'Évaluation introuvable.'
-            : 'Impossible de charger.',
-        );
+        setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
       });
-  }, [user, params.evaluationId]);
+  }, [user, params.evaluationId, t]);
 
   async function onSave() {
     if (!value) return;
@@ -91,10 +90,10 @@ export default function EditEvaluationPage() {
           date: value.date,
         },
       });
-      toast('Évaluation mise à jour.', 'success');
+      toast(t('updatedToast'), 'success');
       router.push(`/pedagogie/carnet-de-notes/${value.id}/saisie`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSaving(false);
     }
@@ -104,8 +103,7 @@ export default function EditEvaluationPage() {
     if (!value) return;
     if (
       !(await confirm({
-        message:
-          'Supprimer cette évaluation et toutes les notes associées ? Cette action est irréversible.',
+        message: t('deleteConfirmMessage'),
         danger: true,
       }))
     )
@@ -113,10 +111,10 @@ export default function EditEvaluationPage() {
     setDeleting(true);
     try {
       await api(`/api/school/evaluations/${value.id}`, { method: 'DELETE' });
-      toast('Évaluation supprimée.', 'success');
+      toast(t('deletedToast'), 'success');
       router.push('/pedagogie/carnet-de-notes');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       setDeleting(false);
     }
   }
@@ -136,7 +134,7 @@ export default function EditEvaluationPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour
+          {t('back')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -154,12 +152,10 @@ export default function EditEvaluationPage() {
             className="mb-1 flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
           >
             <ArrowLeft size={14} />
-            Retour à la saisie
+            {t('backToEntry')}
           </Link>
-          <h1 className="text-lg font-bold text-foreground">
-            Modifier les paramètres de l&apos;évaluation
-          </h1>
-          <p className="text-sm text-muted-foreground">Les notes déjà saisies seront conservées.</p>
+          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         <button
           type="button"
@@ -168,7 +164,7 @@ export default function EditEvaluationPage() {
           className="flex w-fit items-center gap-1.5 rounded-md bg-destructive px-3.5 py-2 text-sm font-semibold text-destructive-foreground disabled:opacity-50"
         >
           <Trash2 size={14} />
-          Supprimer l&apos;évaluation
+          {t('deleteButton')}
         </button>
       </div>
 
@@ -176,11 +172,9 @@ export default function EditEvaluationPage() {
         <AlertTriangle size={16} className="shrink-0 text-warning-foreground" />
         <div>
           <div className="text-caption font-semibold text-warning-foreground">
-            Modification d&apos;une évaluation existante
+            {t('warningTitle')}
           </div>
-          <div className="text-xs text-warning-foreground/90">
-            Changer la classe, la matière ou le barème peut affecter les notes déjà saisies.
-          </div>
+          <div className="text-xs text-warning-foreground/90">{t('warningBody')}</div>
         </div>
       </div>
 
@@ -200,23 +194,21 @@ export default function EditEvaluationPage() {
       )}
 
       <Card className="flex-row flex-wrap items-center justify-between gap-2 p-3.5">
-        <span className="text-caption text-muted-foreground">
-          Des modifications non enregistrées peuvent exister.
-        </span>
+        <span className="text-caption text-muted-foreground">{t('unsavedNotice')}</span>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Button variant="ghost" className="w-fit" onClick={() => router.back()}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button className="w-fit" onClick={onSave} loading={saving}>
             {saving ? (
               <>
                 <Save size={14} />
-                Enregistrement…
+                {t('saving')}
               </>
             ) : (
               <>
                 <Check size={14} />
-                Confirmer les modifications
+                {t('confirmChanges')}
               </>
             )}
           </Button>

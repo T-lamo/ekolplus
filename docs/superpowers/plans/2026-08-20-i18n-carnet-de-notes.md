@@ -2668,7 +2668,6 @@ function toUnifiedCombined(d: CombinedNotebookData): UnifiedNotebookData {
 
 export default function GradeNotebookPage() {
   const t = useTranslations('Gradebook.page');
-  const tStatus = useTranslations('Gradebook.evaluationStatus');
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();

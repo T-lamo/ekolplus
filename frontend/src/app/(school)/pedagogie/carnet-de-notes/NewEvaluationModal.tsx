@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
@@ -23,6 +24,8 @@ export function NewEvaluationModal({
   onClose: () => void;
   onCreated: (evaluationId: string) => void;
 }) {
+  const t = useTranslations('Gradebook.newEvaluationModal');
+  const tCommon = useTranslations('Common');
   const { toast } = useToast();
   const [value, setValue] = useState<EvaluationConfig>({
     classSubjectId: defaultClassSubjectId,
@@ -40,7 +43,7 @@ export function NewEvaluationModal({
 
   async function onSubmit() {
     if (!value.label.trim() || !value.classSubjectId || !value.termId) {
-      setError('Classe, matière, trimestre et intitulé sont requis.');
+      setError(t('validationError'));
       return;
     }
     setError(null);
@@ -50,17 +53,17 @@ export function NewEvaluationModal({
         method: 'POST',
         body: value,
       });
-      toast('Évaluation créée — saisis les notes.', 'success');
+      toast(t('createdToast'), 'success');
       onCreated(res.evaluation.id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Nouvelle évaluation" onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       <div className="flex flex-col gap-3.5">
         <EvaluationConfigForm
           value={value}
@@ -74,7 +77,7 @@ export function NewEvaluationModal({
           </p>
         )}
         <Button onClick={onSubmit} loading={submitting}>
-          {submitting ? 'Création…' : 'Créer et saisir les notes'}
+          {submitting ? t('submitting') : t('submitLabel')}
         </Button>
       </div>
     </Modal>

@@ -1,18 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Field } from '@/components/ui/Field';
 import { DateField } from '@/components/ui/DateField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ClassSubjectOption, EvaluationConfig, EvaluationType, TermOption } from './types';
 
-const TYPE_LABEL: Record<EvaluationType, string> = {
-  DS: 'Devoir surveillé (DS)',
-  INTERROGATION: 'Interrogation',
-  EXAMEN: 'Examen',
-  AUTRE: 'Autre',
-};
+const EVALUATION_TYPES: EvaluationType[] = ['DS', 'INTERROGATION', 'EXAMEN', 'AUTRE'];
 
 export function EvaluationConfigForm({
   value,
@@ -27,6 +23,9 @@ export function EvaluationConfigForm({
   terms: TermOption[];
   lockPair?: boolean;
 }) {
+  const t = useTranslations('Gradebook.evaluationForm');
+  const tType = useTranslations('Gradebook.evaluationType');
+
   const classes = useMemo(() => {
     const seen = new Map<string, string>();
     for (const cs of classSubjects) seen.set(cs.classId, cs.class.name);
@@ -49,7 +48,12 @@ export function EvaluationConfigForm({
   return (
     <div className="flex flex-col gap-3.5">
       <div className="grid grid-cols-2 gap-3.5">
-        <Select label="Classe" value={classId} disabled={lockPair} onValueChange={onClassChange}>
+        <Select
+          label={t('classLabel')}
+          value={classId}
+          disabled={lockPair}
+          onValueChange={onClassChange}
+        >
           {classes.map((c) => (
             <SelectItem key={c.id} value={c.id}>
               {c.name}
@@ -57,7 +61,7 @@ export function EvaluationConfigForm({
           ))}
         </Select>
         <Select
-          label="Matière"
+          label={t('subjectLabel')}
           value={value.classSubjectId}
           disabled={lockPair}
           onValueChange={(v) => set('classSubjectId', v)}
@@ -71,53 +75,53 @@ export function EvaluationConfigForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3.5">
-        <Select
-          label="Trimestre / Période"
-          value={value.termId}
-          onValueChange={(v) => set('termId', v)}
-        >
-          {terms.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.label}
+        <Select label={t('termLabel')} value={value.termId} onValueChange={(v) => set('termId', v)}>
+          {terms.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.label}
             </SelectItem>
           ))}
         </Select>
         <Select
-          label="Type d'évaluation"
+          label={t('typeLabel')}
           value={value.type}
           onValueChange={(v) => set('type', v as EvaluationType)}
         >
-          {(Object.keys(TYPE_LABEL) as EvaluationType[]).map((t) => (
-            <SelectItem key={t} value={t}>
-              {TYPE_LABEL[t]}
+          {EVALUATION_TYPES.map((type) => (
+            <SelectItem key={type} value={type}>
+              {tType(type)}
             </SelectItem>
           ))}
         </Select>
       </div>
 
       <Field
-        label="Intitulé de l'évaluation"
-        placeholder="Ex. : Devoir surveillé n°3, Interrogation surprise..."
+        label={t('titleLabel')}
+        placeholder={t('titlePlaceholder')}
         value={value.label}
         onChange={(e) => set('label', e.target.value)}
         required
       />
 
       <div className="grid grid-cols-3 gap-3.5">
-        <DateField label="Date" value={value.date ?? ''} onChange={(v) => set('date', v || null)} />
+        <DateField
+          label={t('dateLabel')}
+          value={value.date ?? ''}
+          onChange={(v) => set('date', v || null)}
+        />
         <Select
-          label="Note maximale"
+          label={t('maxScoreLabel')}
           value={String(value.maxScore)}
           onValueChange={(v) => set('maxScore', Number(v))}
         >
           {[5, 10, 20, 100].map((n) => (
             <SelectItem key={n} value={String(n)}>
-              Sur {n}
+              {t('maxScoreOption', { n })}
             </SelectItem>
           ))}
         </Select>
         <Field
-          label="Coefficient"
+          label={t('coefficientLabel')}
           type="number"
           min={1}
           max={10}
@@ -129,23 +133,21 @@ export function EvaluationConfigForm({
       <div className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2.5">
         <div>
           <div className="text-xs font-semibold text-foreground">
-            Prise en compte dans la moyenne
+            {t('countsTowardAverageLabel')}
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Inclure cette évaluation dans le calcul de la moyenne
-          </div>
+          <div className="text-[11px] text-muted-foreground">{t('countsTowardAverageHint')}</div>
         </div>
         <div className="flex overflow-hidden rounded-md border border-border">
-          {(['Oui', 'Non'] as const).map((label) => {
-            const active = (label === 'Oui') === value.countsTowardAverage;
+          {([true, false] as const).map((optionValue) => {
+            const active = optionValue === value.countsTowardAverage;
             return (
               <button
-                key={label}
+                key={String(optionValue)}
                 type="button"
-                onClick={() => set('countsTowardAverage', label === 'Oui')}
+                onClick={() => set('countsTowardAverage', optionValue)}
                 className={`px-3 py-1.5 text-xs font-semibold ${active ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'}`}
               >
-                {label}
+                {optionValue ? t('yes') : t('no')}
               </button>
             );
           })}
@@ -156,15 +158,15 @@ export function EvaluationConfigForm({
         <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
           <Avatar name={current.teacher.name} size={22} />
           <span className="text-xs text-muted-foreground">
-            Enseignant responsable :{' '}
+            {t('teacherInCharge')}{' '}
             <strong className="text-foreground">{current.teacher.name}</strong>
           </span>
         </div>
       )}
 
       <Field
-        label="Remarques (optionnel)"
-        placeholder="Notes internes visibles par les administrateurs et enseignants"
+        label={t('notesLabel')}
+        placeholder={t('notesPlaceholder')}
         value={value.notes ?? ''}
         onChange={(e) => set('notes', e.target.value || null)}
       />

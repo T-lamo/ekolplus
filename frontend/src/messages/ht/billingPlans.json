@@ -1,0 +1,36 @@
+{
+  "label": {
+    "STARTER": "Starter",
+    "PRO": "Etablisman Pro",
+    "ENTERPRISE": "Enterprise"
+  },
+  "features": {
+    "STARTER": {
+      "f1": "Jiska 50 elèv",
+      "f2": "Elèv, klas, nòt & bilten",
+      "f3": "Prezans, frè & eskolarite",
+      "f4": "Orè & sal",
+      "f5": "Gratis, san kat bankè",
+      "f6": "Pi plis pase 50 elèv",
+      "f7": "Sipò priyoritè"
+    },
+    "PRO": {
+      "f1": "Jiska 1000 elèv",
+      "f2": "Tout sa Starter genyen, san limit 50 la",
+      "f3": "Syèj yo faktire = efektif reyèl",
+      "f4": "San angajman, anile nenpòt kilè",
+      "f5": "Esè gratis 30 jou",
+      "f6": "Fakti & resi Stripe",
+      "f7": "Sipò priyoritè"
+    },
+    "ENTERPRISE": {
+      "f1": "Elèv san limit, pri degresif",
+      "f2": "Tout sa Pro genyen",
+      "f3": "Plizyè etablisman",
+      "f4": "API & entegrasyon",
+      "f5": "Sipò priyoritè 24/7",
+      "f6": "Onboarding dedye",
+      "f7": "Tablo bò rezo a"
+    }
+  }
+}

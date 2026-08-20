@@ -1,0 +1,36 @@
+{
+  "label": {
+    "STARTER": "Starter",
+    "PRO": "School Pro",
+    "ENTERPRISE": "Enterprise"
+  },
+  "features": {
+    "STARTER": {
+      "f1": "Up to 50 students",
+      "f2": "Students, classes, grades & report cards",
+      "f3": "Attendance, fees & billing",
+      "f4": "Timetable & rooms",
+      "f5": "Free, no credit card",
+      "f6": "Beyond 50 students",
+      "f7": "Priority support"
+    },
+    "PRO": {
+      "f1": "Up to 1000 students",
+      "f2": "Everything in Starter, no 50-student cap",
+      "f3": "Billed seats = actual headcount",
+      "f4": "No commitment, cancel anytime",
+      "f5": "30-day free trial",
+      "f6": "Stripe invoices & receipts",
+      "f7": "Priority support"
+    },
+    "ENTERPRISE": {
+      "f1": "Unlimited students, volume pricing",
+      "f2": "Everything in Pro",
+      "f3": "Multiple schools",
+      "f4": "API & integrations",
+      "f5": "24/7 priority support",
+      "f6": "Dedicated onboarding",
+      "f7": "Network-wide dashboard"
+    }
+  }
+}

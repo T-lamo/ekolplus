@@ -1,0 +1,36 @@
+{
+  "label": {
+    "STARTER": "Starter",
+    "PRO": "Établissement Pro",
+    "ENTERPRISE": "Enterprise"
+  },
+  "features": {
+    "STARTER": {
+      "f1": "Jusqu'à 50 élèves",
+      "f2": "Élèves, classes, notes & bulletins",
+      "f3": "Présences, frais & scolarité",
+      "f4": "Emploi du temps & salles",
+      "f5": "Gratuit, sans carte bancaire",
+      "f6": "Au-delà de 50 élèves",
+      "f7": "Support prioritaire"
+    },
+    "PRO": {
+      "f1": "Jusqu'à 1000 élèves",
+      "f2": "Tout du plan Starter, sans plafond de 50",
+      "f3": "Sièges facturés = effectifs réels",
+      "f4": "Sans engagement, résiliable à tout moment",
+      "f5": "Essai gratuit 30 jours",
+      "f6": "Factures & reçus Stripe",
+      "f7": "Support prioritaire"
+    },
+    "ENTERPRISE": {
+      "f1": "Élèves illimités, tarif dégressif",
+      "f2": "Tout du plan Pro",
+      "f3": "Multi-établissements",
+      "f4": "API & intégrations",
+      "f5": "Support prioritaire 24/7",
+      "f6": "Onboarding dédié",
+      "f7": "Tableau de bord réseau"
+    }
+  }
+}

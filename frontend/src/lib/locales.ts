@@ -56,6 +56,8 @@ export const MESSAGE_NAMESPACES = [
   'dashboard',
   'adminDashboard',
   'schoolPlanCard',
+  'billingPlans',
+  'abonnement',
   'settings',
   'themePicker',
   'presences',

@@ -1,0 +1,287 @@
+{
+  "status": {
+    "subscription": {
+      "free": "Gratuit",
+      "scheduledCancellation": "Résiliation programmée",
+      "trialing": "Essai en cours",
+      "pastDue": "Paiement en retard",
+      "unpaid": "Impayé",
+      "paused": "En pause",
+      "incompletePayment": "Paiement incomplet",
+      "active": "Actif",
+      "suspended": "Suspendu",
+      "expired": "Expiré",
+      "canceled": "Résilié"
+    },
+    "transaction": {
+      "succeeded": "Payé",
+      "pending": "En attente",
+      "failed": "Échoué",
+      "refunded": "Remboursé"
+    }
+  },
+  "method": {
+    "STRIPE": "Carte · Stripe",
+    "MANUAL": "Manuel",
+    "BANK_TRANSFER": "Virement"
+  },
+  "currentPlanBanner": {
+    "label": "Plan actuel",
+    "subProSuspended": "{plan} suspendu · plafond 50 élèves",
+    "subFree": "Gratuit · jusqu’à 50 élèves",
+    "subEnterprise": "Contrat Enterprise · devis personnalisé",
+    "subAnnual": "Facturation annuelle · {amount} / élève / an",
+    "subMonthly": "Facturation mensuelle · {amount} / élève / mois",
+    "dateActiveUntil": "Actif jusqu’au {date}",
+    "dateTrialEnds": "Fin de l’essai le {date}",
+    "dateRenewal": "Renouvellement le {date}",
+    "statStudents": "Élèves actifs",
+    "statTeachers": "Enseignants",
+    "statClasses": "Classes",
+    "statAdmins": "Admins",
+    "badgePro": "Pro",
+    "badgeEnterprise": "Enterprise"
+  },
+  "usageCard": {
+    "title": "Utilisation du plan",
+    "subtitle": "Limites incluses dans le plan {plan}",
+    "seatsBilled": {
+      "one": "{count} siège facturé",
+      "other": "{count} sièges facturés"
+    },
+    "cellStudents": "Élèves",
+    "cellTeachers": "Enseignants",
+    "cellClasses": "Classes",
+    "cellAdmins": "Administrateurs",
+    "unlimited": "Illimité",
+    "unlimitedIncluded": "Illimité inclus dans ce plan",
+    "enterpriseSuggested": "Palier Enterprise conseillé au-delà",
+    "softPct": "{pct}% du palier conseillé",
+    "usedPct": {
+      "one": "{pct}% utilisé · {remaining} place restante",
+      "other": "{pct}% utilisé · {remaining} places restantes"
+    }
+  },
+  "planCards": {
+    "heading": "Choisir un plan",
+    "subheading": "Sélectionnez un plan pour voir exactement ce qui changerait — rien n’est modifié sans votre confirmation.",
+    "ariaLabel": "Choisir un plan",
+    "starterTagline": "Découverte & petites écoles",
+    "starterFree": "Gratuit pour toujours",
+    "perMonth": "/ mois",
+    "proBadge": "⭐ Le plus populaire",
+    "proTagline": "Établissements jusqu’à 1000 élèves",
+    "perStudentMonth": "/ élève / mois",
+    "proStripeBadge": "Paiement via Stripe",
+    "proEstimate": {
+      "one": "≈ {monthly} / mois pour {count} élève · {yearly} / an{discount}",
+      "other": "≈ {monthly} / mois pour {count} élèves · {yearly} / an{discount}"
+    },
+    "proEstimateDiscount": " (−{pct} %)",
+    "proTrialNote": "Essai gratuit {days} jours, sans engagement",
+    "enterpriseBadge": "🏆 Le plus complet",
+    "enterpriseTagline": "Réseaux & grands établissements",
+    "enterpriseCustomPrice": "Prix sur devis",
+    "enterpriseCustomPriceNote": "Sur mesure · tarif dégressif selon le volume",
+    "currentPlanBadge": "Plan actuel",
+    "activePlanBadge": "Plan actif"
+  },
+  "billingCycleToggle": {
+    "ariaLabel": "Cycle de facturation",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "save": "Économisez {pct} %"
+  },
+  "downgradeDialog": {
+    "title": "Rétrograder vers {plan}",
+    "subtitle": "Votre plan {plan} reste actif jusqu’au {date}",
+    "intro": "Voici exactement ce qui se passera si vous confirmez :",
+    "effectiveDateTitle": "Prend effet le {date}",
+    "effectiveBodyTrial": "À la fin de votre période d’essai — aucune facture ne sera émise.",
+    "effectiveBodyPaid": "À la fin de la période déjà payée. Aucun remboursement, plus aucune facture ensuite.",
+    "capTitleOver": "Vos {count} élèves restent, mais plus d’inscriptions au-delà de {cap}",
+    "capTitleUnder": "Le plafond de {cap} élèves s’appliquera de nouveau",
+    "capBodyOver": "Starter est limité à {cap} élèves : les {count} fiches existantes restent accessibles et modifiables, mais aucune nouvelle inscription tant que vous dépassez {cap}.",
+    "capBodyUnder": "Vous en avez {count} aujourd’hui — vous pourrez encore en inscrire {remaining}.",
+    "dataKeptTitle": "Données et modules conservés",
+    "dataKeptBody": "Élèves, notes, bulletins, présences, frais, emploi du temps : rien n’est verrouillé ni supprimé.",
+    "invoicesTitle": "Factures et reçus toujours disponibles",
+    "invoicesBody": "L’historique reste consultable ici et dans l’espace Stripe.",
+    "resumeTitle": "Reprise possible jusqu’au {date}",
+    "resumeBody": "Changez d’avis d’ici là : un clic sur « Reprendre {plan} » annule la rétrogradation sans nouvelle facture.",
+    "confirm": "Rétrograder à la fin de la période",
+    "keep": "Garder {plan}"
+  },
+  "paymentMethodCard": {
+    "title": "Moyen de paiement",
+    "manageLink": "Factures & carte",
+    "hasCard": "Carte bancaire · gérée par Stripe",
+    "noCard": "Aucun moyen de paiement",
+    "defaultEditable": "Par défaut · modifiable dans l’espace sécurisé Stripe",
+    "clientNoSub": "Client Stripe créé · aucun abonnement actif",
+    "starterFreeNote": "Le plan Starter est gratuit — aucune carte requise",
+    "managedManually": "Abonnement géré manuellement par Schoolgesti",
+    "edit": "Modifier",
+    "secureNotice": "Paiements sécurisés via Stripe (SSL 256-bit, PCI-DSS niveau 1)",
+    "secureNotice2": "Le paiement s’effectue via Stripe sur une page sécurisée dédiée — vos données bancaires ne transitent jamais par nos serveurs."
+  },
+  "billingHistoryTable": {
+    "title": "Historique de facturation",
+    "noneYet": "Aucune transaction pour le moment",
+    "count": {
+      "one": "{count} dernière transaction",
+      "other": "{count} dernières transactions"
+    },
+    "exportAll": "Tout exporter",
+    "emptyStarter": "Le plan Starter est gratuit — vos factures apparaîtront ici après un passage à {plan}.",
+    "emptyOther": "Vos factures apparaîtront ici après le premier prélèvement.",
+    "refund": "(remboursement)",
+    "pdf": "PDF",
+    "th": {
+      "period": "Période",
+      "plan": "Plan",
+      "amount": "Montant",
+      "status": "Statut",
+      "date": "Date",
+      "invoice": "Facture"
+    },
+    "csv": {
+      "reference": "Référence",
+      "period": "Période",
+      "plan": "Plan",
+      "amountUsd": "Montant (USD)",
+      "status": "Statut",
+      "method": "Moyen",
+      "date": "Date"
+    }
+  },
+  "planTransitionHint": {
+    "current": "{plan} — votre plan actuel",
+    "downgrade": "Rétrogradation vers {plan}",
+    "upgrade": "Passage à {plan}",
+    "reactivate": "Réactivation de {plan}",
+    "resume": "Reprise de {plan}",
+    "regularize": "Paiement à régulariser",
+    "contact": "{plan} — sur devis",
+    "unavailable": "{plan} — non disponible en libre-service"
+  },
+  "planTransition": {
+    "ownerOnly": "Réservé au propriétaire de l’établissement",
+    "resumeLabel": "Reprendre {plan}",
+    "resumeHint": "Rétrogradation vers Starter programmée le {date} — reprenez avant cette date pour conserver {plan} sans interruption ni nouvelle facture.",
+    "currentStarterSuspended": "Votre école est repassée sur Starter : l’abonnement {plan} est suspendu pour impayé. Sélectionnez {plan} pour régulariser.",
+    "currentStarter": "Vous êtes sur le plan gratuit Starter — jusqu’à {cap} élèves, sans carte bancaire. Sélectionnez un autre plan pour voir ce qui changerait.",
+    "currentProTrial": "{plan} en période d’essai jusqu’au {date} — première facture à cette date ({estimate}).",
+    "currentProActive": {
+      "one": "{plan} actif — {count} siège facturé, {renewal}",
+      "other": "{plan} actif — {count} sièges facturés, {renewal}"
+    },
+    "currentProActiveRenewalDate": "renouvellement le {date}",
+    "currentProActiveRenewalNone": "sans date de renouvellement",
+    "currentEnterprise": "Contrat Enterprise en cours — votre chargé de compte gère les évolutions du plan.",
+    "requestQuoteLabel": "Demander un devis",
+    "requestQuoteHint": "Sur devis — tarif dégressif au-delà de 1000 élèves, multi-établissements, onboarding et support dédiés. Décrivez-nous votre réseau ({students} aujourd’hui) et nous revenons vers vous sous 48 h.",
+    "managedByContractLabel": "Géré par votre contrat",
+    "managedByContractHint": "Votre école est sous contrat Enterprise : les changements de plan se font avec votre chargé de compte, pas en libre-service.",
+    "managedByContractDisabled": "Plan géré par votre contrat Enterprise",
+    "regularizeLabel": "Régulariser le paiement",
+    "regularizeHint": "Abonnement {plan} suspendu pour impayé — mettez votre carte à jour dans l’espace Stripe : le plan est rétabli dès le paiement (vos {students} sont conservés).",
+    "contactSuspendedLabel": "Nous contacter",
+    "contactSuspendedHint": "Abonnement {plan} suspendu par l’équipe Schoolgesti — écrivez-nous pour le rétablir.",
+    "unavailableLabel": "Passer à {plan}",
+    "unavailableHint": "La facturation en ligne n’est pas encore activée sur cette plateforme — contactez-nous pour passer à {plan}.",
+    "unavailableDisabled": "Facturation en ligne non activée",
+    "reactivateLabel": "Réactiver {plan}",
+    "reactivateHint": "Réactivation immédiate, sans nouvel essai — {estimate}, facturé dès la validation. Vos données n’ont pas bougé.",
+    "upgradeLabel": "Passer à Pro — essai {days} j",
+    "upgradeHint": "Essai gratuit {days} jours, aucune carte débitée avant la fin. Ensuite {estimate} — sièges = effectifs réels, sans engagement, résiliable à tout moment.",
+    "managedManuallyLabel": "Géré par Schoolgesti",
+    "managedManuallyHint": "Votre plan {plan} a été activé manuellement par l’équipe Schoolgesti — contactez-nous pour le modifier.",
+    "managedManuallyDisabled": "Plan géré manuellement — contactez-nous",
+    "downgradeScheduledLabel": "Annuler la rétrogradation",
+    "downgradeScheduledHint": "Rétrogradation vers Starter programmée le {date} — {plan} reste actif jusque-là. Annulez-la pour continuer sans interruption.",
+    "downgradeLabel": "Rétrograder vers Starter",
+    "downgradeEffective": "Prend effet le {date}, à la fin de la période déjà payée (aucun remboursement, plus aucune facture ensuite).",
+    "downgradeOver": "Vous avez {students} : ils restent tous accessibles, mais aucune nouvelle inscription tant que vous dépassez {cap}.",
+    "downgradeUnder": "Le plafond de {cap} élèves s’appliquera de nouveau (vous en avez {count}).",
+    "downgradeSuffix": "Données et modules restent accessibles ; reprise possible jusqu’à cette date.",
+    "estimatePerMonth": "≈ {amount} / mois pour {students}",
+    "estimatePerYear": "≈ {amount} / an pour {students}",
+    "pluralStudent": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "pluralSeat": {
+      "one": "{count} siège",
+      "other": "{count} sièges"
+    },
+    "salesEnterpriseSubject": "Demande de devis Enterprise — {school}",
+    "salesSupportSubject": "Abonnement {plan} — {school}",
+    "salesGreeting": "Bonjour,",
+    "salesEnterpriseBody": "Nous souhaitons un devis pour le plan Enterprise.",
+    "salesSupportBody": "Nous avons besoin d’aide concernant notre abonnement.",
+    "salesSchool": "Établissement : {school}",
+    "salesCurrentPlan": "Plan actuel : {plan}",
+    "salesCurrentPlanWithSub": "Plan actuel : {plan} (abonnement {subPlan} {status})",
+    "salesHeadcount": "Effectif : {students}",
+    "salesThanks": "Merci,"
+  },
+  "screen": {
+    "title": "Abonnement & Facturation",
+    "subtitle": "Gérez votre plan, suivez votre consommation et consultez vos factures.",
+    "restrictedTitle": "Réservé aux administrateurs de l’établissement",
+    "restrictedBody": "L’abonnement, les montants facturés et les reçus ne sont visibles que par le propriétaire et les administrateurs de l’école. Adressez-vous à eux pour toute question sur le plan.",
+    "loadError": "Impossible de charger l’abonnement.",
+    "daysEndsAccess": {
+      "one": "Fin d’accès dans {days} jour",
+      "other": "Fin d’accès dans {days} jours"
+    },
+    "daysEndsTrial": {
+      "one": "Fin d’essai dans {days} jour",
+      "other": "Fin d’essai dans {days} jours"
+    },
+    "daysRenewsIn": {
+      "one": "Renouvellement dans {days} jour",
+      "other": "Renouvellement dans {days} jours"
+    },
+    "upgradeCta": "Mettre à niveau",
+    "alertProSuspendedStripe": "Abonnement {plan} <b>suspendu pour impayé</b> — votre école est repassée aux règles du plan gratuit (50 élèves). Mettez votre carte à jour pour rétablir {plan} immédiatement ; vos données n’ont pas bougé.",
+    "alertProSuspendedManual": "Abonnement {plan} <b>suspendu</b> par l’équipe Schoolgesti — votre école applique les règles du plan gratuit. Contactez-nous pour le rétablir.",
+    "alertPastDue": "Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement pour conserver le plan {plan} — l’accès reste ouvert entre-temps.",
+    "alertTrial": "Essai gratuit en cours — première facturation le <b>{date}</b>.",
+    "alertDowngradeScheduled": "<b>Rétrogradation vers Starter programmée le {date}</b> — {plan} reste actif jusque-là, puis votre école repassera automatiquement au plan gratuit (50 élèves). Aucune nouvelle facture ne sera émise.",
+    "alertAtHardLimit": "Vous avez atteint la limite de <b>{limit} élèves</b> du plan gratuit. Passez au plan {plan} pour en ajouter davantage.",
+    "alertNearHardLimit": "{count} / {limit} élèves — votre plan gratuit approche de sa limite. Pensez à passer à {plan} pour continuer à inscrire.",
+    "alertOverSoftLimit": "Vous gérez plus de <b>{limit} élèves</b> — le plan Enterprise (tarif dégressif, accompagnement dédié) est fait pour vous.",
+    "alertStripeNotConfigured": "La facturation en ligne n’est pas encore activée sur cette plateforme — pour passer à {plan}, contactez-nous.",
+    "cancelDowngrade": "Annuler la rétrogradation",
+    "bannerUpdateCard": "Mettre à jour la carte",
+    "bannerManagePlan": "Gérer le plan",
+    "bannerUpgradeToPro": "Passer à Pro",
+    "manageTitle": "Gérer votre abonnement",
+    "manageBody": "Changez de cycle ou rétrogradez directement ici. Le moyen de paiement et les factures se gèrent dans l’espace sécurisé Stripe.",
+    "managePaymentAndInvoices": "Moyen de paiement & factures",
+    "manageSwitchMonthly": "Repasser au mensuel",
+    "manageSwitchAnnual": "Passer à l’annuel (−10 %)",
+    "manageResume": "Reprendre {plan}",
+    "manageDowngrade": "Rétrograder vers Starter",
+    "confirmResume": "Reprendre {plan} ? La rétrogradation programmée sera annulée — aucune nouvelle facture, votre cycle continue normalement.",
+    "confirmIntervalAnnual": "annuelle (−10 %)",
+    "confirmIntervalMonthly": "mensuelle",
+    "confirmInterval": "Confirmer le passage à la facturation <b>{cycle}</b> ? Le changement est proratisé immédiatement par Stripe.",
+    "confirmBtn": "Confirmer",
+    "back": "Retour",
+    "toastDowngradeCanceled": "Rétrogradation annulée — {plan} continue sans interruption.",
+    "toastDowngradeScheduled": "Rétrogradation programmée — {plan} reste actif jusqu’au {date}.",
+    "toastIntervalUpdated": "Cycle de facturation mis à jour."
+  },
+  "errors": {
+    "stripeNotConfigured": "La facturation en ligne n’est pas encore activée sur cette plateforme.",
+    "ownerOnly": "Seul le propriétaire de l’établissement peut modifier l’abonnement.",
+    "alreadySubscribed": "Cette école a déjà un abonnement actif.",
+    "noStripeSubscription": "Aucun abonnement Stripe à gérer pour cette école.",
+    "stripeError": "Stripe n’a pas pu traiter la demande. Réessaie dans un instant.",
+    "generic": "Action impossible pour le moment.",
+    "network": "Erreur réseau. Réessaie."
+  }
+}

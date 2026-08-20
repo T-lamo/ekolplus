@@ -18,6 +18,8 @@ import type verifyEmail from '@/messages/fr/verifyEmail.json';
 import type dashboard from '@/messages/fr/dashboard.json';
 import type adminDashboard from '@/messages/fr/adminDashboard.json';
 import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
+import type billingPlans from '@/messages/fr/billingPlans.json';
+import type abonnement from '@/messages/fr/abonnement.json';
 import type settings from '@/messages/fr/settings.json';
 import type themePicker from '@/messages/fr/themePicker.json';
 import type presences from '@/messages/fr/presences.json';
@@ -45,6 +47,8 @@ declare module 'next-intl' {
       Dashboard: typeof dashboard;
       AdminDashboard: typeof adminDashboard;
       SchoolPlanCard: typeof schoolPlanCard;
+      BillingPlans: typeof billingPlans;
+      Abonnement: typeof abonnement;
       Settings: typeof settings;
       ThemePicker: typeof themePicker;
       Presences: typeof presences;

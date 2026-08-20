@@ -1,0 +1,287 @@
+{
+  "status": {
+    "subscription": {
+      "free": "Gratis",
+      "scheduledCancellation": "Anilasyon pwograme",
+      "trialing": "Esè an kou",
+      "pastDue": "Peman an reta",
+      "unpaid": "Enpeye",
+      "paused": "An poz",
+      "incompletePayment": "Peman enkonplè",
+      "active": "Aktif",
+      "suspended": "Sispann",
+      "expired": "Ekspire",
+      "canceled": "Anile"
+    },
+    "transaction": {
+      "succeeded": "Peye",
+      "pending": "An atant",
+      "failed": "Echwe",
+      "refunded": "Ranbouse"
+    }
+  },
+  "method": {
+    "STRIPE": "Kat · Stripe",
+    "MANUAL": "Manyèl",
+    "BANK_TRANSFER": "Virman bankè"
+  },
+  "currentPlanBanner": {
+    "label": "Plan aktyèl",
+    "subProSuspended": "{plan} sispann · plafon 50 elèv",
+    "subFree": "Gratis · jiska 50 elèv",
+    "subEnterprise": "Kontra Enterprise · pri pèsonalize",
+    "subAnnual": "Fakti anyèl · {amount} / elèv / an",
+    "subMonthly": "Fakti chak mwa · {amount} / elèv / mwa",
+    "dateActiveUntil": "Aktif jiska {date}",
+    "dateTrialEnds": "Esè a fini {date}",
+    "dateRenewal": "Renouvèlman {date}",
+    "statStudents": "Elèv aktif",
+    "statTeachers": "Pwofesè",
+    "statClasses": "Klas",
+    "statAdmins": "Admin",
+    "badgePro": "Pro",
+    "badgeEnterprise": "Enterprise"
+  },
+  "usageCard": {
+    "title": "Itilizasyon plan an",
+    "subtitle": "Limit ki nan plan {plan}",
+    "seatsBilled": {
+      "one": "{count} syèj fakti",
+      "other": "{count} syèj fakti"
+    },
+    "cellStudents": "Elèv",
+    "cellTeachers": "Pwofesè",
+    "cellClasses": "Klas",
+    "cellAdmins": "Admin",
+    "unlimited": "San limit",
+    "unlimitedIncluded": "San limit, enkli nan plan sa a",
+    "enterpriseSuggested": "Nou konseye pale Enterprise pi lwen",
+    "softPct": "{pct}% nan pale konseye a",
+    "usedPct": {
+      "one": "{pct}% itilize · {remaining} plas ki rete",
+      "other": "{pct}% itilize · {remaining} plas ki rete"
+    }
+  },
+  "planCards": {
+    "heading": "Chwazi yon plan",
+    "subheading": "Chwazi yon plan pou wè egzakteman sa k ap chanje — anyen pa modifye san konfimasyon ou.",
+    "ariaLabel": "Chwazi yon plan",
+    "starterTagline": "Dekouvèt & ti lekòl",
+    "starterFree": "Gratis pou tout tan",
+    "perMonth": "/ mwa",
+    "proBadge": "⭐ Pi popilè a",
+    "proTagline": "Etablisman jiska 1000 elèv",
+    "perStudentMonth": "/ elèv / mwa",
+    "proStripeBadge": "Peman via Stripe",
+    "proEstimate": {
+      "one": "≈ {monthly} / mwa pou {count} elèv · {yearly} / an{discount}",
+      "other": "≈ {monthly} / mwa pou {count} elèv · {yearly} / an{discount}"
+    },
+    "proEstimateDiscount": " (−{pct} %)",
+    "proTrialNote": "Esè gratis {days} jou, san angajman",
+    "enterpriseBadge": "🏆 Pi konplè a",
+    "enterpriseTagline": "Rezo & gwo etablisman",
+    "enterpriseCustomPrice": "Pri sou devi",
+    "enterpriseCustomPriceNote": "Sou mezi · pri degresif selon volim",
+    "currentPlanBadge": "Plan aktyèl",
+    "activePlanBadge": "Plan aktif"
+  },
+  "billingCycleToggle": {
+    "ariaLabel": "Sik fakti",
+    "monthly": "Chak mwa",
+    "annual": "Chak ane",
+    "save": "Ekonomize {pct} %"
+  },
+  "downgradeDialog": {
+    "title": "Desann vè {plan}",
+    "subtitle": "Plan {plan} ou rete aktif jiska {date}",
+    "intro": "Men egzakteman sa ki pral pase si ou konfime :",
+    "effectiveDateTitle": "Pran efè {date}",
+    "effectiveBodyTrial": "Nan fen peryòd esè ou a — okenn fakti pap voye.",
+    "effectiveBodyPaid": "Nan fen peryòd ki deja peye a. Pa gen ranbousman, pa gen lòt fakti apre sa.",
+    "capTitleOver": "Fich elèv {count} ou yo rete, men pa gen enskripsyon anplis pase {cap}",
+    "capTitleUnder": "Plafon {cap} elèv la ap aplike ankò",
+    "capBodyOver": "Starter limite a {cap} elèv : {count} fich ki egziste yo rete aksesib e modifyab, men pa gen nouvo enskripsyon toutotan ou depase {cap}.",
+    "capBodyUnder": "Ou gen {count} jodi a — ou ka toujou enskri {remaining} anplis.",
+    "dataKeptTitle": "Done ak modil konsève",
+    "dataKeptBody": "Elèv, nòt, bilten, prezans, frè, orè : anyen pa bloke ni efase.",
+    "invoicesTitle": "Fakti ak resi toujou disponib",
+    "invoicesBody": "Istorik la rete disponib isit la ak nan espas Stripe a.",
+    "resumeTitle": "Ou ka repran jiska {date}",
+    "resumeBody": "Chanje lide anvan sa : yon klik sou « Repran {plan} » anile desann nan san nouvo fakti.",
+    "confirm": "Desann nan fen peryòd la",
+    "keep": "Kenbe {plan}"
+  },
+  "paymentMethodCard": {
+    "title": "Metòd peman",
+    "manageLink": "Fakti & kat",
+    "hasCard": "Kat bankè · jere pa Stripe",
+    "noCard": "Pa gen metòd peman",
+    "defaultEditable": "Pa defo · modifyab nan espas sekirize Stripe a",
+    "clientNoSub": "Kliyan Stripe kreye · pa gen abònman aktif",
+    "starterFreeNote": "Plan Starter la gratis — pa gen kat obligatwa",
+    "managedManually": "Abònman jere manyèlman pa Schoolgesti",
+    "edit": "Modifye",
+    "secureNotice": "Peman sekirize via Stripe (SSL 256-bit, PCI-DSS nivo 1)",
+    "secureNotice2": "Peman an fèt via Stripe sou yon paj sekirize dedye — done bankè ou yo pa janm pase nan sèvè nou yo."
+  },
+  "billingHistoryTable": {
+    "title": "Istorik fakti",
+    "noneYet": "Pa gen tranzaksyon pou kounye a",
+    "count": {
+      "one": "{count} dènye tranzaksyon",
+      "other": "{count} dènye tranzaksyon"
+    },
+    "exportAll": "Ekspòte tout",
+    "emptyStarter": "Plan Starter la gratis — fakti ou yo ap parèt isit la apre ou pase sou {plan}.",
+    "emptyOther": "Fakti ou yo ap parèt isit la apre premye prelèvman an.",
+    "refund": "(ranbousman)",
+    "pdf": "PDF",
+    "th": {
+      "period": "Peryòd",
+      "plan": "Plan",
+      "amount": "Montan",
+      "status": "Estati",
+      "date": "Dat",
+      "invoice": "Fakti"
+    },
+    "csv": {
+      "reference": "Referans",
+      "period": "Peryòd",
+      "plan": "Plan",
+      "amountUsd": "Montan (USD)",
+      "status": "Estati",
+      "method": "Metòd",
+      "date": "Dat"
+    }
+  },
+  "planTransitionHint": {
+    "current": "{plan} — plan aktyèl ou",
+    "downgrade": "Desann vè {plan}",
+    "upgrade": "Pase sou {plan}",
+    "reactivate": "Reyaktivasyon {plan}",
+    "resume": "Repriz {plan}",
+    "regularize": "Peman pou regilarize",
+    "contact": "{plan} — sou devi",
+    "unavailable": "{plan} — pa disponib an libsèvis"
+  },
+  "planTransition": {
+    "ownerOnly": "Rezève pou pwopriyetè etablisman an",
+    "resumeLabel": "Repran {plan}",
+    "resumeHint": "Desann vè Starter pwograme pou {date} — repran anvan dat sa a pou kenbe {plan} san entèripsyon ni nouvo fakti.",
+    "currentStarterSuspended": "Lekòl ou a retounen sou Starter : abònman {plan} sispann pou defo peman. Chwazi {plan} pou regilarize.",
+    "currentStarter": "Ou sou plan gratis Starter la — jiska {cap} elèv, san kat bankè. Chwazi yon lòt plan pou wè sa k ap chanje.",
+    "currentProTrial": "{plan} nan peryòd esè jiska {date} — premye fakti a dat sa a ({estimate}).",
+    "currentProActive": {
+      "one": "{plan} aktif — {count} syèj fakti, {renewal}",
+      "other": "{plan} aktif — {count} syèj fakti, {renewal}"
+    },
+    "currentProActiveRenewalDate": "renouvèlman {date}",
+    "currentProActiveRenewalNone": "san dat renouvèlman",
+    "currentEnterprise": "Kontra Enterprise an kou — chaje kont ou jere chanjman plan yo.",
+    "requestQuoteLabel": "Mande yon devi",
+    "requestQuoteHint": "Sou devi — pri degresif pi lwen pase 1000 elèv, plizyè etablisman, onboarding ak sipò dedye. Dekri nou rezo ou ({students} jodi a) e n ap reponn nou nan 48 è.",
+    "managedByContractLabel": "Jere pa kontra ou",
+    "managedByContractHint": "Lekòl ou a anba yon kontra Enterprise : chanjman plan yo fèt ak chaje kont ou, pa an libsèvis.",
+    "managedByContractDisabled": "Plan jere pa kontra Enterprise ou",
+    "regularizeLabel": "Regilarize peman an",
+    "regularizeHint": "Abònman {plan} sispann pou defo peman — mete kat ou ajou nan espas Stripe a : plan an retabli depi peman an fèt (fich {students} ou yo konsève).",
+    "contactSuspendedLabel": "Kontakte nou",
+    "contactSuspendedHint": "Abònman {plan} sispann pa ekip Schoolgesti — ekri nou pou retabli l.",
+    "unavailableLabel": "Pase sou {plan}",
+    "unavailableHint": "Fakti sou entènèt poko aktive sou platfòm sa a — kontakte nou pou pase sou {plan}.",
+    "unavailableDisabled": "Fakti sou entènèt pa aktive",
+    "reactivateLabel": "Reyaktive {plan}",
+    "reactivateHint": "Reyaktivasyon imedya, san nouvo esè — {estimate}, fakti depi konfimasyon. Done ou yo pa deplase.",
+    "upgradeLabel": "Pase sou Pro — esè {days} j",
+    "upgradeHint": "Esè gratis {days} jou, pa gen kat debite anvan li fini. Apre sa {estimate} — syèj yo = efektif reyèl, san angajman, anile nenpòt kilè.",
+    "managedManuallyLabel": "Jere pa Schoolgesti",
+    "managedManuallyHint": "Plan {plan} ou te aktive manyèlman pa ekip Schoolgesti — kontakte nou pou modifye l.",
+    "managedManuallyDisabled": "Plan jere manyèlman — kontakte nou",
+    "downgradeScheduledLabel": "Anile desann nan",
+    "downgradeScheduledHint": "Desann vè Starter pwograme pou {date} — {plan} rete aktif jiskaske. Anile l pou kontinye san entèripsyon.",
+    "downgradeLabel": "Desann vè Starter",
+    "downgradeEffective": "Pran efè {date}, nan fen peryòd ki deja peye a (pa gen ranbousman, pa gen lòt fakti apre sa).",
+    "downgradeOver": "Ou gen {students} : yo tout rete aksesib, men pa gen nouvo enskripsyon toutotan ou depase {cap}.",
+    "downgradeUnder": "Plafon {cap} elèv la ap aplike ankò (ou gen {count} kounye a).",
+    "downgradeSuffix": "Done ak modil rete aksesib ; ou ka repran jiska dat sa a.",
+    "estimatePerMonth": "≈ {amount} / mwa pou {students}",
+    "estimatePerYear": "≈ {amount} / an pou {students}",
+    "pluralStudent": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "pluralSeat": {
+      "one": "{count} syèj",
+      "other": "{count} syèj"
+    },
+    "salesEnterpriseSubject": "Demann devi Enterprise — {school}",
+    "salesSupportSubject": "Abònman {plan} — {school}",
+    "salesGreeting": "Bonjou,",
+    "salesEnterpriseBody": "Nou ta renmen yon devi pou plan Enterprise a.",
+    "salesSupportBody": "Nou bezwen èd sou abònman nou an.",
+    "salesSchool": "Etablisman : {school}",
+    "salesCurrentPlan": "Plan aktyèl : {plan}",
+    "salesCurrentPlanWithSub": "Plan aktyèl : {plan} (abònman {subPlan} {status})",
+    "salesHeadcount": "Efektif : {students}",
+    "salesThanks": "Mèsi,"
+  },
+  "screen": {
+    "title": "Abònman & Fakti",
+    "subtitle": "Jere plan ou, swiv itilizasyon ou, epi gade fakti ou yo.",
+    "restrictedTitle": "Rezève pou administratè etablisman an",
+    "restrictedBody": "Abònman an, montan ki fakti yo, ak resi yo se sèlman pwopriyetè ak administratè lekòl la ki ka wè yo. Kontakte yo pou nenpòt kesyon sou plan an.",
+    "loadError": "Nou pa ka chaje abònman an.",
+    "daysEndsAccess": {
+      "one": "Aksè fini nan {days} jou",
+      "other": "Aksè fini nan {days} jou"
+    },
+    "daysEndsTrial": {
+      "one": "Esè fini nan {days} jou",
+      "other": "Esè fini nan {days} jou"
+    },
+    "daysRenewsIn": {
+      "one": "Renouvèlman nan {days} jou",
+      "other": "Renouvèlman nan {days} jou"
+    },
+    "upgradeCta": "Amelyore",
+    "alertProSuspendedStripe": "Abònman {plan} <b>sispann pou defo peman</b> — lekòl ou a retounen sou règ plan gratis la (50 elèv). Mete kat ou ajou pou retabli {plan} imedyatman ; done ou yo pa deplase.",
+    "alertProSuspendedManual": "Abònman {plan} <b>sispann</b> pa ekip Schoolgesti — lekòl ou a ap aplike règ plan gratis la. Kontakte nou pou retabli l.",
+    "alertPastDue": "Dènye peman ou echwe. Mete metòd peman ou ajou pou kenbe plan {plan} — aksè a rete ouvè pandan tan sa a.",
+    "alertTrial": "Esè gratis an kou — premye fakti a {date}.",
+    "alertDowngradeScheduled": "<b>Desann vè Starter pwograme pou {date}</b> — {plan} rete aktif jiskaske, apre sa lekòl ou ap retounen otomatikman sou plan gratis la (50 elèv). Pa gen nouvo fakti k ap voye.",
+    "alertAtHardLimit": "Ou rive nan limit <b>{limit} elèv</b> plan gratis la. Pase sou plan {plan} pou ajoute plis.",
+    "alertNearHardLimit": "{count} / {limit} elèv — plan gratis ou a ap pwoche limit li. Panse pou pase sou {plan} pou kontinye enskri.",
+    "alertOverSoftLimit": "Ou jere plis pase <b>{limit} elèv</b> — plan Enterprise (pri degresif, akonpayman dedye) fèt pou ou.",
+    "alertStripeNotConfigured": "Fakti sou entènèt poko aktive sou platfòm sa a — kontakte nou pou pase sou {plan}.",
+    "cancelDowngrade": "Anile desann nan",
+    "bannerUpdateCard": "Mete kat ajou",
+    "bannerManagePlan": "Jere plan an",
+    "bannerUpgradeToPro": "Pase sou Pro",
+    "manageTitle": "Jere abònman ou",
+    "manageBody": "Chanje sik la oswa desann dirèkteman isit la. Metòd peman ak fakti yo jere nan espas sekirize Stripe a.",
+    "managePaymentAndInvoices": "Metòd peman & fakti",
+    "manageSwitchMonthly": "Retounen sou chak mwa",
+    "manageSwitchAnnual": "Pase sou anyèl (−10 %)",
+    "manageResume": "Repran {plan}",
+    "manageDowngrade": "Desann vè Starter",
+    "confirmResume": "Repran {plan} ? Desann pwograme a ap anile — pa gen nouvo fakti, sik ou kontinye nòmalman.",
+    "confirmIntervalAnnual": "anyèl (−10 %)",
+    "confirmIntervalMonthly": "chak mwa",
+    "confirmInterval": "Konfime pase sou fakti <b>{cycle}</b> ? Chanjman an pworata imedyatman pa Stripe.",
+    "confirmBtn": "Konfime",
+    "back": "Retounen",
+    "toastDowngradeCanceled": "Desann anile — {plan} kontinye san entèripsyon.",
+    "toastDowngradeScheduled": "Desann pwograme — {plan} rete aktif jiska {date}.",
+    "toastIntervalUpdated": "Sik fakti mete ajou."
+  },
+  "errors": {
+    "stripeNotConfigured": "Fakti sou entènèt poko aktive sou platfòm sa a.",
+    "ownerOnly": "Se sèlman pwopriyetè etablisman an ki ka modifye abònman an.",
+    "alreadySubscribed": "Lekòl sa a gen tan gen yon abònman aktif.",
+    "noStripeSubscription": "Pa gen abònman Stripe pou jere pou lekòl sa a.",
+    "stripeError": "Stripe pa t kapab trete demann lan. Eseye ankò nan yon ti moman.",
+    "generic": "Aksyon sa a pa posib kounye a.",
+    "network": "Erè rezo. Eseye ankò."
+  }
+}

@@ -65,5 +65,123 @@
     "teacher": "Teacher",
     "room": "Room",
     "description": "Description"
+  },
+  "sessionForm": {
+    "steps": {
+      "cours": "Course",
+      "horaire": "Teacher & schedule",
+      "options": "Options"
+    },
+    "title": {
+      "edit": "Edit session",
+      "create": "New course",
+      "createSubtitle": "Add a session to the timetable"
+    },
+    "sections": {
+      "course": "Course",
+      "staffAndPlace": "Staff & Location",
+      "schedule": "Schedule",
+      "recurrence": "Recurrence",
+      "series": "Series",
+      "options": "Options"
+    },
+    "fields": {
+      "subject": "Subject",
+      "subjectPlaceholder": "Choose a subject",
+      "sessionType": "Session type",
+      "class": "Class",
+      "classPlaceholder": "Choose a class",
+      "teacher": "Teacher",
+      "teacherPlaceholder": "Choose a teacher",
+      "room": "Room / Location",
+      "roomPlaceholder": "Choose a room",
+      "otherPlace": "Other location…",
+      "otherPlaceAriaLabel": "Other location",
+      "otherPlacePlaceholder": "E.g. Library, Yard…",
+      "roomOrPlaceAriaLabel": "Room or location",
+      "roomFreePlaceholder": "E.g. Room 12, Yard…",
+      "date": "Date",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "durationSummary": "Duration: {duration} · Weekly volume: {weekly}/week",
+      "description": "Description",
+      "descriptionPlaceholder": "Add notes, objectives or remarks for this session…",
+      "meetingUrl": "Video meeting link",
+      "submit": "Save session"
+    },
+    "color": {
+      "label": "Session color",
+      "groupAriaLabel": "Color",
+      "reset": "Use the subject color again",
+      "hint": "The subject color — identifies the course quickly on the grid"
+    },
+    "rooms": {
+      "capacity": "{count} seats",
+      "inactive": "inactive",
+      "noCatalogue": "No room catalogue — <link>set up the school's rooms</link>"
+    },
+    "recurrence": {
+      "toggleLabel": "Course repetition",
+      "toggleHint": "Set a weekly recurrence",
+      "daysLabel": "Repeat days",
+      "dayShort": { "1": "M", "2": "Tu", "3": "W", "4": "Th", "5": "F", "6": "Sa" },
+      "dayPlural": {
+        "1": "Mondays",
+        "2": "Tuesdays",
+        "3": "Wednesdays",
+        "4": "Thursdays",
+        "5": "Fridays",
+        "6": "Saturdays"
+      },
+      "and": "and",
+      "hint": "The course will repeat every week on the selected days",
+      "untilLabel": "End of recurrence",
+      "untilHint": "Matches the end of the {label} school year",
+      "summary": "Every <b>{days}</b> from {start} to {end} — <b>{occurrences}</b>",
+      "summaryUntil": "Every <b>{days}</b> from {start} to {end} · until {until} — <b>{occurrences}</b>",
+      "occurrenceCount": {
+        "one": "{count} occurrence",
+        "other": "{count} occurrences"
+      }
+    },
+    "series": {
+      "toggleLabel": "Apply to the whole series",
+      "hint": "This session is part of a series of {count} sessions — the date stays specific to each occurrence."
+    },
+    "delete": {
+      "trigger": "Delete",
+      "scopeLabel": "Delete:",
+      "thisOne": "This session",
+      "wholeSeries": "The whole series ({count})",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "subject": "Choose a subject.",
+      "class": "Choose a class.",
+      "teacher": "Choose a teacher.",
+      "room": "Enter a room or location.",
+      "date": "Choose a date.",
+      "time": "The end time must be after the start time.",
+      "untilRequired": "Choose when the recurrence ends.",
+      "untilBeforeDate": "The end must be after the session date.",
+      "meetingUrl": "The link must start with http:// or https://."
+    },
+    "conflict": {
+      "title": "Timetable conflict",
+      "saveFailedTitle": "Cannot save"
+    },
+    "toasts": {
+      "networkError": "Network error. Please try again.",
+      "updated": {
+        "one": "Session updated.",
+        "other": "{count} sessions updated."
+      },
+      "created": {
+        "one": "Session added.",
+        "other": "{count} sessions added to the timetable."
+      },
+      "deletedOne": "Session deleted.",
+      "deletedSeries": "Series deleted."
+    }
   }
 }

@@ -13,10 +13,10 @@ import {
   formatMonthYear,
   formatWeekRange,
   isoWeekday,
+  joinDayNames,
   legendSubjects,
   mondayOf,
   monthGrid,
-  recurrenceDaysLabel,
   sessionColor,
   sessionsOn,
   weekDays,
@@ -129,10 +129,16 @@ describe('recurrence & volume', () => {
     expect(countOccurrences('2026-08-17', [], '2026-09-07')).toBe(1);
     expect(countOccurrences('2026-08-17', [1], '2026-08-10')).toBe(1);
   });
-  it('labels the selected days in French', () => {
-    expect(recurrenceDaysLabel([1])).toBe('lundis');
-    expect(recurrenceDaysLabel([1, 3])).toBe('lundis et mercredis');
-    expect(recurrenceDaysLabel([1, 3, 5])).toBe('lundis, mercredis et vendredis');
+  it('joins the selected day names with the caller-supplied conjunction', () => {
+    // The day names and the conjunction are translated by the component
+    // (next-intl never enters this pure module) — this only owns the join.
+    expect(joinDayNames([], 'et')).toBe('—');
+    expect(joinDayNames(['lundis'], 'et')).toBe('lundis');
+    expect(joinDayNames(['lundis', 'mercredis'], 'et')).toBe('lundis et mercredis');
+    expect(joinDayNames(['lundis', 'mercredis', 'vendredis'], 'et')).toBe(
+      'lundis, mercredis et vendredis',
+    );
+    expect(joinDayNames(['Mondays', 'Wednesdays'], 'and')).toBe('Mondays and Wednesdays');
   });
   it('sums the class × subject minutes of the week', () => {
     const sessions = [

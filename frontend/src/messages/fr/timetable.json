@@ -65,5 +65,123 @@
     "teacher": "Enseignant",
     "room": "Salle",
     "description": "Description"
+  },
+  "sessionForm": {
+    "steps": {
+      "cours": "Cours",
+      "horaire": "Intervenant & horaire",
+      "options": "Options"
+    },
+    "title": {
+      "edit": "Modifier la séance",
+      "create": "Nouveau cours",
+      "createSubtitle": "Ajouter une séance à l'emploi du temps"
+    },
+    "sections": {
+      "course": "Cours",
+      "staffAndPlace": "Intervenants & Lieu",
+      "schedule": "Horaire",
+      "recurrence": "Récurrence",
+      "series": "Série",
+      "options": "Options"
+    },
+    "fields": {
+      "subject": "Matière",
+      "subjectPlaceholder": "Choisir une matière",
+      "sessionType": "Type de séance",
+      "class": "Classe",
+      "classPlaceholder": "Choisir une classe",
+      "teacher": "Enseignant",
+      "teacherPlaceholder": "Choisir un enseignant",
+      "room": "Salle / Lieu",
+      "roomPlaceholder": "Choisir une salle",
+      "otherPlace": "Autre lieu…",
+      "otherPlaceAriaLabel": "Autre lieu",
+      "otherPlacePlaceholder": "Ex. Bibliothèque, Cour…",
+      "roomOrPlaceAriaLabel": "Salle ou lieu",
+      "roomFreePlaceholder": "Ex. Salle 12, Cour…",
+      "date": "Date",
+      "startTime": "Heure de début",
+      "endTime": "Heure de fin",
+      "durationSummary": "Durée : {duration} · Volume hebdomadaire : {weekly}/semaine",
+      "description": "Description",
+      "descriptionPlaceholder": "Ajouter des notes, objectifs ou remarques pour cette séance…",
+      "meetingUrl": "Lien de visioconférence",
+      "submit": "Enregistrer la séance"
+    },
+    "color": {
+      "label": "Couleur de la séance",
+      "groupAriaLabel": "Couleur",
+      "reset": "Reprendre la couleur de la matière",
+      "hint": "Couleur de la matière — identifie rapidement le cours sur la grille"
+    },
+    "rooms": {
+      "capacity": "{count} pl.",
+      "inactive": "inactive",
+      "noCatalogue": "Aucun catalogue de salles — <link>définir les salles de l'école</link>"
+    },
+    "recurrence": {
+      "toggleLabel": "Répétition du cours",
+      "toggleHint": "Définir une récurrence hebdomadaire",
+      "daysLabel": "Jours de répétition",
+      "dayShort": { "1": "L", "2": "Ma", "3": "Me", "4": "J", "5": "V", "6": "Sa" },
+      "dayPlural": {
+        "1": "lundis",
+        "2": "mardis",
+        "3": "mercredis",
+        "4": "jeudis",
+        "5": "vendredis",
+        "6": "samedis"
+      },
+      "and": "et",
+      "hint": "Le cours se répètera chaque semaine les jours sélectionnés",
+      "untilLabel": "Fin de la récurrence",
+      "untilHint": "Correspond à la fin de l'année scolaire {label}",
+      "summary": "Tous les <b>{days}</b> de {start} à {end} — <b>{occurrences}</b>",
+      "summaryUntil": "Tous les <b>{days}</b> de {start} à {end} · jusqu'au {until} — <b>{occurrences}</b>",
+      "occurrenceCount": {
+        "one": "{count} occurrence",
+        "other": "{count} occurrences"
+      }
+    },
+    "series": {
+      "toggleLabel": "Appliquer à toute la série",
+      "hint": "Cette séance fait partie d'une série de {count} séances — la date reste propre à chaque occurrence."
+    },
+    "delete": {
+      "trigger": "Supprimer",
+      "scopeLabel": "Supprimer :",
+      "thisOne": "Cette séance",
+      "wholeSeries": "Toute la série ({count})",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "subject": "Choisissez une matière.",
+      "class": "Choisissez une classe.",
+      "teacher": "Choisissez un enseignant.",
+      "room": "Indiquez une salle ou un lieu.",
+      "date": "Choisissez une date.",
+      "time": "L'heure de fin doit être après le début.",
+      "untilRequired": "Choisissez la fin de la récurrence.",
+      "untilBeforeDate": "La fin doit être après la date de la séance.",
+      "meetingUrl": "Le lien doit commencer par http:// ou https://."
+    },
+    "conflict": {
+      "title": "Conflit d'emploi du temps",
+      "saveFailedTitle": "Enregistrement impossible"
+    },
+    "toasts": {
+      "networkError": "Erreur réseau. Réessayez.",
+      "updated": {
+        "one": "Séance mise à jour.",
+        "other": "{count} séances mises à jour."
+      },
+      "created": {
+        "one": "Séance ajoutée.",
+        "other": "{count} séances ajoutées à l'emploi du temps."
+      },
+      "deletedOne": "Séance supprimée.",
+      "deletedSeries": "Série supprimée."
+    }
   }
 }

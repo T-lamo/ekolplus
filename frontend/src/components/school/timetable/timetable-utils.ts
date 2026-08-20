@@ -269,14 +269,12 @@ export function legendSubjects(
 }
 
 // ─── Recurrence ────────────────────────────────────────────────────────────
-export const RECURRENCE_DAYS: { value: number; short: string; plural: string }[] = [
-  { value: 1, short: 'L', plural: 'lundis' },
-  { value: 2, short: 'Ma', plural: 'mardis' },
-  { value: 3, short: 'Me', plural: 'mercredis' },
-  { value: 4, short: 'J', plural: 'jeudis' },
-  { value: 5, short: 'V', plural: 'vendredis' },
-  { value: 6, short: 'Sa', plural: 'samedis' },
-];
+/** Mon–Sat — the only weekdays a weekly recurrence may target. These ISO
+ * numbers are sent to the API verbatim (persisted values, never translated);
+ * their visible labels live in the `timetable.sessionForm.recurrence.dayShort.*`
+ * and `.dayPlural.*` message groups. */
+export type RecurrenceDay = 1 | 2 | 3 | 4 | 5 | 6;
+export const RECURRENCE_DAYS: readonly RecurrenceDay[] = [1, 2, 3, 4, 5, 6];
 
 /** Same rule as the server: base date + every selected weekday until `until`. */
 export function countOccurrences(date: string, days: number[], until: string): number {
@@ -290,11 +288,13 @@ export function countOccurrences(date: string, days: number[], until: string): n
   return n;
 }
 
-export function recurrenceDaysLabel(days: number[]): string {
-  const names = RECURRENCE_DAYS.filter((d) => days.includes(d.value)).map((d) => d.plural);
+/** « lundis, mercredis et vendredis » — `names` are already translated by
+ * the caller and `and` is the locale's list conjunction, because this module
+ * stays React/next-intl free. Empty selection renders an em dash. */
+export function joinDayNames(names: string[], and: string): string {
   if (names.length === 0) return '—';
   if (names.length === 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}`;
+  return `${names.slice(0, -1).join(', ')} ${and} ${names[names.length - 1]}`;
 }
 
 /** Sum of the class × subject sessions in the ISO week of `day` (minutes). */

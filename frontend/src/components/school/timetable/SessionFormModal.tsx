@@ -9,7 +9,7 @@
 // TIMETABLE_CONFLICT is surfaced inline with the offending slot.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import {
   AlertTriangle,
@@ -53,18 +53,17 @@ import {
   formatDuration,
   formatLong,
   isoWeekday,
+  joinDayNames,
   minutesToHHMM,
-  recurrenceDaysLabel,
   todayDay,
   weeklyVolume,
 } from './timetable-utils';
 
 const FORM_ID = 'tt-session-form';
-const STEPS = [
-  { id: 'cours', label: 'Cours' },
-  { id: 'horaire', label: 'Intervenant & horaire' },
-  { id: 'options', label: 'Options' },
-];
+// Step labels come from `timetable.sessionForm.steps.*`, keyed by these ids
+// (this const can't call a hook). STEP_OF_FIELD below maps a field name to
+// its index in this same order.
+const STEP_IDS = ['cours', 'horaire', 'options'] as const;
 /** Which step shows each validated field — used to jump to the offending
  * step on submit and to validate only the current step on « Suivant ». */
 const STEP_OF_FIELD: Record<string, number> = {
@@ -79,12 +78,6 @@ const STEP_OF_FIELD: Record<string, number> = {
 };
 
 const OTHER_ROOM = '__other__';
-const TYPE_LABELS: Record<SessionType, string> = {
-  CM: 'CM — Cours magistral',
-  TD: 'TD — Travaux dirigés',
-  TP: 'TP — Travaux pratiques',
-  EXAM: 'Examen',
-};
 
 export interface SessionFormInitial {
   session?: TimetableSession;
@@ -120,6 +113,8 @@ export function SessionFormModal({
   const editing = initial.session ?? null;
   const mode = editing ? 'edit' : 'create';
   const locale = useLocale();
+  const t = useTranslations('Timetable.sessionForm');
+  const tType = useTranslations('Timetable.sessionType');
 
   const [subjectId, setSubjectId] = useState(editing?.subjectId ?? '');
   // Only a real per-session override seeds the picker. Seeding from the
@@ -175,7 +170,7 @@ export function SessionFormModal({
   // Wizard steps (user decision 2026-08-17: the one-page form was too long).
   // Editing an existing session unlocks every step at once.
   const [stepIndex, setStepIndex] = useState(0);
-  const [maxReached, setMaxReached] = useState(editing ? STEPS.length - 1 : 0);
+  const [maxReached, setMaxReached] = useState(editing ? STEP_IDS.length - 1 : 0);
 
   const subject = subjects.find((s) => s.id === subjectId) ?? null;
   // Same colour the Matières list shows for the subject (stored swatch or
@@ -183,6 +178,12 @@ export function SessionFormModal({
   const subjectColor = subject ? subjectAccentColor(subject.name, subject.color) : null;
   const effectiveColor = colorTouched ? color : subjectColor;
   const room = roomId && roomId !== OTHER_ROOM ? (selectedRoom?.name ?? '') : customRoom.trim();
+
+  const steps = useMemo(() => STEP_IDS.map((id) => ({ id, label: t(`steps.${id}`) })), [t]);
+  // EXAM is its own word in every locale — the CM/TD/TP picker entries pair
+  // the persisted code with its long label, the exam entry needs no prefix.
+  const typeOptionLabel = (tp: SessionType): string =>
+    tp === 'EXAM' ? tType(tp) : `${TYPE_META[tp].short} — ${tType(tp)}`;
 
   // Defaults that follow the class × subject assignment until the user
   // overrides them: teacher from the pivot, room from the class.
@@ -215,21 +216,33 @@ export function SessionFormModal({
       ? weeklyVolume(sessions, classId, subjectId, date, editing?.id) + duration
       : duration;
   const occurrences = recurring ? countOccurrences(date, days, until) : 1;
+  // « lundis, mercredis et vendredis » — the names and the conjunction are
+  // translated here; joinDayNames() owns only the punctuation of the join.
+  const daysLabel = joinDayNames(
+    RECURRENCE_DAYS.filter((value) => days.includes(value)).map((value) =>
+      t(`recurrence.dayPlural.${value}`),
+    ),
+    t('recurrence.and'),
+  );
+  const occurrenceLabel = t(
+    occurrences === 1 ? 'recurrence.occurrenceCount.one' : 'recurrence.occurrenceCount.other',
+    { count: occurrences },
+  );
 
   function computeErrors(): Record<string, string> {
     const errs: Record<string, string> = {};
-    if (!subjectId) errs.subjectId = 'Choisis une matière.';
-    if (!classId) errs.classId = 'Choisis une classe.';
-    if (!teacherId) errs.teacherId = 'Choisis un enseignant.';
-    if (!room) errs.room = 'Indique une salle ou un lieu.';
-    if (!date) errs.date = 'Choisis une date.';
-    if (endMinutes <= startMinutes) errs.time = 'L’heure de fin doit être après le début.';
+    if (!subjectId) errs.subjectId = t('errors.subject');
+    if (!classId) errs.classId = t('errors.class');
+    if (!teacherId) errs.teacherId = t('errors.teacher');
+    if (!room) errs.room = t('errors.room');
+    if (!date) errs.date = t('errors.date');
+    if (endMinutes <= startMinutes) errs.time = t('errors.time');
     if (mode === 'create' && recurring) {
-      if (!until) errs.until = 'Choisis la fin de la récurrence.';
-      else if (until < date) errs.until = 'La fin doit être après la date de la séance.';
+      if (!until) errs.until = t('errors.untilRequired');
+      else if (until < date) errs.until = t('errors.untilBeforeDate');
     }
     if (meetingUrl.trim() && !/^https?:\/\//i.test(meetingUrl.trim())) {
-      errs.meetingUrl = 'Le lien doit commencer par http:// ou https://.';
+      errs.meetingUrl = t('errors.meetingUrl');
     }
     return errs;
   }
@@ -265,7 +278,7 @@ export function SessionFormModal({
 
   function goNext() {
     if (!validateStep(stepIndex)) return;
-    if (stepIndex < STEPS.length - 1) goTo(stepIndex + 1);
+    if (stepIndex < STEP_IDS.length - 1) goTo(stepIndex + 1);
   }
 
   async function submit() {
@@ -298,7 +311,11 @@ export function SessionFormModal({
           method: 'PATCH',
           body,
         });
-        onSaved(res.count > 1 ? `${res.count} séances mises à jour.` : 'Séance mise à jour.');
+        onSaved(
+          res.count > 1
+            ? t('toasts.updated.other', { count: res.count })
+            : t('toasts.updated.one', { count: res.count }),
+        );
       } else {
         const res = await api<{ count: number }>('/api/school/timetable', {
           method: 'POST',
@@ -308,7 +325,9 @@ export function SessionFormModal({
           },
         });
         onSaved(
-          res.count > 1 ? `${res.count} séances ajoutées à l’emploi du temps.` : 'Séance ajoutée.',
+          res.count > 1
+            ? t('toasts.created.other', { count: res.count })
+            : t('toasts.created.one', { count: res.count }),
         );
       }
     } catch (err) {
@@ -317,7 +336,7 @@ export function SessionFormModal({
         setConflicts(Array.isArray(details) ? (details as ConflictDetail[]) : []);
         setError(err.message);
       } else {
-        setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+        setError(err instanceof ApiError ? err.message : t('toasts.networkError'));
       }
     } finally {
       setSubmitting(false);
@@ -330,9 +349,9 @@ export function SessionFormModal({
     setError(null);
     try {
       await api(`/api/school/timetable/${editing.id}?scope=${scope}`, { method: 'DELETE' });
-      onSaved(scope === 'series' ? 'Série supprimée.' : 'Séance supprimée.');
+      onSaved(scope === 'series' ? t('toasts.deletedSeries') : t('toasts.deletedOne'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : t('toasts.networkError'));
       setDeleting(false);
     }
   }
@@ -348,12 +367,12 @@ export function SessionFormModal({
           onClick={() => setConfirmDelete(true)}
         >
           <Trash2 size={14} />
-          Supprimer
+          {t('delete.trigger')}
         </Button>
       )}
       {editing && confirmDelete && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-foreground">Supprimer :</span>
+          <span className="text-xs font-semibold text-foreground">{t('delete.scopeLabel')}</span>
           <Button
             type="button"
             variant="outline"
@@ -362,7 +381,7 @@ export function SessionFormModal({
             loading={deleting}
             onClick={() => remove('one')}
           >
-            Cette séance
+            {t('delete.thisOne')}
           </Button>
           {editing.seriesCount > 1 && (
             <Button
@@ -373,7 +392,7 @@ export function SessionFormModal({
               loading={deleting}
               onClick={() => remove('series')}
             >
-              Toute la série ({editing.seriesCount})
+              {t('delete.wholeSeries', { count: editing.seriesCount })}
             </Button>
           )}
           <button
@@ -381,7 +400,7 @@ export function SessionFormModal({
             className="text-xs text-muted-foreground hover:underline"
             onClick={() => setConfirmDelete(false)}
           >
-            Annuler
+            {t('delete.cancel')}
           </button>
         </div>
       )}
@@ -395,9 +414,9 @@ export function SessionFormModal({
       {editing && deleteRow}
       <WizardNav
         stepIndex={stepIndex}
-        stepCount={STEPS.length}
+        stepCount={STEP_IDS.length}
         submitting={submitting}
-        submitLabel="Enregistrer la séance"
+        submitLabel={t('fields.submit')}
         formId={FORM_ID}
         onCancel={onClose}
         onPrev={() => goTo(Math.max(0, stepIndex - 1))}
@@ -408,11 +427,11 @@ export function SessionFormModal({
 
   return (
     <Modal
-      title={editing ? 'Modifier la séance' : 'Nouveau cours'}
+      title={editing ? t('title.edit') : t('title.create')}
       subtitle={
         editing
           ? `${editing.subject.name} · ${editing.class.name} · ${formatLong(editing.date, locale)}`
-          : 'Ajouter une séance à l’emploi du temps'
+          : t('title.createSubtitle')
       }
       medium
       bodyClassName="px-6 py-5"
@@ -420,7 +439,7 @@ export function SessionFormModal({
       onClose={onClose}
       header={
         <FormStepsBar
-          steps={STEPS}
+          steps={steps}
           activeIndex={stepIndex}
           maxReachedIndex={maxReached}
           onStepSelect={goTo}
@@ -434,15 +453,20 @@ export function SessionFormModal({
         onSubmit={(e) => {
           e.preventDefault();
           // Enter in a field advances on middle steps, saves on the last.
-          if (stepIndex < STEPS.length - 1) goNext();
+          if (stepIndex < STEP_IDS.length - 1) goNext();
           else void submit();
         }}
       >
         {stepIndex === 0 && (
           <>
             {/* ── Cours ─────────────────────────────────────────────── */}
-            <SectionLabel>Cours</SectionLabel>
-            <FormGroup label="Matière" required error={fieldErrors.subjectId} htmlFor="tt-subject">
+            <SectionLabel>{t('sections.course')}</SectionLabel>
+            <FormGroup
+              label={t('fields.subject')}
+              required
+              error={fieldErrors.subjectId}
+              htmlFor="tt-subject"
+            >
               <IconSelect
                 id="tt-subject"
                 value={subjectId}
@@ -450,7 +474,7 @@ export function SessionFormModal({
                   setSubjectId(v);
                   setTeacherTouched(false);
                 }}
-                placeholder="Choisir une matière"
+                placeholder={t('fields.subjectPlaceholder')}
                 // The selected item already renders its swatch through Radix's
                 // <Value>; only the placeholder state needs the leading dot.
                 icon={
@@ -478,9 +502,13 @@ export function SessionFormModal({
             </FormGroup>
 
             <div className="flex flex-col gap-[5px]">
-              <span className="text-xs font-semibold text-foreground">Couleur de la séance</span>
+              <span className="text-xs font-semibold text-foreground">{t('color.label')}</span>
               <div className="flex flex-wrap items-center gap-2.5">
-                <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Couleur">
+                <div
+                  className="flex items-center gap-1.5"
+                  role="radiogroup"
+                  aria-label={t('color.groupAriaLabel')}
+                >
                   {SUBJECT_COLORS.map((hex) => {
                     const selected = effectiveColor === hex;
                     return (
@@ -517,42 +545,50 @@ export function SessionFormModal({
                       className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
                       style={{ background: subjectColor }}
                     />
-                    Reprendre la couleur de la matière
+                    {t('color.reset')}
                   </button>
                 ) : (
-                  <span className="text-2xs text-muted-foreground">
-                    Couleur de la matière — identifie rapidement le cours sur la grille
-                  </span>
+                  <span className="text-2xs text-muted-foreground">{t('color.hint')}</span>
                 )}
               </div>
             </div>
 
             <div className="flex flex-col gap-[5px]">
               <span className="text-xs font-semibold text-foreground">
-                Type de séance<span className="ml-0.5 text-destructive-foreground">*</span>
+                {t('fields.sessionType')}
+                <span className="ml-0.5 text-destructive-foreground">*</span>
               </span>
-              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Type de séance">
-                {SESSION_TYPES.map((t) => (
+              <div
+                className="flex flex-wrap gap-1.5"
+                role="radiogroup"
+                aria-label={t('fields.sessionType')}
+              >
+                {SESSION_TYPES.map((tp) => (
                   <button
-                    key={t}
+                    key={tp}
                     type="button"
                     role="radio"
-                    aria-checked={type === t}
-                    onClick={() => setType(t)}
+                    aria-checked={type === tp}
+                    onClick={() => setType(tp)}
                     className={cn(
                       'rounded-xl border-[1.5px] px-3.5 py-[5px] text-xs font-semibold whitespace-nowrap transition-colors',
-                      type === t
-                        ? TYPE_META[t].active
+                      type === tp
+                        ? TYPE_META[tp].active
                         : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
                     )}
                   >
-                    {TYPE_LABELS[t]}
+                    {typeOptionLabel(tp)}
                   </button>
                 ))}
               </div>
             </div>
 
-            <FormGroup label="Classe" required error={fieldErrors.classId} htmlFor="tt-class">
+            <FormGroup
+              label={t('fields.class')}
+              required
+              error={fieldErrors.classId}
+              htmlFor="tt-class"
+            >
               <IconSelect
                 id="tt-class"
                 value={classId}
@@ -561,7 +597,7 @@ export function SessionFormModal({
                   setTeacherTouched(false);
                   setRoomTouched(false);
                 }}
-                placeholder="Choisir une classe"
+                placeholder={t('fields.classPlaceholder')}
                 icon={<School size={13} className="text-muted-foreground" />}
               >
                 {classes.map((c) => (
@@ -576,10 +612,10 @@ export function SessionFormModal({
         {stepIndex === 1 && (
           <>
             {/* ── Intervenants & Lieu ───────────────────────────────── */}
-            <SectionLabel className="mt-1">Intervenants &amp; Lieu</SectionLabel>
+            <SectionLabel className="mt-1">{t('sections.staffAndPlace')}</SectionLabel>
             <div className="flex flex-col gap-3 sm:flex-row">
               <FormGroup
-                label="Enseignant"
+                label={t('fields.teacher')}
                 required
                 error={fieldErrors.teacherId}
                 htmlFor="tt-teacher"
@@ -592,21 +628,22 @@ export function SessionFormModal({
                     setTeacherId(v);
                     setTeacherTouched(true);
                   }}
-                  placeholder="Choisir un enseignant"
+                  placeholder={t('fields.teacherPlaceholder')}
                   icon={null}
                 >
-                  {teachers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
+                  {/* `teacher`, not `t` — `t` is the translator in this file. */}
+                  {teachers.map((teacher) => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
                       <span className="inline-flex items-center gap-[7px]">
-                        <Avatar name={t.name} src={t.photoUrl} size={20} />
-                        {t.name}
+                        <Avatar name={teacher.name} src={teacher.photoUrl} size={20} />
+                        {teacher.name}
                       </span>
                     </SelectItem>
                   ))}
                 </IconSelect>
               </FormGroup>
               <FormGroup
-                label="Salle / Lieu"
+                label={t('fields.room')}
                 required
                 error={fieldErrors.room}
                 htmlFor="tt-room"
@@ -621,22 +658,24 @@ export function SessionFormModal({
                         setRoomId(v);
                         setRoomTouched(true);
                       }}
-                      placeholder="Choisir une salle"
+                      placeholder={t('fields.roomPlaceholder')}
                       icon={<DoorOpen size={13} className="text-muted-foreground" />}
                     >
                       {roomOptions.map((r) => (
                         <SelectItem key={r.id} value={r.id}>
                           {r.name}
-                          {r.capacity != null ? ` · ${r.capacity} pl.` : ''}
-                          {!r.isActive ? ' · inactive' : ''}
+                          {r.capacity != null
+                            ? ` · ${t('rooms.capacity', { count: r.capacity })}`
+                            : ''}
+                          {!r.isActive ? ` · ${t('rooms.inactive')}` : ''}
                         </SelectItem>
                       ))}
-                      <SelectItem value={OTHER_ROOM}>Autre lieu…</SelectItem>
+                      <SelectItem value={OTHER_ROOM}>{t('fields.otherPlace')}</SelectItem>
                     </IconSelect>
                     {roomId === OTHER_ROOM && (
                       <TextInput
-                        aria-label="Autre lieu"
-                        placeholder="Ex. Bibliothèque, Cour…"
+                        aria-label={t('fields.otherPlaceAriaLabel')}
+                        placeholder={t('fields.otherPlacePlaceholder')}
                         value={customRoom}
                         onChange={(e) => setCustomRoom(e.target.value)}
                         autoFocus
@@ -647,8 +686,8 @@ export function SessionFormModal({
                   <div className="flex flex-col gap-1">
                     <TextInput
                       id="tt-room"
-                      aria-label="Salle ou lieu"
-                      placeholder="Ex. Salle 12, Cour…"
+                      aria-label={t('fields.roomOrPlaceAriaLabel')}
+                      placeholder={t('fields.roomFreePlaceholder')}
                       value={customRoom}
                       onChange={(e) => {
                         setCustomRoom(e.target.value);
@@ -656,25 +695,29 @@ export function SessionFormModal({
                       }}
                     />
                     <span className="text-2xs text-muted-foreground">
-                      Aucun catalogue de salles —{' '}
-                      <Link
-                        href="/configuration/salles"
-                        className="font-medium text-primary hover:underline"
-                      >
-                        définir les salles de l&apos;école
-                      </Link>
+                      {t.rich('rooms.noCatalogue', {
+                        link: (chunks) => (
+                          <Link
+                            href="/configuration/salles"
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {chunks}
+                          </Link>
+                        ),
+                      })}
                     </span>
                   </div>
                 )}
               </FormGroup>
             </div>
             {/* ── Horaire ───────────────────────────────────────────── */}
-            <SectionLabel className="mt-1">Horaire</SectionLabel>
+            <SectionLabel className="mt-1">{t('sections.schedule')}</SectionLabel>
             <div data-field-error={fieldErrors.date ? 'true' : undefined}>
               <DateField
                 label={
                   <>
-                    Date<span className="ml-0.5 text-destructive-foreground">*</span>
+                    {t('fields.date')}
+                    <span className="ml-0.5 text-destructive-foreground">*</span>
                   </>
                 }
                 id="tt-date"
@@ -692,7 +735,12 @@ export function SessionFormModal({
               )}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <FormGroup label="Heure de début" required htmlFor="tt-start" className="flex-1">
+              <FormGroup
+                label={t('fields.startTime')}
+                required
+                htmlFor="tt-start"
+                className="flex-1"
+              >
                 <TimeSelect
                   id="tt-start"
                   value={startMinutes}
@@ -704,7 +752,7 @@ export function SessionFormModal({
                 />
               </FormGroup>
               <FormGroup
-                label="Heure de fin"
+                label={t('fields.endTime')}
                 required
                 htmlFor="tt-end"
                 error={fieldErrors.time}
@@ -721,51 +769,55 @@ export function SessionFormModal({
             <div className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-[7px]">
               <Timer size={13} className="shrink-0 text-primary" aria-hidden />
               <span className="text-xs font-medium text-primary">
-                Durée : {formatDuration(duration)} · Volume hebdomadaire : {formatDuration(weekly)}
-                /semaine
+                {t('fields.durationSummary', {
+                  duration: formatDuration(duration),
+                  weekly: formatDuration(weekly),
+                })}
               </span>
             </div>
 
             {/* ── Récurrence ────────────────────────────────────────── */}
             {mode === 'create' ? (
               <>
-                <SectionLabel className="mt-1">Récurrence</SectionLabel>
+                <SectionLabel className="mt-1">{t('sections.recurrence')}</SectionLabel>
                 <div className="overflow-hidden rounded-md border border-border">
                   <div className="flex items-center justify-between gap-3 bg-muted px-3.5 py-2.5">
                     <div>
                       <div className="text-caption font-semibold text-foreground">
-                        Répétition du cours
+                        {t('recurrence.toggleLabel')}
                       </div>
                       <div className="mt-px text-2xs text-muted-foreground">
-                        Définir une récurrence hebdomadaire
+                        {t('recurrence.toggleHint')}
                       </div>
                     </div>
                     <Toggle
                       checked={recurring}
                       onChange={setRecurring}
-                      label="Répétition du cours"
+                      label={t('recurrence.toggleLabel')}
                     />
                   </div>
                   {recurring && (
                     <div className="flex flex-col gap-3 bg-card p-3.5">
                       <div className="flex flex-col gap-[5px]">
                         <span className="text-xs font-semibold text-foreground">
-                          Jours de répétition
+                          {t('recurrence.daysLabel')}
                         </span>
-                        <div className="flex gap-1.5" role="group" aria-label="Jours de répétition">
-                          {RECURRENCE_DAYS.map((d) => {
-                            const on = days.includes(d.value);
+                        <div
+                          className="flex gap-1.5"
+                          role="group"
+                          aria-label={t('recurrence.daysLabel')}
+                        >
+                          {RECURRENCE_DAYS.map((value) => {
+                            const on = days.includes(value);
                             return (
                               <button
-                                key={d.value}
+                                key={value}
                                 type="button"
                                 aria-pressed={on}
-                                aria-label={d.plural}
+                                aria-label={t(`recurrence.dayPlural.${value}`)}
                                 onClick={() =>
                                   setDays((prev) =>
-                                    on
-                                      ? prev.filter((v) => v !== d.value)
-                                      : [...prev, d.value].sort(),
+                                    on ? prev.filter((v) => v !== value) : [...prev, value].sort(),
                                   )
                                 }
                                 className={cn(
@@ -775,20 +827,20 @@ export function SessionFormModal({
                                     : 'border-border bg-input text-muted-foreground hover:border-muted-foreground/40',
                                 )}
                               >
-                                {d.short}
+                                {t(`recurrence.dayShort.${value}`)}
                               </button>
                             );
                           })}
                         </div>
                         <span className="text-2xs text-muted-foreground">
-                          Le cours se répètera chaque semaine les jours sélectionnés
+                          {t('recurrence.hint')}
                         </span>
                       </div>
                       <div data-field-error={fieldErrors.until ? 'true' : undefined}>
                         <DateField
                           label={
                             <>
-                              Fin de la récurrence
+                              {t('recurrence.untilLabel')}
                               <span className="ml-0.5 text-destructive-foreground">*</span>
                             </>
                           }
@@ -801,7 +853,7 @@ export function SessionFormModal({
                           icon={<CalendarX size={14} className="shrink-0 text-muted-foreground" />}
                           {...(academicYear && until === academicYear.endDate
                             ? {
-                                hint: `Correspond à la fin de l’année scolaire ${academicYear.label}`,
+                                hint: t('recurrence.untilHint', { label: academicYear.label }),
                               }
                             : {})}
                         />
@@ -817,18 +869,16 @@ export function SessionFormModal({
                       <div className="flex items-center gap-[7px] rounded-md bg-muted px-3 py-2">
                         <Repeat size={13} className="shrink-0 text-muted-foreground" aria-hidden />
                         <span className="text-xs text-muted-foreground">
-                          Tous les{' '}
-                          <strong className="font-semibold text-foreground">
-                            {recurrenceDaysLabel(days)}
-                          </strong>{' '}
-                          de {minutesToHHMM(startMinutes)} à {minutesToHHMM(endMinutes)}
-                          {until
-                            ? ` · jusqu’au ${formatLong(until, locale).replace(/^\S+ /, '')}`
-                            : ''}{' '}
-                          —{' '}
-                          <strong className="font-semibold text-foreground">
-                            {occurrences} occurrence{occurrences > 1 ? 's' : ''}
-                          </strong>
+                          {t.rich(until ? 'recurrence.summaryUntil' : 'recurrence.summary', {
+                            days: daysLabel,
+                            start: minutesToHHMM(startMinutes),
+                            end: minutesToHHMM(endMinutes),
+                            until: until ? formatLong(until, locale).replace(/^\S+ /, '') : '',
+                            occurrences: occurrenceLabel,
+                            b: (chunks) => (
+                              <strong className="font-semibold text-foreground">{chunks}</strong>
+                            ),
+                          })}
                         </span>
                       </div>
                     </div>
@@ -839,21 +889,20 @@ export function SessionFormModal({
               editing &&
               editing.seriesCount > 1 && (
                 <>
-                  <SectionLabel className="mt-1">Série</SectionLabel>
+                  <SectionLabel className="mt-1">{t('sections.series')}</SectionLabel>
                   <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted px-3.5 py-2.5">
                     <div>
                       <div className="text-caption font-semibold text-foreground">
-                        Appliquer à toute la série
+                        {t('series.toggleLabel')}
                       </div>
                       <div className="mt-px text-2xs text-muted-foreground">
-                        Cette séance fait partie d’une série de {editing.seriesCount} séances — la
-                        date reste propre à chaque occurrence.
+                        {t('series.hint', { count: editing.seriesCount })}
                       </div>
                     </div>
                     <Toggle
                       checked={applyToSeries}
                       onChange={setApplyToSeries}
-                      label="Appliquer à toute la série"
+                      label={t('series.toggleLabel')}
                     />
                   </div>
                 </>
@@ -864,18 +913,18 @@ export function SessionFormModal({
         {stepIndex === 2 && (
           <>
             {/* ── Options ───────────────────────────────────────────── */}
-            <SectionLabel className="mt-1">Options</SectionLabel>
-            <FormGroup label="Description" optional htmlFor="tt-description">
+            <SectionLabel className="mt-1">{t('sections.options')}</SectionLabel>
+            <FormGroup label={t('fields.description')} optional htmlFor="tt-description">
               <TextArea
                 id="tt-description"
                 className="min-h-14"
-                placeholder="Ajouter des notes, objectifs ou remarques pour cette séance…"
+                placeholder={t('fields.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </FormGroup>
             <FormGroup
-              label="Lien de visioconférence"
+              label={t('fields.meetingUrl')}
               optional
               htmlFor="tt-meeting"
               error={fieldErrors.meetingUrl}
@@ -903,7 +952,7 @@ export function SessionFormModal({
             <AlertTriangle size={15} className="mt-px shrink-0 text-destructive-foreground" />
             <div className="min-w-0 text-xs text-destructive-foreground">
               <div className="font-semibold">
-                {conflicts.length > 0 ? 'Conflit d’emploi du temps' : 'Enregistrement impossible'}
+                {conflicts.length > 0 ? t('conflict.title') : t('conflict.saveFailedTitle')}
               </div>
               {conflicts.length > 0 ? (
                 <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4">

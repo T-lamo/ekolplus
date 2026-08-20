@@ -42,6 +42,36 @@
     "title": "Langue de l'interface",
     "description": "Choisissez la langue de l'application. Préférence personnelle : elle s'applique immédiatement, sur tous vos appareils, et ne change rien pour les autres membres."
   },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Choisissez les événements pour lesquels vous souhaitez être notifié·e, par courriel ou dans l'application.",
+    "channelEmail": "Courriel",
+    "channelApp": "App",
+    "emailAriaLabel": "{label} — courriel",
+    "appAriaLabel": "{label} — dans l'application",
+    "events": {
+      "BULLETIN_GENERATED": {
+        "label": "Bulletins générés",
+        "desc": "Quand un bulletin est prêt à consulter."
+      },
+      "UNEXCUSED_ABSENCE": {
+        "label": "Absences non justifiées",
+        "desc": "Quand un élève est marqué absent sans justification."
+      },
+      "RENEWAL_REMINDER": {
+        "label": "Rappel de renouvellement",
+        "desc": "Avant l'expiration de l'abonnement de l'établissement."
+      },
+      "TEACHER_ACTIVITY_DIGEST": {
+        "label": "Activité des enseignants",
+        "desc": "Résumé des saisies (notes, présences) par l'équipe pédagogique."
+      },
+      "WEEKLY_SUMMARY": {
+        "label": "Résumé hebdomadaire",
+        "desc": "Un récapitulatif de l'activité de l'établissement chaque semaine."
+      }
+    }
+  },
   "profil": {
     "info": {
       "title": "Mon profil",

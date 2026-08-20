@@ -42,6 +42,36 @@
     "title": "Interface language",
     "description": "Choose the app's language. Personal preference: it applies immediately, on all your devices, and doesn't change anything for other members."
   },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Choose which events you want to be notified about, by email or in the app.",
+    "channelEmail": "Email",
+    "channelApp": "App",
+    "emailAriaLabel": "{label} — email",
+    "appAriaLabel": "{label} — in the app",
+    "events": {
+      "BULLETIN_GENERATED": {
+        "label": "Report cards generated",
+        "desc": "When a report card is ready to view."
+      },
+      "UNEXCUSED_ABSENCE": {
+        "label": "Unexcused absences",
+        "desc": "When a student is marked absent without justification."
+      },
+      "RENEWAL_REMINDER": {
+        "label": "Renewal reminder",
+        "desc": "Before the school's subscription expires."
+      },
+      "TEACHER_ACTIVITY_DIGEST": {
+        "label": "Teacher activity",
+        "desc": "Summary of entries (grades, attendance) by the teaching staff."
+      },
+      "WEEKLY_SUMMARY": {
+        "label": "Weekly summary",
+        "desc": "A recap of the school's activity every week."
+      }
+    }
+  },
   "profil": {
     "info": {
       "title": "My profile",

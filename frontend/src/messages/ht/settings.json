@@ -43,6 +43,36 @@
     "title": "Lang enèfas la",
     "description": "Chwazi lang aplikasyon an. Preferans pèsonèl : li aplike imedyatman, sou tout aparèy ou yo, e li pa chanje anyen pou lòt manm yo."
   },
+  "notifications": {
+    "title": "Notifikasyon",
+    "subtitle": "Chwazi evènman ou vle yo notifye w pou yo, pa imèl oswa nan aplikasyon an.",
+    "channelEmail": "Imèl",
+    "channelApp": "App",
+    "emailAriaLabel": "{label} — imèl",
+    "appAriaLabel": "{label} — nan aplikasyon an",
+    "events": {
+      "BULLETIN_GENERATED": {
+        "label": "Bilten jenere",
+        "desc": "Lè yon bilten pare pou konsilte."
+      },
+      "UNEXCUSED_ABSENCE": {
+        "label": "Absans ki pa jistifye",
+        "desc": "Lè yon elèv make absan san jistifikasyon."
+      },
+      "RENEWAL_REMINDER": {
+        "label": "Rapèl renouvèlman",
+        "desc": "Anvan abònman lekòl la ekspire."
+      },
+      "TEACHER_ACTIVITY_DIGEST": {
+        "label": "Aktivite pwofesè yo",
+        "desc": "Rezime sezi yo (nòt, presans) pa ekip pedagojik la."
+      },
+      "WEEKLY_SUMMARY": {
+        "label": "Rezime chak semèn",
+        "desc": "Yon rekapitilasyon aktivite lekòl la chak semèn."
+      }
+    }
+  },
   "profil": {
     "info": {
       "title": "Pwofil mwen",

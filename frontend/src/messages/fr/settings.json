@@ -181,5 +181,34 @@
       "generate": "Générer un mot de passe",
       "logoutWarning": "Après modification, vous serez déconnecté·e de toutes les sessions actives."
     }
+  },
+  "zoneDangereuse": {
+    "title": "Zone dangereuse",
+    "subtitle": "Ces actions sont irréversibles. Procédez avec précaution.",
+    "confirmFieldLabel": "Tapez « {schoolName} » pour confirmer",
+    "cancel": "Annuler",
+    "export": {
+      "title": "Exporter toutes les données",
+      "desc": "Télécharger un fichier ZIP complet avec tous les élèves, notes, bulletins et paramètres.",
+      "action": "Exporter"
+    },
+    "resetYear": {
+      "title": "Réinitialiser l'année scolaire",
+      "desc": "Effacer toutes les notes et présences de l'année en cours. Les élèves et enseignants seront conservés.",
+      "action": "Réinitialiser",
+      "modalTitle": "Réinitialiser l'année scolaire",
+      "warning": "Toutes les notes, évaluations, présences, objectifs et appréciations de l'année scolaire active seront supprimés définitivement. Les élèves, enseignants, classes et matières seront conservés. Cette action est irréversible.",
+      "confirmLabel": "Réinitialiser définitivement",
+      "success": "Année scolaire réinitialisée ({total} enregistrements supprimés)."
+    },
+    "deleteSchool": {
+      "title": "Supprimer le compte de l'établissement",
+      "desc": "Cette action supprimera définitivement toutes les données, élèves, enseignants, bulletins et paramètres. Aucune récupération possible.",
+      "action": "Supprimer",
+      "modalTitle": "Supprimer l'établissement",
+      "warning": "L'établissement et toutes ses données (élèves, enseignants, classes, notes, bulletins...) seront supprimés définitivement. Votre compte utilisateur restera actif mais perdra l'accès à cet établissement. Cette action est irréversible.",
+      "confirmLabel": "Supprimer définitivement",
+      "success": "Établissement supprimé."
+    }
   }
 }

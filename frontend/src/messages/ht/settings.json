@@ -182,5 +182,34 @@
       "generate": "Jenere yon modpas",
       "logoutWarning": "Apre modifikasyon an, w ap dekonekte nan tout sesyon aktif yo."
     }
+  },
+  "zoneDangereuse": {
+    "title": "Zòn danje",
+    "subtitle": "Aksyon sa yo pa kapab defèt. Fè atansyon.",
+    "confirmFieldLabel": "Tape « {schoolName} » pou konfime",
+    "cancel": "Anile",
+    "export": {
+      "title": "Ekspòte tout done yo",
+      "desc": "Telechaje yon fichye ZIP konplè avèk tout elèv, nòt, bilten ak paramèt.",
+      "action": "Ekspòte"
+    },
+    "resetYear": {
+      "title": "Reyinisyalize ane eskolè a",
+      "desc": "Efase tout nòt ak presans ane an kou a. Elèv ak pwofesè yo ap konsève.",
+      "action": "Reyinisyalize",
+      "modalTitle": "Reyinisyalize ane eskolè a",
+      "warning": "Tout nòt, evalyasyon, presans, objektif ak apresyasyon ane eskolè aktif la ap efase pou tout tan. Elèv, pwofesè, klas ak matyè yo ap konsève. Aksyon sa a pa kapab defèt.",
+      "confirmLabel": "Reyinisyalize definitivman",
+      "success": "Ane eskolè a reyinisyalize ({total} anrejistreman efase)."
+    },
+    "deleteSchool": {
+      "title": "Efase kont lekòl la",
+      "desc": "Aksyon sa a ap efase pou tout tan tout done yo, elèv, pwofesè, bilten ak paramèt. Pa gen rekiperasyon posib.",
+      "action": "Efase",
+      "modalTitle": "Efase lekòl la",
+      "warning": "Lekòl la ak tout done l yo (elèv, pwofesè, klas, nòt, bilten...) ap efase pou tout tan. Kont itilizatè w la ap rete aktif men l ap pèdi aksè nan lekòl sa a. Aksyon sa a pa kapab defèt.",
+      "confirmLabel": "Efase definitivman",
+      "success": "Lekòl la efase."
+    }
   }
 }

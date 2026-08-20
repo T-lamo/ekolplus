@@ -1,0 +1,325 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "status": {
+    "ENROLLED": "Enskri",
+    "REPEATED_ABSENCES": "Absans repete",
+    "SUSPENDED": "Sispann"
+  },
+  "mention": {
+    "TRES_BIEN": "Trè byen",
+    "BIEN": "Byen",
+    "ASSEZ_BIEN": "Ase byen",
+    "PASSABLE": "Pasab",
+    "INSUFFISANT": "Ensifizan",
+    "FAIBLE": "Fèb"
+  },
+  "filterBy": "Filtre pa :",
+  "ordinal": {
+    "one": "{rank}e",
+    "two": "{rank}e",
+    "few": "{rank}e",
+    "other": "{rank}e"
+  },
+  "list": {
+    "title": "Elèv",
+    "countEnrolled": {
+      "one": "{count} elèv enskri",
+      "other": "{count} elèv enskri"
+    },
+    "loadError": "Nou pa ka chaje elèv yo.",
+    "import": "Enpòte",
+    "importSoon": "Enpòtasyon CSV — pral disponib byento.",
+    "export": "Ekspòte",
+    "addStudent": "Ajoute yon elèv",
+    "searchPlaceholder": "Chèche yon elèv...",
+    "allClasses": "Tout klas yo",
+    "allStatuses": "Tout estati yo",
+    "status": {
+      "ENROLLED": "Enskri",
+      "REPEATED_ABSENCES": "Absans",
+      "SUSPENDED": "Sispann"
+    },
+    "resultsCount": {
+      "one": "{count} rezilta",
+      "other": "{count} rezilta"
+    },
+    "emptyNone": "Pa gen elèv — ajoute premye a.",
+    "emptyFiltered": "Pa gen rezilta.",
+    "noClass": "Pa gen klas",
+    "birthPrefix": "Nesans",
+    "table": {
+      "student": "Elèv",
+      "class": "Klas",
+      "dateOfBirth": "Dat nesans",
+      "status": "Estati",
+      "average": "Mwayèn",
+      "attendance": "Prezans"
+    },
+    "csv": {
+      "student": "Elèv",
+      "number": "Nimewo",
+      "class": "Klas",
+      "dateOfBirth": "Dat nesans",
+      "status": "Estati"
+    },
+    "deleteConfirm": "Efase « {name} » ?",
+    "toasts": {
+      "deleted": "Elèv efase.",
+      "suspended": "Elèv sispann."
+    },
+    "menu": {
+      "viewProfile": "Wè pwofil la",
+      "edit": "Modifye",
+      "viewBulletin": "Wè bilten an",
+      "attendance": "Prezans",
+      "suspend": "Sispann",
+      "delete": "Efase"
+    }
+  },
+  "form": {
+    "steps": {
+      "identite": "Idantite",
+      "scolarite": "Eskolarite",
+      "tuteurs": "Paran & Titè",
+      "options": "Opsyon"
+    },
+    "statusOptions": {
+      "ENROLLED": { "desc": "Elèv aktif nan sistèm nan" },
+      "REPEATED_ABSENCES": { "desc": "Asiduite pou siveye" },
+      "SUSPENDED": { "desc": "Aksè restreyn tanporèman" }
+    },
+    "editTitle": "Modifye pwofil la",
+    "addTitle": "Ajoute yon elèv",
+    "submitEdit": "Anrejistre",
+    "submitCreate": "Kreye elèv la",
+    "loadErrorWithCode": "Nou pa ka chaje fich la ({code}).",
+    "loadError": "Nou pa ka chaje fich la.",
+    "photoUpdated": "Foto mete ajou.",
+    "nameAndDobRequired": "Prenon, non fanmi ak dat nesans obligatwa.",
+    "classRequired": "Klas la obligatwa.",
+    "updated": "Elèv mete ajou.",
+    "created": "Elèv ajoute.",
+    "identity": {
+      "title": "Enfòmasyon pèsonèl",
+      "subtitle": "Idantite ak kontak elèv la",
+      "photoLabel": "Foto elèv la",
+      "photoHint": "JPG, PNG oswa WebP — maksimòm 10 Mo",
+      "firstName": "Prenon",
+      "lastName": "Non fanmi",
+      "dateOfBirth": "Dat nesans",
+      "placeOfBirth": "Kote li fèt",
+      "gender": "Sèks",
+      "genderUnspecified": "Pa presize",
+      "nationality": "Nasyonalite",
+      "nationalityPlaceholder": "egz: Ayisyen",
+      "motherTongue": "Lang manman",
+      "motherTonguePlaceholder": "egz: Kreyòl ayisyen",
+      "address": "Adrès",
+      "addressPlaceholder": "Ri, katye, vil...",
+      "phone": "Telefòn (elèv)",
+      "email": "Adrès imèl",
+      "emailPlaceholder": "egzanp@imèl.com"
+    },
+    "schooling": {
+      "title": "Enfòmasyon eskolè",
+      "subtitle": "Klas, enskripsyon ak parkou",
+      "assignedNumber": "Matrikil bay",
+      "autoNumber": "Matrikil otomatik",
+      "academicYear": "Ane eskolè",
+      "academicYearFallback": "Ane aktif",
+      "class": "Klas",
+      "enrollmentType": "Kalite enskripsyon",
+      "enrolledAt": "Dat enskripsyon",
+      "previousSchool": "Ansyen lekòl",
+      "previousSchoolPlaceholder": "Non ansyen lekòl la...",
+      "transferNumber": "Nimewo transfè",
+      "transferNumberPlaceholder": "Opsyonèl",
+      "notes": "Obsèvasyon / Nòt entèn"
+    },
+    "statusSection": {
+      "title": "Estati enskripsyon",
+      "subtitle": "Estati aktyèl elèv la nan sistèm nan"
+    },
+    "guardians": {
+      "title": "Paran & Titè",
+      "subtitle": "Kontak ki responsab elèv la",
+      "guardian1": "Titè legal 1",
+      "guardian2": "Titè legal 2",
+      "remove": "Retire",
+      "addSecond": "+ Ajoute yon dezyèm titè",
+      "fullName": "Non konplè",
+      "relationship": "Lyen fanmi",
+      "phone": "Telefòn",
+      "email": "Imèl",
+      "profession": "Pwofesyon"
+    },
+    "options": {
+      "title": "Opsyon & Aksè",
+      "subtitle": "Bous ak aksè an liy",
+      "scholarship": "Benefisyè yon bous",
+      "scholarshipDesc": "Make elèv sa a kòm boursye",
+      "studentPortal": "Pòtal elèv & notifikasyon pou paran",
+      "studentPortalDesc": "Konsiltasyon nòt an liy ak alèt pou kontak yo",
+      "comingSoon": "Pral disponib byento"
+    }
+  },
+  "goalModal": {
+    "title": "Defini yon objektif",
+    "subject": "Matyè",
+    "overallAverage": "Mwayèn jeneral",
+    "target": "Objektif (/ 20)",
+    "invalidTarget": "Antre yon objektif ant 0 ak 20.",
+    "saved": "Objektif anrejistre.",
+    "saving": "N ap anrejistre…",
+    "save": "Anrejistre"
+  },
+  "profile": {
+    "backToList": "Retounen nan elèv yo",
+    "notFound": "Elèv la pa jwenn.",
+    "loadError": "Nou pa ka chaje pwofil la.",
+    "exportFile": "Ekspòte dosye a",
+    "exportFileSoon": "Ekspòtasyon PDF dosye a — pral disponib byento.",
+    "viewBulletin": "Wè bilten an",
+    "noTermAvailable": "Pa gen peryòd eskolè disponib pou kounye a.",
+    "editProfile": "Modifye pwofil la",
+    "homeroomSuffix": "(titilè)",
+    "ageYears": "{age} an",
+    "tabs": {
+      "info": "Enfòmasyon",
+      "grades": "Nòt & Rezilta",
+      "attendance": "Prezans",
+      "appreciations": "Apresyasyon",
+      "bulletins": "Bilten"
+    },
+    "stats": {
+      "overallAverage": "Mwayèn jeneral",
+      "attendanceRate": "To prezans",
+      "absencesThisTerm": "Absans trimès sa a",
+      "classRank": "Ran nan klas"
+    },
+    "personalInfo": "Enfòmasyon pèsonèl",
+    "edit": "Modifye",
+    "fields": {
+      "fullName": "Non konplè",
+      "dateOfBirth": "Dat nesans",
+      "placeOfBirth": "Kote li fèt",
+      "gender": "Sèks",
+      "nationality": "Nasyonalite",
+      "address": "Adrès",
+      "enrolledAt": "Dat enskripsyon",
+      "status": "Estati",
+      "phone": "Telefòn",
+      "email": "Imèl",
+      "profession": "Pwofesyon"
+    },
+    "guardian": "Titè legal",
+    "noGuardian": "Pa gen titè anrejistre."
+  },
+  "notesResultats": {
+    "notEnrolled": "Elèv pa enskri pou ane eskolè seleksyone a.",
+    "yearItem": "Ane {label}",
+    "allTerms": "Tout trimès yo",
+    "displayLabel": "N ap montre :",
+    "subjectCount": {
+      "one": "{count} matyè",
+      "other": "{count} matyè"
+    },
+    "noGrades": "Pa gen nòt anrejistre pou peryòd sa a.",
+    "summary": {
+      "overallAverage": "Mwayèn jeneral",
+      "overallAverageSub": "/ 20 · {term}",
+      "classRank": "Ran nan klas",
+      "classRankSub": {
+        "one": "sou {count} elèv",
+        "other": "sou {count} elèv"
+      },
+      "bestSubject": "Pi bon matyè",
+      "hardestSubject": "Matyè difisil"
+    },
+    "detailedGrades": "Nòt detaye pa matyè",
+    "export": "Ekspòte",
+    "csv": {
+      "subject": "Matyè",
+      "coefficient": "Kowefisyan",
+      "subjectAverage": "Mwayèn matyè",
+      "classAverage": "Mwayèn klas",
+      "appreciation": "Apresyasyon"
+    },
+    "table": {
+      "subject": "Matyè",
+      "coefficient": "Koef.",
+      "evaluation": "Evalyasyon {index}",
+      "subjectAverage": "Mwayèn matyè",
+      "classAverage": "Mwayèn klas",
+      "trend": "Tandans",
+      "appreciation": "Apresyasyon"
+    },
+    "weightedAverage": "Mwayèn jeneral pondere",
+    "classAverageLabel": "Mwayèn klas : {value}",
+    "trendEvolution": "Evolisyon mwayèn yo pa matyè",
+    "legend": {
+      "insufficient": "Ensifizan (<8)",
+      "average": "Pasab (8–12)",
+      "good": "Byen (12+)",
+      "max": "Maks : 20 pwen"
+    },
+    "ranking": "Klasman — {className}",
+    "noRanking": "Pa gen klasman disponib.",
+    "youAreViewing": "W ap konsilte",
+    "classAverageShort": "Mwayèn klas",
+    "classMax": "Mwayèn maks",
+    "classMin": "Mwayèn min",
+    "alert": {
+      "title": "Alèt pedagojik",
+      "body": {
+        "one": "{count} matyè anba mwayèn nan (8/20). Swivi ranfòse rekòmande pou {names}.",
+        "other": "{count} matyè anba mwayèn nan (8/20). Swivi ranfòse rekòmande pou {names}."
+      }
+    },
+    "goals": "Objektif — {term}",
+    "defineGoal": "Defini",
+    "noGoals": "Pa gen objektif defini.",
+    "current": "Aktyèl : {value}"
+  },
+  "appreciations": {
+    "editLink": "Modifye apresyasyon an",
+    "empty": "Pa gen apresyasyon antre pou peryòd sa a.",
+    "writeLink": "Ekri yon apresyasyon →",
+    "general": {
+      "title": "Apresyasyon jeneral",
+      "writtenBy": "Ekri pa :",
+      "enteredOn": "Antre le {date}",
+      "published": "Antre",
+      "draft": "Bouyon",
+      "empty": "Pa gen apresyasyon jeneral antre pou elèv sa a."
+    },
+    "bySubject": {
+      "title": "Apresyasyon pa matyè",
+      "subject": "Matyè",
+      "coefficient": "Koef.",
+      "average": "Mwa.",
+      "mention": "Mansyon",
+      "appreciation": "Apresyasyon",
+      "teacher": "Pwofesè"
+    },
+    "overallAverage": "Mwayèn jeneral",
+    "rank": "— Ran : {rank} / {rankedCount}"
+  },
+  "attendanceTab": {
+    "journal": "Jounal prezans",
+    "empty": "Pa gen prezans anrejistre pou peryòd sa a.",
+    "table": {
+      "date": "Dat",
+      "status": "Estati",
+      "justification": "Jistifikasyon"
+    }
+  },
+  "bulletins": {
+    "loadError": "Nou pa ka chaje bilten yo.",
+    "empty": "Pa gen peryòd eskolè konfigire — bilten yo ap parèt yon fwa ane eskolè a mete an plas.",
+    "generated": "Jenere",
+    "pending": "An atant",
+    "summary": "Mwayèn {average}/20 · Ran {rank}/{rankedCount}",
+    "view": "Wè"
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "status": {
+    "ENROLLED": "Inscrit(e)",
+    "REPEATED_ABSENCES": "Absences répétées",
+    "SUSPENDED": "Suspendu(e)"
+  },
+  "mention": {
+    "TRES_BIEN": "Très Bien",
+    "BIEN": "Bien",
+    "ASSEZ_BIEN": "Assez Bien",
+    "PASSABLE": "Passable",
+    "INSUFFISANT": "Insuffisant",
+    "FAIBLE": "Faible"
+  },
+  "filterBy": "Filtrer par :",
+  "ordinal": {
+    "one": "{rank}er",
+    "two": "{rank}e",
+    "few": "{rank}e",
+    "other": "{rank}e"
+  },
+  "list": {
+    "title": "Élèves",
+    "countEnrolled": {
+      "one": "{count} élève inscrit",
+      "other": "{count} élèves inscrits"
+    },
+    "loadError": "Impossible de charger les élèves.",
+    "import": "Importer",
+    "importSoon": "Import CSV — bientôt disponible.",
+    "export": "Exporter",
+    "addStudent": "Ajouter un élève",
+    "searchPlaceholder": "Rechercher un élève...",
+    "allClasses": "Toutes les classes",
+    "allStatuses": "Tous les statuts",
+    "status": {
+      "ENROLLED": "Inscrit(e)",
+      "REPEATED_ABSENCES": "Absences",
+      "SUSPENDED": "Suspendu(e)"
+    },
+    "resultsCount": {
+      "one": "{count} résultat",
+      "other": "{count} résultats"
+    },
+    "emptyNone": "Aucun élève — ajoutez le premier.",
+    "emptyFiltered": "Aucun résultat.",
+    "noClass": "Sans classe",
+    "birthPrefix": "Naissance",
+    "table": {
+      "student": "Élève",
+      "class": "Classe",
+      "dateOfBirth": "Date de naissance",
+      "status": "Statut",
+      "average": "Moyenne",
+      "attendance": "Présence"
+    },
+    "csv": {
+      "student": "Élève",
+      "number": "Numéro",
+      "class": "Classe",
+      "dateOfBirth": "Date de naissance",
+      "status": "Statut"
+    },
+    "deleteConfirm": "Supprimer « {name} » ?",
+    "toasts": {
+      "deleted": "Élève supprimé.",
+      "suspended": "Élève suspendu."
+    },
+    "menu": {
+      "viewProfile": "Voir le profil",
+      "edit": "Modifier",
+      "viewBulletin": "Voir le bulletin",
+      "attendance": "Présences",
+      "suspend": "Suspendre",
+      "delete": "Supprimer"
+    }
+  },
+  "form": {
+    "steps": {
+      "identite": "Identité",
+      "scolarite": "Scolarité",
+      "tuteurs": "Parents & Tuteurs",
+      "options": "Options"
+    },
+    "statusOptions": {
+      "ENROLLED": { "desc": "Élève actif dans le système" },
+      "REPEATED_ABSENCES": { "desc": "Assiduité à surveiller" },
+      "SUSPENDED": { "desc": "Accès temporairement restreint" }
+    },
+    "editTitle": "Modifier le profil",
+    "addTitle": "Ajouter un élève",
+    "submitEdit": "Enregistrer",
+    "submitCreate": "Créer l'élève",
+    "loadErrorWithCode": "Impossible de charger la fiche ({code}).",
+    "loadError": "Impossible de charger la fiche.",
+    "photoUpdated": "Photo mise à jour.",
+    "nameAndDobRequired": "Prénom, nom et date de naissance sont requis.",
+    "classRequired": "La classe est requise.",
+    "updated": "Élève mis à jour.",
+    "created": "Élève ajouté.",
+    "identity": {
+      "title": "Informations personnelles",
+      "subtitle": "Identité et coordonnées de l'élève",
+      "photoLabel": "Photo de l'élève",
+      "photoHint": "JPG, PNG ou WebP — max 10 Mo",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "dateOfBirth": "Date de naissance",
+      "placeOfBirth": "Lieu de naissance",
+      "gender": "Genre",
+      "genderUnspecified": "Non précisé",
+      "nationality": "Nationalité",
+      "nationalityPlaceholder": "ex: Haïtienne",
+      "motherTongue": "Langue maternelle",
+      "motherTonguePlaceholder": "ex: Créole haïtien",
+      "address": "Adresse",
+      "addressPlaceholder": "Rue, quartier, ville...",
+      "phone": "Téléphone (élève)",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "exemple@email.com"
+    },
+    "schooling": {
+      "title": "Informations scolaires",
+      "subtitle": "Classe, inscription et parcours",
+      "assignedNumber": "Matricule attribué",
+      "autoNumber": "Matricule auto-généré",
+      "academicYear": "Année scolaire",
+      "academicYearFallback": "Année active",
+      "class": "Classe",
+      "enrollmentType": "Type d'inscription",
+      "enrolledAt": "Date d'inscription",
+      "previousSchool": "École précédente",
+      "previousSchoolPlaceholder": "Nom de l'école précédente...",
+      "transferNumber": "Numéro de transfert",
+      "transferNumberPlaceholder": "Optionnel",
+      "notes": "Observations / Notes internes"
+    },
+    "statusSection": {
+      "title": "Statut d'inscription",
+      "subtitle": "État actuel de l'élève dans le système"
+    },
+    "guardians": {
+      "title": "Parents & Tuteurs",
+      "subtitle": "Contacts responsables de l'élève",
+      "guardian1": "Tuteur légal 1",
+      "guardian2": "Tuteur légal 2",
+      "remove": "Retirer",
+      "addSecond": "+ Ajouter un second tuteur",
+      "fullName": "Nom complet",
+      "relationship": "Lien de parenté",
+      "phone": "Téléphone",
+      "email": "Email",
+      "profession": "Profession"
+    },
+    "options": {
+      "title": "Options & Accès",
+      "subtitle": "Bourse et accès en ligne",
+      "scholarship": "Bénéficiaire d'une bourse",
+      "scholarshipDesc": "Marquer cet élève comme boursier",
+      "studentPortal": "Portail élève & notifications aux parents",
+      "studentPortalDesc": "Consultation des notes en ligne et alertes aux contacts renseignés",
+      "comingSoon": "Bientôt disponible"
+    }
+  },
+  "goalModal": {
+    "title": "Définir un objectif",
+    "subject": "Matière",
+    "overallAverage": "Moyenne générale",
+    "target": "Objectif (/ 20)",
+    "invalidTarget": "Entrez un objectif entre 0 et 20.",
+    "saved": "Objectif enregistré.",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer"
+  },
+  "profile": {
+    "backToList": "Retour aux élèves",
+    "notFound": "Élève introuvable.",
+    "loadError": "Impossible de charger le profil.",
+    "exportFile": "Exporter le dossier",
+    "exportFileSoon": "Export PDF du dossier — bientôt disponible.",
+    "viewBulletin": "Voir le bulletin",
+    "noTermAvailable": "Aucune période scolaire disponible pour le moment.",
+    "editProfile": "Modifier le profil",
+    "homeroomSuffix": "(titulaire)",
+    "ageYears": "{age} ans",
+    "tabs": {
+      "info": "Informations",
+      "grades": "Notes & Résultats",
+      "attendance": "Présences",
+      "appreciations": "Appréciations",
+      "bulletins": "Bulletins"
+    },
+    "stats": {
+      "overallAverage": "Moyenne générale",
+      "attendanceRate": "Taux de présence",
+      "absencesThisTerm": "Absences ce trimestre",
+      "classRank": "Rang de classe"
+    },
+    "personalInfo": "Informations personnelles",
+    "edit": "Modifier",
+    "fields": {
+      "fullName": "Nom complet",
+      "dateOfBirth": "Date de naissance",
+      "placeOfBirth": "Lieu de naissance",
+      "gender": "Genre",
+      "nationality": "Nationalité",
+      "address": "Adresse",
+      "enrolledAt": "Date d'inscription",
+      "status": "Statut",
+      "phone": "Téléphone",
+      "email": "Email",
+      "profession": "Profession"
+    },
+    "guardian": "Tuteur légal",
+    "noGuardian": "Aucun tuteur renseigné."
+  },
+  "notesResultats": {
+    "notEnrolled": "Élève non inscrit pour l'année scolaire sélectionnée.",
+    "yearItem": "Année {label}",
+    "allTerms": "Tous les trimestres",
+    "displayLabel": "Affichage :",
+    "subjectCount": {
+      "one": "{count} matière",
+      "other": "{count} matières"
+    },
+    "noGrades": "Aucune note enregistrée pour cette période.",
+    "summary": {
+      "overallAverage": "Moyenne générale",
+      "overallAverageSub": "/ 20 · {term}",
+      "classRank": "Rang dans la classe",
+      "classRankSub": {
+        "one": "sur {count} élève",
+        "other": "sur {count} élèves"
+      },
+      "bestSubject": "Meilleure matière",
+      "hardestSubject": "Matière difficile"
+    },
+    "detailedGrades": "Notes détaillées par matière",
+    "export": "Exporter",
+    "csv": {
+      "subject": "Matière",
+      "coefficient": "Coefficient",
+      "subjectAverage": "Moy. matière",
+      "classAverage": "Moy. classe",
+      "appreciation": "Appréciation"
+    },
+    "table": {
+      "subject": "Matière",
+      "coefficient": "Coeff.",
+      "evaluation": "Éval. {index}",
+      "subjectAverage": "Moy. matière",
+      "classAverage": "Moy. classe",
+      "trend": "Tendance",
+      "appreciation": "Appréciation"
+    },
+    "weightedAverage": "Moyenne générale pondérée",
+    "classAverageLabel": "Moy. de classe : {value}",
+    "trendEvolution": "Évolution des moyennes par matière",
+    "legend": {
+      "insufficient": "Insuffisant (<8)",
+      "average": "Passable (8–12)",
+      "good": "Bien (12+)",
+      "max": "Max : 20 pts"
+    },
+    "ranking": "Classement — {className}",
+    "noRanking": "Aucun classement disponible.",
+    "youAreViewing": "Vous consultez",
+    "classAverageShort": "Moy. de classe",
+    "classMax": "Moy. max",
+    "classMin": "Moy. min",
+    "alert": {
+      "title": "Alerte pédagogique",
+      "body": {
+        "one": "{count} matière en dessous de la moyenne (8/20). Suivi renforcé recommandé pour {names}.",
+        "other": "{count} matières en dessous de la moyenne (8/20). Suivi renforcé recommandé pour {names}."
+      }
+    },
+    "goals": "Objectifs — {term}",
+    "defineGoal": "Définir",
+    "noGoals": "Aucun objectif défini.",
+    "current": "Actuel : {value}"
+  },
+  "appreciations": {
+    "editLink": "Modifier l'appréciation",
+    "empty": "Aucune appréciation saisie pour cette période.",
+    "writeLink": "Rédiger une appréciation →",
+    "general": {
+      "title": "Appréciation générale",
+      "writtenBy": "Rédigé par :",
+      "enteredOn": "Saisie le {date}",
+      "published": "Saisie",
+      "draft": "Brouillon",
+      "empty": "Aucune appréciation générale saisie pour cet élève."
+    },
+    "bySubject": {
+      "title": "Appréciations par matière",
+      "subject": "Matière",
+      "coefficient": "Coeff.",
+      "average": "Moy.",
+      "mention": "Mention",
+      "appreciation": "Appréciation",
+      "teacher": "Enseignant"
+    },
+    "overallAverage": "Moyenne générale",
+    "rank": "— Rang : {rank} / {rankedCount}"
+  },
+  "attendanceTab": {
+    "journal": "Journal de présence",
+    "empty": "Aucune présence enregistrée pour cette période.",
+    "table": {
+      "date": "Date",
+      "status": "Statut",
+      "justification": "Justification"
+    }
+  },
+  "bulletins": {
+    "loadError": "Impossible de charger les bulletins.",
+    "empty": "Aucune période scolaire configurée — les bulletins apparaîtront une fois l'année scolaire mise en place.",
+    "generated": "Généré",
+    "pending": "En attente",
+    "summary": "Moyenne {average}/20 · Rang {rank}/{rankedCount}",
+    "view": "Voir"
+  }
+}

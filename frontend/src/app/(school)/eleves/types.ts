@@ -116,15 +116,6 @@ export interface StudentResults {
 export type Mention = 'TRES_BIEN' | 'BIEN' | 'ASSEZ_BIEN' | 'PASSABLE' | 'INSUFFISANT' | 'FAIBLE';
 export type AppreciationStatus = 'NONE' | 'DRAFT' | 'PUBLISHED';
 
-export const MENTION_LABEL: Record<Mention, string> = {
-  TRES_BIEN: 'Très Bien',
-  BIEN: 'Bien',
-  ASSEZ_BIEN: 'Assez Bien',
-  PASSABLE: 'Passable',
-  INSUFFISANT: 'Insuffisant',
-  FAIBLE: 'Faible',
-};
-
 export interface GeneralAppreciation {
   mention: Mention | null;
   text: string | null;

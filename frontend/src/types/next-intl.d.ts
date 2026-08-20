@@ -22,6 +22,7 @@ import type settings from '@/messages/fr/settings.json';
 import type themePicker from '@/messages/fr/themePicker.json';
 import type presences from '@/messages/fr/presences.json';
 import type enseignants from '@/messages/fr/enseignants.json';
+import type eleves from '@/messages/fr/eleves.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -45,6 +46,7 @@ declare module 'next-intl' {
       ThemePicker: typeof themePicker;
       Presences: typeof presences;
       Enseignants: typeof enseignants;
+      Eleves: typeof eleves;
     };
   }
 }

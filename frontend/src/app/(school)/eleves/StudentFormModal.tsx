@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Activity, Hash, School as SchoolIcon, SlidersHorizontal, User, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -22,40 +23,23 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { FormStepsBar } from '@/components/school/FormStepsBar';
 import { FormSectionCard } from '@/components/school/FormSectionCard';
 import { WizardNav } from '@/components/school/WizardNav';
+import { studentStatusLabel } from './status-label';
 import type { ClassOption, GuardianData, StudentDetail, StudentStatus } from './types';
 
 const FORM_ID = 'student-wizard';
 
-const STEPS = [
-  { id: 'identite', label: 'Identité' },
-  { id: 'scolarite', label: 'Scolarité' },
-  { id: 'tuteurs', label: 'Parents & Tuteurs' },
-  { id: 'options', label: 'Options' },
+const STATUS_OPTIONS: { value: StudentStatus; dot: string }[] = [
+  { value: 'ENROLLED', dot: 'bg-success-foreground' },
+  { value: 'REPEATED_ABSENCES', dot: 'bg-warning-foreground' },
+  { value: 'SUSPENDED', dot: 'bg-muted-foreground' },
 ];
 
-const STATUS_OPTIONS: { value: StudentStatus; label: string; desc: string; dot: string }[] = [
-  {
-    value: 'ENROLLED',
-    label: 'Inscrit(e)',
-    desc: 'Élève actif dans le système',
-    dot: 'bg-success-foreground',
-  },
-  {
-    value: 'REPEATED_ABSENCES',
-    label: 'Absences répétées',
-    desc: 'Assiduité à surveiller',
-    dot: 'bg-warning-foreground',
-  },
-  {
-    value: 'SUSPENDED',
-    label: 'Suspendu(e)',
-    desc: 'Accès temporairement restreint',
-    dot: 'bg-muted-foreground',
-  },
-];
-
+// Free-text values stored and echoed back verbatim by the API (no enum in
+// the schema) — kept French by design, same carve-out as Enseignants'
+// Civilité/Genre/Type de contrat and Settings' SCHOOL_STATUTES.
 const ENROLLMENT_TYPES = ['Nouvelle inscription', 'Réinscription', 'Transfert'];
 const GENDERS = ['Féminin', 'Masculin'];
+const RELATIONSHIPS = ['Père', 'Mère', 'Tuteur'];
 
 const EMPTY_GUARDIAN: GuardianData = {
   name: '',
@@ -146,7 +130,23 @@ export function StudentFormModal({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
+  const t = useTranslations('Eleves.form');
+  const tStatus = useTranslations('Eleves.status');
+  const tCommon = useTranslations('Common');
   const isEdit = studentId !== null;
+
+  const STEPS = [
+    { id: 'identite', label: t('steps.identite') },
+    { id: 'scolarite', label: t('steps.scolarite') },
+    { id: 'tuteurs', label: t('steps.tuteurs') },
+    { id: 'options', label: t('steps.options') },
+  ];
+
+  const STATUS_DESC: Record<StudentStatus, string> = {
+    ENROLLED: t('statusOptions.ENROLLED.desc'),
+    REPEATED_ABSENCES: t('statusOptions.REPEATED_ABSENCES.desc'),
+    SUSPENDED: t('statusOptions.SUSPENDED.desc'),
+  };
 
   const [student, setStudent] = useState<StudentDetail | null>(null);
   const [classes, setClasses] = useState<ClassOption[]>([]);
@@ -196,16 +196,14 @@ export function StudentFormModal({
     Promise.all(loads).catch((err) => {
       if (!cancelled) {
         setLoadError(
-          err instanceof ApiError
-            ? `Impossible de charger la fiche (${err.code}).`
-            : 'Impossible de charger la fiche.',
+          err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
         );
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [studentId]);
+  }, [studentId, t]);
 
   function patch(p: Partial<FormState>) {
     setForm((f) => (f ? { ...f, ...p } : f));
@@ -219,9 +217,9 @@ export function StudentFormModal({
     if (!studentId) return;
     try {
       await api(`/api/school/students/${studentId}`, { method: 'PATCH', body: { photoUrl: url } });
-      toast('Photo mise à jour.', 'success');
+      toast(t('photoUpdated'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -231,9 +229,9 @@ export function StudentFormModal({
       index === 0 &&
       (form.firstName.trim() === '' || form.lastName.trim() === '' || form.dateOfBirth === '')
     ) {
-      return 'Prénom, nom et date de naissance sont requis.';
+      return t('nameAndDobRequired');
     }
-    if (index === 1 && form.classId === '') return 'La classe est requise.';
+    if (index === 1 && form.classId === '') return t('classRequired');
     return null;
   }
 
@@ -308,15 +306,15 @@ export function StudentFormModal({
 
       if (studentId) {
         await api(`/api/school/students/${studentId}`, { method: 'PATCH', body });
-        toast('Élève mis à jour.', 'success');
+        toast(t('updated'), 'success');
       } else {
         await api('/api/school/students', { method: 'POST', body });
-        toast('Élève ajouté.', 'success');
+        toast(t('created'), 'success');
       }
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       setSubmitting(false);
     }
   }
@@ -325,7 +323,7 @@ export function StudentFormModal({
 
   return (
     <Modal
-      title={isEdit ? 'Modifier le profil' : 'Ajouter un élève'}
+      title={isEdit ? t('editTitle') : t('addTitle')}
       onClose={onClose}
       xwide
       header={
@@ -342,7 +340,7 @@ export function StudentFormModal({
             stepIndex={stepIndex}
             stepCount={STEPS.length}
             submitting={submitting}
-            submitLabel={isEdit ? 'Enregistrer' : "Créer l'élève"}
+            submitLabel={isEdit ? t('submitEdit') : t('submitCreate')}
             formId={FORM_ID}
             onCancel={onClose}
             onPrev={() => goTo(Math.max(0, stepIndex - 1))}
@@ -369,25 +367,25 @@ export function StudentFormModal({
             <FormSectionCard
               id="identite"
               icon={<User size={15} />}
-              title="Informations personnelles"
-              subtitle="Identité et coordonnées de l'élève"
+              title={t('identity.title')}
+              subtitle={t('identity.subtitle')}
             >
               <div className="flex flex-col gap-3.5">
                 <ImageUploader
-                  label="Photo de l'élève"
-                  hint="JPG, PNG ou WebP — max 10 Mo"
+                  label={t('identity.photoLabel')}
+                  hint={t('identity.photoHint')}
                   value={form.photoUrl}
                   onChange={(url) => void handlePhotoChange(url)}
                 />
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <Field
-                    label="Prénom"
+                    label={t('identity.firstName')}
                     required
                     value={form.firstName}
                     onChange={(e) => patch({ firstName: e.target.value })}
                   />
                   <Field
-                    label="Nom de famille"
+                    label={t('identity.lastName')}
                     required
                     value={form.lastName}
                     onChange={(e) => patch({ lastName: e.target.value })}
@@ -395,20 +393,26 @@ export function StudentFormModal({
                 </div>
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <DateField
-                    label="Date de naissance"
+                    label={t('identity.dateOfBirth')}
                     required
                     value={form.dateOfBirth}
                     onChange={(v) => patch({ dateOfBirth: v })}
                   />
                   <Field
-                    label="Lieu de naissance"
+                    label={t('identity.placeOfBirth')}
                     value={form.placeOfBirth}
                     onChange={(e) => patch({ placeOfBirth: e.target.value })}
                   />
                 </div>
                 <div>
-                  <div className="mb-1.5 text-xs font-semibold text-foreground">Genre</div>
-                  <div className="flex flex-wrap gap-4" role="radiogroup" aria-label="Genre">
+                  <div className="mb-1.5 text-xs font-semibold text-foreground">
+                    {t('identity.gender')}
+                  </div>
+                  <div
+                    className="flex flex-wrap gap-4"
+                    role="radiogroup"
+                    aria-label={t('identity.gender')}
+                  >
                     {[...GENDERS, ''].map((g) => (
                       <label
                         key={g || 'none'}
@@ -421,41 +425,41 @@ export function StudentFormModal({
                           onChange={() => patch({ gender: g })}
                           className="h-4 w-4 accent-primary"
                         />
-                        {g || 'Non précisé'}
+                        {g || t('identity.genderUnspecified')}
                       </label>
                     ))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <Field
-                    label="Nationalité"
-                    placeholder="ex: Haïtienne"
+                    label={t('identity.nationality')}
+                    placeholder={t('identity.nationalityPlaceholder')}
                     value={form.nationality}
                     onChange={(e) => patch({ nationality: e.target.value })}
                   />
                   <Field
-                    label="Langue maternelle"
-                    placeholder="ex: Créole haïtien"
+                    label={t('identity.motherTongue')}
+                    placeholder={t('identity.motherTonguePlaceholder')}
                     value={form.motherTongue}
                     onChange={(e) => patch({ motherTongue: e.target.value })}
                   />
                 </div>
                 <Field
-                  label="Adresse"
-                  placeholder="Rue, quartier, ville..."
+                  label={t('identity.address')}
+                  placeholder={t('identity.addressPlaceholder')}
                   value={form.address}
                   onChange={(e) => patch({ address: e.target.value })}
                 />
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <PhoneInput
-                    label="Téléphone (élève)"
+                    label={t('identity.phone')}
                     value={form.phone}
                     onChange={(v) => patch({ phone: v })}
                   />
                   <Field
-                    label="Adresse e-mail"
+                    label={t('identity.email')}
                     type="email"
-                    placeholder="exemple@email.com"
+                    placeholder={t('identity.emailPlaceholder')}
                     value={form.email}
                     onChange={(e) => patch({ email: e.target.value })}
                   />
@@ -469,14 +473,14 @@ export function StudentFormModal({
               <FormSectionCard
                 id="scolarite"
                 icon={<SchoolIcon size={15} />}
-                title="Informations scolaires"
-                subtitle="Classe, inscription et parcours"
+                title={t('schooling.title')}
+                subtitle={t('schooling.subtitle')}
               >
                 <div className="flex flex-col gap-3.5">
                   <div className="flex items-center justify-between rounded-md bg-secondary px-3 py-2">
                     <span className="flex items-center gap-1.5 text-2xs font-semibold text-primary">
                       <Hash size={12} />
-                      {isEdit ? 'Matricule attribué' : 'Matricule auto-généré'}
+                      {isEdit ? t('schooling.assignedNumber') : t('schooling.autoNumber')}
                     </span>
                     <span className="text-caption font-bold text-primary">
                       {student?.studentNumber ?? '#EL-…'}
@@ -484,13 +488,13 @@ export function StudentFormModal({
                   </div>
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <Field
-                      label="Année scolaire"
-                      value={activeYearLabel ?? 'Année active'}
+                      label={t('schooling.academicYear')}
+                      value={activeYearLabel ?? t('schooling.academicYearFallback')}
                       readOnly
                       disabled
                     />
                     <Select
-                      label="Classe"
+                      label={t('schooling.class')}
                       required
                       value={form.classId}
                       onValueChange={(v) => patch({ classId: v })}
@@ -504,40 +508,40 @@ export function StudentFormModal({
                   </div>
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <Select
-                      label="Type d'inscription"
+                      label={t('schooling.enrollmentType')}
                       value={form.enrollmentType}
                       onValueChange={(v) => patch({ enrollmentType: v })}
                     >
                       <SelectItem value="">—</SelectItem>
-                      {ENROLLMENT_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
+                      {ENROLLMENT_TYPES.map((et) => (
+                        <SelectItem key={et} value={et}>
+                          {et}
                         </SelectItem>
                       ))}
                     </Select>
                     <DateField
-                      label="Date d'inscription"
+                      label={t('schooling.enrolledAt')}
                       value={form.enrolledAt}
                       onChange={(v) => patch({ enrolledAt: v })}
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <Field
-                      label="École précédente"
-                      placeholder="Nom de l'école précédente..."
+                      label={t('schooling.previousSchool')}
+                      placeholder={t('schooling.previousSchoolPlaceholder')}
                       value={form.previousSchool}
                       onChange={(e) => patch({ previousSchool: e.target.value })}
                     />
                     <Field
-                      label="Numéro de transfert"
-                      placeholder="Optionnel"
+                      label={t('schooling.transferNumber')}
+                      placeholder={t('schooling.transferNumberPlaceholder')}
                       value={form.transferNumber}
                       onChange={(e) => patch({ transferNumber: e.target.value })}
                     />
                   </div>
                   <label className="flex flex-col gap-1.5 text-sm">
                     <span className="text-xs font-semibold text-foreground">
-                      Observations / Notes internes
+                      {t('schooling.notes')}
                     </span>
                     <textarea
                       value={form.notes}
@@ -553,13 +557,13 @@ export function StudentFormModal({
               <FormSectionCard
                 id="statut"
                 icon={<Activity size={15} />}
-                title="Statut d'inscription"
-                subtitle="État actuel de l'élève dans le système"
+                title={t('statusSection.title')}
+                subtitle={t('statusSection.subtitle')}
               >
                 <div
                   className="grid grid-cols-1 gap-1.5 sm:grid-cols-3"
                   role="radiogroup"
-                  aria-label="Statut d'inscription"
+                  aria-label={t('statusSection.title')}
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <button
@@ -577,9 +581,11 @@ export function StudentFormModal({
                       <span className={`h-2 w-2 shrink-0 rounded-full ${opt.dot}`} />
                       <span>
                         <span className="block text-xs font-semibold text-foreground">
-                          {opt.label}
+                          {studentStatusLabel(opt.value, tStatus)}
                         </span>
-                        <span className="block text-2xs text-muted-foreground">{opt.desc}</span>
+                        <span className="block text-2xs text-muted-foreground">
+                          {STATUS_DESC[opt.value]}
+                        </span>
                       </span>
                     </button>
                   ))}
@@ -592,31 +598,31 @@ export function StudentFormModal({
             <FormSectionCard
               id="tuteurs"
               icon={<Users size={15} />}
-              title="Parents & Tuteurs"
-              subtitle="Contacts responsables de l'élève"
+              title={t('guardians.title')}
+              subtitle={t('guardians.subtitle')}
             >
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3.5">
                   <div className="text-xs font-bold text-muted-foreground uppercase">
-                    Tuteur légal 1
+                    {t('guardians.guardian1')}
                   </div>
-                  <GuardianFields value={guardian1} onChange={setGuardian1} />
+                  <GuardianFields value={guardian1} onChange={setGuardian1} t={t} />
                 </div>
                 {showGuardian2 ? (
                   <div className="flex flex-col gap-3.5 border-t border-border pt-4">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-muted-foreground uppercase">
-                        Tuteur légal 2
+                        {t('guardians.guardian2')}
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowGuardian2(false)}
                         className="text-xs font-semibold text-destructive-foreground"
                       >
-                        Retirer
+                        {t('guardians.remove')}
                       </button>
                     </div>
-                    <GuardianFields value={guardian2} onChange={setGuardian2} />
+                    <GuardianFields value={guardian2} onChange={setGuardian2} t={t} />
                   </div>
                 ) : (
                   <button
@@ -624,7 +630,7 @@ export function StudentFormModal({
                     onClick={() => setShowGuardian2(true)}
                     className="w-fit text-xs font-semibold text-primary"
                   >
-                    + Ajouter un second tuteur
+                    {t('guardians.addSecond')}
                   </button>
                 )}
               </div>
@@ -635,36 +641,36 @@ export function StudentFormModal({
             <FormSectionCard
               id="options"
               icon={<SlidersHorizontal size={15} />}
-              title="Options & Accès"
-              subtitle="Bourse et accès en ligne"
+              title={t('options.title')}
+              subtitle={t('options.subtitle')}
             >
               <div className="flex flex-col divide-y divide-border">
                 <div className="flex items-center justify-between gap-3 py-3 first:pt-0">
                   <div>
                     <div className="text-caption font-medium text-foreground">
-                      Bénéficiaire d'une bourse
+                      {t('options.scholarship')}
                     </div>
                     <div className="text-2xs text-muted-foreground">
-                      Marquer cet élève comme boursier
+                      {t('options.scholarshipDesc')}
                     </div>
                   </div>
                   <Switch
                     checked={form.scholarship}
                     onChange={(checked) => patch({ scholarship: checked })}
-                    label="Bénéficiaire d'une bourse"
+                    label={t('options.scholarship')}
                   />
                 </div>
                 <div className="flex items-center justify-between gap-3 py-3 last:pb-0">
                   <div>
                     <div className="text-caption font-medium text-foreground">
-                      Portail élève & notifications aux parents
+                      {t('options.studentPortal')}
                     </div>
                     <div className="text-2xs text-muted-foreground">
-                      Consultation des notes en ligne et alertes aux contacts renseignés
+                      {t('options.studentPortalDesc')}
                     </div>
                   </div>
                   <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-2xs font-semibold text-muted-foreground">
-                    Bientôt disponible
+                    {t('options.comingSoon')}
                   </span>
                 </div>
               </div>
@@ -682,46 +688,59 @@ export function StudentFormModal({
   );
 }
 
+type GuardianFieldsT = (
+  key:
+    | 'guardians.fullName'
+    | 'guardians.relationship'
+    | 'guardians.phone'
+    | 'guardians.email'
+    | 'guardians.profession',
+) => string;
+
 function GuardianFields({
   value,
   onChange,
+  t,
 }: {
   value: GuardianData;
   onChange: (g: GuardianData) => void;
+  t: GuardianFieldsT;
 }) {
   return (
     <>
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <Field
-          label="Nom complet"
+          label={t('guardians.fullName')}
           value={value.name}
           onChange={(e) => onChange({ ...value, name: e.target.value })}
         />
         <Select
-          label="Lien de parenté"
+          label={t('guardians.relationship')}
           value={value.relationship}
           onValueChange={(v) => onChange({ ...value, relationship: v })}
         >
-          <SelectItem value="Père">Père</SelectItem>
-          <SelectItem value="Mère">Mère</SelectItem>
-          <SelectItem value="Tuteur">Tuteur</SelectItem>
+          {RELATIONSHIPS.map((r) => (
+            <SelectItem key={r} value={r}>
+              {r}
+            </SelectItem>
+          ))}
         </Select>
       </div>
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <PhoneInput
-          label="Téléphone"
+          label={t('guardians.phone')}
           value={value.phone ?? ''}
           onChange={(v) => onChange({ ...value, phone: v })}
         />
         <Field
-          label="Email"
+          label={t('guardians.email')}
           type="email"
           value={value.email ?? ''}
           onChange={(e) => onChange({ ...value, email: e.target.value })}
         />
       </div>
       <Field
-        label="Profession"
+        label={t('guardians.profession')}
         value={value.profession ?? ''}
         onChange={(e) => onChange({ ...value, profession: e.target.value })}
       />

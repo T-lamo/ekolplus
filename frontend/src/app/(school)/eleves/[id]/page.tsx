@@ -15,6 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -23,27 +24,25 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { NotesResultatsTab } from './NotesResultatsTab';
 import { AppreciationsTab } from './AppreciationsTab';
 import { PresencesTab } from './PresencesTab';
 import { BulletinsTab } from './BulletinsTab';
 import { StudentFormModal } from '../StudentFormModal';
+import { studentStatusLabel } from '../status-label';
+import { formatOrdinal } from '../ordinal';
 import type { StudentDetail, StudentResults, StudentStatus } from '../types';
 import type { StudentAttendanceResponse } from '../../pedagogie/presences/types';
 
-const STATUS_LABEL: Record<StudentStatus, string> = {
-  ENROLLED: 'Inscrit(e)',
-  REPEATED_ABSENCES: 'Absences répétées',
-  SUSPENDED: 'Suspendu(e)',
-};
 const STATUS_DOT: Record<StudentStatus, string> = {
   ENROLLED: '#16A34A',
   REPEATED_ABSENCES: '#F59E0B',
   SUSPENDED: '#9CA3AF',
 };
 
-function fmtDate(d: string): string {
-  return new Date(d).toLocaleDateString('fr-FR', {
+function fmtDate(d: string, locale: string): string {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -59,13 +58,7 @@ function ageFrom(dateOfBirth: string): number {
   return age;
 }
 
-const TABS = [
-  { key: 'info', label: 'Informations', icon: UserCheck },
-  { key: 'grades', label: 'Notes & Résultats', icon: BarChart2 },
-  { key: 'attendance', label: 'Présences', icon: CalendarCheck },
-  { key: 'appreciations', label: 'Appréciations', icon: Star },
-  { key: 'bulletins', label: 'Bulletins', icon: FileText },
-] as const;
+const TAB_KEYS = ['info', 'grades', 'attendance', 'appreciations', 'bulletins'] as const;
 
 export default function StudentProfilePage() {
   return (
@@ -75,8 +68,6 @@ export default function StudentProfilePage() {
   );
 }
 
-const TAB_KEYS = TABS.map((t) => t.key);
-
 function StudentProfile() {
   const user = useUser();
   const router = useRouter();
@@ -84,17 +75,30 @@ function StudentProfile() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab');
   const { toast } = useToast();
+  const t = useTranslations('Eleves.profile');
+  const tStatus = useTranslations('Eleves.status');
+  const tOrdinal = useTranslations('Eleves.ordinal');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [student, setStudent] = useState<StudentDetail | null>(null);
   const [results, setResults] = useState<StudentResults | null>(null);
   const [attendance, setAttendance] = useState<StudentAttendanceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<(typeof TABS)[number]['key']>(
+  const [tab, setTab] = useState<(typeof TAB_KEYS)[number]>(
     initialTab && TAB_KEYS.some((k) => k === initialTab)
-      ? (initialTab as (typeof TABS)[number]['key'])
+      ? (initialTab as (typeof TAB_KEYS)[number])
       : 'info',
   );
   const [editing, setEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const TABS = [
+    { key: 'info' as const, label: t('tabs.info'), icon: UserCheck },
+    { key: 'grades' as const, label: t('tabs.grades'), icon: BarChart2 },
+    { key: 'attendance' as const, label: t('tabs.attendance'), icon: CalendarCheck },
+    { key: 'appreciations' as const, label: t('tabs.appreciations'), icon: Star },
+    { key: 'bulletins' as const, label: t('tabs.bulletins'), icon: FileText },
+  ];
 
   useEffect(() => {
     if (!user) return;
@@ -114,12 +118,12 @@ function StudentProfile() {
           return;
         }
         if (err instanceof ApiError && err.status === 404) {
-          setError('Élève introuvable.');
+          setError(t('notFound'));
           return;
         }
-        setError('Impossible de charger le profil.');
+        setError(t('loadError'));
       });
-  }, [user, router, params.id, refreshKey]);
+  }, [user, router, params.id, refreshKey, t]);
 
   if (!user || (student === null && !error)) {
     return (
@@ -173,7 +177,7 @@ function StudentProfile() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux élèves
+          {t('backToList')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -190,7 +194,7 @@ function StudentProfile() {
           className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux élèves
+          {t('backToList')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           {/* Bulk PDF export is desktop paperwork, not a phone action — kept
@@ -199,10 +203,10 @@ function StudentProfile() {
           <Button
             variant="outline"
             className="hidden w-fit sm:inline-flex"
-            onClick={() => toast('Export PDF du dossier — bientôt disponible.', 'info')}
+            onClick={() => toast(t('exportFileSoon'), 'info')}
           >
             <Download size={14} />
-            Exporter le dossier
+            {t('exportFile')}
           </Button>
           {results?.resolvedTermId ? (
             <Link
@@ -210,21 +214,21 @@ function StudentProfile() {
               className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
             >
               <FileText size={14} />
-              Voir le bulletin
+              {t('viewBulletin')}
             </Link>
           ) : (
             <Button
               variant="outline"
               className="w-fit"
-              onClick={() => toast('Aucune période scolaire disponible pour le moment.', 'info')}
+              onClick={() => toast(t('noTermAvailable'), 'info')}
             >
               <FileText size={14} />
-              Voir le bulletin
+              {t('viewBulletin')}
             </Button>
           )}
           <Button className="w-fit" onClick={() => setEditing(true)}>
             <Pencil size={14} />
-            Modifier le profil
+            {t('editProfile')}
           </Button>
         </div>
       </div>
@@ -268,12 +272,13 @@ function StudentProfile() {
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar size={12} />
-                  {fmtDate(student.dateOfBirth)} · {ageFrom(student.dateOfBirth)} ans
+                  {fmtDate(student.dateOfBirth, bcp47)} ·{' '}
+                  {t('ageYears', { age: ageFrom(student.dateOfBirth) })}
                 </span>
                 {student.homeroomTeacher && (
                   <span className="flex items-center gap-1">
                     <UserCheck size={12} />
-                    {student.homeroomTeacher.name} (titulaire)
+                    {student.homeroomTeacher.name} {t('homeroomSuffix')}
                   </span>
                 )}
               </div>
@@ -283,7 +288,7 @@ function StudentProfile() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: STATUS_DOT[student.status] }}
                   />
-                  {STATUS_LABEL[student.status]}
+                  {studentStatusLabel(student.status, tStatus)}
                 </span>
               </div>
             </div>
@@ -293,41 +298,46 @@ function StudentProfile() {
               during the mobile audit), so it becomes a borderless 2×2 grid. */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:items-center sm:gap-6">
             <Stat
-              label="Moyenne générale"
+              label={t('stats.overallAverage')}
               value={results?.overallAverage != null ? `${results.overallAverage.toFixed(1)}` : '—'}
             />
             <div className="hidden h-9 w-px bg-border sm:block" />
             <Stat
-              label="Taux de présence"
+              label={t('stats.attendanceRate')}
               value={attendance?.ratePercent != null ? `${attendance.ratePercent}%` : '—'}
             />
             <div className="hidden h-9 w-px bg-border sm:block" />
             <Stat
-              label="Absences ce trimestre"
+              label={t('stats.absencesThisTerm')}
               value={attendance ? String(attendance.absences) : '—'}
             />
             <div className="hidden h-9 w-px bg-border sm:block" />
-            <Stat label="Rang de classe" value={results?.rank ? `${results.rank}e` : '—'} />
+            <Stat
+              label={t('stats.classRank')}
+              value={results?.rank ? formatOrdinal(results.rank, bcp47, tOrdinal) : '—'}
+            />
           </div>
         </div>
       </Card>
 
       <div role="tablist" className="flex w-fit gap-1 overflow-x-auto rounded-lg bg-card p-1">
-        {TABS.map((t) => {
-          const Icon = t.icon;
+        {TABS.map((tabItem) => {
+          const Icon = tabItem.icon;
           return (
             <button
-              key={t.key}
+              key={tabItem.key}
               type="button"
               role="tab"
-              aria-selected={tab === t.key}
-              onClick={() => setTab(t.key)}
+              aria-selected={tab === tabItem.key}
+              onClick={() => setTab(tabItem.key)}
               className={`flex shrink-0 items-center gap-1.5 rounded-md px-3.5 py-2 text-caption font-medium whitespace-nowrap ${
-                tab === t.key ? 'bg-secondary font-semibold text-primary' : 'text-muted-foreground'
+                tab === tabItem.key
+                  ? 'bg-secondary font-semibold text-primary'
+                  : 'text-muted-foreground'
               }`}
             >
               <Icon size={13} />
-              {t.label}
+              {tabItem.label}
             </button>
           );
         })}
@@ -339,34 +349,41 @@ function StudentProfile() {
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <UserCheck size={14} className="text-primary" />
-                Informations personnelles
+                {t('personalInfo')}
               </div>
               <button onClick={() => setEditing(true)} className="text-xs font-medium text-primary">
-                Modifier
+                {t('edit')}
               </button>
             </div>
-            <InfoRow label="Nom complet" value={`${student.firstName} ${student.lastName}`} />
-            <InfoRow label="Date de naissance" value={fmtDate(student.dateOfBirth)} />
-            <InfoRow label="Lieu de naissance" value={student.placeOfBirth ?? '—'} />
-            <InfoRow label="Genre" value={student.gender ?? '—'} />
-            <InfoRow label="Nationalité" value={student.nationality ?? '—'} />
-            <InfoRow label="Adresse" value={student.address ?? '—'} />
-            <InfoRow label="Date d'inscription" value={fmtDate(student.enrolledAt)} />
-            <InfoRow label="Statut" value={STATUS_LABEL[student.status]} last />
+            <InfoRow
+              label={t('fields.fullName')}
+              value={`${student.firstName} ${student.lastName}`}
+            />
+            <InfoRow label={t('fields.dateOfBirth')} value={fmtDate(student.dateOfBirth, bcp47)} />
+            <InfoRow label={t('fields.placeOfBirth')} value={student.placeOfBirth ?? '—'} />
+            <InfoRow label={t('fields.gender')} value={student.gender ?? '—'} />
+            <InfoRow label={t('fields.nationality')} value={student.nationality ?? '—'} />
+            <InfoRow label={t('fields.address')} value={student.address ?? '—'} />
+            <InfoRow label={t('fields.enrolledAt')} value={fmtDate(student.enrolledAt, bcp47)} />
+            <InfoRow
+              label={t('fields.status')}
+              value={studentStatusLabel(student.status, tStatus)}
+              last
+            />
           </Card>
 
           <Card className="p-5">
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                 <UserCheck size={14} className="text-primary" />
-                Tuteur légal
+                {t('guardian')}
               </div>
               <button onClick={() => setEditing(true)} className="text-xs font-medium text-primary">
-                Modifier
+                {t('edit')}
               </button>
             </div>
             {student.guardians.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucun tuteur renseigné.</p>
+              <p className="text-sm text-muted-foreground">{t('noGuardian')}</p>
             ) : (
               <div className="flex flex-col gap-4">
                 {student.guardians.map((g, i) => (
@@ -378,9 +395,9 @@ function StudentProfile() {
                         <div className="text-xs text-muted-foreground">{g.relationship}</div>
                       </div>
                     </div>
-                    <InfoRow label="Téléphone" value={g.phone ?? '—'} />
-                    <InfoRow label="Email" value={g.email ?? '—'} />
-                    <InfoRow label="Profession" value={g.profession ?? '—'} last />
+                    <InfoRow label={t('fields.phone')} value={g.phone ?? '—'} />
+                    <InfoRow label={t('fields.email')} value={g.email ?? '—'} />
+                    <InfoRow label={t('fields.profession')} value={g.profession ?? '—'} last />
                   </div>
                 ))}
               </div>

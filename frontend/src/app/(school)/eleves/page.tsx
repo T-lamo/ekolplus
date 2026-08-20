@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { CardGrid } from '@/components/school/CardGrid';
@@ -32,6 +33,7 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { ClassOption, StudentListItem, StudentStatus } from './types';
 
 // Code-split: a ~730-line form (validation, many fields) that's only ever
@@ -45,19 +47,14 @@ const StudentFormModal = dynamic(
 
 const PAGE_SIZE = 20;
 
-const STATUS_LABEL: Record<StudentStatus, string> = {
-  ENROLLED: 'Inscrit(e)',
-  REPEATED_ABSENCES: 'Absences',
-  SUSPENDED: 'Suspendu(e)',
-};
 const STATUS_TONE: Record<StudentStatus, 'success' | 'warning' | 'secondary'> = {
   ENROLLED: 'success',
   REPEATED_ABSENCES: 'warning',
   SUSPENDED: 'secondary',
 };
 
-function fmtDate(d: string): string {
-  return new Date(d).toLocaleDateString('fr-FR', {
+function fmtDate(d: string, locale: string): string {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -69,6 +66,11 @@ export default function StudentsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Eleves.list');
+  const tStatus = useTranslations('Eleves.list.status');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [students, setStudents] = useState<StudentListItem[] | null>(null);
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -95,9 +97,9 @@ export default function StudentsPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les élèves.');
+        setError(t('loadError'));
       });
-  }, [user, router, refreshKey]);
+  }, [user, router, refreshKey, t]);
 
   const filtered = useMemo(() => {
     return (students ?? []).filter((s) => {
@@ -116,14 +118,19 @@ export default function StudentsPage() {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function onDelete(s: StudentListItem) {
-    if (!(await confirm({ message: `Supprimer « ${s.firstName} ${s.lastName} » ?`, danger: true })))
+    if (
+      !(await confirm({
+        message: t('deleteConfirm', { name: `${s.firstName} ${s.lastName}` }),
+        danger: true,
+      }))
+    )
       return;
     try {
       await api(`/api/school/students/${s.id}`, { method: 'DELETE' });
       setStudents((prev) => (prev ? prev.filter((x) => x.id !== s.id) : prev));
-      toast('Élève supprimé.', 'success');
+      toast(t('toasts.deleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -133,22 +140,22 @@ export default function StudentsPage() {
       setStudents((prev) =>
         prev ? prev.map((x) => (x.id === s.id ? { ...x, status: 'SUSPENDED' } : x)) : prev,
       );
-      toast('Élève suspendu.', 'success');
+      toast(t('toasts.suspended'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   function onExport() {
     exportToCsv(
       'eleves.csv',
-      ['Élève', 'Numéro', 'Classe', 'Date de naissance', 'Statut'],
+      [t('csv.student'), t('csv.number'), t('csv.class'), t('csv.dateOfBirth'), t('csv.status')],
       filtered.map((s) => [
         `${s.firstName} ${s.lastName}`,
         s.studentNumber,
         s.class?.name ?? '',
-        fmtDate(s.dateOfBirth),
-        STATUS_LABEL[s.status],
+        fmtDate(s.dateOfBirth, bcp47),
+        tStatus(s.status),
       ]),
     );
   }
@@ -160,29 +167,29 @@ export default function StudentsPage() {
   function menuItemsFor(s: StudentListItem) {
     return [
       {
-        label: 'Voir le profil',
+        label: t('menu.viewProfile'),
         icon: <Eye size={14} />,
         onClick: () => router.push(`/eleves/${s.id}`),
       },
-      { label: 'Modifier', icon: <Pencil size={14} />, onClick: () => openEdit(s) },
+      { label: t('menu.edit'), icon: <Pencil size={14} />, onClick: () => openEdit(s) },
       {
-        label: 'Voir le bulletin',
+        label: t('menu.viewBulletin'),
         icon: <FileText size={14} />,
         onClick: () => router.push(`/eleves/${s.id}?tab=bulletins`),
       },
       {
-        label: 'Présences',
+        label: t('menu.attendance'),
         icon: <CalendarCheck size={14} />,
         onClick: () => router.push(`/eleves/${s.id}?tab=attendance`),
       },
       {
-        label: 'Suspendre',
+        label: t('menu.suspend'),
         icon: <UserX size={14} />,
         onClick: () => onSuspend(s),
         divider: true,
       },
       {
-        label: 'Supprimer',
+        label: t('menu.delete'),
         icon: <Trash2 size={14} />,
         onClick: () => onDelete(s),
         tone: 'danger' as const,
@@ -202,10 +209,12 @@ export default function StudentsPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Élèves</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
           {students ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {students.length} élèves inscrits
+              {t(students.length > 1 ? 'countEnrolled.other' : 'countEnrolled.one', {
+                count: students.length,
+              })}
             </p>
           ) : (
             <Skeleton className="mt-1.5 h-3 w-28" />
@@ -215,18 +224,18 @@ export default function StudentsPage() {
           <Button
             variant="outline"
             className="w-fit"
-            onClick={() => toast('Import CSV — bientôt disponible.', 'info')}
+            onClick={() => toast(t('importSoon'), 'info')}
           >
             <Upload size={14} />
-            Importer
+            {t('import')}
           </Button>
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => setEditing('new')}>
             <UserPlus size={14} />
-            Ajouter un élève
+            {t('addStudent')}
           </Button>
         </div>
       </div>
@@ -252,11 +261,11 @@ export default function StudentsPage() {
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un élève..."
+              placeholder={t('searchPlaceholder')}
               className="max-w-[300px]"
             />
             <FilterSelect value={classFilter} onValueChange={setClassFilter}>
-              <SelectItem value="">Toutes les classes</SelectItem>
+              <SelectItem value="">{t('allClasses')}</SelectItem>
               {classes.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
@@ -264,12 +273,16 @@ export default function StudentsPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={status} onValueChange={(v) => setStatus(v as '' | StudentStatus)}>
-              <SelectItem value="">Tous les statuts</SelectItem>
-              <SelectItem value="ENROLLED">Inscrit(e)</SelectItem>
-              <SelectItem value="REPEATED_ABSENCES">Absences</SelectItem>
-              <SelectItem value="SUSPENDED">Suspendu(e)</SelectItem>
+              <SelectItem value="">{t('allStatuses')}</SelectItem>
+              <SelectItem value="ENROLLED">{tStatus('ENROLLED')}</SelectItem>
+              <SelectItem value="REPEATED_ABSENCES">{tStatus('REPEATED_ABSENCES')}</SelectItem>
+              <SelectItem value="SUSPENDED">{tStatus('SUSPENDED')}</SelectItem>
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{filtered.length} résultats</span>
+            <span className="text-sm text-muted-foreground">
+              {t(filtered.length > 1 ? 'resultsCount.other' : 'resultsCount.one', {
+                count: filtered.length,
+              })}
+            </span>
             {/* Table view needs real width to be usable — mobile always
                 gets the card grid instead, so the toggle (and the way to
                 reach the table) only shows from `md` up. */}
@@ -281,7 +294,7 @@ export default function StudentsPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="p-5 text-sm text-muted-foreground">
-                {students.length === 0 ? 'Aucun élève — ajoute le premier.' : 'Aucun résultat.'}
+                {students.length === 0 ? t('emptyNone') : t('emptyFiltered')}
               </p>
             </Card>
           ) : view === 'grid' ? (
@@ -298,15 +311,15 @@ export default function StudentsPage() {
                     s.class ? (
                       <Badge>{s.class.name}</Badge>
                     ) : (
-                      <span className="text-muted-foreground italic">Sans classe</span>
+                      <span className="text-muted-foreground italic">{t('noClass')}</span>
                     )
                   }
-                  metaRight={<Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>}
+                  metaRight={<Badge tone={STATUS_TONE[s.status]}>{tStatus(s.status)}</Badge>}
                   footerLeft={
                     <span className="text-muted-foreground">
-                      Naissance{' '}
+                      {t('birthPrefix')}{' '}
                       <span className="font-semibold text-foreground">
-                        {fmtDate(s.dateOfBirth)}
+                        {fmtDate(s.dateOfBirth, bcp47)}
                       </span>
                     </span>
                   }
@@ -319,12 +332,12 @@ export default function StudentsPage() {
                 <table className="w-full min-w-[820px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>Élève</Th>
-                      <Th>Classe</Th>
-                      <Th>Date de naissance</Th>
-                      <Th>Statut</Th>
-                      <Th>Moyenne</Th>
-                      <Th>Présence</Th>
+                      <Th>{t('table.student')}</Th>
+                      <Th>{t('table.class')}</Th>
+                      <Th>{t('table.dateOfBirth')}</Th>
+                      <Th>{t('table.status')}</Th>
+                      <Th>{t('table.average')}</Th>
+                      <Th>{t('table.attendance')}</Th>
                       <Th className="w-[70px]" />
                     </tr>
                   </thead>
@@ -356,10 +369,10 @@ export default function StudentsPage() {
                           )}
                         </td>
                         <td className="px-3.5 py-2.5 text-muted-foreground">
-                          {fmtDate(s.dateOfBirth)}
+                          {fmtDate(s.dateOfBirth, bcp47)}
                         </td>
                         <td className="px-3.5 py-2.5">
-                          <Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>
+                          <Badge tone={STATUS_TONE[s.status]}>{tStatus(s.status)}</Badge>
                         </td>
                         <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                         <td className="px-3.5 py-2.5 text-muted-foreground">—</td>

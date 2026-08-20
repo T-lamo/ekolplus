@@ -2,21 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { CalendarCheck, CalendarX, Clock, ShieldCheck } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonTable } from '@/components/ui/Skeleton';
+import { LOCALE_BCP47 } from '@/lib/locales';
+import { statusLabel } from '../../pedagogie/presences/status-label';
 import type { AttendanceStatus, StudentAttendanceResponse } from '../../pedagogie/presences/types';
 
-const STATUS_META: Record<AttendanceStatus, { label: string; bg: string; fg: string }> = {
-  PRESENT: { label: 'Présent', bg: 'bg-success', fg: 'text-success-foreground' },
-  ABSENT: { label: 'Absent', bg: 'bg-destructive', fg: 'text-destructive-foreground' },
-  LATE: { label: 'Retard', bg: 'bg-warning', fg: 'text-warning-foreground' },
-  EXCUSED: { label: 'Justifié', bg: 'bg-info', fg: 'text-info-foreground' },
+const STATUS_STYLE: Record<AttendanceStatus, { bg: string; fg: string }> = {
+  PRESENT: { bg: 'bg-success', fg: 'text-success-foreground' },
+  ABSENT: { bg: 'bg-destructive', fg: 'text-destructive-foreground' },
+  LATE: { bg: 'bg-warning', fg: 'text-warning-foreground' },
+  EXCUSED: { bg: 'bg-info', fg: 'text-info-foreground' },
 };
 
-function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
+function fmtDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -24,6 +27,13 @@ function fmtDate(iso: string): string {
 }
 
 export function PresencesTab({ studentId }: { studentId: string }) {
+  const t = useTranslations('Eleves.attendanceTab');
+  const tFilterBy = useTranslations('Eleves');
+  const tPresences = useTranslations('Presences.summary');
+  const tDistribution = useTranslations('Presences.stats.distribution');
+  const tStatus = useTranslations('Presences.status');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
   const [data, setData] = useState<StudentAttendanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,11 +82,11 @@ export function PresencesTab({ studentId }: { studentId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
-        <span className="text-xs font-semibold text-muted-foreground">Filtrer par :</span>
+        <span className="text-xs font-semibold text-muted-foreground">{tFilterBy('filterBy')}</span>
         <FilterSelect value={termId} onValueChange={setTermId}>
-          {data.terms.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.label}
+          {data.terms.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.label}
             </SelectItem>
           ))}
         </FilterSelect>
@@ -86,25 +96,25 @@ export function PresencesTab({ studentId }: { studentId: string }) {
         <AttendanceStat
           icon={CalendarCheck}
           tone="success"
-          label="Taux de présence"
+          label={tPresences('attendanceRate')}
           value={data.ratePercent != null ? `${data.ratePercent}%` : '—'}
         />
         <AttendanceStat
           icon={CalendarX}
           tone="destructive"
-          label="Absences"
+          label={tDistribution('absent')}
           value={String(data.absences)}
         />
         <AttendanceStat
           icon={Clock}
           tone="warning"
-          label="Retards"
+          label={tDistribution('late')}
           value={String(data.summary.late)}
         />
         <AttendanceStat
           icon={ShieldCheck}
           tone="blue"
-          label="Justifiées"
+          label={tDistribution('excused')}
           value={String(data.summary.excused)}
         />
       </div>
@@ -112,41 +122,39 @@ export function PresencesTab({ studentId }: { studentId: string }) {
       <Card className="gap-3 p-4.5">
         <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
           <CalendarCheck size={14} className="text-primary" />
-          Journal de présence
+          {t('journal')}
         </div>
         {sortedDays.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            Aucune présence enregistrée pour cette période.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{t('empty')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border">
                   <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                    Date
+                    {t('table.date')}
                   </th>
                   <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                    Statut
+                    {t('table.status')}
                   </th>
                   <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                    Justification
+                    {t('table.justification')}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {sortedDays.map((d) => {
-                  const meta = STATUS_META[d.status];
+                  const style = STATUS_STYLE[d.status];
                   return (
                     <tr key={d.date} className="border-b border-border last:border-b-0">
                       <td className="px-2 py-2.5 text-caption font-medium text-foreground capitalize">
-                        {fmtDate(d.date)}
+                        {fmtDate(d.date, bcp47)}
                       </td>
                       <td className="px-2 py-2.5">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-2xs font-bold ${meta.bg} ${meta.fg}`}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-2xs font-bold ${style.bg} ${style.fg}`}
                         >
-                          {meta.label}
+                          {statusLabel(d.status, tStatus)}
                         </span>
                       </td>
                       <td className="px-2 py-2.5 text-xs text-muted-foreground">

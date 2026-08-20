@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Star, BookOpen, Pencil } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonTable } from '@/components/ui/Skeleton';
-import { MENTION_LABEL, type Mention, type StudentAppreciationData } from '../types';
+import { LOCALE_BCP47 } from '@/lib/locales';
+import { mentionLabel } from '../mention-label';
+import type { Mention, StudentAppreciationData } from '../types';
 
 function mentionClass(m: Mention | null): string {
   switch (m) {
@@ -31,9 +34,9 @@ function fmt(n: number | null): string {
   return n == null ? '—' : n.toFixed(1);
 }
 
-function fmtDate(iso: string | undefined): string {
+function fmtDate(iso: string | undefined, locale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -41,6 +44,11 @@ function fmtDate(iso: string | undefined): string {
 }
 
 export function AppreciationsTab({ studentId }: { studentId: string }) {
+  const t = useTranslations('Eleves.appreciations');
+  const tFilterBy = useTranslations('Eleves');
+  const tMention = useTranslations('Eleves.mention');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
   const [data, setData] = useState<StudentAppreciationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,11 +97,11 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
-        <span className="text-xs font-semibold text-muted-foreground">Filtrer par :</span>
+        <span className="text-xs font-semibold text-muted-foreground">{tFilterBy('filterBy')}</span>
         <FilterSelect value={termId} onValueChange={setTermId}>
-          {data.terms.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.label}
+          {data.terms.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.label}
             </SelectItem>
           ))}
         </FilterSelect>
@@ -102,18 +110,16 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
           className="ml-auto flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-caption font-semibold text-primary-foreground"
         >
           <Pencil size={13} />
-          Modifier l&apos;appréciation
+          {t('editLink')}
         </Link>
       </Card>
 
       {!hasContent ? (
         <Card className="items-center gap-2 p-10 text-center">
           <Star size={28} className="text-muted-foreground" />
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Aucune appréciation saisie pour cette période.
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('empty')}</p>
           <Link href={editHref} className="text-xs font-semibold text-primary">
-            Rédiger une appréciation →
+            {t('writeLink')}
           </Link>
         </Card>
       ) : (
@@ -121,7 +127,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
           <Card className="gap-3 p-4.5">
             <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <Star size={14} className="text-primary" />
-              Appréciation générale
+              {t('general.title')}
             </div>
             {data.general ? (
               <>
@@ -130,16 +136,20 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span>
-                    Rédigé par :{' '}
+                    {t('general.writtenBy')}{' '}
                     <strong className="text-foreground">{data.general.authorName ?? '—'}</strong>
                   </span>
                   <span className="text-border">·</span>
-                  <span>Saisie le {fmtDate(data.general.createdAt)}</span>
+                  <span>
+                    {t('general.enteredOn', { date: fmtDate(data.general.createdAt, bcp47) })}
+                  </span>
                   <span className="text-border">·</span>
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold ${data.general.status === 'PUBLISHED' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground'}`}
                   >
-                    {data.general.status === 'PUBLISHED' ? 'Saisie' : 'Brouillon'}
+                    {data.general.status === 'PUBLISHED'
+                      ? t('general.published')
+                      : t('general.draft')}
                   </span>
                   {data.general.mention && (
                     <>
@@ -147,45 +157,43 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                       >
-                        {MENTION_LABEL[data.general.mention]}
+                        {mentionLabel(data.general.mention, tMention)}
                       </span>
                     </>
                   )}
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Aucune appréciation générale saisie pour cet élève.
-              </p>
+              <p className="text-sm text-muted-foreground italic">{t('general.empty')}</p>
             )}
           </Card>
 
           <Card className="gap-3 p-4.5">
             <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
               <BookOpen size={14} className="text-primary" />
-              Appréciations par matière
+              {t('bySubject.title')}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Matière
+                      {t('bySubject.subject')}
                     </th>
                     <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
-                      Coeff.
+                      {t('bySubject.coefficient')}
                     </th>
                     <th className="px-2 py-2 text-center text-2xs font-semibold text-muted-foreground uppercase">
-                      Moy.
+                      {t('bySubject.average')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Mention
+                      {t('bySubject.mention')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Appréciation
+                      {t('bySubject.appreciation')}
                     </th>
                     <th className="px-2 py-2 text-left text-2xs font-semibold text-muted-foreground uppercase">
-                      Enseignant
+                      {t('bySubject.teacher')}
                     </th>
                   </tr>
                 </thead>
@@ -206,7 +214,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                           <span
                             className={`rounded-full px-2 py-0.5 text-2xs font-bold ${mentionClass(s.mention)}`}
                           >
-                            {MENTION_LABEL[s.mention]}
+                            {mentionLabel(s.mention, tMention)}
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
@@ -227,7 +235,7 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
               <span className="text-caption font-medium text-muted-foreground">
-                Moyenne générale
+                {t('overallAverage')}
               </span>
               <span className="text-xl font-extrabold text-foreground">
                 {fmt(data.overallAverage)} / 20
@@ -236,11 +244,11 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${mentionClass(data.general.mention)}`}
                 >
-                  {MENTION_LABEL[data.general.mention]}
+                  {mentionLabel(data.general.mention, tMention)}
                 </span>
               )}
               <span className="text-xs text-muted-foreground">
-                — Rang : {data.rank ?? '—'} / {data.rankedCount}
+                {t('rank', { rank: data.rank ?? '—', rankedCount: data.rankedCount })}
               </span>
             </div>
           </Card>

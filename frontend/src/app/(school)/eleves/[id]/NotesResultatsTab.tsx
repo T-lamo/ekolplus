@@ -12,6 +12,7 @@ import {
   Download,
   ListChecks,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { ASIDE_GRID } from '@/lib/layout';
 import { Card } from '@/components/ui/Card';
@@ -19,6 +20,8 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
+import { LOCALE_BCP47 } from '@/lib/locales';
+import { formatOrdinal } from '../ordinal';
 import { GoalModal } from './GoalModal';
 import type { GoalRow, RankingRow, StudentResults } from '../types';
 
@@ -76,6 +79,11 @@ export function NotesResultatsTab({
   studentName: string;
   initial: StudentResults;
 }) {
+  const t = useTranslations('Eleves.notesResultats');
+  const tFilterBy = useTranslations('Eleves');
+  const tOrdinal = useTranslations('Eleves.ordinal');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [yearId, setYearId] = useState(initial.resolvedAcademicYearId ?? '');
   const [termSel, setTermSel] = useState(initial.resolvedTermId ?? 'all');
   const [data, setData] = useState(initial);
@@ -121,7 +129,13 @@ export function NotesResultatsTab({
   function exportCsv() {
     exportToCsv(
       `notes-${studentName.replace(/\s+/g, '-').toLowerCase()}.csv`,
-      ['Matière', 'Coefficient', 'Moy. matière', 'Moy. classe', 'Appréciation'],
+      [
+        t('csv.subject'),
+        t('csv.coefficient'),
+        t('csv.subjectAverage'),
+        t('csv.classAverage'),
+        t('csv.appreciation'),
+      ],
       data.subjects.map((s) => [
         s.subjectName,
         s.coefficient ?? '',
@@ -136,9 +150,7 @@ export function NotesResultatsTab({
     return (
       <Card className="items-center gap-2 p-10 text-center">
         <BarChart2 size={28} className="text-muted-foreground" />
-        <p className="max-w-sm text-sm text-muted-foreground">
-          {"Élève non inscrit pour l'année scolaire sélectionnée."}
-        </p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t('notEnrolled')}</p>
       </Card>
     );
   }
@@ -156,8 +168,8 @@ export function NotesResultatsTab({
   const rankingDisplay = buildRankingDisplay(data.ranking);
   const currentTermLabel =
     data.termMode === 'ALL'
-      ? 'Tous les trimestres'
-      : (data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? '—');
+      ? t('allTerms')
+      : (data.terms.find((term) => term.id === data.resolvedTermId)?.label ?? '—');
   const currentYearLabel =
     data.years.find((y) => y.id === data.resolvedAcademicYearId)?.label ?? '—';
 
@@ -165,37 +177,38 @@ export function NotesResultatsTab({
     <div className="flex flex-col gap-4">
       {/* Filter bar */}
       <Card className="flex-row flex-wrap items-center gap-3 p-3.5">
-        <span className="text-xs font-semibold text-muted-foreground">Filtrer par :</span>
+        <span className="text-xs font-semibold text-muted-foreground">{tFilterBy('filterBy')}</span>
         <FilterSelect value={yearId} onValueChange={onYearChange}>
           {data.years.map((y) => (
             <SelectItem key={y.id} value={y.id}>
-              Année {y.label}
+              {t('yearItem', { label: y.label })}
             </SelectItem>
           ))}
         </FilterSelect>
         <FilterSelect value={termSel} onValueChange={setTermSel}>
-          {data.terms.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.label}
+          {data.terms.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.label}
             </SelectItem>
           ))}
-          <SelectItem value="all">Tous les trimestres</SelectItem>
+          <SelectItem value="all">{t('allTerms')}</SelectItem>
         </FilterSelect>
         <span className="ml-auto text-xs text-muted-foreground">
-          Affichage :{' '}
+          {t('displayLabel')}{' '}
           <strong className="text-foreground">
             {currentTermLabel} — {currentYearLabel}
           </strong>{' '}
-          · {data.subjects.length} matière{data.subjects.length > 1 ? 's' : ''}
+          ·{' '}
+          {t(data.subjects.length > 1 ? 'subjectCount.other' : 'subjectCount.one', {
+            count: data.subjects.length,
+          })}
         </span>
       </Card>
 
       {!hasAnyGrade ? (
         <Card className="items-center gap-2 p-10 text-center">
           <BarChart2 size={28} className="text-muted-foreground" />
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Aucune note enregistrée pour cette période.
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('noGrades')}</p>
         </Card>
       ) : (
         <>
@@ -204,28 +217,31 @@ export function NotesResultatsTab({
             <SummaryCard
               icon={BarChart2}
               tone="warning"
-              label="Moyenne générale"
+              label={t('summary.overallAverage')}
               value={fmt(data.overallAverage)}
-              sub={`/ 20 · ${currentTermLabel}`}
+              sub={t('summary.overallAverageSub', { term: currentTermLabel })}
             />
             <SummaryCard
               icon={Trophy}
               tone="secondary"
-              label="Rang dans la classe"
-              value={data.rank ? `${data.rank}e` : '—'}
-              sub={`sur ${data.rankedCount} élève${data.rankedCount > 1 ? 's' : ''}`}
+              label={t('summary.classRank')}
+              value={data.rank ? formatOrdinal(data.rank, bcp47, tOrdinal) : '—'}
+              sub={t(
+                data.rankedCount > 1 ? 'summary.classRankSub.other' : 'summary.classRankSub.one',
+                { count: data.rankedCount },
+              )}
             />
             <SummaryCard
               icon={TrendingUp}
               tone="success"
-              label="Meilleure matière"
+              label={t('summary.bestSubject')}
               value={data.bestSubject ? fmt(data.bestSubject.average) : '—'}
               sub={data.bestSubject?.name ?? '—'}
             />
             <SummaryCard
               icon={TrendingDown}
               tone="destructive"
-              label="Matière difficile"
+              label={t('summary.hardestSubject')}
               value={data.worstSubject ? fmt(data.worstSubject.average) : '—'}
               sub={data.worstSubject?.name ?? '—'}
             />
@@ -238,7 +254,7 @@ export function NotesResultatsTab({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                     <ListChecks size={14} className="text-primary" />
-                    Notes détaillées par matière
+                    {t('detailedGrades')}
                   </div>
                   <button
                     type="button"
@@ -246,7 +262,7 @@ export function NotesResultatsTab({
                     className="flex items-center gap-1 text-xs font-medium text-primary"
                   >
                     <Download size={12} />
-                    Exporter
+                    {t('export')}
                   </button>
                 </div>
                 <div className="overflow-x-auto">
@@ -254,30 +270,30 @@ export function NotesResultatsTab({
                     <thead>
                       <tr>
                         <th className="border-b border-border py-2 pr-3 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Matière
+                          {t('table.subject')}
                         </th>
                         <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Coeff.
+                          {t('table.coefficient')}
                         </th>
                         {Array.from({ length: maxEvalCount }, (_, i) => (
                           <th
                             key={i}
                             className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase"
                           >
-                            Éval. {i + 1}
+                            {t('table.evaluation', { index: i + 1 })}
                           </th>
                         ))}
                         <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Moy. matière
+                          {t('table.subjectAverage')}
                         </th>
                         <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Moy. classe
+                          {t('table.classAverage')}
                         </th>
                         <th className="border-b border-border px-3 py-2 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Tendance
+                          {t('table.trend')}
                         </th>
                         <th className="border-b border-border py-2 pl-3 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          Appréciation
+                          {t('table.appreciation')}
                         </th>
                       </tr>
                     </thead>
@@ -340,11 +356,11 @@ export function NotesResultatsTab({
                 </div>
                 <div className="mt-1 flex items-center justify-between border-t-2 border-border pt-3">
                   <span className="text-caption font-bold text-foreground">
-                    Moyenne générale pondérée
+                    {t('weightedAverage')}
                   </span>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground">
-                      Moy. de classe : {fmt(data.classOverallAverage)}
+                      {t('classAverageLabel', { value: fmt(data.classOverallAverage) })}
                     </span>
                     <span
                       className={`inline-flex min-w-[70px] items-center justify-center rounded-sm px-4 py-1 text-[15px] font-bold ${CHIP_CLASS[chipTone(data.overallAverage)]}`}
@@ -357,7 +373,7 @@ export function NotesResultatsTab({
 
               <Card className="gap-3.5 p-4.5">
                 <div className="text-caption font-semibold text-foreground">
-                  Évolution des moyennes par matière
+                  {t('trendEvolution')}
                 </div>
                 <div className="flex flex-col gap-2.5">
                   {data.subjects.map((s) => (
@@ -386,10 +402,10 @@ export function NotesResultatsTab({
                   ))}
                 </div>
                 <div className="mt-1 flex items-center gap-4 border-t border-border pt-3 text-2xs text-muted-foreground">
-                  <Legend color="#ef4444" label="Insuffisant (<8)" />
-                  <Legend color="var(--color-warning-foreground)" label="Passable (8–12)" />
-                  <Legend color="var(--color-success-foreground)" label="Bien (12+)" />
-                  <span className="ml-auto">Max : 20 pts</span>
+                  <Legend color="#ef4444" label={t('legend.insufficient')} />
+                  <Legend color="var(--color-warning-foreground)" label={t('legend.average')} />
+                  <Legend color="var(--color-success-foreground)" label={t('legend.good')} />
+                  <span className="ml-auto">{t('legend.max')}</span>
                 </div>
               </Card>
             </div>
@@ -400,14 +416,16 @@ export function NotesResultatsTab({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                     <Trophy size={14} className="text-primary" />
-                    Classement — {data.className}
+                    {t('ranking', { className: data.className ?? '—' })}
                   </div>
                   <span className="rounded-full bg-secondary px-2.5 py-1 text-2xs font-semibold text-secondary-foreground">
-                    {data.rank ? `${data.rank}e / ${data.rankedCount}` : '—'}
+                    {data.rank
+                      ? `${formatOrdinal(data.rank, bcp47, tOrdinal)} / ${data.rankedCount}`
+                      : '—'}
                   </span>
                 </div>
                 {rankingDisplay.length === 0 ? (
-                  <p className="py-2 text-sm text-muted-foreground">Aucun classement disponible.</p>
+                  <p className="py-2 text-sm text-muted-foreground">{t('noRanking')}</p>
                 ) : (
                   rankingDisplay.map((row) =>
                     'gap' in row ? (
@@ -435,7 +453,9 @@ export function NotesResultatsTab({
                             {row.name}
                           </div>
                           {row.isSelf && (
-                            <div className="text-2xs text-muted-foreground">Vous consultez</div>
+                            <div className="text-2xs text-muted-foreground">
+                              {t('youAreViewing')}
+                            </div>
                           )}
                         </div>
                         <span
@@ -450,19 +470,19 @@ export function NotesResultatsTab({
                 {data.ranking.length > 0 && (
                   <div className="mt-1 flex flex-col gap-1 border-t border-border pt-2.5 text-xs text-muted-foreground">
                     <div className="flex justify-between">
-                      <span>Moy. de classe</span>
+                      <span>{t('classAverageShort')}</span>
                       <strong className="text-foreground">
                         {fmt(data.classOverallAverage)} / 20
                       </strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>Moy. max</span>
+                      <span>{t('classMax')}</span>
                       <strong className="text-success-foreground">
                         {fmt(data.ranking[0]?.average ?? null)} / 20
                       </strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>Moy. min</span>
+                      <span>{t('classMin')}</span>
                       <strong className="text-destructive-foreground">
                         {fmt(data.ranking[data.ranking.length - 1]?.average ?? null)} / 20
                       </strong>
@@ -479,12 +499,13 @@ export function NotesResultatsTab({
                   />
                   <div>
                     <div className="mb-1 text-caption font-bold text-destructive-foreground">
-                      Alerte pédagogique
+                      {t('alert.title')}
                     </div>
                     <div className="text-xs leading-relaxed text-destructive-foreground">
-                      {data.alertSubjects.length} matière{data.alertSubjects.length > 1 ? 's' : ''}{' '}
-                      en dessous de la moyenne (8/20). Suivi renforcé recommandé pour{' '}
-                      {data.alertSubjects.map((a) => a.name).join(', ')}.
+                      {t(data.alertSubjects.length > 1 ? 'alert.body.other' : 'alert.body.one', {
+                        count: data.alertSubjects.length,
+                        names: data.alertSubjects.map((a) => a.name).join(', '),
+                      })}
                     </div>
                   </div>
                 </Card>
@@ -495,18 +516,18 @@ export function NotesResultatsTab({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
                       <Target size={14} className="text-primary" />
-                      Objectifs — {currentTermLabel}
+                      {t('goals', { term: currentTermLabel })}
                     </div>
                     <button
                       type="button"
                       onClick={() => setGoalModal(true)}
                       className="text-xs font-medium text-primary"
                     >
-                      Définir
+                      {t('defineGoal')}
                     </button>
                   </div>
                   {!data.goals || data.goals.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Aucun objectif défini.</p>
+                    <p className="text-sm text-muted-foreground">{t('noGoals')}</p>
                   ) : (
                     data.goals.map((g) => (
                       <div key={g.id} className="flex flex-col gap-1.5">
@@ -515,7 +536,9 @@ export function NotesResultatsTab({
                             {g.subjectName}
                           </span>
                           <div className="flex items-center gap-1.5 text-xs">
-                            <span className="text-muted-foreground">Actuel : {fmt(g.current)}</span>
+                            <span className="text-muted-foreground">
+                              {t('current', { value: fmt(g.current) })}
+                            </span>
                             <span className="font-bold text-primary">
                               → {g.targetScore.toFixed(1)}
                             </span>

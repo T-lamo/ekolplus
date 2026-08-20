@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Download, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -21,6 +22,7 @@ function fmt(n: number | null): string {
 }
 
 export function BulletinsTab({ studentId }: { studentId: string }) {
+  const t = useTranslations('Eleves.bulletins');
   const [rows, setRows] = useState<TermBulletinSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,11 +32,11 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
       .then((res) => {
         if (!cancelled) setRows([...res.terms].sort((a, b) => a.order - b.order));
       })
-      .catch(() => !cancelled && setError('Impossible de charger les bulletins.'));
+      .catch(() => !cancelled && setError(t('loadError')));
     return () => {
       cancelled = true;
     };
-  }, [studentId]);
+  }, [studentId, t]);
 
   if (error) {
     return (
@@ -65,10 +67,7 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
     return (
       <Card className="items-center gap-2 p-10 text-center">
         <FileText size={28} className="text-muted-foreground" />
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Aucune période scolaire configurée — les bulletins apparaîtront une fois l&apos;année
-          scolaire mise en place.
-        </p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t('empty')}</p>
       </Card>
     );
   }
@@ -92,11 +91,15 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {generated ? 'Généré' : 'En attente'}
+                  {generated ? t('generated') : t('pending')}
                 </span>
                 {generated && (
                   <span>
-                    Moyenne {fmt(r.overallAverage)}/20 · Rang {r.rank ?? '—'}/{r.rankedCount}
+                    {t('summary', {
+                      average: fmt(r.overallAverage),
+                      rank: r.rank ?? '—',
+                      rankedCount: r.rankedCount,
+                    })}
                   </span>
                 )}
               </div>
@@ -107,7 +110,7 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
                 className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-caption font-semibold text-foreground"
               >
                 <Eye size={13} />
-                Voir
+                {t('view')}
               </Link>
               <a
                 href={`/api/school/students/${studentId}/bulletin/pdf?termId=${r.termId}`}

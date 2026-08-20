@@ -1,0 +1,129 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Prezans",
+  "subtitle": "Swivi absans ak reta",
+  "yearSuffix": " — Ane eskolè {year}",
+  "export": "Ekspòte",
+  "loadError": "Nou pa ka chaje prezans yo.",
+  "emptyClasses": "Pa gen klas konfigire — kreye yon klas dabò nan « Klas ».",
+  "status": {
+    "PRESENT": "Prezan",
+    "ABSENT": "Absan",
+    "LATE": "An reta",
+    "EXCUSED": "Jistifye"
+  },
+  "statusFilterExcused": "Absans jistifye",
+  "notRecorded": "Pa ranseye",
+  "summary": {
+    "totalStudents": "Total elèv",
+    "presentToday": "Prezan jodi a",
+    "outOfStudents": "sou {count} elèv",
+    "absentToday": "Absan jodi a",
+    "unjustified": {
+      "one": "{count} ki pa jistifye",
+      "other": "{count} ki pa jistifye"
+    },
+    "lateThisMonth": "Reta mwa sa a",
+    "vsLastMonth": "{delta} konpare mwa pase",
+    "attendanceRate": "To prezans",
+    "thisQuarter": "trimès sa a"
+  },
+  "filters": {
+    "searchPlaceholder": "Chèche yon elèv...",
+    "thisMonth": "Mwa sa a",
+    "lastMonth": "Mwa pase",
+    "twoMonthsAgo": "Sa gen 2 mwa",
+    "thisWeek": "Semenn sa a",
+    "lastWeek": "Semenn pase",
+    "twoWeeksAgo": "Sa gen 2 semenn",
+    "allStatuses": "Tout estati yo",
+    "studentsCount": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    }
+  },
+  "tabs": {
+    "weekly": "Vi semenèl",
+    "monthly": "Vi mansyèl",
+    "stats": "Estatistik",
+    "alerts": "Alèt"
+  },
+  "table": {
+    "student": "Elèv",
+    "rate": "To",
+    "absences": "Absans",
+    "noStudentsInClass": "Pa gen elèv nan klas sa a.",
+    "noResults": "Pa gen rezilta.",
+    "paginationSummary": "N ap montre {from} rive {to} sou {total} elèv — To mwayèn prezans : {rate}",
+    "dayFuture": "Jou k ap vini — pa ka modifye",
+    "dayClickToChange": "{status} — klike pou chanje"
+  },
+  "actions": {
+    "viewDetail": "Wè detay",
+    "editAttendance": "Modifye prezans",
+    "justifyAbsence": "Jistifye absans",
+    "deleteEntry": "Efase antre a"
+  },
+  "deleteConfirm": {
+    "message": "Efase prezans « {name} » pou jou sa a ?",
+    "confirmLabel": "Efase"
+  },
+  "toasts": {
+    "entryDeleted": "Antre efase.",
+    "attendanceUpdated": "Prezans mete ajou."
+  },
+  "csv": {
+    "student": "Elèv",
+    "number": "Nimewo",
+    "rate": "To",
+    "absences": "Absans"
+  },
+  "offline": {
+    "label": "Prezans — {name} ({day})",
+    "labelFallback": "Prezans"
+  },
+  "stats": {
+    "distribution": {
+      "present": "Prezans",
+      "absent": "Absans",
+      "late": "Reta",
+      "excused": "Jistifye"
+    },
+    "percentOfRecorded": "{pct}% prezans ranseye",
+    "noData": "Pa gen done",
+    "weeklyRateTitle": "To prezans pa semenn",
+    "thisQuarter": "pou trimès la",
+    "chartAriaLabel": "To prezans pa semenn pou trimès la"
+  },
+  "alerts": {
+    "emptyState": "Pa gen elèv ki depase sèy alèt yo aktyèlman (to pi ba pase {rate}% oswa {absences}+ absans trimès sa a).",
+    "studentsToWatch": {
+      "one": "{count} elèv pou siveye",
+      "other": "{count} elèv pou siveye"
+    },
+    "thresholdSubtitle": "— to pi ba pase {rate}% oswa {absences}+ absans trimès sa a",
+    "student": "Elèv",
+    "reason": "Rezon",
+    "rate": "To",
+    "absences": "Absans",
+    "lowRate": "To fèb",
+    "repeatedAbsences": "Absans repete",
+    "absenceCount": {
+      "one": "{count} absans",
+      "other": "{count} absans"
+    },
+    "view": "Wè",
+    "justify": "Jistifye"
+  },
+  "editModal": {
+    "editTitle": "Modifye prezans",
+    "justifyTitle": "Jistifye absans",
+    "statusLabel": "Estati",
+    "motifRequired": "Rezon (obligatwa)",
+    "motifOptional": "Rezon (opsyonèl)",
+    "motifPlaceholder": "Egzanp : Randevou medikal, sètifika founi...",
+    "motifRequiredError": "Endike yon rezon pou jistifye absans sa a.",
+    "saving": "N ap anrejistre…",
+    "save": "Anrejistre"
+  }
+}

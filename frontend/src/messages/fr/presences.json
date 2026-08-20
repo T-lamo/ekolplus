@@ -1,0 +1,128 @@
+{
+  "title": "Présences",
+  "subtitle": "Suivi des absences et retards",
+  "yearSuffix": " — Année scolaire {year}",
+  "export": "Exporter",
+  "loadError": "Impossible de charger les présences.",
+  "emptyClasses": "Aucune classe configurée — créez d'abord une classe dans « Classes ».",
+  "status": {
+    "PRESENT": "Présent",
+    "ABSENT": "Absent",
+    "LATE": "Retard",
+    "EXCUSED": "Justifié"
+  },
+  "statusFilterExcused": "Absence justifiée",
+  "notRecorded": "Non renseigné",
+  "summary": {
+    "totalStudents": "Total élèves",
+    "presentToday": "Présents aujourd'hui",
+    "outOfStudents": "sur {count} élèves",
+    "absentToday": "Absents aujourd'hui",
+    "unjustified": {
+      "one": "dont {count} non justifié",
+      "other": "dont {count} non justifiés"
+    },
+    "lateThisMonth": "Retards ce mois",
+    "vsLastMonth": "{delta} vs mois dernier",
+    "attendanceRate": "Taux de présence",
+    "thisQuarter": "ce trimestre"
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher un élève...",
+    "thisMonth": "Ce mois-ci",
+    "lastMonth": "Mois dernier",
+    "twoMonthsAgo": "Il y a 2 mois",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "Semaine dernière",
+    "twoWeeksAgo": "Il y a 2 semaines",
+    "allStatuses": "Tous les statuts",
+    "studentsCount": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    }
+  },
+  "tabs": {
+    "weekly": "Vue hebdomadaire",
+    "monthly": "Vue mensuelle",
+    "stats": "Statistiques",
+    "alerts": "Alertes"
+  },
+  "table": {
+    "student": "Élève",
+    "rate": "Taux",
+    "absences": "Absences",
+    "noStudentsInClass": "Aucun élève dans cette classe.",
+    "noResults": "Aucun résultat.",
+    "paginationSummary": "Affichage de {from} à {to} sur {total} élèves — Taux moyen de présence : {rate}",
+    "dayFuture": "Jour à venir — non modifiable",
+    "dayClickToChange": "{status} — cliquer pour changer"
+  },
+  "actions": {
+    "viewDetail": "Voir le détail",
+    "editAttendance": "Modifier la présence",
+    "justifyAbsence": "Justifier l'absence",
+    "deleteEntry": "Supprimer l'entrée"
+  },
+  "deleteConfirm": {
+    "message": "Effacer la présence de « {name} » pour ce jour ?",
+    "confirmLabel": "Effacer"
+  },
+  "toasts": {
+    "entryDeleted": "Entrée supprimée.",
+    "attendanceUpdated": "Présence mise à jour."
+  },
+  "csv": {
+    "student": "Élève",
+    "number": "Numéro",
+    "rate": "Taux",
+    "absences": "Absences"
+  },
+  "offline": {
+    "label": "Présence — {name} ({day})",
+    "labelFallback": "Présence"
+  },
+  "stats": {
+    "distribution": {
+      "present": "Présences",
+      "absent": "Absences",
+      "late": "Retards",
+      "excused": "Justifiées"
+    },
+    "percentOfRecorded": "{pct}% des présences saisies",
+    "noData": "Aucune donnée",
+    "weeklyRateTitle": "Taux de présence par semaine",
+    "thisQuarter": "sur le trimestre",
+    "chartAriaLabel": "Taux de présence par semaine sur le trimestre"
+  },
+  "alerts": {
+    "emptyState": "Aucun élève ne dépasse les seuils d'alerte actuellement (taux < {rate}% ou {absences}+ absences ce trimestre).",
+    "studentsToWatch": {
+      "one": "{count} élève à surveiller",
+      "other": "{count} élèves à surveiller"
+    },
+    "thresholdSubtitle": "— taux < {rate}% ou {absences}+ absences ce trimestre",
+    "student": "Élève",
+    "reason": "Motif",
+    "rate": "Taux",
+    "absences": "Absences",
+    "lowRate": "Taux faible",
+    "repeatedAbsences": "Absences répétées",
+    "absenceCount": {
+      "one": "{count} absence",
+      "other": "{count} absences"
+    },
+    "view": "Voir",
+    "justify": "Justifier"
+  },
+  "editModal": {
+    "editTitle": "Modifier la présence",
+    "justifyTitle": "Justifier l'absence",
+    "statusLabel": "Statut",
+    "motifRequired": "Motif (requis)",
+    "motifOptional": "Motif (optionnel)",
+    "motifPlaceholder": "Ex. : Rendez-vous médical, certificat fourni...",
+    "motifRequiredError": "Indiquez un motif pour justifier cette absence.",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer"
+  }
+}

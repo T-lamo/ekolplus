@@ -1,0 +1,128 @@
+{
+  "title": "Attendance",
+  "subtitle": "Track absences and tardiness",
+  "yearSuffix": " — School year {year}",
+  "export": "Export",
+  "loadError": "Unable to load attendance.",
+  "emptyClasses": "No class configured yet — create a class first in \"Classes\".",
+  "status": {
+    "PRESENT": "Present",
+    "ABSENT": "Absent",
+    "LATE": "Late",
+    "EXCUSED": "Excused"
+  },
+  "statusFilterExcused": "Excused absence",
+  "notRecorded": "Not recorded",
+  "summary": {
+    "totalStudents": "Total students",
+    "presentToday": "Present today",
+    "outOfStudents": "out of {count} students",
+    "absentToday": "Absent today",
+    "unjustified": {
+      "one": "{count} unexcused",
+      "other": "{count} unexcused"
+    },
+    "lateThisMonth": "Late this month",
+    "vsLastMonth": "{delta} vs last month",
+    "attendanceRate": "Attendance rate",
+    "thisQuarter": "this term"
+  },
+  "filters": {
+    "searchPlaceholder": "Search for a student...",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "twoMonthsAgo": "2 months ago",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "twoWeeksAgo": "2 weeks ago",
+    "allStatuses": "All statuses",
+    "studentsCount": {
+      "one": "{count} student",
+      "other": "{count} students"
+    }
+  },
+  "tabs": {
+    "weekly": "Weekly view",
+    "monthly": "Monthly view",
+    "stats": "Statistics",
+    "alerts": "Alerts"
+  },
+  "table": {
+    "student": "Student",
+    "rate": "Rate",
+    "absences": "Absences",
+    "noStudentsInClass": "No students in this class.",
+    "noResults": "No results.",
+    "paginationSummary": "Showing {from} to {to} of {total} students — Average attendance rate: {rate}",
+    "dayFuture": "Upcoming day — cannot be edited",
+    "dayClickToChange": "{status} — click to change"
+  },
+  "actions": {
+    "viewDetail": "View details",
+    "editAttendance": "Edit attendance",
+    "justifyAbsence": "Excuse absence",
+    "deleteEntry": "Delete entry"
+  },
+  "deleteConfirm": {
+    "message": "Clear \"{name}\"'s attendance for this day?",
+    "confirmLabel": "Clear"
+  },
+  "toasts": {
+    "entryDeleted": "Entry deleted.",
+    "attendanceUpdated": "Attendance updated."
+  },
+  "csv": {
+    "student": "Student",
+    "number": "Number",
+    "rate": "Rate",
+    "absences": "Absences"
+  },
+  "offline": {
+    "label": "Attendance — {name} ({day})",
+    "labelFallback": "Attendance"
+  },
+  "stats": {
+    "distribution": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused"
+    },
+    "percentOfRecorded": "{pct}% of recorded attendance",
+    "noData": "No data",
+    "weeklyRateTitle": "Weekly attendance rate",
+    "thisQuarter": "for the term",
+    "chartAriaLabel": "Weekly attendance rate for the term"
+  },
+  "alerts": {
+    "emptyState": "No student currently exceeds the alert thresholds (rate below {rate}% or {absences}+ absences this term).",
+    "studentsToWatch": {
+      "one": "{count} student to watch",
+      "other": "{count} students to watch"
+    },
+    "thresholdSubtitle": "— rate below {rate}% or {absences}+ absences this term",
+    "student": "Student",
+    "reason": "Reason",
+    "rate": "Rate",
+    "absences": "Absences",
+    "lowRate": "Low rate",
+    "repeatedAbsences": "Repeated absences",
+    "absenceCount": {
+      "one": "{count} absence",
+      "other": "{count} absences"
+    },
+    "view": "View",
+    "justify": "Excuse"
+  },
+  "editModal": {
+    "editTitle": "Edit attendance",
+    "justifyTitle": "Excuse absence",
+    "statusLabel": "Status",
+    "motifRequired": "Reason (required)",
+    "motifOptional": "Reason (optional)",
+    "motifPlaceholder": "E.g.: Medical appointment, certificate provided...",
+    "motifRequiredError": "Please provide a reason to excuse this absence.",
+    "saving": "Saving…",
+    "save": "Save"
+  }
+}

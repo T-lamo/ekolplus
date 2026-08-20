@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/ui/Tabs';
-import { FEES } from '@/lib/constants';
 
 const ROUTE_BY_TAB = {
   paiements: '/scolarite/paiements',
@@ -18,9 +18,14 @@ export type FeesTabKey = keyof typeof ROUTE_BY_TAB;
 // button-able.
 export function FeesTabs({ active }: { active: FeesTabKey }) {
   const router = useRouter();
+  const t = useTranslations('Fees.tabs');
+  const tabs = (Object.keys(ROUTE_BY_TAB) as FeesTabKey[]).map((key) => ({
+    key,
+    label: t(key),
+  }));
   return (
     <Tabs
-      tabs={Object.entries(FEES.tabs).map(([key, label]) => ({ key, label }))}
+      tabs={tabs}
       active={active}
       onChange={(key) => router.push(ROUTE_BY_TAB[key as FeesTabKey])}
     />

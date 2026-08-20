@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "label": "Fees & Tuition"
+  },
+  "tabs": {
+    "paiements": "Payment tracking",
+    "relances": "Reminders & Overdue",
+    "configuration": "Configuration"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "Up to date",
+    "PARTIAL": "Partial",
+    "OVERDUE": "Overdue",
+    "UNPAID": "Unpaid"
+  },
+  "trancheStatus": {
+    "PAID": "Paid",
+    "PARTIAL": "Partial",
+    "OVERDUE": "Overdue",
+    "UPCOMING": "Upcoming"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Critical",
+    "OVERDUE": "Overdue",
+    "RECENT": "Recent"
+  },
+  "paymentMethod": {
+    "ESPECES": "Cash",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Check",
+    "VIREMENT": "Bank transfer"
+  },
+  "whatsapp": {
+    "sentSuccess": "WhatsApp reminder sent.",
+    "errorNoGuardianPhone": "No primary guardian phone number on file for this student.",
+    "errorNoBalance": "No remaining balance for this student.",
+    "errorNotConfigured": "WhatsApp sending isn't configured yet.",
+    "errorSendFailed": "Couldn't send the WhatsApp message. Try again."
+  },
+  "stub": "This feature is coming soon."
+}

@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "label": "Frais & Scolarité"
+  },
+  "tabs": {
+    "paiements": "Suivi des paiements",
+    "relances": "Relances & Impayés",
+    "configuration": "Configuration"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "À jour",
+    "PARTIAL": "Partiel",
+    "OVERDUE": "En retard",
+    "UNPAID": "Non payé"
+  },
+  "trancheStatus": {
+    "PAID": "Payée",
+    "PARTIAL": "Partiel",
+    "OVERDUE": "En retard",
+    "UPCOMING": "À venir"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Critique",
+    "OVERDUE": "En retard",
+    "RECENT": "Récent"
+  },
+  "paymentMethod": {
+    "ESPECES": "Espèces",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Chèque",
+    "VIREMENT": "Virement"
+  },
+  "whatsapp": {
+    "sentSuccess": "Rappel WhatsApp envoyé.",
+    "errorNoGuardianPhone": "Aucun numéro de tuteur principal renseigné pour cet élève.",
+    "errorNoBalance": "Aucun solde restant pour cet élève.",
+    "errorNotConfigured": "L'envoi WhatsApp n'est pas encore configuré.",
+    "errorSendFailed": "Envoi WhatsApp impossible. Réessayez."
+  },
+  "stub": "Cette fonctionnalité arrive bientôt."
+}

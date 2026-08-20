@@ -1,0 +1,43 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "nav": {
+    "label": "Frè & Eskolarite"
+  },
+  "tabs": {
+    "paiements": "Swivi peman yo",
+    "relances": "Rapèl & Enpeye",
+    "configuration": "Konfigirasyon"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "Ajou",
+    "PARTIAL": "Pasyèl",
+    "OVERDUE": "An reta",
+    "UNPAID": "Pa peye"
+  },
+  "trancheStatus": {
+    "PAID": "Peye",
+    "PARTIAL": "Pasyèl",
+    "OVERDUE": "An reta",
+    "UPCOMING": "Ap vini"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Kritik",
+    "OVERDUE": "An reta",
+    "RECENT": "Resan"
+  },
+  "paymentMethod": {
+    "ESPECES": "Kach",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Chèk",
+    "VIREMENT": "Virman bankè"
+  },
+  "whatsapp": {
+    "sentSuccess": "Rapèl WhatsApp voye.",
+    "errorNoGuardianPhone": "Pa gen nimewo telefòn responsab prensipal anrejistre pou elèv sa a.",
+    "errorNoBalance": "Pa gen rès balans pou elèv sa a.",
+    "errorNotConfigured": "Anvwa WhatsApp la poko konfigire.",
+    "errorSendFailed": "Nou pa t kapab voye mesaj WhatsApp la. Eseye ankò."
+  },
+  "stub": "Fonksyonalite sa a ap vini byento."
+}

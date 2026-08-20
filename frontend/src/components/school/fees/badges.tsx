@@ -1,7 +1,9 @@
+'use client';
+
 // Shared status pills for Frais & Scolarité — one place so the same status
 // always renders with the same color across Fee Management, Relances
 // Impayés, and the Payment Registration modal's tranche selector.
-import { FEES } from '@/lib/constants';
+import { useTranslations } from 'next-intl';
 
 export type StudentFeeStatus = 'UP_TO_DATE' | 'PARTIAL' | 'OVERDUE' | 'UNPAID';
 export type TrancheStatus = 'PAID' | 'PARTIAL' | 'OVERDUE' | 'UPCOMING';
@@ -33,7 +35,8 @@ const STUDENT_TONE: Record<StudentFeeStatus, Tone> = {
 };
 
 export function StudentStatusBadge({ status }: { status: StudentFeeStatus }) {
-  return <Pill tone={STUDENT_TONE[status]}>{FEES.studentStatusLabel[status]}</Pill>;
+  const t = useTranslations('Fees.studentStatus');
+  return <Pill tone={STUDENT_TONE[status]}>{t(status)}</Pill>;
 }
 
 const TRANCHE_TONE: Record<TrancheStatus, Tone> = {
@@ -44,7 +47,8 @@ const TRANCHE_TONE: Record<TrancheStatus, Tone> = {
 };
 
 export function TrancheStatusBadge({ status }: { status: TrancheStatus }) {
-  return <Pill tone={TRANCHE_TONE[status]}>{FEES.trancheStatusLabel[status]}</Pill>;
+  const t = useTranslations('Fees.trancheStatus');
+  return <Pill tone={TRANCHE_TONE[status]}>{t(status)}</Pill>;
 }
 
 export type OverdueSeverity = 'CRITICAL' | 'OVERDUE' | 'RECENT';
@@ -55,12 +59,7 @@ const SEVERITY_TONE: Record<OverdueSeverity, Tone> = {
   RECENT: 'muted',
 };
 
-const SEVERITY_LABEL: Record<OverdueSeverity, string> = {
-  CRITICAL: FEES.overdue.statusCritical,
-  OVERDUE: FEES.overdue.statusOverdue,
-  RECENT: FEES.overdue.statusRecent,
-};
-
 export function SeverityBadge({ severity }: { severity: OverdueSeverity }) {
-  return <Pill tone={SEVERITY_TONE[severity]}>{SEVERITY_LABEL[severity]}</Pill>;
+  const t = useTranslations('Fees.overdueSeverity');
+  return <Pill tone={SEVERITY_TONE[severity]}>{t(severity)}</Pill>;
 }

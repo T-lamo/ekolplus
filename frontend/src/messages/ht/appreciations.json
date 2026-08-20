@@ -7,5 +7,33 @@
     "PASSABLE": "Pasab",
     "INSUFFISANT": "Ensifizan",
     "FAIBLE": "Fèb"
+  },
+  "statistiques": {
+    "emptyState": "Pa gen done pou klas sa a.",
+    "completionRate": "To konpletasyon",
+    "completionRateSub": {
+      "one": "{count} sou {total} elèv",
+      "other": "{count} sou {total} elèv"
+    },
+    "classAverage": "Mwayèn klas la",
+    "classAverageSub": "tout apresyasyon yo ansanm",
+    "topMention": "Mansyon ki pi frekan",
+    "topMentionSub": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "noMention": "Pa gen mansyon antre",
+    "toWatch": "Pou siveye",
+    "toWatchSub": "mansyon ensifizan",
+    "mentionChartTitle": "Distribisyon mansyon yo",
+    "mentionChartSub": "Kantite elèv pa mansyon, sou apresyasyon ki antre yo.",
+    "mentionChartAriaLabel": "Distribisyon elèv yo pa mansyon",
+    "averageChartTitle": "Distribisyon mwayèn yo",
+    "averageChartSub": "Mwayèn jeneral elèv yo, sou 20.",
+    "averageChartAriaLabel": "Distribisyon mwayèn jeneral yo",
+    "completionChartTitle": "Konpletasyon pa matyè",
+    "completionChartSub": "Pousantaj apresyasyon ki antre pa matyè.",
+    "completionChartEmpty": "Pa gen matyè konfigire pou klas sa a.",
+    "completionChartAriaLabel": "Pousantaj apresyasyon ki antre pa matyè"
   }
 }

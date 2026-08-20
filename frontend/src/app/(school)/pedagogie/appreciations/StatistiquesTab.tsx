@@ -5,12 +5,18 @@
 // "Par matière" tabs already have in memory (no new API calls): a mention
 // distribution, a general-average histogram, and a per-subject completion
 // chart. Same derivation pattern as carnet-de-notes/StatistiquesTab.tsx.
+//
+// The mention chart's LABELS are translated, so they are built outside the
+// `useMemo` (which stays a pure function of `data`) — 6 entries, cheap
+// enough that memoizing them would only add a translator dependency.
 
 import { useMemo } from 'react';
 import { Award, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { BarChart, type BarChartPoint } from '@/components/admin/charts/BarChart';
-import { MENTION_LABEL, type AppreciationsListData, type Mention } from './types';
+import { fmtAverage } from './format';
+import { MENTIONS, type AppreciationsListData, type Mention } from './types';
 
 const AVG_BUCKETS = [
   { label: '0-4', min: 0, max: 4 },
@@ -20,13 +26,13 @@ const AVG_BUCKETS = [
   { label: '16-20', min: 16, max: 20.01 },
 ];
 
-function fmt(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
 export function StatistiquesTab({ data }: { data: AppreciationsListData }) {
+  const t = useTranslations('Appreciations.statistiques');
+  const tMention = useTranslations('Appreciations.mention');
+  const locale = useLocale();
+
   const {
-    mentionDistribution,
+    mentionCounts,
     averageDistribution,
     subjectCompletion,
     completionRate,
@@ -38,9 +44,6 @@ export function StatistiquesTab({ data }: { data: AppreciationsListData }) {
       if (!s.mention) continue;
       mentionCounts.set(s.mention, (mentionCounts.get(s.mention) ?? 0) + 1);
     }
-    const mentionDistribution: BarChartPoint[] = (Object.keys(MENTION_LABEL) as Mention[]).map(
-      (m) => ({ label: MENTION_LABEL[m], value: mentionCounts.get(m) ?? 0 }),
-    );
 
     const averages = data.students.map((s) => s.average).filter((a): a is number => a != null);
     const averageDistribution: BarChartPoint[] = AVG_BUCKETS.map((b) => ({
@@ -66,7 +69,7 @@ export function StatistiquesTab({ data }: { data: AppreciationsListData }) {
     }
 
     return {
-      mentionDistribution,
+      mentionCounts,
       averageDistribution,
       subjectCompletion,
       completionRate,
@@ -75,10 +78,15 @@ export function StatistiquesTab({ data }: { data: AppreciationsListData }) {
     };
   }, [data]);
 
+  const mentionDistribution: BarChartPoint[] = MENTIONS.map((m) => ({
+    label: tMention(m),
+    value: mentionCounts.get(m) ?? 0,
+  }));
+
   if (data.totalCount === 0) {
     return (
       <Card className="items-center gap-2 p-10 text-center">
-        <p className="text-sm text-muted-foreground">Aucune donnée pour cette classe.</p>
+        <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
       </Card>
     );
   }
@@ -89,79 +97,82 @@ export function StatistiquesTab({ data }: { data: AppreciationsListData }) {
         <StatTile
           icon={CheckCircle2}
           tone="success"
-          label="Taux de complétion"
+          label={t('completionRate')}
           value={completionRate != null ? `${completionRate}%` : '—'}
-          sub={`${data.saisieCount} sur ${data.totalCount} élèves`}
+          sub={t(data.totalCount > 1 ? 'completionRateSub.other' : 'completionRateSub.one', {
+            count: data.saisieCount,
+            total: data.totalCount,
+          })}
         />
         <StatTile
           icon={TrendingUp}
           tone="blue"
-          label="Moyenne de classe"
-          value={fmt(classAverage)}
-          sub="toutes appréciations confondues"
+          label={t('classAverage')}
+          value={fmtAverage(classAverage, locale)}
+          sub={t('classAverageSub')}
         />
         <StatTile
           icon={Award}
           tone="success"
-          label="Mention la plus fréquente"
-          value={topMention ? MENTION_LABEL[topMention.mention] : '—'}
+          label={t('topMention')}
+          value={topMention ? tMention(topMention.mention) : '—'}
           sub={
             topMention
-              ? `${topMention.count} élève${topMention.count > 1 ? 's' : ''}`
-              : 'Aucune mention saisie'
+              ? t(topMention.count > 1 ? 'topMentionSub.other' : 'topMentionSub.one', {
+                  count: topMention.count,
+                })
+              : t('noMention')
           }
         />
         <StatTile
           icon={AlertTriangle}
           tone="destructive"
-          label="À surveiller"
+          label={t('toWatch')}
           value={String(data.alertCount)}
-          sub="mentions insuffisant"
+          sub={t('toWatchSub')}
         />
       </div>
 
       <Card className="gap-3 p-4">
         <div>
-          <div className="text-caption font-semibold text-foreground">Répartition des mentions</div>
-          <p className="text-2xs text-muted-foreground">
-            Nombre d&apos;élèves par mention, sur les appréciations saisies.
-          </p>
+          <div className="text-caption font-semibold text-foreground">{t('mentionChartTitle')}</div>
+          <p className="text-2xs text-muted-foreground">{t('mentionChartSub')}</p>
         </div>
         <BarChart
           data={mentionDistribution}
           formatValue={(v) => String(Math.round(v))}
-          ariaLabel="Répartition des élèves par mention"
+          ariaLabel={t('mentionChartAriaLabel')}
         />
       </Card>
 
       <Card className="gap-3 p-4">
         <div>
-          <div className="text-caption font-semibold text-foreground">Répartition des moyennes</div>
-          <p className="text-2xs text-muted-foreground">Moyennes générales des élèves, sur 20.</p>
+          <div className="text-caption font-semibold text-foreground">{t('averageChartTitle')}</div>
+          <p className="text-2xs text-muted-foreground">{t('averageChartSub')}</p>
         </div>
         <BarChart
           data={averageDistribution}
           formatValue={(v) => String(Math.round(v))}
-          ariaLabel="Répartition des moyennes générales"
+          ariaLabel={t('averageChartAriaLabel')}
         />
       </Card>
 
       <Card className="gap-3 p-4">
         <div>
-          <div className="text-caption font-semibold text-foreground">Complétion par matière</div>
-          <p className="text-2xs text-muted-foreground">
-            Pourcentage d&apos;appréciations saisies par matière.
-          </p>
+          <div className="text-caption font-semibold text-foreground">
+            {t('completionChartTitle')}
+          </div>
+          <p className="text-2xs text-muted-foreground">{t('completionChartSub')}</p>
         </div>
         {subjectCompletion.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            Aucune matière configurée pour cette classe.
+            {t('completionChartEmpty')}
           </p>
         ) : (
           <BarChart
             data={subjectCompletion}
             formatValue={(v) => `${Math.round(v)}%`}
-            ariaLabel="Pourcentage d'appréciations saisies par matière"
+            ariaLabel={t('completionChartAriaLabel')}
           />
         )}
       </Card>

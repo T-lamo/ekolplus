@@ -6,5 +6,33 @@
     "PASSABLE": "Passable",
     "INSUFFISANT": "Insuffisant",
     "FAIBLE": "Faible"
+  },
+  "statistiques": {
+    "emptyState": "Aucune donnée pour cette classe.",
+    "completionRate": "Taux de complétion",
+    "completionRateSub": {
+      "one": "{count} sur {total} élève",
+      "other": "{count} sur {total} élèves"
+    },
+    "classAverage": "Moyenne de classe",
+    "classAverageSub": "toutes appréciations confondues",
+    "topMention": "Mention la plus fréquente",
+    "topMentionSub": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "noMention": "Aucune mention saisie",
+    "toWatch": "À surveiller",
+    "toWatchSub": "mentions insuffisant",
+    "mentionChartTitle": "Répartition des mentions",
+    "mentionChartSub": "Nombre d'élèves par mention, sur les appréciations saisies.",
+    "mentionChartAriaLabel": "Répartition des élèves par mention",
+    "averageChartTitle": "Répartition des moyennes",
+    "averageChartSub": "Moyennes générales des élèves, sur 20.",
+    "averageChartAriaLabel": "Répartition des moyennes générales",
+    "completionChartTitle": "Complétion par matière",
+    "completionChartSub": "Pourcentage d'appréciations saisies par matière.",
+    "completionChartEmpty": "Aucune matière configurée pour cette classe.",
+    "completionChartAriaLabel": "Pourcentage d'appréciations saisies par matière"
   }
 }

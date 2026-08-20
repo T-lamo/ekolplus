@@ -6,5 +6,33 @@
     "PASSABLE": "Passing",
     "INSUFFISANT": "Insufficient",
     "FAIBLE": "Weak"
+  },
+  "statistiques": {
+    "emptyState": "No data for this class.",
+    "completionRate": "Completion rate",
+    "completionRateSub": {
+      "one": "{count} of {total} student",
+      "other": "{count} of {total} students"
+    },
+    "classAverage": "Class average",
+    "classAverageSub": "across all appreciations",
+    "topMention": "Most frequent mention",
+    "topMentionSub": {
+      "one": "{count} student",
+      "other": "{count} students"
+    },
+    "noMention": "No mention recorded",
+    "toWatch": "To watch",
+    "toWatchSub": "insufficient mentions",
+    "mentionChartTitle": "Mention distribution",
+    "mentionChartSub": "Number of students per mention, across recorded appreciations.",
+    "mentionChartAriaLabel": "Distribution of students by mention",
+    "averageChartTitle": "Average distribution",
+    "averageChartSub": "Students' general averages, out of 20.",
+    "averageChartAriaLabel": "Distribution of general averages",
+    "completionChartTitle": "Completion by subject",
+    "completionChartSub": "Percentage of appreciations recorded per subject.",
+    "completionChartEmpty": "No subject configured for this class.",
+    "completionChartAriaLabel": "Percentage of appreciations recorded per subject"
   }
 }

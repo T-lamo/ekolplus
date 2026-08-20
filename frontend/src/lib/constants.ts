@@ -288,69 +288,14 @@ export const FEES = {
 } as const;
 
 // ─── School Dashboard (Epic 3 — .planning/banani/school-dashboard.md) ───
+// Server-side only: src/lib/server/activity-log.ts builds the activity-feed
+// `text` field from these formatters. This is freeform narrative text
+// generated on the server, not a client-side render — translating it is
+// "server message normalization" (a later, separate phase), not part of
+// this screen's client-side migration. Everything else DASHBOARD used to
+// hold now lives in messages/{fr,ht,en}/dashboard.json.
 export const DASHBOARD = {
-  title: 'Tableau de bord',
-  subtitle: (name: string) => `Bienvenue, ${name} — voici l'aperçu de l'établissement`,
-  export: 'Export',
-  kpis: {
-    students: 'Élèves inscrits',
-    teachers: 'Enseignants',
-    classes: 'Classes actives',
-    subjects: 'Matières',
-    attendanceRate: 'Taux de présence',
-    attendanceRateSub: 'Cette semaine',
-    thisMonth: 'ce mois',
-  },
-  averagesTrend: {
-    title: 'Évolution des moyennes',
-    subtitle: (yearLabel: string) => `Année scolaire ${yearLabel}`,
-    seriesLabel: 'Moyenne générale',
-  },
-  levelDistribution: {
-    title: 'Répartition par niveau',
-    subtitle: 'Élèves inscrits',
-    centerLabel: 'élèves',
-  },
-  fees: {
-    title: 'Suivi des frais de scolarité',
-    seeDetails: 'Voir les détails →',
-    collected: 'Total Recouvré',
-    collectedLabel: 'collecté',
-    paid: 'Payé',
-    remaining: 'Restant',
-    overdueStudents: 'Élèves en Retard',
-    overdueLabel: 'en retard',
-    upToDate: 'À jour',
-    studentsConcerned: (n: number) => `${n} élève${n > 1 ? 's' : ''} concerné${n > 1 ? 's' : ''}`,
-    nextDue: 'Prochaine Échéance',
-    daysUntil: (n: number) => (n <= 0 ? "Aujourd'hui" : n === 1 ? 'Demain' : `Dans ${n} jours`),
-    trancheProgress: 'Avancement des tranches',
-    noFeeData: 'Aucune structure de frais configurée pour le moment.',
-  },
-  attendanceByClass: {
-    title: 'Taux de présence',
-    subtitle: 'Par classe — ce mois',
-    details: 'Détails →',
-  },
-  subjectPerformance: {
-    title: 'Performance par matière',
-    subtitle: 'Moyenne générale toutes classes',
-  },
-  todos: {
-    title: 'À traiter',
-    evaluationsToGrade: 'Évaluations à corriger',
-    evaluationsOverdueLabel: (n: number) => `${n} en retard`,
-    unjustifiedAbsences: 'Absences non justifiées',
-    unjustifiedAbsencesSub: 'Cette semaine',
-    teachersWithoutClass: 'Enseignants sans classe assignée',
-    teachersWithoutClassSub: 'À affecter',
-    overduePayments: 'Paiements en retard',
-    overduePaymentsSub: 'Relances à envoyer',
-  },
   activity: {
-    title: 'Activité récente',
-    seeAll: 'Tout voir',
-    empty: 'Aucune activité récente.',
     gradeUpdated: (subject: string, className: string) =>
       `Notes de ${subject} (${className}) mises à jour`,
     absenceMarked: (name: string, className: string) => `${name} marqué(e) absent — ${className}`,
@@ -358,22 +303,6 @@ export const DASHBOARD = {
       `Paiement enregistré — ${name} (${className})`,
     studentEnrolled: (name: string, className: string) => `${name} ajouté(e) en ${className}`,
   },
-  activityLog: {
-    title: "Journal d'activité",
-    subtitle: "Historique complet des évènements de l'établissement",
-    back: 'Retour au tableau de bord',
-    filterAll: 'Tous les types',
-    typeLabel: {
-      grade: 'Notes',
-      absence: 'Absences',
-      payment: 'Paiements',
-      enrollment: 'Inscriptions',
-    },
-    empty: 'Aucune activité pour le moment.',
-    resultCount: (n: number) => `${n} évènement${n > 1 ? 's' : ''}`,
-  },
-  emptyYear:
-    "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",
 } as const;
 
 // ─── Academic Year Rollover (Passage à l'année scolaire suivante) ───
@@ -528,78 +457,6 @@ export const ADMIN_SAAS = {
   orgRole: { OWNER: 'Propriétaire', ADMIN: 'Admin', MEMBER: 'Membre' },
   planEmoji: { ENTERPRISE: '⭐', PRO: '📚', STARTER: '🚀' } as Record<string, string>,
   stub: 'Cette fonctionnalité arrive bientôt.',
-} as const;
-
-export const ADMIN_DASHBOARD = {
-  title: 'Tableau de bord Administration',
-  subtitle: 'Vue globale de la plateforme',
-  exportReport: 'Exporter le rapport',
-  createSchool: 'Créer une école',
-  seeAll: 'Voir tout',
-  kpi: {
-    totalSchools: 'Écoles actives',
-    totalUsers: 'Utilisateurs totaux',
-    activeUsers: 'Utilisateurs actifs',
-    activeSubscriptions: 'Abonnements actifs',
-    monthRevenue: 'Revenus du mois',
-    thisMonth: 'ce mois',
-    ofTotal: 'du total',
-    expiringSoon: 'expirent bientôt',
-    vsLastMonth: 'vs mois dernier',
-  },
-  revenue: {
-    title: 'Évolution des revenus',
-    subtitle: '6 derniers mois · Facturation par élève',
-    total: 'Total 6 mois',
-    avg: 'Moy. mensuelle',
-    growth: 'Croissance',
-  },
-  recentUsers: {
-    title: 'Utilisateurs récents',
-    subtitle: 'Dernières inscriptions',
-    empty: 'Aucun utilisateur pour le moment.',
-  },
-  schools: {
-    title: 'Écoles clientes',
-    subtitle: (n: number) =>
-      `${n} établissement${n > 1 ? 's' : ''} enregistré${n > 1 ? 's' : ''} sur la plateforme`,
-    searchPlaceholder: 'Rechercher...',
-    newSchool: 'Nouvelle école',
-    columns: {
-      school: 'École',
-      location: 'Pays / Ville',
-      plan: 'Plan',
-      students: 'Élèves',
-      users: 'Utilisateurs',
-      billing: 'Facturation / mois',
-      status: 'Statut',
-      renewal: 'Renouvellement',
-    },
-    empty: 'Aucune école enregistrée pour le moment.',
-  },
-  transactions: {
-    title: 'Transactions récentes',
-    subtitle: 'Historique des paiements',
-    columns: { school: 'École', amount: 'Montant', date: 'Date', status: 'Statut' },
-    empty: 'Aucune transaction pour le moment.',
-  },
-  coupons: {
-    title: 'Codes promotionnels',
-    subtitle: 'Gérez les coupons de réduction',
-    newCoupon: 'Nouveau coupon',
-    columns: {
-      code: 'Code',
-      discount: 'Réduction',
-      uses: 'Utilisations',
-      expiry: 'Expiration',
-      status: 'Statut',
-    },
-    noLimit: 'Sans limite',
-    permanent: 'Permanent',
-    empty: 'Aucun coupon créé pour le moment.',
-  },
-  loadError: 'Impossible de charger le tableau de bord.',
-  retry: 'Réessayer',
 } as const;
 
 export const ADMIN_SCHOOLS = {

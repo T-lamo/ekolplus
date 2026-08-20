@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FEES } from '@/lib/constants';
 
 export function DisputeModal({
   studentId,
@@ -17,7 +17,8 @@ export function DisputeModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const t = FEES.disputeModal;
+  const t = useTranslations('Fees.disputeModal');
+  const tCommon = useTranslations('Common');
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,17 +34,17 @@ export function DisputeModal({
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title={t.title} onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       <div className="flex flex-col gap-3.5">
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-xs font-semibold text-foreground">{t.reasonLabel}</span>
+          <span className="text-xs font-semibold text-foreground">{t('reasonLabel')}</span>
           <textarea
             autoFocus
             value={reason}
@@ -59,10 +60,10 @@ export function DisputeModal({
         )}
         <div className="flex gap-2">
           <Button variant="ghost" onClick={onClose} className="sm:w-fit">
-            {t.cancel}
+            {t('cancel')}
           </Button>
           <Button loading={submitting} onClick={onSubmit}>
-            {t.confirm}
+            {t('confirm')}
           </Button>
         </div>
       </div>

@@ -79,5 +79,67 @@
     "printReceiptNoPayment": "Aucun paiement enregistré pour cet élève.",
     "printReceiptLoadError": "Impossible de charger le reçu."
   },
-  "stub": "Cette fonctionnalité arrive bientôt."
+  "stub": "Cette fonctionnalité arrive bientôt.",
+  "overdue": {
+    "title": "Relances & Impayés",
+    "subtitle": "Gérez les retards de paiement et automatisez les rappels",
+    "exportList": "Exporter la liste",
+    "bulkReminderBase": "Rappel groupé",
+    "bulkReminderWithCount": "Rappel groupé ({n})",
+    "loadError": "Impossible de charger les relances.",
+    "kpiTotalUnpaid": "Total impayés",
+    "kpiCritical": "Retard critique",
+    "kpiSent": "Rappels envoyés",
+    "kpiNextDue": "Prochaine échéance",
+    "searchPlaceholder": "Nom ou matricule...",
+    "classFilterAll": "Toutes les classes",
+    "selectedCount": {
+      "one": "{n} sélectionné",
+      "other": "{n} sélectionnés"
+    },
+    "noResults": "Aucun retard de paiement.",
+    "selectAllAria": "Tout sélectionner",
+    "selectRowAria": "Sélectionner {name}",
+    "disputedSuffix": "Litigieux",
+    "columns": {
+      "student": "Élève",
+      "class": "Classe",
+      "tranche": "Tranche",
+      "amountDue": "Montant dû",
+      "overdue": "Retard",
+      "status": "Statut",
+      "lastReminder": "Dernier rappel"
+    },
+    "daysOverdue": {
+      "one": "{n} jour",
+      "other": "{n} jours"
+    },
+    "rowActions": {
+      "registerPayment": "Enregistrer un paiement",
+      "sendReminder": "Envoyer rappel WhatsApp",
+      "viewHistory": "Voir l'historique",
+      "markDisputed": "Marquer comme litigieux"
+    },
+    "automationTitle": "Automatisation",
+    "automationSubtitle": "Rappels automatiques",
+    "reminderBefore5Days": "Rappel 5 jours avant",
+    "reminderBefore5DaysDesc": "Notifier avant l'échéance",
+    "reminderOnDueDate": "Rappel le jour J",
+    "reminderOnDueDateDesc": "Le jour de l'échéance",
+    "reminderWeekly": "Rappel hebdomadaire",
+    "reminderWeeklyDesc": "Pour les impayés > 7 jours",
+    "reminderCritical": "Alerte critique",
+    "reminderCriticalDesc": "Retard > 30 jours",
+    "reminderChannelWhatsapp": "Rappels via WhatsApp",
+    "reminderChannelWhatsappDesc": "Payant (frais Meta) — sinon envoyés par email, gratuit",
+    "byClassTitle": "Retards par classe",
+    "quickActionsTitle": "Actions rapides",
+    "exportExcel": "Exporter Excel"
+  },
+  "disputeModal": {
+    "title": "Marquer comme litigieux",
+    "reasonLabel": "Motif (optionnel)",
+    "confirm": "Marquer comme litigieux",
+    "cancel": "Annuler"
+  }
 }

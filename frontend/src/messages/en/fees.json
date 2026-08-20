@@ -79,5 +79,67 @@
     "printReceiptNoPayment": "No payment recorded for this student.",
     "printReceiptLoadError": "Unable to load the receipt."
   },
-  "stub": "This feature is coming soon."
+  "stub": "This feature is coming soon.",
+  "overdue": {
+    "title": "Reminders & Overdue",
+    "subtitle": "Manage overdue payments and automate reminders",
+    "exportList": "Export list",
+    "bulkReminderBase": "Bulk reminder",
+    "bulkReminderWithCount": "Bulk reminder ({n})",
+    "loadError": "Unable to load reminders.",
+    "kpiTotalUnpaid": "Total unpaid",
+    "kpiCritical": "Critically overdue",
+    "kpiSent": "Reminders sent",
+    "kpiNextDue": "Next due date",
+    "searchPlaceholder": "Name or student number...",
+    "classFilterAll": "All classes",
+    "selectedCount": {
+      "one": "{n} selected",
+      "other": "{n} selected"
+    },
+    "noResults": "No overdue payments.",
+    "selectAllAria": "Select all",
+    "selectRowAria": "Select {name}",
+    "disputedSuffix": "Disputed",
+    "columns": {
+      "student": "Student",
+      "class": "Class",
+      "tranche": "Installment",
+      "amountDue": "Amount due",
+      "overdue": "Overdue",
+      "status": "Status",
+      "lastReminder": "Last reminder"
+    },
+    "daysOverdue": {
+      "one": "{n} day",
+      "other": "{n} days"
+    },
+    "rowActions": {
+      "registerPayment": "Register a payment",
+      "sendReminder": "Send WhatsApp reminder",
+      "viewHistory": "View history",
+      "markDisputed": "Mark as disputed"
+    },
+    "automationTitle": "Automation",
+    "automationSubtitle": "Automatic reminders",
+    "reminderBefore5Days": "Reminder 5 days before",
+    "reminderBefore5DaysDesc": "Notify before the due date",
+    "reminderOnDueDate": "Reminder on the due date",
+    "reminderOnDueDateDesc": "On the due date itself",
+    "reminderWeekly": "Weekly reminder",
+    "reminderWeeklyDesc": "For payments overdue more than 7 days",
+    "reminderCritical": "Critical alert",
+    "reminderCriticalDesc": "Overdue more than 30 days",
+    "reminderChannelWhatsapp": "Reminders via WhatsApp",
+    "reminderChannelWhatsappDesc": "Paid (Meta fees) — otherwise sent by email, free",
+    "byClassTitle": "Overdue by class",
+    "quickActionsTitle": "Quick actions",
+    "exportExcel": "Export to Excel"
+  },
+  "disputeModal": {
+    "title": "Mark as disputed",
+    "reasonLabel": "Reason (optional)",
+    "confirm": "Mark as disputed",
+    "cancel": "Cancel"
+  }
 }

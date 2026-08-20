@@ -80,5 +80,67 @@
     "printReceiptNoPayment": "Pa gen peman anrejistre pou elèv sa a.",
     "printReceiptLoadError": "Nou pa ka chaje resi a."
   },
-  "stub": "Fonksyonalite sa a ap vini byento."
+  "stub": "Fonksyonalite sa a ap vini byento.",
+  "overdue": {
+    "title": "Rapèl & Enpeye",
+    "subtitle": "Jere reta nan peman epi otomatize rapèl yo",
+    "exportList": "Ekspòte lis la",
+    "bulkReminderBase": "Rapèl an gwoup",
+    "bulkReminderWithCount": "Rapèl an gwoup ({n})",
+    "loadError": "Nou pa ka chaje rapèl yo.",
+    "kpiTotalUnpaid": "Total pa peye",
+    "kpiCritical": "Reta kritik",
+    "kpiSent": "Rapèl voye",
+    "kpiNextDue": "Pwochen echeyans",
+    "searchPlaceholder": "Non oswa matrikil...",
+    "classFilterAll": "Tout klas yo",
+    "selectedCount": {
+      "one": "{n} seleksyone",
+      "other": "{n} seleksyone"
+    },
+    "noResults": "Pa gen reta nan peman.",
+    "selectAllAria": "Seleksyone tout",
+    "selectRowAria": "Seleksyone {name}",
+    "disputedSuffix": "Kontestasyon",
+    "columns": {
+      "student": "Elèv",
+      "class": "Klas",
+      "tranche": "Vèsman",
+      "amountDue": "Montan dwe",
+      "overdue": "Reta",
+      "status": "Estati",
+      "lastReminder": "Dènye rapèl"
+    },
+    "daysOverdue": {
+      "one": "{n} jou",
+      "other": "{n} jou"
+    },
+    "rowActions": {
+      "registerPayment": "Anrejistre yon peman",
+      "sendReminder": "Voye rapèl WhatsApp",
+      "viewHistory": "Wè istorik la",
+      "markDisputed": "Make kòm kontestasyon"
+    },
+    "automationTitle": "Otomatizasyon",
+    "automationSubtitle": "Rapèl otomatik",
+    "reminderBefore5Days": "Rapèl 5 jou anvan",
+    "reminderBefore5DaysDesc": "Notifye anvan echeyans lan",
+    "reminderOnDueDate": "Rapèl jou echeyans lan",
+    "reminderOnDueDateDesc": "Jou echeyans lan menm",
+    "reminderWeekly": "Rapèl chak semenn",
+    "reminderWeeklyDesc": "Pou peman ki an reta plis pase 7 jou",
+    "reminderCritical": "Alèt kritik",
+    "reminderCriticalDesc": "An reta plis pase 30 jou",
+    "reminderChannelWhatsapp": "Rapèl atravè WhatsApp",
+    "reminderChannelWhatsappDesc": "Peye (frè Meta) — otreman voye pa imèl, gratis",
+    "byClassTitle": "Reta pa klas",
+    "quickActionsTitle": "Aksyon rapid",
+    "exportExcel": "Ekspòte Excel"
+  },
+  "disputeModal": {
+    "title": "Make kòm kontestasyon",
+    "reasonLabel": "Rezon (opsyonèl)",
+    "confirm": "Make kòm kontestasyon",
+    "cancel": "Anile"
+  }
 }

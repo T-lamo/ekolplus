@@ -213,5 +213,39 @@
     "trancheGraceDaysField": "Délai de grâce (jours)",
     "noLatePenalty": "Aucune pénalité",
     "saveTranche": "Enregistrer"
+  },
+  "registerPayment": {
+    "title": "Enregistrer un paiement",
+    "subtitle": "Saisissez les informations du versement ci-dessous",
+    "balanceLabel": "Solde dû",
+    "selectTranche": "Sélectionner la tranche",
+    "latePenaltyNote": "Une pénalité de retard de {amount} ({percent}%) sera appliquée automatiquement sur cette tranche.",
+    "detailsTitle": "Détails du versement",
+    "amountLabel": "Montant versé",
+    "dateLabel": "Date du paiement",
+    "referenceLabel": "N° Référence / Reçu",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Notes (optionnel)",
+    "notesPlaceholder": "Remarques...",
+    "methodTitle": "Mode de paiement",
+    "dueDatePrefix": "échéance",
+    "totalTitle": "Montant total à encaisser",
+    "breakdownLabel": "Principal {principal} + Pénalité {penalty}",
+    "remainingAfter": "Solde restant après paiement",
+    "settled": "Compte soldé",
+    "cancel": "Annuler",
+    "saveAndPrint": "Enregistrer & Imprimer le reçu",
+    "confirm": "Confirmer le paiement",
+    "loadError": "Impossible de charger les informations de paiement.",
+    "savedToast": "Paiement enregistré."
+  },
+  "history": {
+    "title": "Historique des paiements",
+    "loadError": "Impossible de charger l'historique.",
+    "balanceLabel": "Solde dû",
+    "dueDatePrefix": "échéance",
+    "paymentsTitle": "Paiements enregistrés",
+    "noPayments": "Aucun paiement enregistré.",
+    "printReceiptAria": "Imprimer le reçu"
   }
 }

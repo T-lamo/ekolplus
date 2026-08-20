@@ -214,5 +214,39 @@
     "trancheGraceDaysField": "Delè gras (jou)",
     "noLatePenalty": "Pa gen penalite",
     "saveTranche": "Anrejistre"
+  },
+  "registerPayment": {
+    "title": "Anrejistre yon peman",
+    "subtitle": "Antre enfòmasyon vèsman an anba a",
+    "balanceLabel": "Solde ki dwe",
+    "selectTranche": "Chwazi vèsman an",
+    "latePenaltyNote": "Yon penalite reta {amount} ({percent}%) ap aplike otomatikman sou vèsman sa a.",
+    "detailsTitle": "Detay vèsman an",
+    "amountLabel": "Montan peye",
+    "dateLabel": "Dat peman an",
+    "referenceLabel": "Nimewo Referans / Resi",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Nòt (opsyonèl)",
+    "notesPlaceholder": "Remak...",
+    "methodTitle": "Mòd peman",
+    "dueDatePrefix": "echeyans",
+    "totalTitle": "Montan total pou kolekte",
+    "breakdownLabel": "Prensipal {principal} + Penalite {penalty}",
+    "remainingAfter": "Solde ki rete apre peman",
+    "settled": "Kont solde",
+    "cancel": "Anile",
+    "saveAndPrint": "Anrejistre & Enprime resi a",
+    "confirm": "Konfime peman an",
+    "loadError": "Nou pa ka chaje enfòmasyon peman an.",
+    "savedToast": "Peman anrejistre."
+  },
+  "history": {
+    "title": "Istorik peman yo",
+    "loadError": "Nou pa ka chaje istorik la.",
+    "balanceLabel": "Solde ki dwe",
+    "dueDatePrefix": "echeyans",
+    "paymentsTitle": "Peman anrejistre",
+    "noPayments": "Pa gen peman ki anrejistre.",
+    "printReceiptAria": "Enprime resi a"
   }
 }

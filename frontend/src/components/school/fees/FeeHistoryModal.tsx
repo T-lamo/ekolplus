@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Printer } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { api } from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { FEES } from '@/lib/constants';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { fmtMoney, fmtDate } from '@/lib/fees-format';
 import { openReceiptAndPrint, type FeePaymentMethod } from '@/lib/fees-receipt';
 import { TrancheStatusBadge, type TrancheStatus } from './badges';
+
+const DEFAULT_CURRENCY = 'HTG';
 
 interface HistoryTranche {
   id: string;
@@ -50,22 +53,26 @@ export function FeeHistoryModal({
   studentId: string;
   onClose: () => void;
 }) {
+  const t = useTranslations('Fees.history');
+  const tMethod = useTranslations('Fees.paymentMethod');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<HistoryResponse | null>(null);
-  const [currency, setCurrency] = useState<string>(FEES.currency);
+  const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api<HistoryResponse>(`/api/school/fees/students/${studentId}/history`)
       .then(setData)
-      .catch(() => setError('Impossible de charger l’historique.'));
+      .catch(() => setError(t('loadError')));
     api<{ settings: { currency: string } }>('/api/school/fees/automation-settings')
       .then((res) => setCurrency(res.settings.currency))
       .catch(() => {});
-  }, [studentId]);
+  }, [studentId, t]);
 
   function print(payment: HistoryPayment) {
     if (!data) return;
-    const tranche = data.tranches.find((t) => t.id === payment.feeTrancheId);
+    const tranche = data.tranches.find((tr) => tr.id === payment.feeTrancheId);
     openReceiptAndPrint({
       studentName: `${data.student.firstName} ${data.student.lastName}`,
       studentNumber: data.student.studentNumber,
@@ -80,7 +87,7 @@ export function FeeHistoryModal({
   }
 
   return (
-    <Modal title="Historique des paiements" onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       {error && (
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -104,7 +111,7 @@ export function FeeHistoryModal({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xs text-muted-foreground">Solde dû</div>
+              <div className="text-2xs text-muted-foreground">{t('balanceLabel')}</div>
               <div className="text-sm font-extrabold text-foreground">
                 {fmtMoney(data.balance, currency)}
               </div>
@@ -112,27 +119,27 @@ export function FeeHistoryModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            {data.tranches.map((t) => (
+            {data.tranches.map((tr) => (
               <div
-                key={t.id}
+                key={tr.id}
                 className="flex items-center justify-between rounded-md border border-border px-3 py-2"
               >
                 <div>
-                  <div className="text-sm font-semibold text-foreground">{t.label}</div>
+                  <div className="text-sm font-semibold text-foreground">{tr.label}</div>
                   <div className="text-2xs text-muted-foreground">
-                    {fmtMoney(t.paidAmount, currency)} / {fmtMoney(t.amount, currency)} · échéance{' '}
-                    {fmtDate(t.dueDate)}
+                    {fmtMoney(tr.paidAmount, currency)} / {fmtMoney(tr.amount, currency)} ·{' '}
+                    {t('dueDatePrefix')} {fmtDate(tr.dueDate, bcp47)}
                   </div>
                 </div>
-                <TrancheStatusBadge status={t.status} />
+                <TrancheStatusBadge status={tr.status} />
               </div>
             ))}
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-foreground">Paiements enregistrés</span>
+            <span className="text-xs font-semibold text-foreground">{t('paymentsTitle')}</span>
             {data.payments.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucun paiement enregistré.</p>
+              <p className="text-sm text-muted-foreground">{t('noPayments')}</p>
             ) : (
               <div className="flex flex-col divide-y divide-border rounded-md border border-border">
                 {data.payments.map((p) => (
@@ -142,14 +149,13 @@ export function FeeHistoryModal({
                         {fmtMoney(p.amount + p.penaltyAmount, currency)}
                       </div>
                       <div className="truncate text-2xs text-muted-foreground">
-                        {fmtDate(p.paidAt)} · {FEES.paymentMethodLabel[p.method]} ·{' '}
-                        {p.recordedByName}
+                        {fmtDate(p.paidAt, bcp47)} · {tMethod(p.method)} · {p.recordedByName}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => print(p)}
-                      aria-label="Imprimer le reçu"
+                      aria-label={t('printReceiptAria')}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
                     >
                       <Printer size={14} />

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Banknote, Building2, FileText, Smartphone } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -9,10 +10,12 @@ import { Field } from '@/components/ui/Field';
 import { DateField } from '@/components/ui/DateField';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { FEES } from '@/lib/constants';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { fmtMoney, fmtDate } from '@/lib/fees-format';
 import { openReceiptAndPrint } from '@/lib/fees-receipt';
 import { TrancheStatusBadge, type TrancheStatus } from './badges';
+
+const DEFAULT_CURRENCY = 'HTG';
 
 interface HistoryTranche {
   id: string;
@@ -71,10 +74,14 @@ export function PaymentRegistrationModal({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
-  const t = FEES.registerPayment;
+  const t = useTranslations('Fees.registerPayment');
+  const tMethod = useTranslations('Fees.paymentMethod');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<HistoryResponse | null>(null);
   const [lateFeeEnabled, setLateFeeEnabled] = useState(true);
-  const [currency, setCurrency] = useState<string>(FEES.currency);
+  const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [selectedTrancheId, setSelectedTrancheId] = useState(preselectedTrancheId ?? '');
   const [amount, setAmount] = useState('');
   const [paidAt, setPaidAt] = useState(today());
@@ -104,8 +111,8 @@ export function PaymentRegistrationModal({
           setAmount(String(initial.remaining));
         }
       })
-      .catch(() => setError('Impossible de charger les informations de paiement.'));
-  }, [studentId, preselectedTrancheId]);
+      .catch(() => setError(t('loadError')));
+  }, [studentId, preselectedTrancheId, t]);
 
   const tranche = useMemo(
     () => data?.tranches.find((tr) => tr.id === selectedTrancheId) ?? null,
@@ -151,18 +158,18 @@ export function PaymentRegistrationModal({
           currency,
         });
       }
-      toast('Paiement enregistré.', 'success');
+      toast(t('savedToast'), 'success');
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSubmitting(null);
     }
   }
 
   return (
-    <Modal title={t.title} onClose={onClose}>
+    <Modal title={t('title')} onClose={onClose}>
       {!data ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-10 w-full" />
@@ -171,7 +178,7 @@ export function PaymentRegistrationModal({
         </div>
       ) : (
         <div className="flex flex-col gap-5">
-          <p className="text-xs text-muted-foreground">{t.subtitle}</p>
+          <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
 
           <div className="flex items-center justify-between rounded-md bg-secondary px-3.5 py-2.5">
             <div>
@@ -181,7 +188,7 @@ export function PaymentRegistrationModal({
               <div className="text-[11px] text-muted-foreground">#{data.student.studentNumber}</div>
             </div>
             <div className="text-right">
-              <div className="text-[11px] text-muted-foreground">{t.balanceLabel}</div>
+              <div className="text-[11px] text-muted-foreground">{t('balanceLabel')}</div>
               <div className="text-sm font-extrabold text-foreground">
                 {fmtMoney(data.balance, currency)}
               </div>
@@ -189,7 +196,7 @@ export function PaymentRegistrationModal({
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-foreground">{t.selectTranche}</span>
+            <span className="text-xs font-semibold text-foreground">{t('selectTranche')}</span>
             <div className="flex flex-col gap-1.5">
               {data.tranches.map((tr) => (
                 <button
@@ -205,7 +212,8 @@ export function PaymentRegistrationModal({
                   <div>
                     <div className="font-semibold text-foreground">{tr.label}</div>
                     <div className="text-[11px] text-muted-foreground">
-                      {fmtMoney(tr.amount, currency)} · échéance {fmtDate(tr.dueDate)}
+                      {fmtMoney(tr.amount, currency)} · {t('dueDatePrefix')}{' '}
+                      {fmtDate(tr.dueDate, bcp47)}
                     </div>
                   </div>
                   <TrancheStatusBadge status={tr.status} />
@@ -216,34 +224,37 @@ export function PaymentRegistrationModal({
 
           {tranche && tranche.status === 'OVERDUE' && penalty > 0 && (
             <p className="rounded-md bg-warning px-3 py-2.5 text-xs text-warning-foreground">
-              {t.latePenaltyNote(fmtMoney(penalty, currency), tranche.latePenaltyPercent ?? 0)}
+              {t('latePenaltyNote', {
+                amount: fmtMoney(penalty, currency),
+                percent: tranche.latePenaltyPercent ?? 0,
+              })}
             </p>
           )}
 
           <div className="flex flex-col gap-3">
-            <span className="text-xs font-semibold text-foreground">{t.detailsTitle}</span>
+            <span className="text-xs font-semibold text-foreground">{t('detailsTitle')}</span>
             <div className="grid grid-cols-2 gap-3">
               <Field
-                label={t.amountLabel}
+                label={t('amountLabel')}
                 type="number"
                 min={1}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
-              <DateField label={t.dateLabel} value={paidAt} onChange={setPaidAt} />
+              <DateField label={t('dateLabel')} value={paidAt} onChange={setPaidAt} />
             </div>
             <Field
-              label={t.referenceLabel}
-              placeholder={t.referencePlaceholder}
+              label={t('referenceLabel')}
+              placeholder={t('referencePlaceholder')}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
             />
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-xs font-semibold text-foreground">{t.notesLabel}</span>
+              <span className="text-xs font-semibold text-foreground">{t('notesLabel')}</span>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder={t.notesPlaceholder}
+                placeholder={t('notesPlaceholder')}
                 rows={2}
                 className="rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-3 focus:ring-primary/10"
               />
@@ -251,9 +262,9 @@ export function PaymentRegistrationModal({
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-foreground">{t.methodTitle}</span>
+            <span className="text-xs font-semibold text-foreground">{t('methodTitle')}</span>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              {(Object.keys(FEES.paymentMethodLabel) as Method[]).map((m) => {
+              {(Object.keys(METHOD_ICON) as Method[]).map((m) => {
                 const Icon = METHOD_ICON[m];
                 return (
                   <button
@@ -267,7 +278,7 @@ export function PaymentRegistrationModal({
                     }`}
                   >
                     <Icon size={16} />
-                    {FEES.paymentMethodLabel[m]}
+                    {tMethod(m)}
                   </button>
                 );
               })}
@@ -275,19 +286,22 @@ export function PaymentRegistrationModal({
           </div>
 
           <div className="flex flex-col gap-1.5 rounded-md border border-border p-3.5">
-            <span className="text-xs font-semibold text-foreground">{t.totalTitle}</span>
+            <span className="text-xs font-semibold text-foreground">{t('totalTitle')}</span>
             {penalty > 0 && (
               <p className="text-[11px] text-muted-foreground">
-                {t.breakdownLabel(fmtMoney(amountNum, currency), fmtMoney(penalty, currency))}
+                {t('breakdownLabel', {
+                  principal: fmtMoney(amountNum, currency),
+                  penalty: fmtMoney(penalty, currency),
+                })}
               </p>
             )}
             <div className="text-lg font-extrabold text-foreground">
               {fmtMoney(total, currency)}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{t.remainingAfter}</span>
+              <span>{t('remainingAfter')}</span>
               <span className={remainingAfter === 0 ? 'font-semibold text-success-foreground' : ''}>
-                {remainingAfter === 0 ? t.settled : fmtMoney(remainingAfter, currency)}
+                {remainingAfter === 0 ? t('settled') : fmtMoney(remainingAfter, currency)}
               </span>
             </div>
           </div>
@@ -300,7 +314,7 @@ export function PaymentRegistrationModal({
 
           <div className="flex flex-col gap-2">
             <Button variant="ghost" onClick={onClose}>
-              {t.cancel}
+              {t('cancel')}
             </Button>
             <Button
               variant="outline"
@@ -308,14 +322,14 @@ export function PaymentRegistrationModal({
               disabled={!tranche || amountNum <= 0 || submitting !== null}
               onClick={() => submit('print')}
             >
-              {t.saveAndPrint}
+              {t('saveAndPrint')}
             </Button>
             <Button
               loading={submitting === 'confirm'}
               disabled={!tranche || amountNum <= 0 || submitting !== null}
               onClick={() => submit('confirm')}
             >
-              {t.confirm}
+              {t('confirm')}
             </Button>
           </div>
         </div>

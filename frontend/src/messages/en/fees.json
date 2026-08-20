@@ -213,5 +213,39 @@
     "trancheGraceDaysField": "Grace period (days)",
     "noLatePenalty": "No penalty",
     "saveTranche": "Save"
+  },
+  "registerPayment": {
+    "title": "Register a payment",
+    "subtitle": "Enter the payment details below",
+    "balanceLabel": "Balance due",
+    "selectTranche": "Select the installment",
+    "latePenaltyNote": "A late penalty of {amount} ({percent}%) will be applied automatically to this installment.",
+    "detailsTitle": "Payment details",
+    "amountLabel": "Amount paid",
+    "dateLabel": "Payment date",
+    "referenceLabel": "Reference / Receipt No.",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Notes (optional)",
+    "notesPlaceholder": "Remarks...",
+    "methodTitle": "Payment method",
+    "dueDatePrefix": "due",
+    "totalTitle": "Total amount to collect",
+    "breakdownLabel": "Principal {principal} + Penalty {penalty}",
+    "remainingAfter": "Remaining balance after payment",
+    "settled": "Account settled",
+    "cancel": "Cancel",
+    "saveAndPrint": "Save & print receipt",
+    "confirm": "Confirm payment",
+    "loadError": "Unable to load payment information.",
+    "savedToast": "Payment recorded."
+  },
+  "history": {
+    "title": "Payment history",
+    "loadError": "Unable to load the payment history.",
+    "balanceLabel": "Balance due",
+    "dueDatePrefix": "due",
+    "paymentsTitle": "Recorded payments",
+    "noPayments": "No payments recorded.",
+    "printReceiptAria": "Print receipt"
   }
 }

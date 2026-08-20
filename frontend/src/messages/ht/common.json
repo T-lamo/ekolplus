@@ -8,5 +8,41 @@
     "OWNER": "Direktè / Direktris",
     "ADMIN": "Administratè / Administratris",
     "MEMBER": "Manm"
+  },
+  "modal": {
+    "close": "Fèmen"
+  },
+  "imageUploader": {
+    "remove": "Retire",
+    "uploading": "Ap voye…",
+    "hintDefault": "PNG, JPG oswa WebP",
+    "unsupportedFormat": "Fòma pa sipòte (PNG, JPG oswa WebP yo atann).",
+    "tooLarge": "Imaj la twò gwo (maksimòm {maxSizeMb} Mo).",
+    "uploadFailed": "Anvwa a echwe.",
+    "serverUnreachable": "Nou pa t kapab kontakte sèvè a."
+  },
+  "dateField": {
+    "today": "Jodi a",
+    "clear": "Efase",
+    "backToDays": "Retounen nan jou yo",
+    "openCalendar": "Ouvri kalandriye a",
+    "chooseMonthYear": "Chwazi mwa ak ane a",
+    "chooseYear": "Chwazi ane a",
+    "previousYears": "12 ane anvan yo",
+    "nextYears": "12 ane apre yo",
+    "previousYear": "Ane anvan an",
+    "nextYear": "Ane apre a",
+    "invalidDate": "Dat envalid — itilize fòma jj/mm/aaaa a",
+    "invalidDateRange": "(ant {min} ak {max})"
+  },
+  "phoneInput": {
+    "chooseCountryCode": "Chwazi kòd peyi a",
+    "searchCountry": "Chèche yon peyi...",
+    "noCountryFound": "Pa gen peyi ki jwenn.",
+    "numberPlaceholder": "Nimewo",
+    "invalidFormat": "Fòma envalid pou {country}."
+  },
+  "languagePicker": {
+    "radiogroupLabel": "Lang aplikasyon an"
   }
 }

@@ -7,5 +7,41 @@
     "OWNER": "Directeur / Directrice",
     "ADMIN": "Administrateur / Administratrice",
     "MEMBER": "Membre"
+  },
+  "modal": {
+    "close": "Fermer"
+  },
+  "imageUploader": {
+    "remove": "Retirer",
+    "uploading": "Envoi…",
+    "hintDefault": "PNG, JPG ou WebP",
+    "unsupportedFormat": "Format non supporté (PNG, JPG ou WebP attendu).",
+    "tooLarge": "Image trop volumineuse (max {maxSizeMb} Mo).",
+    "uploadFailed": "L'envoi a échoué.",
+    "serverUnreachable": "Impossible de contacter le serveur."
+  },
+  "dateField": {
+    "today": "Aujourd'hui",
+    "clear": "Effacer",
+    "backToDays": "Retour aux jours",
+    "openCalendar": "Ouvrir le calendrier",
+    "chooseMonthYear": "Choisir le mois et l'année",
+    "chooseYear": "Choisir l'année",
+    "previousYears": "12 années précédentes",
+    "nextYears": "12 années suivantes",
+    "previousYear": "Année précédente",
+    "nextYear": "Année suivante",
+    "invalidDate": "Date invalide — utilisez le format jj/mm/aaaa",
+    "invalidDateRange": "(entre {min} et {max})"
+  },
+  "phoneInput": {
+    "chooseCountryCode": "Choisir l'indicatif du pays",
+    "searchCountry": "Rechercher un pays...",
+    "noCountryFound": "Aucun pays trouvé.",
+    "numberPlaceholder": "Numéro",
+    "invalidFormat": "Format invalide pour {country}."
+  },
+  "languagePicker": {
+    "radiogroupLabel": "Langue de l'application"
   }
 }

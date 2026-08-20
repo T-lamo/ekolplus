@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { UploadCloud, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { API_URL, COOKIE_PREFIX } from '@/lib/constants';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp';
@@ -35,15 +36,16 @@ export function ImageUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('Common.imageUploader');
 
   async function handleFile(file: File) {
     setError(null);
     if (!ACCEPT.split(',').includes(file.type)) {
-      setError('Format non supporté (PNG, JPG ou WebP attendu).');
+      setError(t('unsupportedFormat'));
       return;
     }
     if (file.size > MAX_SIZE_MB * 1_000_000) {
-      setError(`Image trop volumineuse (max ${MAX_SIZE_MB} Mo).`);
+      setError(t('tooLarge', { maxSizeMb: MAX_SIZE_MB }));
       return;
     }
 
@@ -60,13 +62,13 @@ export function ImageUploader({
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        setError((body as { message?: string } | null)?.message ?? "L'envoi a échoué.");
+        setError((body as { message?: string } | null)?.message ?? t('uploadFailed'));
         return;
       }
       const { url } = (await res.json()) as { url: string };
       onChange(url);
     } catch {
-      setError('Impossible de contacter le serveur.');
+      setError(t('serverUnreachable'));
     } finally {
       setUploading(false);
     }
@@ -83,7 +85,7 @@ export function ImageUploader({
             className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-destructive-foreground"
           >
             <X size={11} />
-            Retirer
+            {t('remove')}
           </button>
         )}
       </div>
@@ -99,7 +101,7 @@ export function ImageUploader({
           <>
             <UploadCloud size={18} className="text-muted-foreground" />
             <span className="text-[10px] text-muted-foreground">
-              {uploading ? 'Envoi…' : (hint ?? 'PNG, JPG ou WebP')}
+              {uploading ? t('uploading') : (hint ?? t('hintDefault'))}
             </span>
           </>
         )}

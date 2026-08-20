@@ -11,7 +11,7 @@ import {
 } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { DayPicker, type ChevronProps } from 'react-day-picker';
-import { fr } from 'react-day-picker/locale';
+import { enUS, fr } from 'react-day-picker/locale';
 import {
   addYears,
   format,
@@ -20,10 +20,24 @@ import {
   setMonth as setMonthOf,
   setYear as setYearOf,
   startOfMonth,
+  type Locale,
 } from 'date-fns';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { type LocaleKey } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 import { formatTyped, maskDateInput, parseTypedDate } from './date-field-parse';
+
+// Haitian Creole has no distinct calendar-formatting convention in wide
+// practical use (same reasoning as locales.ts's LOCALE_BCP47: 'ht' maps to
+// the French locale, not react-day-picker's own 'ht' export), so the
+// calendar and formatted-date display share French between fr/ht and only
+// switch for en.
+const CALENDAR_LOCALE: Record<LocaleKey, Locale> = {
+  fr,
+  ht: fr,
+  en: enUS,
+};
 
 // Drop-in replacement for `<Field type="date">` — same value contract
 // ('YYYY-MM-DD' string, '' when empty) so no calling form/API/zod schema
@@ -81,6 +95,9 @@ export function DateField({
 }) {
   const autoId = useId();
   const inputId = id ?? name ?? autoId;
+  const locale = useLocale();
+  const t = useTranslations('Common.dateField');
+  const dateLocale = CALENDAR_LOCALE[locale];
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -140,8 +157,8 @@ export function DateField({
       ? text
       : selected
         ? weekday
-          ? capitalize(format(selected, 'EEEE d MMMM yyyy', { locale: fr }))
-          : format(selected, 'd MMMM yyyy', { locale: fr })
+          ? capitalize(format(selected, 'EEEE d MMMM yyyy', { locale: dateLocale }))
+          : format(selected, 'd MMMM yyyy', { locale: dateLocale })
         : '';
 
   function handleFocus() {
@@ -201,6 +218,7 @@ export function DateField({
   // ── calendar caption → year grid (stable component reading a ref) ─────
   const setViewRef = useRef(setView);
   setViewRef.current = setView;
+  const chooseMonthYearLabel = t('chooseMonthYear');
   const CaptionButton = useMemo(
     () =>
       function CaptionButton({ children, className }: HTMLAttributes<HTMLSpanElement>) {
@@ -212,14 +230,14 @@ export function DateField({
               className,
               'rounded-md px-2 py-0.5 hover:bg-muted focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none',
             )}
-            aria-label="Choisir le mois et l'année"
+            aria-label={chooseMonthYearLabel}
           >
             <span className="capitalize">{children}</span>
             <ChevronDown size={14} className="text-muted-foreground" />
           </button>
         );
       },
-    [],
+    [chooseMonthYearLabel],
   );
 
   const yearDisabled = (y: number) =>
@@ -284,7 +302,7 @@ export function DateField({
               <button
                 type="button"
                 disabled={disabled}
-                aria-label="Ouvrir le calendrier"
+                aria-label={t('openCalendar')}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-primary/10 disabled:cursor-not-allowed"
               >
                 <ChevronDown
@@ -316,7 +334,7 @@ export function DateField({
             {view === 'days' && (
               <DayPicker
                 mode="single"
-                locale={fr}
+                locale={dateLocale}
                 month={month}
                 onMonthChange={(m) => {
                   setMonth(m);
@@ -368,7 +386,7 @@ export function DateField({
                 <div className="relative flex h-8 items-center justify-center">
                   <button
                     type="button"
-                    aria-label="12 années précédentes"
+                    aria-label={t('previousYears')}
                     onClick={() => setYearPage((p) => p - 12)}
                     disabled={minOk !== undefined && yearPage - 1 < minOk.getFullYear()}
                     className={cn(NAV_BTN, 'absolute left-0')}
@@ -380,7 +398,7 @@ export function DateField({
                   </span>
                   <button
                     type="button"
-                    aria-label="12 années suivantes"
+                    aria-label={t('nextYears')}
                     onClick={() => setYearPage((p) => p + 12)}
                     disabled={maxOk !== undefined && yearPage + 12 > maxOk.getFullYear()}
                     className={cn(NAV_BTN, 'absolute right-0')}
@@ -422,7 +440,7 @@ export function DateField({
                 <div className="relative flex h-8 items-center justify-center">
                   <button
                     type="button"
-                    aria-label="Année précédente"
+                    aria-label={t('previousYear')}
                     onClick={() => setMonth((m) => addYears(m, -1))}
                     disabled={minOk !== undefined && month.getFullYear() - 1 < minOk.getFullYear()}
                     className={cn(NAV_BTN, 'absolute left-0')}
@@ -436,14 +454,14 @@ export function DateField({
                       setView('years');
                     }}
                     className="flex items-center gap-1 rounded-md px-2 py-0.5 text-sm font-bold text-foreground hover:bg-muted focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none"
-                    aria-label="Choisir l'année"
+                    aria-label={t('chooseYear')}
                   >
                     {month.getFullYear()}
                     <ChevronDown size={14} className="text-muted-foreground" />
                   </button>
                   <button
                     type="button"
-                    aria-label="Année suivante"
+                    aria-label={t('nextYear')}
                     onClick={() => setMonth((m) => addYears(m, 1))}
                     disabled={maxOk !== undefined && month.getFullYear() + 1 > maxOk.getFullYear()}
                     className={cn(NAV_BTN, 'absolute right-0')}
@@ -478,7 +496,7 @@ export function DateField({
                             'bg-primary font-bold text-primary-foreground hover:bg-primary',
                         )}
                       >
-                        {format(d, 'MMM', { locale: fr }).replace('.', '')}
+                        {format(d, 'MMM', { locale: dateLocale }).replace('.', '')}
                       </button>
                     );
                   })}
@@ -496,7 +514,7 @@ export function DateField({
                 }}
                 className="rounded-md px-2 py-1 text-xs font-semibold text-primary hover:bg-muted focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40"
               >
-                Aujourd&apos;hui
+                {t('today')}
               </button>
               {view !== 'days' ? (
                 <button
@@ -504,7 +522,7 @@ export function DateField({
                   onClick={() => setView('days')}
                   className="rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none"
                 >
-                  Retour aux jours
+                  {t('backToDays')}
                 </button>
               ) : (
                 <button
@@ -516,7 +534,7 @@ export function DateField({
                   }}
                   className="rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40"
                 >
-                  Effacer
+                  {t('clear')}
                 </button>
               )}
             </div>
@@ -525,9 +543,9 @@ export function DateField({
       </Popover.Root>
       {invalid ? (
         <span role="alert" className="text-2xs text-destructive-foreground">
-          Date invalide — utilise le format jj/mm/aaaa
+          {t('invalidDate')}
           {minDate || maxDate
-            ? ` (entre ${minDate ? formatTyped(minDate) : '…'} et ${maxDate ? formatTyped(maxDate) : '…'})`
+            ? ` ${t('invalidDateRange', { min: minDate ? formatTyped(minDate) : '…', max: maxDate ? formatTyped(maxDate) : '…' })}`
             : ''}
         </span>
       ) : (

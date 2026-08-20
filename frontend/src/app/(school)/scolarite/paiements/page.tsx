@@ -95,6 +95,8 @@ export default function FeeManagementPage() {
   const t = useTranslations('Fees.overview');
   const tStatus = useTranslations('Fees.studentStatus');
   const tWhatsapp = useTranslations('Fees.whatsapp');
+  const tReceipt = useTranslations('Fees.receipt');
+  const tMethod = useTranslations('Fees.paymentMethod');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<OverviewResponse | null>(null);
@@ -173,6 +175,17 @@ export default function FeeManagementPage() {
         reference: last.reference ?? undefined,
         paidAt: last.paidAt,
         currency,
+        locale: bcp47,
+        labels: {
+          title: tReceipt('title'),
+          tranche: tReceipt('tranche'),
+          amountPaid: tReceipt('amountPaid'),
+          latePenalty: tReceipt('latePenalty'),
+          paymentMethod: tReceipt('paymentMethod'),
+          reference: tReceipt('reference'),
+          totalCollected: tReceipt('totalCollected'),
+          methodLabel: tMethod(last.method),
+        },
       });
     } catch {
       toast(t('printReceiptLoadError'), 'error');

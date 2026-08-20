@@ -55,6 +55,7 @@ export function FeeHistoryModal({
 }) {
   const t = useTranslations('Fees.history');
   const tMethod = useTranslations('Fees.paymentMethod');
+  const tReceipt = useTranslations('Fees.receipt');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<HistoryResponse | null>(null);
@@ -83,6 +84,17 @@ export function FeeHistoryModal({
       reference: payment.reference ?? undefined,
       paidAt: payment.paidAt,
       currency,
+      locale: bcp47,
+      labels: {
+        title: tReceipt('title'),
+        tranche: tReceipt('tranche'),
+        amountPaid: tReceipt('amountPaid'),
+        latePenalty: tReceipt('latePenalty'),
+        paymentMethod: tReceipt('paymentMethod'),
+        reference: tReceipt('reference'),
+        totalCollected: tReceipt('totalCollected'),
+        methodLabel: tMethod(payment.method),
+      },
     });
   }
 

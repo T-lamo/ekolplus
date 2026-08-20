@@ -248,5 +248,14 @@
     "paymentsTitle": "Peman anrejistre",
     "noPayments": "Pa gen peman ki anrejistre.",
     "printReceiptAria": "Enprime resi a"
+  },
+  "receipt": {
+    "title": "Resi peman",
+    "tranche": "Vèsman",
+    "amountPaid": "Montan peye",
+    "latePenalty": "Penalite reta",
+    "paymentMethod": "Mòd peman",
+    "reference": "Referans",
+    "totalCollected": "Total kolekte"
   }
 }

@@ -247,5 +247,14 @@
     "paymentsTitle": "Recorded payments",
     "noPayments": "No payments recorded.",
     "printReceiptAria": "Print receipt"
+  },
+  "receipt": {
+    "title": "Payment receipt",
+    "tranche": "Installment",
+    "amountPaid": "Amount paid",
+    "latePenalty": "Late penalty",
+    "paymentMethod": "Payment method",
+    "reference": "Reference",
+    "totalCollected": "Total collected"
   }
 }

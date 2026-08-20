@@ -76,6 +76,7 @@ export function PaymentRegistrationModal({
   const { toast } = useToast();
   const t = useTranslations('Fees.registerPayment');
   const tMethod = useTranslations('Fees.paymentMethod');
+  const tReceipt = useTranslations('Fees.receipt');
   const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
@@ -156,6 +157,17 @@ export function PaymentRegistrationModal({
           reference,
           paidAt,
           currency,
+          locale: bcp47,
+          labels: {
+            title: tReceipt('title'),
+            tranche: tReceipt('tranche'),
+            amountPaid: tReceipt('amountPaid'),
+            latePenalty: tReceipt('latePenalty'),
+            paymentMethod: tReceipt('paymentMethod'),
+            reference: tReceipt('reference'),
+            totalCollected: tReceipt('totalCollected'),
+            methodLabel: tMethod(method),
+          },
         });
       }
       toast(t('savedToast'), 'success');

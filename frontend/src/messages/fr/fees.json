@@ -247,5 +247,14 @@
     "paymentsTitle": "Paiements enregistrés",
     "noPayments": "Aucun paiement enregistré.",
     "printReceiptAria": "Imprimer le reçu"
+  },
+  "receipt": {
+    "title": "Reçu de paiement",
+    "tranche": "Tranche",
+    "amountPaid": "Montant versé",
+    "latePenalty": "Pénalité de retard",
+    "paymentMethod": "Mode de paiement",
+    "reference": "Référence",
+    "totalCollected": "Total encaissé"
   }
 }

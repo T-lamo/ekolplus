@@ -47,5 +47,74 @@
     "statusComplete": "Konplè",
     "statusInProgress": "An kou",
     "statusTodo": "Pou fè"
+  },
+  "list": {
+    "title": "Apresyasyon",
+    "subtitle": "Antre ak jesyon apresyasyon yo — Ane eskolè {year}",
+    "export": "Ekspòte",
+    "newEntry": "Antre apresyasyon",
+    "loadError": "Nou pa t kapab chaje apresyasyon yo.",
+    "noClasses": "Konfigire klas ak elèv anvan ou antre apresyasyon.",
+    "deleteConfirm": "Efase apresyasyon jeneral {name} an?",
+    "deletedToast": "Apresyasyon efase.",
+    "deleteErrorToast": "Erè pandan efasman an.",
+    "menuView": "Wè apresyasyon an",
+    "menuEdit": "Modifye apresyasyon an",
+    "menuDelete": "Efase apresyasyon an",
+    "summary": {
+      "totalStudents": "Total elèv",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Apresyasyon ki antre",
+      "recordedSub": {
+        "one": "sou {count} elèv",
+        "other": "sou {count} elèv"
+      },
+      "pending": "An atant",
+      "pendingSub": "pou konplete",
+      "positive": "Trè byen / Byen",
+      "positiveSub": "mansyon pozitif",
+      "alert": "Pou siveye",
+      "alertSub": "mansyon ensifizan"
+    },
+    "searchPlaceholder": "Chèche yon elèv...",
+    "allMentions": "Tout mansyon",
+    "resultsCount": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    },
+    "tabs": {
+      "byStudent": "Pa elèv",
+      "bySubject": "Pa matyè",
+      "statistics": "Estatistik",
+      "pending": "An atant"
+    },
+    "noStudents": "Pa gen elèv enskri nan klas sa a.",
+    "table": {
+      "student": "Elèv",
+      "average": "Mwayèn",
+      "mention": "Mansyon",
+      "generalAppreciation": "Apresyasyon jeneral",
+      "homeroomTeacher": "Pwofesè prensipal",
+      "status": "Estati"
+    },
+    "notProvided": "Pa ranpli",
+    "noAppreciation": "Pa gen apresyasyon antre pou elèv sa a.",
+    "statusRecorded": "Antre",
+    "statusPending": "An atant",
+    "paginationRange": "N ap montre {from} rive {to} sou {total} elèv —",
+    "paginationRecorded": "{count} apresyasyon ki antre",
+    "paginationPending": ", {count} an atant",
+    "csv": {
+      "filenamePrefix": "apresyasyon",
+      "colStudent": "Elèv",
+      "colNumber": "N°",
+      "colAverage": "Mwayèn",
+      "colMention": "Mansyon",
+      "colGeneralAppreciation": "Apresyasyon jeneral",
+      "colHomeroomTeacher": "Pwofesè prensipal",
+      "colStatus": "Estati",
+      "statusRecorded": "Antre",
+      "statusPending": "An atant"
+    }
   }
 }

@@ -46,5 +46,74 @@
     "statusComplete": "Complete",
     "statusInProgress": "In progress",
     "statusTodo": "To do"
+  },
+  "list": {
+    "title": "Appreciations",
+    "subtitle": "Recording and managing appreciations — School year {year}",
+    "export": "Export",
+    "newEntry": "Enter appreciations",
+    "loadError": "Unable to load the appreciations.",
+    "noClasses": "Set up classes and students first, before recording appreciations.",
+    "deleteConfirm": "Delete {name}'s general appreciation?",
+    "deletedToast": "Appreciation deleted.",
+    "deleteErrorToast": "Deletion failed.",
+    "menuView": "View appreciation",
+    "menuEdit": "Edit appreciation",
+    "menuDelete": "Delete appreciation",
+    "summary": {
+      "totalStudents": "Total students",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Appreciations recorded",
+      "recordedSub": {
+        "one": "of {count} student",
+        "other": "of {count} students"
+      },
+      "pending": "Pending",
+      "pendingSub": "to complete",
+      "positive": "Excellent / Good",
+      "positiveSub": "positive mentions",
+      "alert": "To watch",
+      "alertSub": "insufficient mentions"
+    },
+    "searchPlaceholder": "Search for a student...",
+    "allMentions": "All mentions",
+    "resultsCount": {
+      "one": "{count} student",
+      "other": "{count} students"
+    },
+    "tabs": {
+      "byStudent": "By student",
+      "bySubject": "By subject",
+      "statistics": "Statistics",
+      "pending": "Pending"
+    },
+    "noStudents": "No student enrolled in this class.",
+    "table": {
+      "student": "Student",
+      "average": "Average",
+      "mention": "Mention",
+      "generalAppreciation": "General appreciation",
+      "homeroomTeacher": "Homeroom teacher",
+      "status": "Status"
+    },
+    "notProvided": "Not provided",
+    "noAppreciation": "No appreciation recorded for this student.",
+    "statusRecorded": "Recorded",
+    "statusPending": "Pending",
+    "paginationRange": "Showing {from} to {to} of {total} students —",
+    "paginationRecorded": "{count} appreciations recorded",
+    "paginationPending": ", {count} pending",
+    "csv": {
+      "filenamePrefix": "appreciations",
+      "colStudent": "Student",
+      "colNumber": "No.",
+      "colAverage": "Average",
+      "colMention": "Mention",
+      "colGeneralAppreciation": "General appreciation",
+      "colHomeroomTeacher": "Homeroom teacher",
+      "colStatus": "Status",
+      "statusRecorded": "Recorded",
+      "statusPending": "Pending"
+    }
   }
 }

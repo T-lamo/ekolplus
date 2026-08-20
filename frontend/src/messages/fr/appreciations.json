@@ -46,5 +46,74 @@
     "statusComplete": "Complet",
     "statusInProgress": "En cours",
     "statusTodo": "À faire"
+  },
+  "list": {
+    "title": "Appréciations",
+    "subtitle": "Saisie et gestion des appréciations — Année scolaire {year}",
+    "export": "Exporter",
+    "newEntry": "Saisir appréciations",
+    "loadError": "Impossible de charger les appréciations.",
+    "noClasses": "Configurez d'abord des classes et des élèves avant de saisir des appréciations.",
+    "deleteConfirm": "Supprimer l'appréciation générale de {name} ?",
+    "deletedToast": "Appréciation supprimée.",
+    "deleteErrorToast": "Erreur lors de la suppression.",
+    "menuView": "Voir l'appréciation",
+    "menuEdit": "Modifier l'appréciation",
+    "menuDelete": "Supprimer l'appréciation",
+    "summary": {
+      "totalStudents": "Total élèves",
+      "totalStudentsSub": "{className} — {term}",
+      "recorded": "Appréciations saisies",
+      "recordedSub": {
+        "one": "sur {count} élève",
+        "other": "sur {count} élèves"
+      },
+      "pending": "En attente",
+      "pendingSub": "à compléter",
+      "positive": "Très bien / Bien",
+      "positiveSub": "mentions positives",
+      "alert": "À surveiller",
+      "alertSub": "mentions insuffisant"
+    },
+    "searchPlaceholder": "Rechercher un élève...",
+    "allMentions": "Toutes mentions",
+    "resultsCount": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    },
+    "tabs": {
+      "byStudent": "Par élève",
+      "bySubject": "Par matière",
+      "statistics": "Statistiques",
+      "pending": "En attente"
+    },
+    "noStudents": "Aucun élève inscrit dans cette classe.",
+    "table": {
+      "student": "Élève",
+      "average": "Moyenne",
+      "mention": "Mention",
+      "generalAppreciation": "Appréciation générale",
+      "homeroomTeacher": "Enseignant principal",
+      "status": "Statut"
+    },
+    "notProvided": "Non renseigné",
+    "noAppreciation": "Aucune appréciation saisie pour cet élève.",
+    "statusRecorded": "Saisie",
+    "statusPending": "En attente",
+    "paginationRange": "Affichage de {from} à {to} sur {total} élèves —",
+    "paginationRecorded": "{count} appréciations saisies",
+    "paginationPending": ", {count} en attente",
+    "csv": {
+      "filenamePrefix": "appreciations",
+      "colStudent": "Élève",
+      "colNumber": "N°",
+      "colAverage": "Moyenne",
+      "colMention": "Mention",
+      "colGeneralAppreciation": "Appréciation générale",
+      "colHomeroomTeacher": "Enseignant principal",
+      "colStatus": "Statut",
+      "statusRecorded": "Saisie",
+      "statusPending": "En attente"
+    }
   }
 }

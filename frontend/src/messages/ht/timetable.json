@@ -1,1 +1,29 @@
-{}
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "sessionType": {
+    "CM": "Kou majistral",
+    "TD": "Travo dirije",
+    "TP": "Travo pratik",
+    "EXAM": "Egzamen"
+  },
+  "legend": {
+    "subjectsAriaLabel": "Lejand matyè yo",
+    "empty": "Pa gen matyè pou peryòd sa a",
+    "typesAriaLabel": "Kalite seyans"
+  },
+  "grid": {
+    "addSessionAriaLabel": "Ajoute yon kou {day} a {time}"
+  },
+  "agenda": {
+    "emptyTitle": "Pa gen seyans pou peryòd sa a",
+    "emptyHint": "Ajoute yon kou oswa chanje semèn ak flèch yo.",
+    "todayBadge": "Jodi a"
+  },
+  "month": {
+    "viewDayAriaLabel": "Wè {day}",
+    "more": {
+      "one": "+{count} lòt",
+      "other": "+{count} lòt"
+    }
+  }
+}

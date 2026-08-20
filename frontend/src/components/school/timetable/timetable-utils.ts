@@ -147,31 +147,27 @@ export const TIME_OPTIONS: number[] = Array.from(
 
 // ─── Session types ─────────────────────────────────────────────────────────
 export const SESSION_TYPES: SessionType[] = ['CM', 'TD', 'TP', 'EXAM'];
-export const TYPE_META: Record<
-  SessionType,
-  { short: string; label: string; badge: string; active: string }
-> = {
+/** Visual metadata of a session type. The user-visible long label is NOT
+ * here — it lives in the `timetable.sessionType.*` message group so it can
+ * be translated; `short` is the persisted API code and stays as-is. */
+export const TYPE_META: Record<SessionType, { short: string; badge: string; active: string }> = {
   CM: {
     short: 'CM',
-    label: 'Cours magistral',
     badge: 'bg-[#ddd6fe] text-[#5b21b6]',
     active: 'border-[#7c3aed] bg-[#ede9fb] text-[#5b21b6]',
   },
   TD: {
     short: 'TD',
-    label: 'Travaux dirigés',
     badge: 'bg-[#d1fae5] text-[#065f46]',
     active: 'border-[#059669] bg-[#d1fae5] text-[#065f46]',
   },
   TP: {
     short: 'TP',
-    label: 'Travaux pratiques',
     badge: 'bg-[#fee2e2] text-[#991b1b]',
     active: 'border-[#e11d48] bg-[#fee2e2] text-[#991b1b]',
   },
   EXAM: {
     short: 'EXAM',
-    label: 'Examen',
     badge: 'bg-[#fef3c7] text-[#92400e]',
     active: 'border-[#d97706] bg-[#fef3c7] text-[#92400e]',
   },

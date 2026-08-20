@@ -1,1 +1,28 @@
-{}
+{
+  "sessionType": {
+    "CM": "Cours magistral",
+    "TD": "Travaux dirigés",
+    "TP": "Travaux pratiques",
+    "EXAM": "Examen"
+  },
+  "legend": {
+    "subjectsAriaLabel": "Légende des matières",
+    "empty": "Aucune matière sur cette période",
+    "typesAriaLabel": "Types de séance"
+  },
+  "grid": {
+    "addSessionAriaLabel": "Ajouter un cours {day} à {time}"
+  },
+  "agenda": {
+    "emptyTitle": "Aucune séance sur cette période",
+    "emptyHint": "Ajoutez un cours ou changez de semaine avec les flèches.",
+    "todayBadge": "Aujourd'hui"
+  },
+  "month": {
+    "viewDayAriaLabel": "Voir le {day}",
+    "more": {
+      "one": "+{count} autre",
+      "other": "+{count} autres"
+    }
+  }
+}

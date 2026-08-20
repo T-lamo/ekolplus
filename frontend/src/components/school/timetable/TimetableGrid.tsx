@@ -8,7 +8,7 @@
 // falls on one), Day view = the same grid with a single column. The card
 // scrolls horizontally under 640px so the grid never squeezes.
 import { Clock } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CourseCard } from './CourseCard';
 import type { TimetableSession } from './types';
 import {
@@ -43,6 +43,7 @@ export function TimetableGrid({
   onSlotClick?: (day: string, startMinutes: number) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations('Timetable.grid');
   const rows = buildRows(sessions, days, locale);
   const cols = COLS[days.length] ?? COLS[5];
   const single = days.length === 1;
@@ -111,7 +112,10 @@ export function TimetableGrid({
                       <button
                         type="button"
                         onClick={() => onSlotClick(day, row.start)}
-                        aria-label={`Ajouter un cours ${formatLong(day, locale)} à ${minutesToHHMM(row.start)}`}
+                        aria-label={t('addSessionAriaLabel', {
+                          day: formatLong(day, locale),
+                          time: minutesToHHMM(row.start),
+                        })}
                         className="absolute inset-0 rounded-sm focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none focus-visible:ring-inset"
                       />
                     )}

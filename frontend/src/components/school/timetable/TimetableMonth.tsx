@@ -3,7 +3,7 @@
 // Month view (emploi-du-temps.md): 7-column calendar (Mon → Sun), each day
 // shows up to 3 compact course chips + « +N » ; clicking a day opens it in
 // the Day view. Outside-month days are dimmed, today gets the primary disc.
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CourseCard } from './CourseCard';
 import type { TimetableSession } from './types';
 import { monthGrid, sessionsOn, weekdayHeaders } from './timetable-utils';
@@ -25,6 +25,7 @@ export function TimetableMonth({
   onSessionClick: (session: TimetableSession) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations('Timetable.month');
   const grid = monthGrid(anchor);
   const month = anchor.slice(0, 7);
   const headers = weekdayHeaders(locale);
@@ -65,7 +66,7 @@ export function TimetableMonth({
                     <button
                       type="button"
                       onClick={() => onDayClick(day)}
-                      aria-label={`Voir le ${day}`}
+                      aria-label={t('viewDayAriaLabel', { day })}
                       className={cn(
                         'mb-0.5 flex h-[22px] w-[22px] items-center justify-center self-start rounded-full text-2xs font-semibold hover:bg-muted',
                         isToday
@@ -92,7 +93,7 @@ export function TimetableMonth({
                         onClick={() => onDayClick(day)}
                         className="self-start px-1 text-[10px] font-semibold text-primary hover:underline"
                       >
-                        +{extra} autre{extra > 1 ? 's' : ''}
+                        {t(extra === 1 ? 'more.one' : 'more.other', { count: extra })}
                       </button>
                     )}
                   </div>

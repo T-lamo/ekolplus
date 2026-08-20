@@ -4,7 +4,7 @@
 // by day — time range, colour band, subject + « Classe · Enseignant · Salle »,
 // type pill. Same data as the grid; reads better on a phone.
 import { CalendarX2 } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { TimetableSession } from './types';
 import {
   cardColors,
@@ -29,17 +29,14 @@ export function TimetableAgenda({
   onSessionClick: (session: TimetableSession) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations('Timetable.agenda');
   const total = days.reduce((n, d) => n + sessionsOn(sessions, d, locale).length, 0);
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-10 text-center">
         <CalendarX2 size={22} className="text-muted-foreground" />
-        <p className="text-caption font-semibold text-foreground">
-          Aucune séance sur cette période
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Ajoute un cours ou change de semaine avec les flèches.
-        </p>
+        <p className="text-caption font-semibold text-foreground">{t('emptyTitle')}</p>
+        <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
       </div>
     );
   }
@@ -68,7 +65,7 @@ export function TimetableAgenda({
               <span className="text-2xs text-muted-foreground">{formatDayShort(day, locale)}</span>
               {isToday && (
                 <span className="ml-auto rounded-full bg-card px-2 py-px text-[10px] font-semibold text-primary">
-                  Aujourd’hui
+                  {t('todayBadge')}
                 </span>
               )}
             </h3>

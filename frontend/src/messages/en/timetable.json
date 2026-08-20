@@ -1,1 +1,28 @@
-{}
+{
+  "sessionType": {
+    "CM": "Lecture",
+    "TD": "Tutorial",
+    "TP": "Lab work",
+    "EXAM": "Exam"
+  },
+  "legend": {
+    "subjectsAriaLabel": "Subject legend",
+    "empty": "No subject in this period",
+    "typesAriaLabel": "Session types"
+  },
+  "grid": {
+    "addSessionAriaLabel": "Add a course on {day} at {time}"
+  },
+  "agenda": {
+    "emptyTitle": "No session in this period",
+    "emptyHint": "Add a course or change week with the arrows.",
+    "todayBadge": "Today"
+  },
+  "month": {
+    "viewDayAriaLabel": "View {day}",
+    "more": {
+      "one": "+{count} more",
+      "other": "+{count} more"
+    }
+  }
+}

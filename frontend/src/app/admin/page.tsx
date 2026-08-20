@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
     if (!data) return;
     exportToCsv(
       'rapport-admin.csv',
-      ['Indicateur', 'Valeur'],
+      [tAdmin('csvIndicator'), tAdmin('csvValue')],
       [
         [tAdmin('kpi.totalSchools'), String(data.kpis.totalSchools)],
         [tAdmin('kpi.totalUsers'), String(data.kpis.totalUsers)],

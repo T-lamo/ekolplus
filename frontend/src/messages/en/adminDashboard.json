@@ -4,6 +4,8 @@
   "exportReport": "Export report",
   "createSchool": "Create a school",
   "seeAll": "See all",
+  "csvIndicator": "Metric",
+  "csvValue": "Value",
   "studentsSuffix": "students",
   "kpi": {
     "totalSchools": "Active schools",

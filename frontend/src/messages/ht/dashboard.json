@@ -3,6 +3,8 @@
   "title": "Tablo debò",
   "subtitle": "Byenveni, {name} — men apèsi sou lekòl la",
   "export": "Ekspòte",
+  "csvIndicator": "Endikatè",
+  "csvValue": "Valè",
   "academicYearBadge": "Ane {label}",
   "loadError": "Nou pa ka chaje tablo debò a.",
   "emptyYear": "Pa gen ane eskolè aktif — konfigire ane eskolè a dabò nan « Paramèt ».",

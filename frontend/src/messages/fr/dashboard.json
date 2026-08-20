@@ -2,6 +2,8 @@
   "title": "Tableau de bord",
   "subtitle": "Bienvenue, {name} — voici l'aperçu de l'établissement",
   "export": "Export",
+  "csvIndicator": "Indicateur",
+  "csvValue": "Valeur",
   "academicYearBadge": "Année {label}",
   "loadError": "Impossible de charger le tableau de bord.",
   "emptyYear": "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",

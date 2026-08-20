@@ -2,6 +2,8 @@
   "title": "Dashboard",
   "subtitle": "Welcome, {name} — here's the overview of your school",
   "export": "Export",
+  "csvIndicator": "Metric",
+  "csvValue": "Value",
   "academicYearBadge": "Year {label}",
   "loadError": "Unable to load the dashboard.",
   "emptyYear": "No active school year — set up the school year first in \"Settings\".",

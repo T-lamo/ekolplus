@@ -51,7 +51,7 @@ export default function DashboardPage() {
     if (!data) return;
     exportToCsv(
       'tableau-de-bord.csv',
-      ['Indicateur', 'Valeur'],
+      [t('csvIndicator'), t('csvValue')],
       [
         [t('kpis.students'), data.kpis.studentsCount],
         [t('kpis.teachers'), data.kpis.teachersCount],

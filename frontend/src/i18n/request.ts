@@ -43,6 +43,7 @@ export default getRequestConfig(async () => {
     eleves,
     configuration,
     gradebook,
+    fees,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -64,6 +65,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/eleves.json`),
     import(`../messages/${locale}/configuration.json`),
     import(`../messages/${locale}/gradebook.json`),
+    import(`../messages/${locale}/fees.json`),
   ]);
 
   return {
@@ -89,6 +91,7 @@ export default getRequestConfig(async () => {
       Eleves: eleves.default,
       Configuration: configuration.default,
       Gradebook: gradebook.default,
+      Fees: fees.default,
     },
   };
 });

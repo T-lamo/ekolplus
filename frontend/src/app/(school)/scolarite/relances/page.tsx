@@ -11,6 +11,7 @@ import {
   Send,
   Wallet,
 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
@@ -29,8 +30,8 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
-import { FEES } from '@/lib/constants';
 import { ASIDE_GRID, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { fmtMoney, fmtDate } from '@/lib/fees-format';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
 import { FeeKpiRow } from '@/components/school/fees/FeeKpiRow';
@@ -83,11 +84,15 @@ interface AutomationSettings {
   whatsappRemindersEnabled: boolean;
 }
 
-const t = FEES.overdue;
-
 export default function OverdueFeesPage() {
   const user = useUser();
   const { toast } = useToast();
+  const t = useTranslations('Fees.overdue');
+  const tWhatsapp = useTranslations('Fees.whatsapp');
+  const tCommon = useTranslations('Common');
+  const tStub = useTranslations('Fees');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<OverdueResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -112,8 +117,8 @@ export default function OverdueFeesPage() {
         setData(res);
         setSelected(new Set());
       })
-      .catch(() => setError('Impossible de charger les relances.'));
-  }, [search, classFilter, page]);
+      .catch(() => setError(t('loadError')));
+  }, [search, classFilter, page, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -157,53 +162,53 @@ export default function OverdueFeesPage() {
       await api('/api/school/fees/automation-settings', { method: 'PATCH', body: patch });
     } catch (err) {
       setAutomation(automation);
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   async function sendWhatsappReminder(row: OverdueRow) {
     try {
       await api(`/api/school/fees/students/${row.studentId}/send-whatsapp`, { method: 'POST' });
-      toast('Rappel WhatsApp envoyé.', 'success');
+      toast(tWhatsapp('sentSuccess'), 'success');
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.code === 'NO_GUARDIAN_PHONE') {
-          toast('Aucun numéro de tuteur principal renseigné pour cet élève.', 'error');
+          toast(tWhatsapp('errorNoGuardianPhone'), 'error');
           return;
         }
         if (err.code === 'NO_BALANCE_DUE') {
-          toast('Aucun solde restant pour cet élève.', 'error');
+          toast(tWhatsapp('errorNoBalance'), 'error');
           return;
         }
         if (err.code === 'NOT_CONFIGURED') {
-          toast("L'envoi WhatsApp n'est pas encore configuré.", 'error');
+          toast(tWhatsapp('errorNotConfigured'), 'error');
           return;
         }
       }
-      toast('Envoi WhatsApp impossible. Réessaie.', 'error');
+      toast(tWhatsapp('errorSendFailed'), 'error');
     }
   }
 
   function menuItemsFor(row: OverdueRow) {
     return [
       {
-        label: t.rowActions.registerPayment,
+        label: t('rowActions.registerPayment'),
         icon: <Wallet size={14} />,
         onClick: () => setRegisteringFor({ studentId: row.studentId, trancheId: row.trancheId }),
       },
       {
-        label: t.rowActions.sendReminder,
+        label: t('rowActions.sendReminder'),
         icon: <Send size={14} />,
         onClick: () => void sendWhatsappReminder(row),
       },
       {
-        label: t.rowActions.viewHistory,
+        label: t('rowActions.viewHistory'),
         icon: <Eye size={14} />,
         onClick: () => setHistoryFor(row.studentId),
         divider: true,
       },
       {
-        label: t.rowActions.markDisputed,
+        label: t('rowActions.markDisputed'),
         icon: <Flag size={14} />,
         onClick: () => setDisputing({ studentId: row.studentId, trancheId: row.trancheId }),
       },
@@ -215,13 +220,13 @@ export default function OverdueFeesPage() {
     exportToCsv(
       'relances-impayes.csv',
       [
-        t.columns.student,
-        t.columns.class,
-        t.columns.tranche,
-        t.columns.amountDue,
-        t.columns.overdue,
-        t.columns.status,
-        t.columns.lastReminder,
+        t('columns.student'),
+        t('columns.class'),
+        t('columns.tranche'),
+        t('columns.amountDue'),
+        t('columns.overdue'),
+        t('columns.status'),
+        t('columns.lastReminder'),
       ],
       data.rows.map((r) => [
         `${r.firstName} ${r.lastName}`,
@@ -230,7 +235,7 @@ export default function OverdueFeesPage() {
         r.amountDue,
         r.daysOverdue,
         r.severity,
-        r.lastReminderAt ? fmtDate(r.lastReminderAt) : '—',
+        r.lastReminderAt ? fmtDate(r.lastReminderAt, bcp47) : '—',
       ]),
     );
   }
@@ -247,17 +252,19 @@ export default function OverdueFeesPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExportList} disabled={!data}>
             <Download size={14} />
-            {t.exportList}
+            {t('exportList')}
           </Button>
-          <Button className="w-fit" onClick={() => toast(FEES.stub, 'info')}>
+          <Button className="w-fit" onClick={() => toast(tStub('stub'), 'info')}>
             <Bell size={14} />
-            {t.bulkReminder(selected.size)}
+            {selected.size > 0
+              ? t('bulkReminderWithCount', { n: selected.size })
+              : t('bulkReminderBase')}
           </Button>
         </div>
       </div>
@@ -286,23 +293,23 @@ export default function OverdueFeesPage() {
             items={[
               {
                 icon: <Wallet size={14} />,
-                label: t.kpiTotalUnpaid,
+                label: t('kpiTotalUnpaid'),
                 value: fmtMoney(data.kpis.totalUnpaid, automation?.currency),
               },
               {
                 icon: <CircleAlert size={14} />,
-                label: t.kpiCritical,
+                label: t('kpiCritical'),
                 value: String(data.kpis.criticalCount),
               },
               {
                 icon: <Send size={14} />,
-                label: t.kpiSent,
+                label: t('kpiSent'),
                 value: String(data.kpis.remindersSentThisMonth),
               },
               {
                 icon: <Bell size={14} />,
-                label: t.kpiNextDue,
-                value: data.kpis.nextDue ? fmtDate(data.kpis.nextDue.dueDate) : '—',
+                label: t('kpiNextDue'),
+                value: data.kpis.nextDue ? fmtDate(data.kpis.nextDue.dueDate, bcp47) : '—',
                 sub: data.kpis.nextDue?.trancheLabel,
               },
             ]}
@@ -314,11 +321,11 @@ export default function OverdueFeesPage() {
                 <SearchInput
                   value={search}
                   onChange={(e) => updateSearch(e.target.value)}
-                  placeholder={t.searchPlaceholder}
+                  placeholder={t('searchPlaceholder')}
                   className="max-w-[300px]"
                 />
                 <FilterSelect value={classFilter} onValueChange={updateClassFilter}>
-                  <SelectItem value="">{FEES.overview.classFilterAll}</SelectItem>
+                  <SelectItem value="">{t('classFilterAll')}</SelectItem>
                   {data.classes.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -327,14 +334,16 @@ export default function OverdueFeesPage() {
                 </FilterSelect>
                 {selected.size > 0 && (
                   <span className="text-sm font-semibold text-primary">
-                    {t.selectedCount(selected.size)}
+                    {t(selected.size > 1 ? 'selectedCount.other' : 'selectedCount.one', {
+                      n: selected.size,
+                    })}
                   </span>
                 )}
               </div>
 
               {data.rows.length === 0 ? (
                 <Card>
-                  <p className="p-5 text-sm text-muted-foreground">Aucun retard de paiement.</p>
+                  <p className="p-5 text-sm text-muted-foreground">{t('noResults')}</p>
                 </Card>
               ) : (
                 <Card>
@@ -345,18 +354,18 @@ export default function OverdueFeesPage() {
                           <Th className="w-10">
                             <input
                               type="checkbox"
-                              aria-label="Tout sélectionner"
+                              aria-label={t('selectAllAria')}
                               checked={selected.size === data.rows.length}
                               onChange={toggleAll}
                             />
                           </Th>
-                          <Th>{t.columns.student}</Th>
-                          <Th>{t.columns.class}</Th>
-                          <Th>{t.columns.tranche}</Th>
-                          <Th>{t.columns.amountDue}</Th>
-                          <Th>{t.columns.overdue}</Th>
-                          <Th>{t.columns.status}</Th>
-                          <Th>{t.columns.lastReminder}</Th>
+                          <Th>{t('columns.student')}</Th>
+                          <Th>{t('columns.class')}</Th>
+                          <Th>{t('columns.tranche')}</Th>
+                          <Th>{t('columns.amountDue')}</Th>
+                          <Th>{t('columns.overdue')}</Th>
+                          <Th>{t('columns.status')}</Th>
+                          <Th>{t('columns.lastReminder')}</Th>
                           <Th className="w-[70px]" />
                         </tr>
                       </thead>
@@ -368,7 +377,9 @@ export default function OverdueFeesPage() {
                               <td className="px-3.5 py-2.5">
                                 <input
                                   type="checkbox"
-                                  aria-label={`Sélectionner ${r.firstName} ${r.lastName}`}
+                                  aria-label={t('selectRowAria', {
+                                    name: `${r.firstName} ${r.lastName}`,
+                                  })}
                                   checked={selected.has(key)}
                                   onChange={() => toggleRow(key)}
                                 />
@@ -382,7 +393,7 @@ export default function OverdueFeesPage() {
                                     </div>
                                     <div className="text-2xs text-muted-foreground">
                                       #{r.studentNumber}
-                                      {r.disputed && ' · Litigieux'}
+                                      {r.disputed && ` · ${t('disputedSuffix')}`}
                                     </div>
                                   </div>
                                 </div>
@@ -395,13 +406,15 @@ export default function OverdueFeesPage() {
                                 {fmtMoney(r.amountDue, automation?.currency)}
                               </td>
                               <td className="px-3.5 py-2.5 text-muted-foreground">
-                                {t.daysOverdue(r.daysOverdue)}
+                                {t(r.daysOverdue > 1 ? 'daysOverdue.other' : 'daysOverdue.one', {
+                                  n: r.daysOverdue,
+                                })}
                               </td>
                               <td className="px-3.5 py-2.5">
                                 <SeverityBadge severity={r.severity} />
                               </td>
                               <td className="px-3.5 py-2.5 text-muted-foreground">
-                                {r.lastReminderAt ? fmtDate(r.lastReminderAt) : '—'}
+                                {r.lastReminderAt ? fmtDate(r.lastReminderAt, bcp47) : '—'}
                               </td>
                               <td className="px-3.5 py-2.5">
                                 <ActionMenu items={menuItemsFor(r)} />
@@ -422,7 +435,9 @@ export default function OverdueFeesPage() {
                           <div className="flex items-start gap-2.5">
                             <input
                               type="checkbox"
-                              aria-label={`Sélectionner ${r.firstName} ${r.lastName}`}
+                              aria-label={t('selectRowAria', {
+                                name: `${r.firstName} ${r.lastName}`,
+                              })}
                               checked={selected.has(key)}
                               onChange={() => toggleRow(key)}
                               className="mt-1 shrink-0"
@@ -437,7 +452,7 @@ export default function OverdueFeesPage() {
                                     </div>
                                     <div className="truncate text-2xs text-muted-foreground">
                                       #{r.studentNumber} · {r.className}
-                                      {r.disputed && ' · Litigieux'}
+                                      {r.disputed && ` · ${t('disputedSuffix')}`}
                                     </div>
                                   </div>
                                 </div>
@@ -452,7 +467,10 @@ export default function OverdueFeesPage() {
                                 </span>
                               </div>
                               <div className="mt-1.5 text-2xs text-muted-foreground">
-                                {r.trancheLabel} · {t.daysOverdue(r.daysOverdue)}
+                                {r.trancheLabel} ·{' '}
+                                {t(r.daysOverdue > 1 ? 'daysOverdue.other' : 'daysOverdue.one', {
+                                  n: r.daysOverdue,
+                                })}
                               </div>
                             </div>
                           </div>
@@ -475,41 +493,41 @@ export default function OverdueFeesPage() {
             <div className="flex flex-col gap-5">
               <Card className="gap-3.5 p-4">
                 <div>
-                  <h2 className="text-sm font-bold text-foreground">{t.automationTitle}</h2>
-                  <p className="text-xs text-muted-foreground">{t.automationSubtitle}</p>
+                  <h2 className="text-sm font-bold text-foreground">{t('automationTitle')}</h2>
+                  <p className="text-xs text-muted-foreground">{t('automationSubtitle')}</p>
                 </div>
                 {!automation ? (
                   <Skeleton className="h-32 w-full" />
                 ) : (
                   <div className="flex flex-col gap-3">
                     <ToggleRow
-                      label={t.reminderBefore5Days}
-                      desc={t.reminderBefore5DaysDesc}
+                      label={t('reminderBefore5Days')}
+                      desc={t('reminderBefore5DaysDesc')}
                       checked={automation.reminderBefore5Days}
                       onChange={(v) => patchAutomation({ reminderBefore5Days: v })}
                     />
                     <ToggleRow
-                      label={t.reminderOnDueDate}
-                      desc={t.reminderOnDueDateDesc}
+                      label={t('reminderOnDueDate')}
+                      desc={t('reminderOnDueDateDesc')}
                       checked={automation.reminderOnDueDate}
                       onChange={(v) => patchAutomation({ reminderOnDueDate: v })}
                     />
                     <ToggleRow
-                      label={t.reminderWeekly}
-                      desc={t.reminderWeeklyDesc}
+                      label={t('reminderWeekly')}
+                      desc={t('reminderWeeklyDesc')}
                       checked={automation.reminderWeeklyOverdue}
                       onChange={(v) => patchAutomation({ reminderWeeklyOverdue: v })}
                     />
                     <ToggleRow
-                      label={t.reminderCritical}
-                      desc={t.reminderCriticalDesc}
+                      label={t('reminderCritical')}
+                      desc={t('reminderCriticalDesc')}
                       checked={automation.reminderCriticalOverdue}
                       onChange={(v) => patchAutomation({ reminderCriticalOverdue: v })}
                     />
                     <div className="border-t border-border pt-3">
                       <ToggleRow
-                        label={t.reminderChannelWhatsapp}
-                        desc={t.reminderChannelWhatsappDesc}
+                        label={t('reminderChannelWhatsapp')}
+                        desc={t('reminderChannelWhatsappDesc')}
                         checked={automation.whatsappRemindersEnabled}
                         onChange={(v) => patchAutomation({ whatsappRemindersEnabled: v })}
                       />
@@ -519,7 +537,7 @@ export default function OverdueFeesPage() {
               </Card>
 
               <Card className="gap-3 p-4">
-                <h2 className="text-sm font-bold text-foreground">{t.byClassTitle}</h2>
+                <h2 className="text-sm font-bold text-foreground">{t('byClassTitle')}</h2>
                 <div className="flex flex-col gap-2">
                   {data.breakdown.length === 0 ? (
                     <p className="text-xs text-muted-foreground">—</p>
@@ -535,10 +553,10 @@ export default function OverdueFeesPage() {
               </Card>
 
               <Card className="gap-2 p-4">
-                <h2 className="text-sm font-bold text-foreground">{t.quickActionsTitle}</h2>
+                <h2 className="text-sm font-bold text-foreground">{t('quickActionsTitle')}</h2>
                 <Button variant="outline" className="w-full" onClick={onExportList}>
                   <FileSpreadsheet size={14} />
-                  {t.exportExcel}
+                  {t('exportExcel')}
                 </Button>
               </Card>
             </div>

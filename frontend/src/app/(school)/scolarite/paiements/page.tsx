@@ -13,6 +13,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -31,7 +32,7 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
-import { FEES } from '@/lib/constants';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { fmtMoney, fmtDate, fmtFraction } from '@/lib/fees-format';
 import { openReceiptAndPrint } from '@/lib/fees-receipt';
 import { FeesTabs } from '@/components/school/fees/FeesTabs';
@@ -46,6 +47,8 @@ const FeeHistoryModal = dynamic(
 );
 import { Pager } from '@/components/school/fees/Pager';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+
+const STUDENT_STATUS_KEYS: StudentFeeStatus[] = ['UP_TO_DATE', 'PARTIAL', 'OVERDUE', 'UNPAID'];
 
 interface StudentRow {
   studentId: string;
@@ -85,12 +88,17 @@ interface OverviewResponse {
   } | null;
 }
 
-const t = FEES.overview;
-
 export default function FeeManagementPage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations('Fees.overview');
+  const tStatus = useTranslations('Fees.studentStatus');
+  const tWhatsapp = useTranslations('Fees.whatsapp');
+  const tReceipt = useTranslations('Fees.receipt');
+  const tMethod = useTranslations('Fees.paymentMethod');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<OverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -99,7 +107,7 @@ export default function FeeManagementPage() {
   const [page, setPage] = useState(1);
   const [registeringFor, setRegisteringFor] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
-  const [currency, setCurrency] = useState<string>(FEES.currency);
+  const [currency, setCurrency] = useState<string>('HTG');
 
   const load = useCallback(() => {
     const params = new URLSearchParams();
@@ -109,8 +117,8 @@ export default function FeeManagementPage() {
     params.set('page', String(page));
     api<OverviewResponse>(`/api/school/fees/overview?${params.toString()}`)
       .then(setData)
-      .catch(() => setError('Impossible de charger les frais de scolarité.'));
-  }, [search, classFilter, statusFilter, page]);
+      .catch(() => setError(t('loadError')));
+  }, [search, classFilter, statusFilter, page, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -153,7 +161,7 @@ export default function FeeManagementPage() {
       }>(`/api/school/fees/students/${row.studentId}/history`);
       const last = history.payments[0];
       if (!last) {
-        toast('Aucun paiement enregistré pour cet élève.', 'info');
+        toast(t('printReceiptNoPayment'), 'info');
         return;
       }
       const tranche = history.tranches.find((tr) => tr.id === last.feeTrancheId);
@@ -167,55 +175,66 @@ export default function FeeManagementPage() {
         reference: last.reference ?? undefined,
         paidAt: last.paidAt,
         currency,
+        locale: bcp47,
+        labels: {
+          title: tReceipt('title'),
+          tranche: tReceipt('tranche'),
+          amountPaid: tReceipt('amountPaid'),
+          latePenalty: tReceipt('latePenalty'),
+          paymentMethod: tReceipt('paymentMethod'),
+          reference: tReceipt('reference'),
+          totalCollected: tReceipt('totalCollected'),
+          methodLabel: tMethod(last.method),
+        },
       });
     } catch {
-      toast('Impossible de charger le reçu.', 'error');
+      toast(t('printReceiptLoadError'), 'error');
     }
   }
 
   async function sendWhatsappReminder(row: StudentRow) {
     try {
       await api(`/api/school/fees/students/${row.studentId}/send-whatsapp`, { method: 'POST' });
-      toast('Rappel WhatsApp envoyé.', 'success');
+      toast(tWhatsapp('sentSuccess'), 'success');
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.code === 'NO_GUARDIAN_PHONE') {
-          toast('Aucun numéro de tuteur principal renseigné pour cet élève.', 'error');
+          toast(tWhatsapp('errorNoGuardianPhone'), 'error');
           return;
         }
         if (err.code === 'NO_BALANCE_DUE') {
-          toast('Aucun solde restant pour cet élève.', 'error');
+          toast(tWhatsapp('errorNoBalance'), 'error');
           return;
         }
         if (err.code === 'NOT_CONFIGURED') {
-          toast("L'envoi WhatsApp n'est pas encore configuré.", 'error');
+          toast(tWhatsapp('errorNotConfigured'), 'error');
           return;
         }
       }
-      toast('Envoi WhatsApp impossible. Réessaie.', 'error');
+      toast(tWhatsapp('errorSendFailed'), 'error');
     }
   }
 
   function menuItemsFor(row: StudentRow) {
     return [
       {
-        label: t.rowActions.registerPayment,
+        label: t('rowActions.registerPayment'),
         icon: <Wallet size={14} />,
         onClick: () => setRegisteringFor(row.studentId),
       },
       {
-        label: t.rowActions.sendWhatsapp,
+        label: t('rowActions.sendWhatsapp'),
         icon: <MessageCircle size={14} />,
         onClick: () => void sendWhatsappReminder(row),
       },
       {
-        label: t.rowActions.viewHistory,
+        label: t('rowActions.viewHistory'),
         icon: <Eye size={14} />,
         onClick: () => setHistoryFor(row.studentId),
         divider: true,
       },
       {
-        label: t.rowActions.printReceipt,
+        label: t('rowActions.printReceipt'),
         icon: <Printer size={14} />,
         onClick: () => printLastReceipt(row),
       },
@@ -227,13 +246,13 @@ export default function FeeManagementPage() {
     exportToCsv(
       'frais-scolarite.csv',
       [
-        t.columns.student,
-        t.columns.class,
-        t.columns.totalDue,
-        t.columns.paid,
-        t.columns.remaining,
-        t.columns.status,
-        t.columns.tranches,
+        t('columns.student'),
+        t('columns.class'),
+        t('columns.totalDue'),
+        t('columns.paid'),
+        t('columns.remaining'),
+        t('columns.status'),
+        t('columns.tranches'),
       ],
       data.students.map((s) => [
         `${s.firstName} ${s.lastName}`,
@@ -241,7 +260,7 @@ export default function FeeManagementPage() {
         s.totalDue,
         s.totalPaid,
         s.remaining,
-        FEES.studentStatusLabel[s.status],
+        tStatus(s.status),
         fmtFraction(s.tranchesPaid, s.tranchesTotal),
       ]),
     );
@@ -259,8 +278,8 @@ export default function FeeManagementPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t.title}</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -269,11 +288,11 @@ export default function FeeManagementPage() {
             onClick={() => router.push('/scolarite/configuration')}
           >
             <Settings2 size={14} />
-            {t.configureFees}
+            {t('configureFees')}
           </Button>
           <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
             <Download size={14} />
-            {t.export}
+            {t('export')}
           </Button>
         </div>
       </div>
@@ -302,14 +321,16 @@ export default function FeeManagementPage() {
             <Card className="flex-row items-center justify-between gap-3 border-destructive bg-destructive p-4">
               <div>
                 <p className="text-sm font-bold text-destructive-foreground">
-                  {t.alertBanner(
-                    data.overdueAlert.count,
-                    data.overdueAlert.trancheLabel,
-                    fmtDate(data.overdueAlert.dueDate),
-                  )}
+                  {t(data.overdueAlert.count > 1 ? 'alertBanner.other' : 'alertBanner.one', {
+                    n: data.overdueAlert.count,
+                    tranche: data.overdueAlert.trancheLabel,
+                    dueDate: fmtDate(data.overdueAlert.dueDate, bcp47),
+                  })}
                 </p>
                 <p className="mt-0.5 text-xs text-destructive-foreground">
-                  {t.alertBannerSub(fmtMoney(data.overdueAlert.totalUnpaid, currency))}
+                  {t('alertBannerSub', {
+                    amount: fmtMoney(data.overdueAlert.totalUnpaid, currency),
+                  })}
                 </p>
               </div>
             </Card>
@@ -319,7 +340,7 @@ export default function FeeManagementPage() {
             items={[
               {
                 icon: <Wallet size={14} />,
-                label: t.kpiTotalCollected,
+                label: t('kpiTotalCollected'),
                 value: fmtMoney(data.kpis.totalCollected, currency),
                 progressPercent:
                   data.kpis.totalExpected > 0
@@ -328,7 +349,7 @@ export default function FeeManagementPage() {
               },
               {
                 icon: <Users size={14} />,
-                label: t.kpiUpToDate,
+                label: t('kpiUpToDate'),
                 value: `${data.kpis.upToDateCount}/${data.kpis.totalStudents}`,
                 progressPercent:
                   data.kpis.totalStudents > 0
@@ -337,14 +358,14 @@ export default function FeeManagementPage() {
               },
               {
                 icon: <CircleAlert size={14} />,
-                label: t.kpiOverdue,
+                label: t('kpiOverdue'),
                 value: String(data.kpis.overdueCount),
                 sub: fmtMoney(data.kpis.overdueAmount, currency),
               },
               {
                 icon: <CalendarClock size={14} />,
-                label: t.kpiNextDueDate,
-                value: data.kpis.nextTranche ? fmtDate(data.kpis.nextTranche.dueDate) : '—',
+                label: t('kpiNextDueDate'),
+                value: data.kpis.nextTranche ? fmtDate(data.kpis.nextTranche.dueDate, bcp47) : '—',
                 sub: data.kpis.nextTranche?.label,
               },
             ]}
@@ -354,11 +375,11 @@ export default function FeeManagementPage() {
             <SearchInput
               value={search}
               onChange={(e) => updateSearch(e.target.value)}
-              placeholder={t.searchPlaceholder}
+              placeholder={t('searchPlaceholder')}
               className="max-w-[300px]"
             />
             <FilterSelect value={classFilter} onValueChange={updateClassFilter}>
-              <SelectItem value="">{t.classFilterAll}</SelectItem>
+              <SelectItem value="">{t('classFilterAll')}</SelectItem>
               {data.classes.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
@@ -369,19 +390,21 @@ export default function FeeManagementPage() {
               value={statusFilter}
               onValueChange={(v) => updateStatusFilter(v as '' | StudentFeeStatus)}
             >
-              <SelectItem value="">{t.statusFilterAll}</SelectItem>
-              {Object.entries(FEES.studentStatusLabel).map(([key, label]) => (
+              <SelectItem value="">{t('statusFilterAll')}</SelectItem>
+              {STUDENT_STATUS_KEYS.map((key) => (
                 <SelectItem key={key} value={key}>
-                  {label}
+                  {tStatus(key)}
                 </SelectItem>
               ))}
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{t.resultCount(data.total)}</span>
+            <span className="text-sm text-muted-foreground">
+              {t(data.total > 1 ? 'resultCount.other' : 'resultCount.one', { n: data.total })}
+            </span>
           </div>
 
           {data.students.length === 0 ? (
             <Card>
-              <p className="p-5 text-sm text-muted-foreground">Aucun résultat.</p>
+              <p className="p-5 text-sm text-muted-foreground">{t('noResults')}</p>
             </Card>
           ) : (
             <Card>
@@ -394,13 +417,13 @@ export default function FeeManagementPage() {
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>{t.columns.student}</Th>
-                      <Th>{t.columns.class}</Th>
-                      <Th>{t.columns.totalDue}</Th>
-                      <Th>{t.columns.paid}</Th>
-                      <Th>{t.columns.remaining}</Th>
-                      <Th>{t.columns.status}</Th>
-                      <Th>{t.columns.tranches}</Th>
+                      <Th>{t('columns.student')}</Th>
+                      <Th>{t('columns.class')}</Th>
+                      <Th>{t('columns.totalDue')}</Th>
+                      <Th>{t('columns.paid')}</Th>
+                      <Th>{t('columns.remaining')}</Th>
+                      <Th>{t('columns.status')}</Th>
+                      <Th>{t('columns.tranches')}</Th>
                       <Th className="w-[70px]" />
                     </tr>
                   </thead>
@@ -468,7 +491,7 @@ export default function FeeManagementPage() {
                     <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
                       <StudentStatusBadge status={s.status} />
                       <span className="text-caption font-bold text-foreground">
-                        {t.columns.remaining} : {fmtMoney(s.remaining, currency)}
+                        {t('remainingInline', { amount: fmtMoney(s.remaining, currency) })}
                       </span>
                     </div>
                   </div>

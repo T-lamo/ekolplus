@@ -1,0 +1,258 @@
+{
+  "tabs": {
+    "paiements": "Payment tracking",
+    "relances": "Reminders & Overdue",
+    "configuration": "Configuration"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "Up to date",
+    "PARTIAL": "Partial",
+    "OVERDUE": "Overdue",
+    "UNPAID": "Unpaid"
+  },
+  "trancheStatus": {
+    "PAID": "Paid",
+    "PARTIAL": "Partial",
+    "OVERDUE": "Overdue",
+    "UPCOMING": "Upcoming"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Critical",
+    "OVERDUE": "Overdue",
+    "RECENT": "Recent"
+  },
+  "paymentMethod": {
+    "ESPECES": "Cash",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Check",
+    "VIREMENT": "Bank transfer"
+  },
+  "whatsapp": {
+    "sentSuccess": "WhatsApp reminder sent.",
+    "errorNoGuardianPhone": "No primary guardian phone number on file for this student.",
+    "errorNoBalance": "No remaining balance for this student.",
+    "errorNotConfigured": "WhatsApp sending isn't configured yet.",
+    "errorSendFailed": "Couldn't send the WhatsApp message. Try again."
+  },
+  "overview": {
+    "title": "Fee & Tuition Management",
+    "subtitle": "Payment tracking, installments, and reminders",
+    "export": "Export",
+    "configureFees": "Plan setup",
+    "loadError": "Unable to load tuition fees.",
+    "alertBanner": {
+      "one": "{n} student overdue — {tranche} was due {dueDate}",
+      "other": "{n} students overdue — {tranche} was due {dueDate}"
+    },
+    "alertBannerSub": "Total unpaid amount: {amount}",
+    "kpiTotalCollected": "Total Collected",
+    "kpiUpToDate": "Students Up to Date",
+    "kpiOverdue": "Overdue",
+    "kpiNextDueDate": "Next Due Date",
+    "searchPlaceholder": "Name or student number...",
+    "classFilterAll": "All classes",
+    "statusFilterAll": "All statuses",
+    "resultCount": {
+      "one": "{n} student",
+      "other": "{n} students"
+    },
+    "noResults": "No results.",
+    "columns": {
+      "student": "Student",
+      "class": "Class",
+      "totalDue": "Total due",
+      "paid": "Paid",
+      "remaining": "Remaining",
+      "status": "Status",
+      "tranches": "Installments"
+    },
+    "rowActions": {
+      "registerPayment": "Register a payment",
+      "sendWhatsapp": "Send WhatsApp",
+      "viewHistory": "View history",
+      "printReceipt": "Print receipt"
+    },
+    "printReceiptNoPayment": "No payment recorded for this student.",
+    "printReceiptLoadError": "Unable to load the receipt.",
+    "remainingInline": "Remaining: {amount}"
+  },
+  "stub": "This feature is coming soon.",
+  "overdue": {
+    "title": "Reminders & Overdue",
+    "subtitle": "Manage overdue payments and automate reminders",
+    "exportList": "Export list",
+    "bulkReminderBase": "Bulk reminder",
+    "bulkReminderWithCount": "Bulk reminder ({n})",
+    "loadError": "Unable to load reminders.",
+    "kpiTotalUnpaid": "Total unpaid",
+    "kpiCritical": "Critically overdue",
+    "kpiSent": "Reminders sent",
+    "kpiNextDue": "Next due date",
+    "searchPlaceholder": "Name or student number...",
+    "classFilterAll": "All classes",
+    "selectedCount": {
+      "one": "{n} selected",
+      "other": "{n} selected"
+    },
+    "noResults": "No overdue payments.",
+    "selectAllAria": "Select all",
+    "selectRowAria": "Select {name}",
+    "disputedSuffix": "Disputed",
+    "columns": {
+      "student": "Student",
+      "class": "Class",
+      "tranche": "Installment",
+      "amountDue": "Amount due",
+      "overdue": "Overdue",
+      "status": "Status",
+      "lastReminder": "Last reminder"
+    },
+    "daysOverdue": {
+      "one": "{n} day",
+      "other": "{n} days"
+    },
+    "rowActions": {
+      "registerPayment": "Register a payment",
+      "sendReminder": "Send WhatsApp reminder",
+      "viewHistory": "View history",
+      "markDisputed": "Mark as disputed"
+    },
+    "automationTitle": "Automation",
+    "automationSubtitle": "Automatic reminders",
+    "reminderBefore5Days": "Reminder 5 days before",
+    "reminderBefore5DaysDesc": "Notify before the due date",
+    "reminderOnDueDate": "Reminder on the due date",
+    "reminderOnDueDateDesc": "On the due date itself",
+    "reminderWeekly": "Weekly reminder",
+    "reminderWeeklyDesc": "For payments overdue more than 7 days",
+    "reminderCritical": "Critical alert",
+    "reminderCriticalDesc": "Overdue more than 30 days",
+    "reminderChannelWhatsapp": "Reminders via WhatsApp",
+    "reminderChannelWhatsappDesc": "Paid (Meta fees) — otherwise sent by email, free",
+    "byClassTitle": "Overdue by class",
+    "quickActionsTitle": "Quick actions",
+    "exportExcel": "Export to Excel"
+  },
+  "disputeModal": {
+    "title": "Mark as disputed",
+    "reasonLabel": "Reason (optional)",
+    "confirm": "Mark as disputed",
+    "cancel": "Cancel"
+  },
+  "configuration": {
+    "title": "Tuition Fee Configuration",
+    "subtitle": "Set tuition fees and installments per class for the academic year",
+    "loadClassesError": "Unable to load classes.",
+    "loadStructureError": "Unable to load this class's configuration.",
+    "globalSettingsTitle": "Global settings",
+    "latePenaltyToggle": "Late penalties",
+    "latePenaltyToggleDesc": "Apply a fee after the due date",
+    "autoRemindersToggle": "Automatic reminders",
+    "autoRemindersToggleDesc": "Notify before the due date",
+    "currencyLabel": "Main currency",
+    "currencyOptions": {
+      "HTG": "HTG — Haitian Gourde",
+      "USD": "USD — US Dollar",
+      "XOF": "XOF — CFA Franc (UEMOA)",
+      "XAF": "XAF — CFA Franc (CEMAC)",
+      "EUR": "EUR — Euro"
+    },
+    "selectClassPrompt": "Select a class.",
+    "editorConfigured": "Configured",
+    "editorPending": "Pending",
+    "editorSubtitle": "Set the total amount and installments for this class",
+    "copyFromClass": "Copy from a class",
+    "cancel": "Cancel",
+    "save": "Save",
+    "generalInfoTitle": "General information",
+    "totalAmountLabel": "Total annual amount",
+    "registrationFeeLabel": "Registration fee",
+    "academicYearLabel": "Academic year",
+    "tranchesBuilderTitle": "Installment Builder",
+    "tranchesBuilderSubtitle": {
+      "one": "Allocated: {total} across {count} installment",
+      "other": "Allocated: {total} across {count} installments"
+    },
+    "distributionPrefix": "Allocated:",
+    "addTranche": "Add an installment",
+    "editTranche": "Edit installment",
+    "deleteTrancheAria": "Delete installment",
+    "emptyClassPrompt": "Not configured yet — set the total amount to get started.",
+    "configHeadingPrefix": "Configuration — {className}",
+    "studentCountBadge": {
+      "one": "{n} student",
+      "other": "{n} students"
+    },
+    "trancheDefaultLabel": {
+      "one": "Installment {n}",
+      "other": "Installment {n}"
+    },
+    "trancheFallbackLabel": "Installment {n}",
+    "trancheLatePenaltySummaryWithGrace": "{percent}% after {graceDays}d",
+    "trancheLatePenaltySummaryNoGrace": "{percent}%",
+    "savedToast": "Configuration saved.",
+    "copiedToast": "Configuration copied.",
+    "classListTitle": "School classes",
+    "classListSubtitle": "Select a class to configure",
+    "filterAll": "All",
+    "filterConfigured": "Configured",
+    "filterPending": "Pending",
+    "classSearchPlaceholder": "Filter classes...",
+    "noClassFound": "No class found.",
+    "trancheCountBadge": {
+      "one": "{n} installment",
+      "other": "{n} installments"
+    },
+    "trancheLabelField": "Label",
+    "trancheDueDateField": "Due date",
+    "trancheAmountField": "Amount / Percentage",
+    "trancheLatePenaltyField": "Late penalty (optional)",
+    "trancheGraceDaysField": "Grace period (days)",
+    "noLatePenalty": "No penalty",
+    "saveTranche": "Save"
+  },
+  "registerPayment": {
+    "title": "Register a payment",
+    "subtitle": "Enter the payment details below",
+    "balanceLabel": "Balance due",
+    "selectTranche": "Select the installment",
+    "latePenaltyNote": "A late penalty of {amount} ({percent}%) will be applied automatically to this installment.",
+    "detailsTitle": "Payment details",
+    "amountLabel": "Amount paid",
+    "dateLabel": "Payment date",
+    "referenceLabel": "Reference / Receipt No.",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Notes (optional)",
+    "notesPlaceholder": "Remarks...",
+    "methodTitle": "Payment method",
+    "dueDatePrefix": "due",
+    "totalTitle": "Total amount to collect",
+    "breakdownLabel": "Principal {principal} + Penalty {penalty}",
+    "remainingAfter": "Remaining balance after payment",
+    "settled": "Account settled",
+    "cancel": "Cancel",
+    "saveAndPrint": "Save & print receipt",
+    "confirm": "Confirm payment",
+    "loadError": "Unable to load payment information.",
+    "savedToast": "Payment recorded."
+  },
+  "history": {
+    "title": "Payment history",
+    "loadError": "Unable to load the payment history.",
+    "balanceLabel": "Balance due",
+    "dueDatePrefix": "due",
+    "paymentsTitle": "Recorded payments",
+    "noPayments": "No payments recorded.",
+    "printReceiptAria": "Print receipt"
+  },
+  "receipt": {
+    "title": "Payment receipt",
+    "tranche": "Installment",
+    "amountPaid": "Amount paid",
+    "latePenalty": "Late penalty",
+    "paymentMethod": "Payment method",
+    "reference": "Reference",
+    "totalCollected": "Total collected"
+  }
+}

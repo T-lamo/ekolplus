@@ -1,0 +1,258 @@
+{
+  "tabs": {
+    "paiements": "Suivi des paiements",
+    "relances": "Relances & Impayés",
+    "configuration": "Configuration"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "À jour",
+    "PARTIAL": "Partiel",
+    "OVERDUE": "En retard",
+    "UNPAID": "Non payé"
+  },
+  "trancheStatus": {
+    "PAID": "Payée",
+    "PARTIAL": "Partiel",
+    "OVERDUE": "En retard",
+    "UPCOMING": "À venir"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Critique",
+    "OVERDUE": "En retard",
+    "RECENT": "Récent"
+  },
+  "paymentMethod": {
+    "ESPECES": "Espèces",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Chèque",
+    "VIREMENT": "Virement"
+  },
+  "whatsapp": {
+    "sentSuccess": "Rappel WhatsApp envoyé.",
+    "errorNoGuardianPhone": "Aucun numéro de tuteur principal renseigné pour cet élève.",
+    "errorNoBalance": "Aucun solde restant pour cet élève.",
+    "errorNotConfigured": "L'envoi WhatsApp n'est pas encore configuré.",
+    "errorSendFailed": "Envoi WhatsApp impossible. Réessayez."
+  },
+  "overview": {
+    "title": "Gestion des Frais & Scolarité",
+    "subtitle": "Suivi des paiements, tranches et relances",
+    "export": "Exporter",
+    "configureFees": "Paramétrage des plans",
+    "loadError": "Impossible de charger les frais de scolarité.",
+    "alertBanner": {
+      "one": "{n} élève en retard de paiement — {tranche} échue le {dueDate}",
+      "other": "{n} élèves en retard de paiement — {tranche} échue le {dueDate}"
+    },
+    "alertBannerSub": "Montant total impayé : {amount}",
+    "kpiTotalCollected": "Total Recouvré",
+    "kpiUpToDate": "Élèves à jour",
+    "kpiOverdue": "En Retard",
+    "kpiNextDueDate": "Prochaine Échéance",
+    "searchPlaceholder": "Nom ou matricule...",
+    "classFilterAll": "Toutes les classes",
+    "statusFilterAll": "Tous les statuts",
+    "resultCount": {
+      "one": "{n} élève",
+      "other": "{n} élèves"
+    },
+    "noResults": "Aucun résultat.",
+    "columns": {
+      "student": "Élève",
+      "class": "Classe",
+      "totalDue": "Total dû",
+      "paid": "Payé",
+      "remaining": "Reste à payer",
+      "status": "Statut",
+      "tranches": "Tranches"
+    },
+    "rowActions": {
+      "registerPayment": "Enregistrer un paiement",
+      "sendWhatsapp": "Envoyer WhatsApp",
+      "viewHistory": "Voir l'historique",
+      "printReceipt": "Imprimer le reçu"
+    },
+    "printReceiptNoPayment": "Aucun paiement enregistré pour cet élève.",
+    "printReceiptLoadError": "Impossible de charger le reçu.",
+    "remainingInline": "Reste à payer : {amount}"
+  },
+  "stub": "Cette fonctionnalité arrive bientôt.",
+  "overdue": {
+    "title": "Relances & Impayés",
+    "subtitle": "Gérez les retards de paiement et automatisez les rappels",
+    "exportList": "Exporter la liste",
+    "bulkReminderBase": "Rappel groupé",
+    "bulkReminderWithCount": "Rappel groupé ({n})",
+    "loadError": "Impossible de charger les relances.",
+    "kpiTotalUnpaid": "Total impayés",
+    "kpiCritical": "Retard critique",
+    "kpiSent": "Rappels envoyés",
+    "kpiNextDue": "Prochaine échéance",
+    "searchPlaceholder": "Nom ou matricule...",
+    "classFilterAll": "Toutes les classes",
+    "selectedCount": {
+      "one": "{n} sélectionné",
+      "other": "{n} sélectionnés"
+    },
+    "noResults": "Aucun retard de paiement.",
+    "selectAllAria": "Tout sélectionner",
+    "selectRowAria": "Sélectionner {name}",
+    "disputedSuffix": "Litigieux",
+    "columns": {
+      "student": "Élève",
+      "class": "Classe",
+      "tranche": "Tranche",
+      "amountDue": "Montant dû",
+      "overdue": "Retard",
+      "status": "Statut",
+      "lastReminder": "Dernier rappel"
+    },
+    "daysOverdue": {
+      "one": "{n} jour",
+      "other": "{n} jours"
+    },
+    "rowActions": {
+      "registerPayment": "Enregistrer un paiement",
+      "sendReminder": "Envoyer rappel WhatsApp",
+      "viewHistory": "Voir l'historique",
+      "markDisputed": "Marquer comme litigieux"
+    },
+    "automationTitle": "Automatisation",
+    "automationSubtitle": "Rappels automatiques",
+    "reminderBefore5Days": "Rappel 5 jours avant",
+    "reminderBefore5DaysDesc": "Notifier avant l'échéance",
+    "reminderOnDueDate": "Rappel le jour J",
+    "reminderOnDueDateDesc": "Le jour de l'échéance",
+    "reminderWeekly": "Rappel hebdomadaire",
+    "reminderWeeklyDesc": "Pour les impayés > 7 jours",
+    "reminderCritical": "Alerte critique",
+    "reminderCriticalDesc": "Retard > 30 jours",
+    "reminderChannelWhatsapp": "Rappels via WhatsApp",
+    "reminderChannelWhatsappDesc": "Payant (frais Meta) — sinon envoyés par email, gratuit",
+    "byClassTitle": "Retards par classe",
+    "quickActionsTitle": "Actions rapides",
+    "exportExcel": "Exporter Excel"
+  },
+  "disputeModal": {
+    "title": "Marquer comme litigieux",
+    "reasonLabel": "Motif (optionnel)",
+    "confirm": "Marquer comme litigieux",
+    "cancel": "Annuler"
+  },
+  "configuration": {
+    "title": "Configuration des Frais d'Études",
+    "subtitle": "Définissez les frais de scolarité et les tranches par classe pour l'année académique",
+    "loadClassesError": "Impossible de charger les classes.",
+    "loadStructureError": "Impossible de charger la configuration de cette classe.",
+    "globalSettingsTitle": "Paramètres globaux",
+    "latePenaltyToggle": "Pénalités de retard",
+    "latePenaltyToggleDesc": "Appliquer des frais après la date limite",
+    "autoRemindersToggle": "Rappels automatiques",
+    "autoRemindersToggleDesc": "Notifications avant l'échéance",
+    "currencyLabel": "Devise principale",
+    "currencyOptions": {
+      "HTG": "HTG — Gourde haïtienne",
+      "USD": "USD — Dollar américain",
+      "XOF": "XOF — Franc CFA (UEMOA)",
+      "XAF": "XAF — Franc CFA (CEMAC)",
+      "EUR": "EUR — Euro"
+    },
+    "selectClassPrompt": "Sélectionnez une classe.",
+    "editorConfigured": "Configuré",
+    "editorPending": "En attente",
+    "editorSubtitle": "Définissez le montant total et les tranches pour cette classe",
+    "copyFromClass": "Copier depuis une classe",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "generalInfoTitle": "Informations générales",
+    "totalAmountLabel": "Montant total annuel",
+    "registrationFeeLabel": "Frais d'inscription",
+    "academicYearLabel": "Année académique",
+    "tranchesBuilderTitle": "Configurateur de Tranches",
+    "tranchesBuilderSubtitle": {
+      "one": "Total réparti : {total} sur {count} versement",
+      "other": "Total réparti : {total} sur {count} versements"
+    },
+    "distributionPrefix": "Répartition :",
+    "addTranche": "Ajouter une tranche",
+    "editTranche": "Modifier la tranche",
+    "deleteTrancheAria": "Supprimer la tranche",
+    "emptyClassPrompt": "Aucune configuration — définissez le montant total pour commencer.",
+    "configHeadingPrefix": "Configuration — {className}",
+    "studentCountBadge": {
+      "one": "{n} élève",
+      "other": "{n} élèves"
+    },
+    "trancheDefaultLabel": {
+      "one": "{n}ère Tranche",
+      "other": "{n}ème Tranche"
+    },
+    "trancheFallbackLabel": "Tranche {n}",
+    "trancheLatePenaltySummaryWithGrace": "{percent}% après {graceDays} j.",
+    "trancheLatePenaltySummaryNoGrace": "{percent}%",
+    "savedToast": "Configuration enregistrée.",
+    "copiedToast": "Configuration copiée.",
+    "classListTitle": "Classes de l'école",
+    "classListSubtitle": "Sélectionnez une classe à configurer",
+    "filterAll": "Toutes",
+    "filterConfigured": "Configurées",
+    "filterPending": "En attente",
+    "classSearchPlaceholder": "Filtrer les classes...",
+    "noClassFound": "Aucune classe trouvée.",
+    "trancheCountBadge": {
+      "one": "{n} tranche",
+      "other": "{n} tranches"
+    },
+    "trancheLabelField": "Libellé",
+    "trancheDueDateField": "Date limite",
+    "trancheAmountField": "Montant / Pourcentage",
+    "trancheLatePenaltyField": "Pénalité de retard (optionnel)",
+    "trancheGraceDaysField": "Délai de grâce (jours)",
+    "noLatePenalty": "Aucune pénalité",
+    "saveTranche": "Enregistrer"
+  },
+  "registerPayment": {
+    "title": "Enregistrer un paiement",
+    "subtitle": "Saisissez les informations du versement ci-dessous",
+    "balanceLabel": "Solde dû",
+    "selectTranche": "Sélectionner la tranche",
+    "latePenaltyNote": "Une pénalité de retard de {amount} ({percent}%) sera appliquée automatiquement sur cette tranche.",
+    "detailsTitle": "Détails du versement",
+    "amountLabel": "Montant versé",
+    "dateLabel": "Date du paiement",
+    "referenceLabel": "N° Référence / Reçu",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Notes (optionnel)",
+    "notesPlaceholder": "Remarques...",
+    "methodTitle": "Mode de paiement",
+    "dueDatePrefix": "échéance",
+    "totalTitle": "Montant total à encaisser",
+    "breakdownLabel": "Principal {principal} + Pénalité {penalty}",
+    "remainingAfter": "Solde restant après paiement",
+    "settled": "Compte soldé",
+    "cancel": "Annuler",
+    "saveAndPrint": "Enregistrer & Imprimer le reçu",
+    "confirm": "Confirmer le paiement",
+    "loadError": "Impossible de charger les informations de paiement.",
+    "savedToast": "Paiement enregistré."
+  },
+  "history": {
+    "title": "Historique des paiements",
+    "loadError": "Impossible de charger l'historique.",
+    "balanceLabel": "Solde dû",
+    "dueDatePrefix": "échéance",
+    "paymentsTitle": "Paiements enregistrés",
+    "noPayments": "Aucun paiement enregistré.",
+    "printReceiptAria": "Imprimer le reçu"
+  },
+  "receipt": {
+    "title": "Reçu de paiement",
+    "tranche": "Tranche",
+    "amountPaid": "Montant versé",
+    "latePenalty": "Pénalité de retard",
+    "paymentMethod": "Mode de paiement",
+    "reference": "Référence",
+    "totalCollected": "Total encaissé"
+  }
+}

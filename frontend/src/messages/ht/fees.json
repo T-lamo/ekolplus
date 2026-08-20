@@ -1,0 +1,259 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "tabs": {
+    "paiements": "Swivi peman yo",
+    "relances": "Rapèl & Enpeye",
+    "configuration": "Konfigirasyon"
+  },
+  "studentStatus": {
+    "UP_TO_DATE": "Ajou",
+    "PARTIAL": "Pasyèl",
+    "OVERDUE": "An reta",
+    "UNPAID": "Pa peye"
+  },
+  "trancheStatus": {
+    "PAID": "Peye",
+    "PARTIAL": "Pasyèl",
+    "OVERDUE": "An reta",
+    "UPCOMING": "Ap vini"
+  },
+  "overdueSeverity": {
+    "CRITICAL": "Kritik",
+    "OVERDUE": "An reta",
+    "RECENT": "Resan"
+  },
+  "paymentMethod": {
+    "ESPECES": "Kach",
+    "MONCASH": "MonCash",
+    "NATCASH": "Natcash",
+    "CHEQUE": "Chèk",
+    "VIREMENT": "Virman bankè"
+  },
+  "whatsapp": {
+    "sentSuccess": "Rapèl WhatsApp voye.",
+    "errorNoGuardianPhone": "Pa gen nimewo telefòn responsab prensipal anrejistre pou elèv sa a.",
+    "errorNoBalance": "Pa gen rès balans pou elèv sa a.",
+    "errorNotConfigured": "Anvwa WhatsApp la poko konfigire.",
+    "errorSendFailed": "Nou pa t kapab voye mesaj WhatsApp la. Eseye ankò."
+  },
+  "overview": {
+    "title": "Jesyon Frè & Eskolarite",
+    "subtitle": "Swivi peman, vèsman ak rapèl",
+    "export": "Ekspòte",
+    "configureFees": "Konfigirasyon plan yo",
+    "loadError": "Nou pa ka chaje frè eskolarite yo.",
+    "alertBanner": {
+      "one": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}",
+      "other": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}"
+    },
+    "alertBannerSub": "Total montan ki poko peye : {amount}",
+    "kpiTotalCollected": "Total Kolekte",
+    "kpiUpToDate": "Elèv Ajou",
+    "kpiOverdue": "An Reta",
+    "kpiNextDueDate": "Pwochen Echeyans",
+    "searchPlaceholder": "Non oswa matrikil...",
+    "classFilterAll": "Tout klas yo",
+    "statusFilterAll": "Tout estati yo",
+    "resultCount": {
+      "one": "{n} elèv",
+      "other": "{n} elèv"
+    },
+    "noResults": "Pa gen rezilta.",
+    "columns": {
+      "student": "Elèv",
+      "class": "Klas",
+      "totalDue": "Total dwe",
+      "paid": "Peye",
+      "remaining": "Rès pou peye",
+      "status": "Estati",
+      "tranches": "Vèsman"
+    },
+    "rowActions": {
+      "registerPayment": "Anrejistre yon peman",
+      "sendWhatsapp": "Voye WhatsApp",
+      "viewHistory": "Wè istorik la",
+      "printReceipt": "Enprime resi a"
+    },
+    "printReceiptNoPayment": "Pa gen peman anrejistre pou elèv sa a.",
+    "printReceiptLoadError": "Nou pa ka chaje resi a.",
+    "remainingInline": "Rès pou peye : {amount}"
+  },
+  "stub": "Fonksyonalite sa a ap vini byento.",
+  "overdue": {
+    "title": "Rapèl & Enpeye",
+    "subtitle": "Jere reta nan peman epi otomatize rapèl yo",
+    "exportList": "Ekspòte lis la",
+    "bulkReminderBase": "Rapèl an gwoup",
+    "bulkReminderWithCount": "Rapèl an gwoup ({n})",
+    "loadError": "Nou pa ka chaje rapèl yo.",
+    "kpiTotalUnpaid": "Total pa peye",
+    "kpiCritical": "Reta kritik",
+    "kpiSent": "Rapèl voye",
+    "kpiNextDue": "Pwochen echeyans",
+    "searchPlaceholder": "Non oswa matrikil...",
+    "classFilterAll": "Tout klas yo",
+    "selectedCount": {
+      "one": "{n} seleksyone",
+      "other": "{n} seleksyone"
+    },
+    "noResults": "Pa gen reta nan peman.",
+    "selectAllAria": "Seleksyone tout",
+    "selectRowAria": "Seleksyone {name}",
+    "disputedSuffix": "Kontestasyon",
+    "columns": {
+      "student": "Elèv",
+      "class": "Klas",
+      "tranche": "Vèsman",
+      "amountDue": "Montan dwe",
+      "overdue": "Reta",
+      "status": "Estati",
+      "lastReminder": "Dènye rapèl"
+    },
+    "daysOverdue": {
+      "one": "{n} jou",
+      "other": "{n} jou"
+    },
+    "rowActions": {
+      "registerPayment": "Anrejistre yon peman",
+      "sendReminder": "Voye rapèl WhatsApp",
+      "viewHistory": "Wè istorik la",
+      "markDisputed": "Make kòm kontestasyon"
+    },
+    "automationTitle": "Otomatizasyon",
+    "automationSubtitle": "Rapèl otomatik",
+    "reminderBefore5Days": "Rapèl 5 jou anvan",
+    "reminderBefore5DaysDesc": "Notifye anvan echeyans lan",
+    "reminderOnDueDate": "Rapèl jou echeyans lan",
+    "reminderOnDueDateDesc": "Jou echeyans lan menm",
+    "reminderWeekly": "Rapèl chak semenn",
+    "reminderWeeklyDesc": "Pou peman ki an reta plis pase 7 jou",
+    "reminderCritical": "Alèt kritik",
+    "reminderCriticalDesc": "An reta plis pase 30 jou",
+    "reminderChannelWhatsapp": "Rapèl atravè WhatsApp",
+    "reminderChannelWhatsappDesc": "Peye (frè Meta) — otreman voye pa imèl, gratis",
+    "byClassTitle": "Reta pa klas",
+    "quickActionsTitle": "Aksyon rapid",
+    "exportExcel": "Ekspòte Excel"
+  },
+  "disputeModal": {
+    "title": "Make kòm kontestasyon",
+    "reasonLabel": "Rezon (opsyonèl)",
+    "confirm": "Make kòm kontestasyon",
+    "cancel": "Anile"
+  },
+  "configuration": {
+    "title": "Konfigirasyon Frè Eskolarite",
+    "subtitle": "Defini frè eskolarite ak vèsman pa klas pou ane akademik la",
+    "loadClassesError": "Nou pa ka chaje klas yo.",
+    "loadStructureError": "Nou pa ka chaje konfigirasyon klas sa a.",
+    "globalSettingsTitle": "Paramèt jeneral",
+    "latePenaltyToggle": "Penalite reta",
+    "latePenaltyToggleDesc": "Aplike yon frè apre dat limit la",
+    "autoRemindersToggle": "Rapèl otomatik",
+    "autoRemindersToggleDesc": "Notifye anvan echeyans lan",
+    "currencyLabel": "Lajan prensipal",
+    "currencyOptions": {
+      "HTG": "HTG — Goud ayisyen",
+      "USD": "USD — Dola ameriken",
+      "XOF": "XOF — Frank CFA (UEMOA)",
+      "XAF": "XAF — Frank CFA (CEMAC)",
+      "EUR": "EUR — Ewo"
+    },
+    "selectClassPrompt": "Chwazi yon klas.",
+    "editorConfigured": "Konfigire",
+    "editorPending": "Ann atann",
+    "editorSubtitle": "Defini montan total ak vèsman yo pou klas sa a",
+    "copyFromClass": "Kopye soti nan yon klas",
+    "cancel": "Anile",
+    "save": "Anrejistre",
+    "generalInfoTitle": "Enfòmasyon jeneral",
+    "totalAmountLabel": "Montan total anyèl",
+    "registrationFeeLabel": "Frè enskripsyon",
+    "academicYearLabel": "Ane akademik",
+    "tranchesBuilderTitle": "Konfiguratè Vèsman",
+    "tranchesBuilderSubtitle": {
+      "one": "Total repati : {total} sou {count} vèsman",
+      "other": "Total repati : {total} sou {count} vèsman"
+    },
+    "distributionPrefix": "Repatisyon :",
+    "addTranche": "Ajoute yon vèsman",
+    "editTranche": "Modifye vèsman an",
+    "deleteTrancheAria": "Efase vèsman an",
+    "emptyClassPrompt": "Poko konfigire — defini montan total la pou kòmanse.",
+    "configHeadingPrefix": "Konfigirasyon — {className}",
+    "studentCountBadge": {
+      "one": "{n} elèv",
+      "other": "{n} elèv"
+    },
+    "trancheDefaultLabel": {
+      "one": "Vèsman {n}",
+      "other": "Vèsman {n}"
+    },
+    "trancheFallbackLabel": "Vèsman {n}",
+    "trancheLatePenaltySummaryWithGrace": "{percent}% apre {graceDays} j.",
+    "trancheLatePenaltySummaryNoGrace": "{percent}%",
+    "savedToast": "Konfigirasyon anrejistre.",
+    "copiedToast": "Konfigirasyon kopye.",
+    "classListTitle": "Klas lekòl la",
+    "classListSubtitle": "Chwazi yon klas pou konfigire",
+    "filterAll": "Tout",
+    "filterConfigured": "Konfigire",
+    "filterPending": "Ann atann",
+    "classSearchPlaceholder": "Filtre klas yo...",
+    "noClassFound": "Pa gen klas ki jwenn.",
+    "trancheCountBadge": {
+      "one": "{n} vèsman",
+      "other": "{n} vèsman"
+    },
+    "trancheLabelField": "Etikèt",
+    "trancheDueDateField": "Dat limit",
+    "trancheAmountField": "Montan / Pousantaj",
+    "trancheLatePenaltyField": "Penalite reta (opsyonèl)",
+    "trancheGraceDaysField": "Delè gras (jou)",
+    "noLatePenalty": "Pa gen penalite",
+    "saveTranche": "Anrejistre"
+  },
+  "registerPayment": {
+    "title": "Anrejistre yon peman",
+    "subtitle": "Antre enfòmasyon vèsman an anba a",
+    "balanceLabel": "Solde ki dwe",
+    "selectTranche": "Chwazi vèsman an",
+    "latePenaltyNote": "Yon penalite reta {amount} ({percent}%) ap aplike otomatikman sou vèsman sa a.",
+    "detailsTitle": "Detay vèsman an",
+    "amountLabel": "Montan peye",
+    "dateLabel": "Dat peman an",
+    "referenceLabel": "Nimewo Referans / Resi",
+    "referencePlaceholder": "REF-2026-...",
+    "notesLabel": "Nòt (opsyonèl)",
+    "notesPlaceholder": "Remak...",
+    "methodTitle": "Mòd peman",
+    "dueDatePrefix": "echeyans",
+    "totalTitle": "Montan total pou kolekte",
+    "breakdownLabel": "Prensipal {principal} + Penalite {penalty}",
+    "remainingAfter": "Solde ki rete apre peman",
+    "settled": "Kont solde",
+    "cancel": "Anile",
+    "saveAndPrint": "Anrejistre & Enprime resi a",
+    "confirm": "Konfime peman an",
+    "loadError": "Nou pa ka chaje enfòmasyon peman an.",
+    "savedToast": "Peman anrejistre."
+  },
+  "history": {
+    "title": "Istorik peman yo",
+    "loadError": "Nou pa ka chaje istorik la.",
+    "balanceLabel": "Solde ki dwe",
+    "dueDatePrefix": "echeyans",
+    "paymentsTitle": "Peman anrejistre",
+    "noPayments": "Pa gen peman ki anrejistre.",
+    "printReceiptAria": "Enprime resi a"
+  },
+  "receipt": {
+    "title": "Resi peman",
+    "tranche": "Vèsman",
+    "amountPaid": "Montan peye",
+    "latePenalty": "Penalite reta",
+    "paymentMethod": "Mòd peman",
+    "reference": "Referans",
+    "totalCollected": "Total kolekte"
+  }
+}

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
 import { ChevronDown, ChevronUp, Search, Users } from 'lucide-react';
-import { FEES } from '@/lib/constants';
+import { useTranslations } from 'next-intl';
 import type { FeeClassOption } from './ClassFeePicker';
 
 // Replaces an always-visible class list with a searchable dropdown, matching
@@ -23,7 +23,7 @@ export function ClassDropdownSelector({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const t = FEES.configuration;
+  const t = useTranslations('Fees.configuration');
   const [open, setOpen] = useState(false);
   const selected = classes.find((c) => c.id === selectedId) ?? null;
 
@@ -66,13 +66,13 @@ export function ClassDropdownSelector({
               <Search size={12} className="shrink-0 text-muted-foreground" />
               <Command.Input
                 autoFocus
-                placeholder={t.classSearchPlaceholder}
+                placeholder={t('classSearchPlaceholder')}
                 className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
               />
             </div>
             <Command.List className="max-h-[320px] overflow-y-auto p-1">
               <Command.Empty className="px-2.5 py-4 text-center text-xs text-muted-foreground">
-                {t.noClassFound}
+                {t('noClassFound')}
               </Command.Empty>
               {groups.map(([level, items]) => (
                 <Command.Group
@@ -80,61 +80,69 @@ export function ClassDropdownSelector({
                   heading={level}
                   className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase"
                 >
-                  {items.map((c) => (
-                    <Command.Item
-                      key={c.id}
-                      value={`${c.name} ${level}`}
-                      onSelect={() => {
-                        onSelect(c.id);
-                        setOpen(false);
-                      }}
-                      className={`flex cursor-pointer items-center gap-2 rounded-md border-l-2 p-1.5 outline-none data-[selected=true]:bg-secondary ${
-                        c.id === selectedId
-                          ? 'border-l-primary bg-[#faf9ff]'
-                          : 'border-l-transparent'
-                      }`}
-                    >
-                      <span
-                        className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md ${
+                  {items.map((c) => {
+                    const studentLabel = t(
+                      c.studentCount > 1 ? 'studentCountBadge.other' : 'studentCountBadge.one',
+                      { n: c.studentCount },
+                    );
+                    const trancheLabel = t(
+                      c.trancheCount > 1 ? 'trancheCountBadge.other' : 'trancheCountBadge.one',
+                      { n: c.trancheCount },
+                    );
+                    return (
+                      <Command.Item
+                        key={c.id}
+                        value={`${c.name} ${level}`}
+                        onSelect={() => {
+                          onSelect(c.id);
+                          setOpen(false);
+                        }}
+                        className={`flex cursor-pointer items-center gap-2 rounded-md border-l-2 p-1.5 outline-none data-[selected=true]:bg-secondary ${
                           c.id === selectedId
-                            ? 'bg-secondary'
-                            : c.configured
-                              ? 'bg-success'
-                              : 'bg-muted'
+                            ? 'border-l-primary bg-[#faf9ff]'
+                            : 'border-l-transparent'
                         }`}
                       >
-                        <Users
-                          size={12}
-                          className={
+                        <span
+                          className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md ${
                             c.id === selectedId
-                              ? 'text-primary'
+                              ? 'bg-secondary'
                               : c.configured
-                                ? 'text-success-foreground'
-                                : 'text-muted-foreground'
-                          }
-                        />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold text-foreground">
-                          {c.name}
+                                ? 'bg-success'
+                                : 'bg-muted'
+                          }`}
+                        >
+                          <Users
+                            size={12}
+                            className={
+                              c.id === selectedId
+                                ? 'text-primary'
+                                : c.configured
+                                  ? 'text-success-foreground'
+                                  : 'text-muted-foreground'
+                            }
+                          />
                         </span>
-                        <span className="block truncate text-2xs text-muted-foreground">
-                          {c.configured
-                            ? `${c.studentCount} élèves · ${c.trancheCount} tranches`
-                            : `${c.studentCount} élèves`}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-foreground">
+                            {c.name}
+                          </span>
+                          <span className="block truncate text-2xs text-muted-foreground">
+                            {c.configured ? `${studentLabel} · ${trancheLabel}` : studentLabel}
+                          </span>
                         </span>
-                      </span>
-                      <span
-                        className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${
-                          c.configured
-                            ? 'bg-success text-success-foreground'
-                            : 'bg-warning text-warning-foreground'
-                        }`}
-                      >
-                        {c.configured ? t.editorConfigured : t.editorPending}
-                      </span>
-                    </Command.Item>
-                  ))}
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-2xs font-semibold whitespace-nowrap ${
+                            c.configured
+                              ? 'bg-success text-success-foreground'
+                              : 'bg-warning text-warning-foreground'
+                          }`}
+                        >
+                          {c.configured ? t('editorConfigured') : t('editorPending')}
+                        </span>
+                      </Command.Item>
+                    );
+                  })}
                 </Command.Group>
               ))}
             </Command.List>

@@ -5,26 +5,16 @@
 export type SubjectStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 export type SubjectKind = 'REQUIRED' | 'ELECTIVE' | 'OPTIONAL';
 
-export const SUBJECT_STATUS_OPTIONS: {
-  value: SubjectStatus;
-  label: string;
-  description: string;
-}[] = [
-  { value: 'ACTIVE', label: 'Active', description: 'Visible et utilisée dans les évaluations' },
-  { value: 'DRAFT', label: 'Brouillon', description: 'En cours de configuration, non visible' },
-  { value: 'ARCHIVED', label: 'Archivée', description: 'Plus utilisée, conservée pour historique' },
+export const SUBJECT_STATUS_OPTIONS: { value: SubjectStatus }[] = [
+  { value: 'ACTIVE' },
+  { value: 'DRAFT' },
+  { value: 'ARCHIVED' },
 ];
 
-export const SUBJECT_STATUS_LABEL: Record<SubjectStatus, string> = {
-  ACTIVE: 'Active',
-  DRAFT: 'Brouillon',
-  ARCHIVED: 'Archivée',
-};
-
-export const SUBJECT_KIND_OPTIONS: { value: SubjectKind; label: string }[] = [
-  { value: 'REQUIRED', label: 'Obligatoire' },
-  { value: 'ELECTIVE', label: 'Optionnelle (élective)' },
-  { value: 'OPTIONAL', label: 'Facultative' },
+export const SUBJECT_KIND_OPTIONS: { value: SubjectKind }[] = [
+  { value: 'REQUIRED' },
+  { value: 'ELECTIVE' },
+  { value: 'OPTIONAL' },
 ];
 
 // Base catalog for "Département / Filière" — merged at runtime with the

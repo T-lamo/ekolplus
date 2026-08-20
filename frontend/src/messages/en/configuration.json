@@ -284,5 +284,449 @@
         "feesDesc": "Define fees and installments"
       }
     }
+  },
+  "matieres": {
+    "list": {
+      "title": "Subjects",
+      "subtitle": "Manage the subjects taught.",
+      "loadError": "Could not load subjects.",
+      "export": "Export",
+      "addSubject": "Add a subject",
+      "deleteConfirm": "Delete the subject \"{name}\"?",
+      "subjectDeleted": "Subject deleted.",
+      "unarchived": "Subject unarchived.",
+      "archived": "Subject archived.",
+      "duplicateComingSoon": "Subject duplication — coming soon.",
+      "csv": {
+        "subject": "Subject",
+        "code": "Code",
+        "domain": "Domain",
+        "coefficient": "Coefficient",
+        "teachers": "Teachers",
+        "classes": "Classes",
+        "status": "Status"
+      },
+      "menu": {
+        "view": "View details",
+        "edit": "Edit subject",
+        "assignTeacher": "Assign a teacher",
+        "manageAssignments": "Manage assignments",
+        "editCoefficient": "Edit coefficient",
+        "duplicate": "Duplicate",
+        "archive": "Archive subject",
+        "unarchive": "Unarchive subject",
+        "delete": "Delete subject"
+      },
+      "stats": {
+        "total": "Total subjects",
+        "active": "Active subjects",
+        "unassigned": "Unassigned",
+        "teachers": "Assigned teachers"
+      },
+      "searchPlaceholder": "Search a subject...",
+      "allDomains": "All domains",
+      "allStatuses": "All statuses",
+      "resultCount": {
+        "one": "{count} subject",
+        "other": "{count} subjects"
+      },
+      "emptyNoSubjects": "No subjects — add the first one.",
+      "emptyNoResults": "No results.",
+      "noClasses": "No classes",
+      "unassignedLabel": "Unassigned",
+      "table": {
+        "subject": "Subject",
+        "domain": "Domain",
+        "coefficient": "Coefficient",
+        "assignedTeacher": "Assigned teacher",
+        "classes": "Classes",
+        "evaluationCount": "No. of assessments",
+        "status": "Status"
+      }
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DRAFT": "Draft",
+      "ARCHIVED": "Archived",
+      "activeDesc": "Visible and used in assessments",
+      "draftDesc": "Being set up, not visible",
+      "archivedDesc": "No longer used, kept for history",
+      "unassigned": "Unassigned"
+    },
+    "kind": {
+      "REQUIRED": "Required",
+      "ELECTIVE": "Elective",
+      "OPTIONAL": "Optional"
+    },
+    "pageShell": {
+      "addTitle": "Add a subject",
+      "createMeta": "New subject",
+      "createMetaWithYear": "New subject — School year {year}",
+      "coeffPrefix": "Coeff. {coefficient}",
+      "yearPrefix": "Year {year}",
+      "disabledHint": "Save the subject to continue"
+    },
+    "tabsBar": {
+      "info": "General information",
+      "programme": "Yearly programme",
+      "affectations": "Class assignments"
+    },
+    "prerequisitesPicker": {
+      "placeholder": "Select prerequisite subjects…",
+      "searchPlaceholder": "Search a subject…",
+      "emptyLabel": "No subjects found"
+    },
+    "create": {
+      "loadError": "Could not load the form data.",
+      "draftSaved": "Draft \"{name}\" saved.",
+      "created": "Subject \"{name}\" created.",
+      "saveDraft": "Save as draft",
+      "createSubject": "Create subject"
+    },
+    "detail": {
+      "notFound": "Subject not found.",
+      "loadError": "Could not load the subject.",
+      "draftSaved": "Draft \"{name}\" saved.",
+      "updated": "Subject updated.",
+      "save": "Save"
+    },
+    "form": {
+      "requiredHint": "Fields marked",
+      "requiredHintSuffix": "are required",
+      "identity": {
+        "title": "Subject identity",
+        "subtitle": "Basic information used to identify the subject in the application.",
+        "nameLabel": "Subject name",
+        "nameHint": "E.g.: Mathematics, French, Physics-Chemistry",
+        "namePlaceholder": "Mathematics",
+        "codeLabel": "Subject code",
+        "codeHint": "Unique short code (auto-generated)",
+        "codePlaceholder": "MAT-001",
+        "abbreviationLabel": "Abbreviation",
+        "abbreviationHint": "Used in tables and report cards",
+        "abbreviationPlaceholder": "MATH",
+        "domainLabel": "Department / Track",
+        "domainPlaceholder": "Sciences",
+        "domainOther": "Other…",
+        "domainOtherAria": "Other department",
+        "domainOtherPlaceholder": "Department name",
+        "levelLabel": "Grade level / Year",
+        "levelPlaceholder": "9th / 10th grade",
+        "kindLabel": "Type",
+        "kindHint": "Required, Elective, or Optional",
+        "descriptionLabel": "Description / Syllabus",
+        "descriptionPlaceholder": "Brief description of the curriculum, general learning objectives..."
+      },
+      "structure": {
+        "title": "Curriculum structure and weighting",
+        "subtitle": "Coefficient, hourly volume, and assessment rules for this subject.",
+        "coefficientLabel": "Coefficient",
+        "coefficientHint": "Weight in the overall average",
+        "coefficientPlaceholder": "4",
+        "maxScoreLabel": "Maximum score",
+        "maxScoreHint": "Default scale",
+        "maxScorePlaceholder": "20",
+        "passingScoreLabel": "Passing score",
+        "passingScoreHint": "Validation threshold",
+        "passingScorePlaceholder": "10",
+        "totalHoursLabel": "Total hourly volume",
+        "totalHoursLabelHint": "(h)",
+        "totalHoursHint": "Total annual number of hours",
+        "totalHoursPlaceholder": "78",
+        "cmTdTpLabel": "Of which lecture / tutorial / lab",
+        "cmTdTpHint": "Lecture · Tutorial · Lab",
+        "cmAria": "Lecture hours",
+        "cmPlaceholder": "42",
+        "tdAria": "Tutorial hours",
+        "tdPlaceholder": "24",
+        "tpAria": "Lab hours",
+        "tpPlaceholder": "12",
+        "evaluationTypeLabel": "Assessment type",
+        "evaluationTypeHint": "Final exam, continuous assessment, project, hybrid",
+        "evaluationTypePlaceholder": "Continuous assessment + Final exam",
+        "maxCapacityLabel": "Max. student capacity",
+        "maxCapacityHint": "Seat limit (elective courses)",
+        "maxCapacityPlaceholder": "E.g.: 35",
+        "includeInAverageTitle": "Include in overall average",
+        "includeInAverageDesc": "This subject will be factored into the average calculation",
+        "showOnBulletinTitle": "Show on report card",
+        "showOnBulletinDesc": "The grade and comments will appear on the report card"
+      },
+      "assignment": {
+        "title": "Assignment and logistics",
+        "subtitle": "Lead teacher, room, and academic prerequisites.",
+        "teacherLabel": "Lead teacher",
+        "teacherHint": "The teacher must already exist in the teacher list",
+        "teacherPlaceholder": "Select a teacher",
+        "teacherNone": "— None —",
+        "roomLabel": "Room / Required room type",
+        "roomHint": "E.g.: Lecture hall, Lab, Computer room",
+        "roomPlaceholder": "Standard classroom",
+        "roomNone": "— Not specified —",
+        "prerequisitesLabel": "Prerequisites",
+        "prerequisitesHint": "Subjects that must be validated beforehand (e.g. having passed MAT-001 for MATH202)"
+      },
+      "advanced": {
+        "title": "Advanced options and settings",
+        "subtitle": "Settings specific to the academic year and assessment thresholds.",
+        "yearLabel": "Academic year / Semester",
+        "yearHint": "Link to the current period",
+        "yearActive": "Full year {year}",
+        "yearNone": "No active school year",
+        "eliminatoryLabel": "Eliminatory score",
+        "eliminatoryHint": "Below this threshold, the subject is eliminatory",
+        "eliminatoryPlaceholder": "E.g.: 6 / {max}"
+      },
+      "hintBanner": {
+        "title": "Continue with the \"Yearly programme\" tab",
+        "description": "Define the chapters and objectives per term, and the skills assessed, in the following tabs.",
+        "disabledHint": "Save the subject to continue",
+        "goToProgramme": "Go to the programme"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "subtitle": "Color and icon shown in the interface.",
+        "iconLabel": "Icon",
+        "colorLabel": "Accent color",
+        "previewLabel": "Preview",
+        "namePlaceholder": "Subject name",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "statusCard": {
+        "title": "Publication status"
+      },
+      "classesCard": {
+        "title": "Classes involved",
+        "subtitle": "Quick selection — details in the Assignments tab.",
+        "empty": "No classes in the active school year.",
+        "studentCount": {
+          "one": "{count} student",
+          "other": "{count} students"
+        }
+      },
+      "errors": {
+        "nameTooShort": "Name must be at least 2 characters.",
+        "codeRequired": "Subject code is required.",
+        "domainRequired": "Choose a department / track.",
+        "domainOtherRequired": "Specify the department.",
+        "levelRequired": "Choose a grade level.",
+        "coefficientRange": "Between 1 and 10.",
+        "maxScoreRange": "Between 1 and 100.",
+        "scoreRange": "Between 0 and {max}.",
+        "evaluationTypeRequired": "Choose an assessment type."
+      }
+    },
+    "affectations": {
+      "kpi": {
+        "classesAssigned": "Assigned classes",
+        "teachersAssigned": "Assigned teachers",
+        "studentsInvolved": "Students involved",
+        "withoutTeacher": "Without a teacher"
+      },
+      "table": {
+        "title": "Class assignments",
+        "filterPlaceholder": "Filter classes...",
+        "filterAria": "Filter classes",
+        "addClass": "Add a class",
+        "addClassFull": "Add a class to this subject",
+        "headers": {
+          "class": "Class",
+          "level": "Level",
+          "teacher": "Assigned teacher",
+          "coeff": "Coeff.",
+          "weeklyHours": "Hours/wk",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "empty": {
+          "title": "No class has this subject yet",
+          "description": "Add a first class to set the teacher, coefficient and hours."
+        },
+        "editAria": "Edit",
+        "removeAria": "Remove",
+        "coefficientAria": "Coefficient {class}",
+        "weeklyHoursAria": "Weekly hours {class}"
+      },
+      "status": {
+        "active": "Active",
+        "noTeacher": "No teacher"
+      },
+      "teacherCell": {
+        "placeholder": "Assign a teacher",
+        "homeroom": "Homeroom teacher",
+        "subjectTeacher": "{subject} teacher"
+      },
+      "addClassPopover": {
+        "disabledTitle": "All classes already have this subject"
+      },
+      "alertBanner": {
+        "heading": {
+          "one": "{count} class without an assigned teacher",
+          "other": "{count} classes without an assigned teacher"
+        },
+        "body": {
+          "one": "Class <b>{classNames}</b> has no {subject} teacher. Please assign a teacher to activate this assignment.",
+          "other": "Classes <b>{classNames}</b> have no {subject} teacher. Please assign a teacher to activate these assignments."
+        },
+        "resolve": "Resolve"
+      },
+      "teachersSection": {
+        "title": "Teachers available for this subject",
+        "addTeacher": "Add a teacher",
+        "empty": "No teacher is assigned to this subject yet.",
+        "available": "Available",
+        "busy": "Busy",
+        "perWeekSuffix": "/wk"
+      },
+      "sideCard": {
+        "subjectTitle": "Subject",
+        "category": "Category",
+        "defaultCoefficient": "Default coefficient",
+        "assignedClasses": "Assigned classes",
+        "totalStudents": "Total students",
+        "status": "Status",
+        "summaryTitle": "Assignment summary",
+        "totalClasses": "Total classes",
+        "withTeacher": "With a teacher",
+        "withoutTeacher": "Without a teacher",
+        "totalHoursWeek": "Total hours/wk",
+        "coverageRate": "Coverage rate",
+        "unassignedTitle": "Unassigned classes",
+        "unassignedDesc": "These classes don't have this subject in their program yet.",
+        "allAssigned": "All classes have this subject ✓",
+        "assign": "Assign",
+        "quickNav": "Quick navigation",
+        "navProgramme": "Annual program",
+        "navInfo": "General information",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "footer": {
+        "cancel": "Discard changes",
+        "export": "Export",
+        "save": "Save assignments"
+      },
+      "toast": {
+        "attached": "Class assigned.",
+        "detached": "Assignment removed.",
+        "saved": "Assignments saved."
+      },
+      "detachConfirm": {
+        "message": "Remove \"{subject}\" from class {class}?",
+        "confirmLabel": "Remove"
+      },
+      "plural": {
+        "classesAssigned": {
+          "one": "{count} assigned class",
+          "other": "{count} assigned classes"
+        },
+        "students": {
+          "one": "{count} student",
+          "other": "{count} students"
+        },
+        "teachersAssigned": {
+          "one": "{count} teacher",
+          "other": "{count} teachers"
+        },
+        "classesWithoutTeacher": {
+          "one": "{count} class without a teacher",
+          "other": "{count} classes without a teacher"
+        },
+        "teacherClasses": {
+          "one": "{count} assigned class",
+          "other": "{count} assigned classes"
+        }
+      },
+      "csv": {
+        "class": "Class",
+        "level": "Level",
+        "teacher": "Teacher",
+        "coefficient": "Coefficient",
+        "students": "Students",
+        "weeklyHours": "Hours/wk",
+        "status": "Status"
+      }
+    },
+    "programme": {
+      "loadError": "Unable to load the program.",
+      "saveError": "Unable to save.",
+      "newChapterTitle": "New chapter",
+      "reorderError": "Unable to reorder.",
+      "deleteConfirm": "Delete chapter \"{title}\"?",
+      "toast": {
+        "chapterDeleted": "Chapter deleted.",
+        "saved": "Program saved."
+      },
+      "csv": {
+        "period": "Period",
+        "number": "No.",
+        "chapter": "Chapter",
+        "objectives": "Objectives",
+        "hours": "Duration (h)",
+        "reference": "Reference",
+        "competence": "Competence"
+      },
+      "footer": {
+        "cancel": "Cancel",
+        "export": "Export CSV",
+        "save": "Save the program",
+        "totalOn": "total across"
+      },
+      "toolbar": {
+        "title": "Program by term",
+        "description": "Write each term's chapters and objectives. Drag and drop to reorder.",
+        "import": "Import",
+        "importToast": "Program import — coming soon.",
+        "duplicate": "Duplicate from last year",
+        "duplicateToast": "Duplication from the previous year — coming soon."
+      },
+      "empty": {
+        "title": "No school term",
+        "description": "First create your terms in the school year settings.",
+        "link": "Settings › School year →"
+      },
+      "addChapterButton": "Add a chapter",
+      "plural": {
+        "chapters": {
+          "one": "{count} chapter",
+          "other": "{count} chapters"
+        },
+        "periods": {
+          "one": "{count} term",
+          "other": "{count} terms"
+        }
+      },
+      "summary": {
+        "title": "Program summary",
+        "totalChapters": "Total chapters",
+        "totalHours": "Total hours",
+        "termLabel": "Term {number}",
+        "termValue": "{hours} · {count} ch.",
+        "distribution": "Distribution",
+        "distributionTotal": "{hours} total"
+      },
+      "calendar": {
+        "title": "School calendar",
+        "empty": "No term."
+      },
+      "subjectCard": {
+        "title": "Subject",
+        "teacher": "Teacher",
+        "classes": "Classes",
+        "status": "Status",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "chapterRow": {
+        "reorderAria": "Reorder",
+        "titlePlaceholder": "Chapter title",
+        "objectivesPlaceholder": "Chapter learning objectives…",
+        "objectivesAria": "Objectives",
+        "durationLabel": "Duration:",
+        "durationAria": "Duration in hours",
+        "referencePlaceholder": "Textbook ch. …",
+        "referenceAria": "Reference",
+        "competencePlaceholder": "Competency",
+        "deleteAria": "Delete chapter"
+      }
+    }
   }
 }

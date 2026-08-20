@@ -27,6 +27,7 @@ import {
   UserCheck,
   UserPlus,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
@@ -53,7 +54,6 @@ export interface TeacherOptionRow {
 }
 
 const fmtHours = (h: number) => `${Number.isInteger(h) ? h : h.toFixed(1)} h`;
-const plural = (n: number, s: string, p = `${s}s`) => `${n} ${n > 1 ? p : s}`;
 
 export function AffectationsTab({
   subject,
@@ -70,6 +70,8 @@ export function AffectationsTab({
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.matieres.affectations');
+  const tCommon = useTranslations('Common');
   const [filter, setFilter] = useState('');
   const [busyRow, setBusyRow] = useState<string | null>(null);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export function AffectationsTab({
       });
       await onChanged();
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setBusyRow(null);
     }
@@ -107,14 +109,14 @@ export function AffectationsTab({
 
   async function attach(classId: string) {
     await upsert(classId, { coefficient: subject.defaultCoefficient ?? null });
-    toast('Classe affectée.', 'success');
+    toast(t('toast.attached'), 'success');
   }
 
   async function detach(row: SubjectClassAssignment) {
     if (
       !(await confirm({
-        message: `Retirer « ${subject.name} » de la classe ${row.class.name} ?`,
-        confirmLabel: 'Retirer',
+        message: t('detachConfirm.message', { subject: subject.name, class: row.class.name }),
+        confirmLabel: t('detachConfirm.confirmLabel'),
         danger: true,
       }))
     )
@@ -123,9 +125,9 @@ export function AffectationsTab({
     try {
       await api(`/api/school/class-subjects/${row.id}`, { method: 'DELETE' });
       await onChanged();
-      toast('Affectation retirée.', 'success');
+      toast(t('toast.detached'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setBusyRow(null);
     }
@@ -144,7 +146,15 @@ export function AffectationsTab({
   function exportCsv() {
     exportToCsv(
       `affectations-${subject.code ?? subject.name}.csv`,
-      ['Classe', 'Niveau', 'Enseignant', 'Coefficient', 'Élèves', 'Heures/sem.', 'Statut'],
+      [
+        t('csv.class'),
+        t('csv.level'),
+        t('csv.teacher'),
+        t('csv.coefficient'),
+        t('csv.students'),
+        t('csv.weeklyHours'),
+        t('csv.status'),
+      ],
       rows.map((r) => [
         r.class.name,
         r.class.level,
@@ -152,7 +162,7 @@ export function AffectationsTab({
         r.coefficient ?? '',
         r.class.studentCount,
         r.weeklyHours ?? '',
-        r.teacherId ? 'Active' : 'Sans prof.',
+        r.teacherId ? t('status.active') : t('status.noTeacher'),
       ]),
     );
   }
@@ -163,16 +173,34 @@ export function AffectationsTab({
         <>
           <LinkIcon size={14} />
           <span className="truncate">
-            {plural(rows.length, 'classe affectée', 'classes affectées')} ·{' '}
-            {plural(students, 'élève')} · {plural(subject.teachers.length, 'enseignant')} ·{' '}
-            {plural(without.length, 'classe sans enseignant', 'classes sans enseignant')}
+            {t(rows.length > 1 ? 'plural.classesAssigned.other' : 'plural.classesAssigned.one', {
+              count: rows.length,
+            })}{' '}
+            ·{' '}
+            {t(students > 1 ? 'plural.students.other' : 'plural.students.one', {
+              count: students,
+            })}{' '}
+            ·{' '}
+            {t(
+              subject.teachers.length > 1
+                ? 'plural.teachersAssigned.other'
+                : 'plural.teachersAssigned.one',
+              { count: subject.teachers.length },
+            )}{' '}
+            ·{' '}
+            {t(
+              without.length > 1
+                ? 'plural.classesWithoutTeacher.other'
+                : 'plural.classesWithoutTeacher.one',
+              { count: without.length },
+            )}
           </span>
         </>
       }
       right={
         <>
           <Button variant="ghost" className="w-fit" onClick={() => void onChanged()}>
-            Annuler les modifications
+            {t('footer.cancel')}
           </Button>
           <Button
             variant="outline"
@@ -181,11 +209,11 @@ export function AffectationsTab({
             disabled={rows.length === 0}
           >
             <Download size={13} />
-            Exporter
+            {t('footer.export')}
           </Button>
-          <Button className="w-fit" onClick={() => toast('Affectations enregistrées.', 'success')}>
+          <Button className="w-fit" onClick={() => toast(t('toast.saved'), 'success')}>
             <Check size={14} />
-            Enregistrer les affectations
+            {t('footer.save')}
           </Button>
         </>
       }
@@ -198,6 +226,10 @@ export function AffectationsTab({
       onPick={(id) => void attach(id)}
       label={label}
       compact={compact}
+      disabledTitle={t('addClassPopover.disabledTitle')}
+      studentsLabel={(count) =>
+        t(count > 1 ? 'plural.students.other' : 'plural.students.one', { count })
+      }
     />
   );
 
@@ -209,10 +241,18 @@ export function AffectationsTab({
           <div className="flex min-w-0 flex-col gap-4">
             {/* KPI row */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Kpi value={rows.length} label="Classes affectées" tone="text-primary" />
-              <Kpi value={subject.teachers.length} label="Enseignants assignés" />
-              <Kpi value={students} label="Élèves concernés" tone="text-success-foreground" />
-              <Kpi value={without.length} label="Sans enseignant" tone="text-warning-foreground" />
+              <Kpi value={rows.length} label={t('kpi.classesAssigned')} tone="text-primary" />
+              <Kpi value={subject.teachers.length} label={t('kpi.teachersAssigned')} />
+              <Kpi
+                value={students}
+                label={t('kpi.studentsInvolved')}
+                tone="text-success-foreground"
+              />
+              <Kpi
+                value={without.length}
+                label={t('kpi.withoutTeacher')}
+                tone="text-warning-foreground"
+              />
             </div>
 
             {/* Table card */}
@@ -223,7 +263,7 @@ export function AffectationsTab({
               <div className="flex flex-col gap-3 border-b border-border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-[18px]">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
                   <LinkIcon size={15} className="text-primary" />
-                  Affectations des classes
+                  {t('table.title')}
                 </h2>
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="flex min-w-[180px] flex-1 items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 sm:flex-none">
@@ -231,25 +271,22 @@ export function AffectationsTab({
                     <input
                       value={filter}
                       onChange={(e) => setFilter(e.target.value)}
-                      placeholder="Filtrer les classes..."
-                      aria-label="Filtrer les classes"
+                      placeholder={t('table.filterPlaceholder')}
+                      aria-label={t('table.filterAria')}
                       className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
                     />
                   </label>
-                  {addClassButton('Ajouter une classe', true)}
+                  {addClassButton(t('table.addClass'), true)}
                 </div>
               </div>
 
               {rows.length === 0 ? (
                 <div className="flex flex-col items-center gap-2.5 px-5 py-10 text-center">
                   <p className="text-caption font-semibold text-foreground">
-                    Aucune classe n&apos;a encore cette matière
+                    {t('table.empty.title')}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Ajoute une première classe pour définir l&apos;enseignant, le coefficient et les
-                    heures.
-                  </p>
-                  {addClassButton('Ajouter une classe')}
+                  <p className="text-xs text-muted-foreground">{t('table.empty.description')}</p>
+                  {addClassButton(t('table.addClass'))}
                 </div>
               ) : (
                 <>
@@ -259,12 +296,12 @@ export function AffectationsTab({
                       <thead>
                         <tr>
                           {[
-                            'Classe',
-                            'Niveau',
-                            'Enseignant assigné',
-                            'Coeff.',
-                            'Heures/sem.',
-                            'Statut',
+                            t('table.headers.class'),
+                            t('table.headers.level'),
+                            t('table.headers.teacher'),
+                            t('table.headers.coeff'),
+                            t('table.headers.weeklyHours'),
+                            t('table.headers.status'),
                           ].map((h) => (
                             <th
                               key={h}
@@ -274,7 +311,7 @@ export function AffectationsTab({
                             </th>
                           ))}
                           <th className="border-b border-border px-2.5 pt-3 pb-2.5 text-right text-2xs font-semibold tracking-[0.6px] text-muted-foreground uppercase">
-                            Actions
+                            {t('table.headers.actions')}
                           </th>
                         </tr>
                       </thead>
@@ -290,7 +327,12 @@ export function AffectationsTab({
                                 {row.class.name}
                               </div>
                               <div className="mt-px text-xs text-muted-foreground">
-                                {plural(row.class.studentCount, 'élève')}
+                                {t(
+                                  row.class.studentCount > 1
+                                    ? 'plural.students.other'
+                                    : 'plural.students.one',
+                                  { count: row.class.studentCount },
+                                )}
                               </div>
                             </td>
                             <td className="border-b border-border px-2.5 py-3 align-middle">
@@ -305,6 +347,7 @@ export function AffectationsTab({
                                 subjectName={subject.name}
                                 busy={busyRow === row.classId}
                                 onChange={(id) => void upsert(row.classId, { teacherId: id })}
+                                t={t}
                               />
                             </td>
                             <td className="border-b border-border px-2.5 py-3 align-middle">
@@ -313,7 +356,7 @@ export function AffectationsTab({
                                 min={1}
                                 max={10}
                                 step={1}
-                                ariaLabel={`Coefficient ${row.class.name}`}
+                                ariaLabel={t('table.coefficientAria', { class: row.class.name })}
                                 className="w-12 font-bold text-primary"
                                 onCommit={(v) => void upsert(row.classId, { coefficient: v })}
                               />
@@ -325,7 +368,7 @@ export function AffectationsTab({
                                   min={0}
                                   max={60}
                                   step={0.5}
-                                  ariaLabel={`Heures hebdomadaires ${row.class.name}`}
+                                  ariaLabel={t('table.weeklyHoursAria', { class: row.class.name })}
                                   className="w-14"
                                   onCommit={(v) => void upsert(row.classId, { weeklyHours: v })}
                                 />
@@ -334,16 +377,16 @@ export function AffectationsTab({
                             </td>
                             <td className="border-b border-border px-2.5 py-3 align-middle whitespace-nowrap">
                               {row.teacherId ? (
-                                <Badge tone="success">Active</Badge>
+                                <Badge tone="success">{t('status.active')}</Badge>
                               ) : (
-                                <Badge tone="warning">Sans prof.</Badge>
+                                <Badge tone="warning">{t('status.noTeacher')}</Badge>
                               )}
                             </td>
                             <td className="border-b border-border px-2.5 py-3 align-middle">
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   type="button"
-                                  aria-label="Modifier"
+                                  aria-label={t('table.editAria')}
                                   onClick={() =>
                                     document
                                       .querySelector<HTMLElement>(
@@ -357,7 +400,7 @@ export function AffectationsTab({
                                 </button>
                                 <button
                                   type="button"
-                                  aria-label="Retirer"
+                                  aria-label={t('table.removeAria')}
                                   onClick={() => void detach(row)}
                                   disabled={busyRow === row.classId}
                                   className="flex h-7 w-7 items-center justify-center rounded-sm text-destructive-foreground hover:bg-destructive disabled:opacity-50"
@@ -387,13 +430,18 @@ export function AffectationsTab({
                               <Badge className="bg-info text-info-foreground">
                                 {row.class.level}
                               </Badge>
-                              {plural(row.class.studentCount, 'élève')}
+                              {t(
+                                row.class.studentCount > 1
+                                  ? 'plural.students.other'
+                                  : 'plural.students.one',
+                                { count: row.class.studentCount },
+                              )}
                             </div>
                           </div>
                           {row.teacherId ? (
-                            <Badge tone="success">Active</Badge>
+                            <Badge tone="success">{t('status.active')}</Badge>
                           ) : (
-                            <Badge tone="warning">Sans prof.</Badge>
+                            <Badge tone="warning">{t('status.noTeacher')}</Badge>
                           )}
                         </div>
                         <div className="mt-2.5">
@@ -403,36 +451,37 @@ export function AffectationsTab({
                             subjectName={subject.name}
                             busy={busyRow === row.classId}
                             onChange={(id) => void upsert(row.classId, { teacherId: id })}
+                            t={t}
                           />
                         </div>
                         <div className="mt-2.5 flex items-center justify-between gap-3">
                           <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            Coeff.
+                            {t('table.headers.coeff')}
                             <NumberCell
                               value={row.coefficient}
                               min={1}
                               max={10}
                               step={1}
-                              ariaLabel={`Coefficient ${row.class.name}`}
+                              ariaLabel={t('table.coefficientAria', { class: row.class.name })}
                               className="w-12 font-bold text-primary"
                               onCommit={(v) => void upsert(row.classId, { coefficient: v })}
                             />
                           </label>
                           <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            Heures/sem.
+                            {t('table.headers.weeklyHours')}
                             <NumberCell
                               value={row.weeklyHours}
                               min={0}
                               max={60}
                               step={0.5}
-                              ariaLabel={`Heures hebdomadaires ${row.class.name}`}
+                              ariaLabel={t('table.weeklyHoursAria', { class: row.class.name })}
                               className="w-14"
                               onCommit={(v) => void upsert(row.classId, { weeklyHours: v })}
                             />
                           </label>
                           <button
                             type="button"
-                            aria-label="Retirer"
+                            aria-label={t('table.removeAria')}
                             onClick={() => void detach(row)}
                             className="flex h-8 w-8 items-center justify-center rounded-sm text-destructive-foreground"
                           >
@@ -446,8 +495,12 @@ export function AffectationsTab({
                     <AddClassPopover
                       classes={subject.unassignedClasses}
                       onPick={(id) => void attach(id)}
-                      label="Ajouter une classe à cette matière"
+                      label={t('table.addClassFull')}
                       variant="dashed"
+                      disabledTitle={t('addClassPopover.disabledTitle')}
+                      studentsLabel={(count) =>
+                        t(count > 1 ? 'plural.students.other' : 'plural.students.one', { count })
+                      }
                     />
                   </div>
                 </>
@@ -463,18 +516,20 @@ export function AffectationsTab({
                 />
                 <div className="min-w-0 flex-1">
                   <div className="text-caption font-semibold text-warning-foreground">
-                    {plural(
-                      without.length,
-                      'classe sans enseignant assigné',
-                      'classes sans enseignant assigné',
+                    {t(
+                      without.length > 1 ? 'alertBanner.heading.other' : 'alertBanner.heading.one',
+                      { count: without.length },
                     )}
                   </div>
                   <div className="mt-px text-xs text-[#92400e]">
-                    {without.length === 1 ? 'La classe ' : 'Les classes '}
-                    <strong>{without.map((r) => r.class.name).join(', ')}</strong>
-                    {without.length === 1 ? " n'a pas" : " n'ont pas"} d&apos;enseignant de{' '}
-                    {subject.name}. Veuillez assigner un enseignant pour activer{' '}
-                    {without.length === 1 ? 'cette affectation' : 'ces affectations'}.
+                    {t.rich(
+                      without.length > 1 ? 'alertBanner.body.other' : 'alertBanner.body.one',
+                      {
+                        classNames: without.map((r) => r.class.name).join(', '),
+                        subject: subject.name,
+                        b: (chunks) => <strong>{chunks}</strong>,
+                      },
+                    )}
                   </div>
                 </div>
                 <Button
@@ -483,7 +538,7 @@ export function AffectationsTab({
                   className="w-auto shrink-0 text-xs"
                   onClick={focusFirstMissing}
                 >
-                  Résoudre
+                  {t('alertBanner.resolve')}
                 </Button>
               </div>
             )}
@@ -493,7 +548,7 @@ export function AffectationsTab({
               <div className="flex flex-col gap-3 border-b border-border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-[18px]">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
                   <UserCheck size={15} className="text-primary" />
-                  Enseignants disponibles pour cette matière
+                  {t('teachersSection.title')}
                 </h2>
                 <Button
                   variant="outline"
@@ -502,40 +557,44 @@ export function AffectationsTab({
                   onClick={() => router.push('/enseignants')}
                 >
                   <Plus size={13} />
-                  Ajouter un enseignant
+                  {t('teachersSection.addTeacher')}
                 </Button>
               </div>
               <div className="flex flex-col gap-2.5 px-4 py-3.5 sm:px-[18px]">
                 {subject.teachers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    Aucun enseignant n&apos;est encore assigné à cette matière.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('teachersSection.empty')}</p>
                 ) : (
-                  subject.teachers.map((t) => (
+                  subject.teachers.map((teacher) => (
                     <div
-                      key={t.id}
+                      key={teacher.id}
                       className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3.5 py-3"
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <Avatar name={t.name} src={t.photoUrl} size={36} />
+                        <Avatar name={teacher.name} src={teacher.photoUrl} size={36} />
                         <div className="min-w-0">
                           <div className="truncate text-caption font-semibold text-foreground">
-                            {t.name}
+                            {teacher.name}
                           </div>
                           <div className="truncate text-2xs text-muted-foreground">
                             {subject.name} ·{' '}
-                            {plural(t.classCount, 'classe assignée', 'classes assignées')}
+                            {t(
+                              teacher.classCount > 1
+                                ? 'plural.teacherClasses.other'
+                                : 'plural.teacherClasses.one',
+                              { count: teacher.classCount },
+                            )}
                           </div>
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        {t.status === 'AVAILABLE' ? (
-                          <Badge tone="success">Disponible</Badge>
+                        {teacher.status === 'AVAILABLE' ? (
+                          <Badge tone="success">{t('teachersSection.available')}</Badge>
                         ) : (
-                          <Badge tone="warning">Chargé</Badge>
+                          <Badge tone="warning">{t('teachersSection.busy')}</Badge>
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {fmtHours(t.weeklyHoursTotal)}/sem.
+                          {fmtHours(teacher.weeklyHoursTotal)}
+                          {t('teachersSection.perWeekSuffix')}
                         </span>
                       </div>
                     </div>
@@ -547,7 +606,10 @@ export function AffectationsTab({
 
           {/* ── RIGHT ────────────────────────────────────────────── */}
           <div className="flex min-w-0 flex-col gap-4">
-            <SideCard icon={<Info size={15} className="text-primary" />} title="Matière">
+            <SideCard
+              icon={<Info size={15} className="text-primary" />}
+              title={t('sideCard.subjectTitle')}
+            >
               <div className="mb-2.5 flex items-center gap-2.5 rounded-md bg-background px-3 py-2.5">
                 <div
                   className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md"
@@ -563,7 +625,7 @@ export function AffectationsTab({
                     {[
                       subject.code,
                       subject.defaultCoefficient != null
-                        ? `Coeff. ${subject.defaultCoefficient}`
+                        ? t('sideCard.coeffPrefix', { coefficient: subject.defaultCoefficient })
                         : null,
                     ]
                       .filter(Boolean)
@@ -571,44 +633,44 @@ export function AffectationsTab({
                   </div>
                 </div>
               </div>
-              <SideRow label="Catégorie" value={subject.domain ?? '—'} />
+              <SideRow label={t('sideCard.category')} value={subject.domain ?? '—'} />
               <SideRow
-                label="Coefficient par défaut"
+                label={t('sideCard.defaultCoefficient')}
                 value={
                   subject.defaultCoefficient != null ? String(subject.defaultCoefficient) : '—'
                 }
               />
               <SideRow
-                label="Classes affectées"
+                label={t('sideCard.assignedClasses')}
                 value={String(rows.length)}
                 valueClass="text-primary"
               />
-              <SideRow label="Total élèves" value={String(students)} />
+              <SideRow label={t('sideCard.totalStudents')} value={String(students)} />
               <div className="flex items-center justify-between py-1.5 text-xs">
-                <span className="font-medium text-muted-foreground">Statut</span>
+                <span className="font-medium text-muted-foreground">{t('sideCard.status')}</span>
                 <SubjectStatusBadge status={subject.status} />
               </div>
             </SideCard>
 
             <SideCard
               icon={<BarChart2 size={15} className="text-primary" />}
-              title="Résumé des affectations"
+              title={t('sideCard.summaryTitle')}
             >
-              <SideRow label="Total classes" value={String(rows.length)} />
+              <SideRow label={t('sideCard.totalClasses')} value={String(rows.length)} />
               <SideRow
-                label="Avec enseignant"
+                label={t('sideCard.withTeacher')}
                 value={String(withTeacher)}
                 valueClass="text-success-foreground"
               />
               <SideRow
-                label="Sans enseignant"
+                label={t('sideCard.withoutTeacher')}
                 value={String(without.length)}
                 valueClass="text-warning-foreground"
               />
-              <SideRow label="Heures total/sem." value={fmtHours(weeklyTotal)} />
+              <SideRow label={t('sideCard.totalHoursWeek')} value={fmtHours(weeklyTotal)} />
               <div className="mt-3">
                 <div className="mb-1 flex justify-between text-2xs text-muted-foreground">
-                  <span>Taux de couverture</span>
+                  <span>{t('sideCard.coverageRate')}</span>
                   <span>{coverage}%</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
@@ -622,14 +684,12 @@ export function AffectationsTab({
 
             <SideCard
               icon={<CircleAlert size={15} className="text-warning-foreground" />}
-              title="Classes non affectées"
+              title={t('sideCard.unassignedTitle')}
             >
-              <p className="mb-2.5 text-xs text-muted-foreground">
-                Ces classes n&apos;ont pas encore cette matière dans leur programme.
-              </p>
+              <p className="mb-2.5 text-xs text-muted-foreground">{t('sideCard.unassignedDesc')}</p>
               {subject.unassignedClasses.length === 0 ? (
                 <p className="text-xs font-medium text-success-foreground">
-                  Toutes les classes ont cette matière ✓
+                  {t('sideCard.allAssigned')}
                 </p>
               ) : (
                 <div className="flex flex-col gap-1.5">
@@ -643,7 +703,9 @@ export function AffectationsTab({
                           {c.name}
                         </div>
                         <div className="text-2xs text-muted-foreground">
-                          {plural(c.studentCount, 'élève')}
+                          {t(c.studentCount > 1 ? 'plural.students.other' : 'plural.students.one', {
+                            count: c.studentCount,
+                          })}
                         </div>
                       </div>
                       <button
@@ -653,7 +715,7 @@ export function AffectationsTab({
                         className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-2xs font-medium text-primary-foreground disabled:opacity-50"
                       >
                         <Plus size={12} />
-                        Affecter
+                        {t('sideCard.assign')}
                       </button>
                     </div>
                   ))}
@@ -663,13 +725,13 @@ export function AffectationsTab({
 
             <SideCard
               icon={<Layers size={15} className="text-primary" />}
-              title="Navigation rapide"
+              title={t('sideCard.quickNav')}
             >
               <div className="flex flex-col gap-1">
                 {(
                   [
-                    { tab: 'programme', label: 'Programme annuel' },
-                    { tab: 'info', label: 'Informations générales' },
+                    { tab: 'programme', label: t('sideCard.navProgramme') },
+                    { tab: 'info', label: t('sideCard.navInfo') },
                   ] as { tab: SubjectTab; label: string }[]
                 ).map((n) => (
                   <button
@@ -742,18 +804,25 @@ function SideRow({
   );
 }
 
+type TeacherCellT = (
+  key: 'teacherCell.placeholder' | 'teacherCell.homeroom' | 'teacherCell.subjectTeacher',
+  values?: { subject?: string },
+) => string;
+
 function TeacherCell({
   row,
   teachers,
   subjectName,
   busy,
   onChange,
+  t,
 }: {
   row: SubjectClassAssignment;
   teachers: TeacherOptionRow[];
   subjectName: string;
   busy: boolean;
   onChange: (teacherId: string | null) => void;
+  t: TeacherCellT;
 }) {
   return (
     <div className="flex items-center gap-2" data-teacher-select={row.classId}>
@@ -763,7 +832,7 @@ function TeacherCell({
           value={row.teacherId ?? ''}
           onValueChange={(v) => onChange(v || null)}
           disabled={busy}
-          placeholder="Assigner un enseignant"
+          placeholder={t('teacherCell.placeholder')}
           className={cn(
             'min-w-[180px] py-1 pr-2 pl-2.5 text-xs',
             !row.teacherId && 'border-transparent bg-muted text-warning-foreground',
@@ -772,18 +841,20 @@ function TeacherCell({
           <SelectItem value="">
             <span className="flex items-center gap-1.5 text-warning-foreground">
               <UserPlus size={13} />
-              Assigner un enseignant
+              {t('teacherCell.placeholder')}
             </span>
           </SelectItem>
-          {teachers.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.name}
+          {teachers.map((teacher) => (
+            <SelectItem key={teacher.id} value={teacher.id}>
+              {teacher.name}
             </SelectItem>
           ))}
         </BareSelect>
         {row.teacher && (
           <div className="mt-px pl-0.5 text-2xs text-muted-foreground">
-            {row.class.isHomeroomTeacher ? 'Prof. principal' : `Prof. de ${subjectName}`}
+            {row.class.isHomeroomTeacher
+              ? t('teacherCell.homeroom')
+              : t('teacherCell.subjectTeacher', { subject: subjectName })}
           </div>
         )}
       </div>
@@ -850,12 +921,16 @@ function AddClassPopover({
   label,
   compact,
   variant = 'primary',
+  disabledTitle,
+  studentsLabel,
 }: {
   classes: { id: string; name: string; level: string; studentCount: number }[];
   onPick: (classId: string) => void;
   label: string;
   compact?: boolean;
   variant?: 'primary' | 'dashed';
+  disabledTitle: string;
+  studentsLabel: (count: number) => string;
 }) {
   const [open, setOpen] = useState(false);
   const empty = classes.length === 0;
@@ -865,7 +940,7 @@ function AddClassPopover({
         <button
           type="button"
           disabled={empty}
-          title={empty ? 'Toutes les classes ont déjà cette matière' : undefined}
+          title={empty ? disabledTitle : undefined}
           className={cn(
             'inline-flex items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50',
             variant === 'primary' && 'bg-primary text-primary-foreground',
@@ -902,7 +977,7 @@ function AddClassPopover({
                   <span className="block text-2xs text-muted-foreground">{c.level}</span>
                 </span>
                 <span className="text-2xs text-muted-foreground">
-                  {plural(c.studentCount, 'élève')}
+                  {studentsLabel(c.studentCount)}
                 </span>
               </button>
             ))}

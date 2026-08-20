@@ -17,6 +17,7 @@ import {
   ToggleRight,
   UserCheck,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Avatar } from '@/components/ui/Avatar';
 import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual, SUBJECT_COLORS, SUBJECT_ICONS, tintOf } from '@/lib/subject-visuals';
@@ -30,6 +31,8 @@ import {
   SUBJECT_STATUS_OPTIONS,
   type SubjectStatus,
 } from '@/app/(school)/configuration/matieres/subject-form.constants';
+import { subjectKindLabel } from '@/app/(school)/configuration/matieres/kind-label';
+import { subjectStatusLabel } from '@/app/(school)/configuration/matieres/status-label';
 import {
   BareSelect,
   FormCard,
@@ -69,11 +72,24 @@ export function SubjectForm({
   onToggleClass?: (classId: string, checked: boolean) => void;
 }) {
   const { values: v, setField, errors, serverError, domainOptions } = form;
-  const preview = getSubjectVisual(v.name || 'Matière', { icon: v.icon, color: v.color });
+  const t = useTranslations('Configuration.matieres.form');
+  const tKind = useTranslations('Configuration.matieres.kind');
+  const tStatus = useTranslations('Configuration.matieres.status');
+  const STATUS_DESC: Record<SubjectStatus, string> = {
+    ACTIVE: tStatus('activeDesc'),
+    DRAFT: tStatus('draftDesc'),
+    ARCHIVED: tStatus('archivedDesc'),
+  };
+  const preview = getSubjectVisual(v.name || t('appearance.namePlaceholder'), {
+    icon: v.icon,
+    color: v.color,
+  });
   const previewMeta = [
     v.code || null,
     v.domain === OTHER_DOMAIN ? v.domainOther || null : v.domain || null,
-    v.defaultCoefficient ? `Coeff. ${v.defaultCoefficient}` : null,
+    v.defaultCoefficient
+      ? t('appearance.coeffPrefix', { coefficient: v.defaultCoefficient })
+      : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -93,8 +109,8 @@ export function SubjectForm({
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Info size={14} />
         <span>
-          Les champs marqués <span className="text-destructive-foreground">*</span> sont
-          obligatoires
+          {t('requiredHint')} <span className="text-destructive-foreground">*</span>{' '}
+          {t('requiredHintSuffix')}
         </span>
       </p>
       {serverError && (
@@ -111,85 +127,85 @@ export function SubjectForm({
           <FormCard
             id="card-identity"
             icon={<BookOpen size={15} />}
-            title="Identité de la matière"
-            subtitle="Informations de base permettant d'identifier la matière dans l'application."
+            title={t('identity.title')}
+            subtitle={t('identity.subtitle')}
           >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormGroup
-                label="Nom de la matière"
+                label={t('identity.nameLabel')}
                 required
                 htmlFor="subject-name"
-                hint="Ex : Mathématiques, Français, Physique-Chimie"
+                hint={t('identity.nameHint')}
                 error={errors.name}
               >
                 <TextInput
                   id="subject-name"
                   value={v.name}
                   onChange={(e) => setField('name', e.target.value)}
-                  placeholder="Mathématiques"
+                  placeholder={t('identity.namePlaceholder')}
                   autoFocus={mode === 'create'}
                 />
               </FormGroup>
               <FormGroup
-                label="Code matière"
+                label={t('identity.codeLabel')}
                 required
                 htmlFor="subject-code"
-                hint="Code court unique (généré automatiquement)"
+                hint={t('identity.codeHint')}
                 error={errors.code}
               >
                 <TextInput
                   id="subject-code"
                   value={v.code}
                   onChange={(e) => setField('code', e.target.value.toUpperCase())}
-                  placeholder="MAT-001"
+                  placeholder={t('identity.codePlaceholder')}
                 />
               </FormGroup>
               <FormGroup
-                label="Abréviation"
+                label={t('identity.abbreviationLabel')}
                 optional
                 htmlFor="subject-abbr"
-                hint="Utilisée dans les tableaux et bulletins"
+                hint={t('identity.abbreviationHint')}
               >
                 <TextInput
                   id="subject-abbr"
                   value={v.abbreviation}
                   onChange={(e) => setField('abbreviation', e.target.value.toUpperCase())}
-                  placeholder="MATH"
+                  placeholder={t('identity.abbreviationPlaceholder')}
                   maxLength={12}
                 />
               </FormGroup>
               <FormGroup
-                label="Département / Filière"
+                label={t('identity.domainLabel')}
                 required
                 error={errors.domain ?? errors.domainOther}
               >
                 <BareSelect
                   value={v.domain}
                   onValueChange={(val) => setField('domain', val)}
-                  placeholder="Sciences"
+                  placeholder={t('identity.domainPlaceholder')}
                 >
                   {domainOptions.map((d) => (
                     <SelectItem key={d} value={d}>
                       {d}
                     </SelectItem>
                   ))}
-                  <SelectItem value={OTHER_DOMAIN}>Autre…</SelectItem>
+                  <SelectItem value={OTHER_DOMAIN}>{t('identity.domainOther')}</SelectItem>
                 </BareSelect>
                 {v.domain === OTHER_DOMAIN && (
                   <TextInput
-                    aria-label="Autre département"
+                    aria-label={t('identity.domainOtherAria')}
                     value={v.domainOther}
                     onChange={(e) => setField('domainOther', e.target.value)}
-                    placeholder="Nom du département"
+                    placeholder={t('identity.domainOtherPlaceholder')}
                     className="mt-1"
                   />
                 )}
               </FormGroup>
-              <FormGroup label="Niveau / Année d'étude" required error={errors.level}>
+              <FormGroup label={t('identity.levelLabel')} required error={errors.level}>
                 <BareSelect
                   value={v.level}
                   onValueChange={(val) => setField('level', val)}
-                  placeholder="3ème / 4ème"
+                  placeholder={t('identity.levelPlaceholder')}
                 >
                   <SelectItem value={ALL_LEVELS}>{ALL_LEVELS}</SelectItem>
                   {options.levels.map((l) => (
@@ -199,24 +215,20 @@ export function SubjectForm({
                   ))}
                 </BareSelect>
               </FormGroup>
-              <FormGroup
-                label="Statut"
-                required
-                hint="Obligatoire, Optionnelle (élective) ou Facultative"
-              >
+              <FormGroup label={t('identity.kindLabel')} required hint={t('identity.kindHint')}>
                 <BareSelect
                   value={v.kind}
                   onValueChange={(val) => setField('kind', val as typeof v.kind)}
                 >
                   {SUBJECT_KIND_OPTIONS.map((k) => (
                     <SelectItem key={k.value} value={k.value}>
-                      {k.label}
+                      {subjectKindLabel(k.value, tKind)}
                     </SelectItem>
                   ))}
                 </BareSelect>
               </FormGroup>
               <FormGroup
-                label="Description / Syllabi"
+                label={t('identity.descriptionLabel')}
                 optional
                 htmlFor="subject-description"
                 className="md:col-span-2"
@@ -225,7 +237,7 @@ export function SubjectForm({
                   id="subject-description"
                   value={v.description}
                   onChange={(e) => setField('description', e.target.value)}
-                  placeholder="Brève description du programme d'enseignement, objectifs pédagogiques généraux..."
+                  placeholder={t('identity.descriptionPlaceholder')}
                 />
               </FormGroup>
             </div>
@@ -234,15 +246,15 @@ export function SubjectForm({
           <FormCard
             id="card-structure"
             icon={<SlidersHorizontal size={15} />}
-            title="Structure pédagogique et pondération"
-            subtitle="Coefficient, volume horaire et règles d'évaluation pour cette matière."
+            title={t('structure.title')}
+            subtitle={t('structure.subtitle')}
           >
             <div className="mb-3.5 grid grid-cols-1 gap-3 md:grid-cols-3">
               <FormGroup
-                label="Coefficient"
+                label={t('structure.coefficientLabel')}
                 required
                 htmlFor="subject-coeff"
-                hint="Poids dans la moyenne générale"
+                hint={t('structure.coefficientHint')}
                 error={errors.defaultCoefficient}
               >
                 <TextInput
@@ -253,13 +265,13 @@ export function SubjectForm({
                   max={10}
                   value={v.defaultCoefficient}
                   onChange={(e) => setField('defaultCoefficient', e.target.value)}
-                  placeholder="4"
+                  placeholder={t('structure.coefficientPlaceholder')}
                 />
               </FormGroup>
               <FormGroup
-                label="Note maximale"
+                label={t('structure.maxScoreLabel')}
                 htmlFor="subject-max"
-                hint="Barème par défaut"
+                hint={t('structure.maxScoreHint')}
                 error={errors.maxScore}
               >
                 <TextInput
@@ -270,13 +282,13 @@ export function SubjectForm({
                   max={100}
                   value={v.maxScore}
                   onChange={(e) => setField('maxScore', e.target.value)}
-                  placeholder="20"
+                  placeholder={t('structure.maxScorePlaceholder')}
                 />
               </FormGroup>
               <FormGroup
-                label="Note de passage"
+                label={t('structure.passingScoreLabel')}
                 htmlFor="subject-pass"
-                hint="Seuil de validation"
+                hint={t('structure.passingScoreHint')}
                 error={errors.passingScore}
               >
                 <TextInput
@@ -286,16 +298,16 @@ export function SubjectForm({
                   min={0}
                   value={v.passingScore}
                   onChange={(e) => setField('passingScore', e.target.value)}
-                  placeholder="10"
+                  placeholder={t('structure.passingScorePlaceholder')}
                 />
               </FormGroup>
             </div>
             <div className="mb-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
               <FormGroup
-                label="Volume horaire total"
-                labelHint="(h)"
+                label={t('structure.totalHoursLabel')}
+                labelHint={t('structure.totalHoursLabelHint')}
                 htmlFor="subject-hours"
-                hint="Nombre d'heures total annuel"
+                hint={t('structure.totalHoursHint')}
               >
                 <TextInput
                   id="subject-hours"
@@ -304,39 +316,39 @@ export function SubjectForm({
                   min={0}
                   value={v.totalHours}
                   onChange={(e) => setField('totalHours', e.target.value)}
-                  placeholder="78"
+                  placeholder={t('structure.totalHoursPlaceholder')}
                 />
               </FormGroup>
-              <FormGroup label="Dont CM / TD / TP" hint="Cours magistral · TD · TP">
+              <FormGroup label={t('structure.cmTdTpLabel')} hint={t('structure.cmTdTpHint')}>
                 <div className="flex gap-1.5">
                   <TextInput
-                    aria-label="Heures de cours magistral"
+                    aria-label={t('structure.cmAria')}
                     type="number"
                     inputMode="numeric"
                     min={0}
                     value={v.hoursCM}
                     onChange={(e) => setField('hoursCM', e.target.value)}
-                    placeholder="42"
+                    placeholder={t('structure.cmPlaceholder')}
                     className="flex-1"
                   />
                   <TextInput
-                    aria-label="Heures de TD"
+                    aria-label={t('structure.tdAria')}
                     type="number"
                     inputMode="numeric"
                     min={0}
                     value={v.hoursTD}
                     onChange={(e) => setField('hoursTD', e.target.value)}
-                    placeholder="24"
+                    placeholder={t('structure.tdPlaceholder')}
                     className="flex-1"
                   />
                   <TextInput
-                    aria-label="Heures de TP"
+                    aria-label={t('structure.tpAria')}
                     type="number"
                     inputMode="numeric"
                     min={0}
                     value={v.hoursTP}
                     onChange={(e) => setField('hoursTP', e.target.value)}
-                    placeholder="12"
+                    placeholder={t('structure.tpPlaceholder')}
                     className="flex-1"
                   />
                 </div>
@@ -344,28 +356,28 @@ export function SubjectForm({
             </div>
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
               <FormGroup
-                label="Type d'évaluation"
+                label={t('structure.evaluationTypeLabel')}
                 required
-                hint="Examen final, contrôle continu, projet, hybride"
+                hint={t('structure.evaluationTypeHint')}
                 error={errors.evaluationType}
               >
                 <BareSelect
                   value={v.evaluationType}
                   onValueChange={(val) => setField('evaluationType', val)}
-                  placeholder="Contrôle continu + Examen final"
+                  placeholder={t('structure.evaluationTypePlaceholder')}
                 >
-                  {EVALUATION_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
+                  {EVALUATION_TYPES.map((evalType) => (
+                    <SelectItem key={evalType} value={evalType}>
+                      {evalType}
                     </SelectItem>
                   ))}
                 </BareSelect>
               </FormGroup>
               <FormGroup
-                label="Capacité max. d'élèves"
+                label={t('structure.maxCapacityLabel')}
                 optional
                 htmlFor="subject-capacity"
-                hint="Limite de places (cours d'option)"
+                hint={t('structure.maxCapacityHint')}
               >
                 <TextInput
                   id="subject-capacity"
@@ -374,20 +386,20 @@ export function SubjectForm({
                   min={1}
                   value={v.maxCapacity}
                   onChange={(e) => setField('maxCapacity', e.target.value)}
-                  placeholder="Ex : 35"
+                  placeholder={t('structure.maxCapacityPlaceholder')}
                 />
               </FormGroup>
             </div>
             <SectionDivider />
             <ToggleRow
-              title="Inclure dans la moyenne générale"
-              description="Cette matière sera prise en compte dans le calcul de la moyenne"
+              title={t('structure.includeInAverageTitle')}
+              description={t('structure.includeInAverageDesc')}
               checked={v.includeInAverage}
               onChange={(c) => setField('includeInAverage', c)}
             />
             <ToggleRow
-              title="Afficher dans le bulletin"
-              description="La note et l'appréciation apparaîtront sur le bulletin scolaire"
+              title={t('structure.showOnBulletinTitle')}
+              description={t('structure.showOnBulletinDesc')}
               checked={v.showOnBulletin}
               onChange={(c) => setField('showOnBulletin', c)}
             />
@@ -396,41 +408,34 @@ export function SubjectForm({
           <FormCard
             id="card-assignation"
             icon={<UserCheck size={15} />}
-            title="Assignation et logistique"
-            subtitle="Enseignant responsable, salle et prérequis pédagogiques."
+            title={t('assignment.title')}
+            subtitle={t('assignment.subtitle')}
           >
             <div className="mb-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup
-                label="Enseignant responsable"
-                hint="L'enseignant doit être créé dans la liste des enseignants"
-              >
+              <FormGroup label={t('assignment.teacherLabel')} hint={t('assignment.teacherHint')}>
                 <BareSelect
                   value={v.responsibleTeacherId ?? ''}
                   onValueChange={(val) => setField('responsibleTeacherId', val || null)}
-                  placeholder="Sélectionner un enseignant"
+                  placeholder={t('assignment.teacherPlaceholder')}
                 >
-                  <SelectItem value="">— Aucun —</SelectItem>
-                  {options.teachers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
+                  <SelectItem value="">{t('assignment.teacherNone')}</SelectItem>
+                  {options.teachers.map((teacher) => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
                       <span className="flex items-center gap-2">
-                        <Avatar name={t.name} src={t.photoUrl} size={22} />
-                        {t.name}
+                        <Avatar name={teacher.name} src={teacher.photoUrl} size={22} />
+                        {teacher.name}
                       </span>
                     </SelectItem>
                   ))}
                 </BareSelect>
               </FormGroup>
-              <FormGroup
-                label="Salle / Type de local requis"
-                optional
-                hint="Ex : Amphithéâtre, Laboratoire, Salle informatique"
-              >
+              <FormGroup label={t('assignment.roomLabel')} optional hint={t('assignment.roomHint')}>
                 <BareSelect
                   value={v.room}
                   onValueChange={(val) => setField('room', val)}
-                  placeholder="Salle de cours standard"
+                  placeholder={t('assignment.roomPlaceholder')}
                 >
-                  <SelectItem value="">— Non précisé —</SelectItem>
+                  <SelectItem value="">{t('assignment.roomNone')}</SelectItem>
                   {ROOM_TYPES.map((r) => (
                     <SelectItem key={r} value={r}>
                       {r}
@@ -440,9 +445,9 @@ export function SubjectForm({
               </FormGroup>
             </div>
             <FormGroup
-              label="Prérequis"
+              label={t('assignment.prerequisitesLabel')}
               optional
-              hint="Matières devant être validées au préalable (ex. avoir validé MAT-001 pour MATH202)"
+              hint={t('assignment.prerequisitesHint')}
             >
               <PrerequisitesPicker
                 options={options.subjects}
@@ -455,27 +460,24 @@ export function SubjectForm({
           <FormCard
             id="card-advanced"
             icon={<Settings2 size={15} />}
-            title="Options avancées et paramètres"
-            subtitle="Paramètres spécifiques liés à l'année académique et aux seuils d'évaluation."
+            title={t('advanced.title')}
+            subtitle={t('advanced.subtitle')}
           >
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup
-                label="Année académique / Semestre"
-                hint="Rattachement à la période en cours"
-              >
+              <FormGroup label={t('advanced.yearLabel')} hint={t('advanced.yearHint')}>
                 <BareSelect value="current" onValueChange={() => undefined} disabled>
                   <SelectItem value="current">
                     {options.yearLabel
-                      ? `Année complète ${options.yearLabel}`
-                      : 'Aucune année scolaire active'}
+                      ? t('advanced.yearActive', { year: options.yearLabel })
+                      : t('advanced.yearNone')}
                   </SelectItem>
                 </BareSelect>
               </FormGroup>
               <FormGroup
-                label="Note éliminatoire"
+                label={t('advanced.eliminatoryLabel')}
                 optional
                 htmlFor="subject-elim"
-                hint="En dessous de ce seuil, la matière est éliminatoire"
+                hint={t('advanced.eliminatoryHint')}
                 error={errors.eliminatoryScore}
               >
                 <TextInput
@@ -485,7 +487,9 @@ export function SubjectForm({
                   min={0}
                   value={v.eliminatoryScore}
                   onChange={(e) => setField('eliminatoryScore', e.target.value)}
-                  placeholder={`Ex : 6 / ${v.maxScore || 20}`}
+                  placeholder={t('advanced.eliminatoryPlaceholder', {
+                    max: v.maxScore || 20,
+                  })}
                 />
               </FormGroup>
             </div>
@@ -496,21 +500,20 @@ export function SubjectForm({
             <Lightbulb size={18} className="hidden shrink-0 text-warning-foreground sm:block" />
             <div className="min-w-0 flex-1">
               <div className="text-caption font-semibold text-warning-foreground">
-                Continuez avec l&apos;onglet &quot;Programme annuel&quot;
+                {t('hintBanner.title')}
               </div>
               <div className="text-xs text-warning-foreground/90">
-                Définissez les chapitres et objectifs par trimestre, ainsi que les compétences
-                évaluées dans les onglets suivants.
+                {t('hintBanner.description')}
               </div>
             </div>
             <button
               type="button"
               onClick={onGoToProgramme}
               disabled={mode === 'create'}
-              title={mode === 'create' ? 'Enregistre la matière pour continuer' : undefined}
+              title={mode === 'create' ? t('hintBanner.disabledHint') : undefined}
               className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-warning-foreground bg-card px-3.5 py-[7px] text-caption font-medium text-warning-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Aller au programme
+              {t('hintBanner.goToProgramme')}
               <ArrowRight size={13} />
             </button>
           </div>
@@ -521,14 +524,20 @@ export function SubjectForm({
           <FormCard
             id="card-apparence"
             icon={<Palette size={15} />}
-            title="Apparence"
-            subtitle="Couleur et icône affichées dans l'interface."
+            title={t('appearance.title')}
+            subtitle={t('appearance.subtitle')}
           >
             <div className="mb-3.5 flex flex-col gap-[7px]">
-              <span className="text-xs font-semibold text-foreground">Icône</span>
+              <span className="text-xs font-semibold text-foreground">
+                {t('appearance.iconLabel')}
+              </span>
               {/* 8 columns like the mock; tiles fill their cell (square) instead
                 of a fixed 36px so they never overlap in a narrow column. */}
-              <div className="grid grid-cols-8 gap-[5px]" role="radiogroup" aria-label="Icône">
+              <div
+                className="grid grid-cols-8 gap-[5px]"
+                role="radiogroup"
+                aria-label={t('appearance.iconLabel')}
+              >
                 {SUBJECT_ICONS.map(({ key, Icon }) => {
                   const selected = v.icon === key;
                   return (
@@ -553,11 +562,13 @@ export function SubjectForm({
               </div>
             </div>
             <div className="flex flex-col gap-[7px]">
-              <span className="text-xs font-semibold text-foreground">Couleur d&apos;accent</span>
+              <span className="text-xs font-semibold text-foreground">
+                {t('appearance.colorLabel')}
+              </span>
               <div
                 className="flex flex-wrap gap-[7px]"
                 role="radiogroup"
-                aria-label="Couleur d'accent"
+                aria-label={t('appearance.colorLabel')}
               >
                 {SUBJECT_COLORS.map((hex) => {
                   const selected = v.color === hex;
@@ -580,7 +591,9 @@ export function SubjectForm({
               </div>
             </div>
             <SectionDivider />
-            <div className="mb-2 text-xs font-semibold text-foreground">Aperçu</div>
+            <div className="mb-2 text-xs font-semibold text-foreground">
+              {t('appearance.previewLabel')}
+            </div>
             <div className="flex items-center gap-2.5 rounded-md bg-background px-3 py-2.5">
               <div
                 className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md"
@@ -593,7 +606,7 @@ export function SubjectForm({
               </div>
               <div className="min-w-0">
                 <div className="truncate text-caption font-semibold text-foreground">
-                  {v.name || 'Nom de la matière'}
+                  {v.name || t('appearance.namePlaceholder')}
                 </div>
                 <div className="truncate text-2xs text-muted-foreground">{previewMeta || '—'}</div>
               </div>
@@ -601,10 +614,10 @@ export function SubjectForm({
             </div>
           </FormCard>
 
-          <FormCard id="card-status" icon={<ToggleRight size={15} />} title="Statut de publication">
+          <FormCard id="card-status" icon={<ToggleRight size={15} />} title={t('statusCard.title')}>
             <div
               role="radiogroup"
-              aria-label="Statut de publication"
+              aria-label={t('statusCard.title')}
               className="flex flex-col gap-1.5"
             >
               {/* A brand-new subject can't be created straight into the archive. */}
@@ -639,10 +652,10 @@ export function SubjectForm({
                           selected ? 'text-primary' : 'text-foreground',
                         )}
                       >
-                        {opt.label}
+                        {subjectStatusLabel(opt.value, tStatus)}
                       </span>
                       <span className="block text-2xs text-muted-foreground">
-                        {opt.description}
+                        {STATUS_DESC[opt.value]}
                       </span>
                     </span>
                   </button>
@@ -654,15 +667,17 @@ export function SubjectForm({
           <FormCard
             id="card-classes"
             icon={<School size={15} />}
-            title="Classes concernées"
-            subtitle="Sélection rapide — détails dans l'onglet Affectations."
+            title={t('classesCard.title')}
+            subtitle={t('classesCard.subtitle')}
           >
             {options.classes.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                Aucune classe dans l&apos;année scolaire active.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('classesCard.empty')}</p>
             ) : (
-              <div className="flex flex-col gap-[5px]" role="group" aria-label="Classes concernées">
+              <div
+                className="flex flex-col gap-[5px]"
+                role="group"
+                aria-label={t('classesCard.title')}
+              >
                 {options.classes.map((c) => {
                   const checked = v.classIds.includes(c.id);
                   return (
@@ -696,7 +711,12 @@ export function SubjectForm({
                         </span>
                       </span>
                       <span className="text-2xs text-muted-foreground">
-                        {c.studentCount} élève{c.studentCount > 1 ? 's' : ''}
+                        {t(
+                          c.studentCount > 1
+                            ? 'classesCard.studentCount.other'
+                            : 'classesCard.studentCount.one',
+                          { count: c.studentCount },
+                        )}
                       </span>
                     </button>
                   );

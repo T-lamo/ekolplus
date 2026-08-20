@@ -285,5 +285,449 @@
         "feesDesc": "Defini frè ak tranch yo"
       }
     }
+  },
+  "matieres": {
+    "list": {
+      "title": "Matyè yo",
+      "subtitle": "Jesyon matyè yo anseye.",
+      "loadError": "Nou pa t kapab chaje matyè yo.",
+      "export": "Ekspòte",
+      "addSubject": "Ajoute yon matyè",
+      "deleteConfirm": "Efase matyè « {name} » a ?",
+      "subjectDeleted": "Matyè efase.",
+      "unarchived": "Matyè dezachive.",
+      "archived": "Matyè achive.",
+      "duplicateComingSoon": "Duplikasyon matyè — ap vini.",
+      "csv": {
+        "subject": "Matyè",
+        "code": "Kòd",
+        "domain": "Domèn",
+        "coefficient": "Kwefisyan",
+        "teachers": "Pwofesè",
+        "classes": "Klas",
+        "status": "Estati"
+      },
+      "menu": {
+        "view": "Wè detay yo",
+        "edit": "Modifye matyè a",
+        "assignTeacher": "Afekte yon pwofesè",
+        "manageAssignments": "Jere afektasyon yo",
+        "editCoefficient": "Modifye kwefisyan an",
+        "duplicate": "Duplike",
+        "archive": "Achive matyè a",
+        "unarchive": "Dezachive matyè a",
+        "delete": "Efase matyè a"
+      },
+      "stats": {
+        "total": "Total matyè",
+        "active": "Matyè aktif",
+        "unassigned": "Pa afekte",
+        "teachers": "Pwofesè afekte"
+      },
+      "searchPlaceholder": "Chèche yon matyè...",
+      "allDomains": "Tout domèn yo",
+      "allStatuses": "Tout estati yo",
+      "resultCount": {
+        "one": "{count} matyè",
+        "other": "{count} matyè"
+      },
+      "emptyNoSubjects": "Pa gen matyè — ajoute premye a.",
+      "emptyNoResults": "Pa gen rezilta.",
+      "noClasses": "Pa gen klas",
+      "unassignedLabel": "Pa afekte",
+      "table": {
+        "subject": "Matyè",
+        "domain": "Domèn",
+        "coefficient": "Kwefisyan",
+        "assignedTeacher": "Pwofesè afekte",
+        "classes": "Klas",
+        "evaluationCount": "Kantite evalyasyon",
+        "status": "Estati"
+      }
+    },
+    "status": {
+      "ACTIVE": "Aktif",
+      "DRAFT": "Bouyon",
+      "ARCHIVED": "Achive",
+      "activeDesc": "Vizib e itilize nan evalyasyon yo",
+      "draftDesc": "Ap konfigire, pa vizib",
+      "archivedDesc": "Pa itilize ankò, konsève pou istorik",
+      "unassigned": "Pa afekte"
+    },
+    "kind": {
+      "REQUIRED": "Obligatwa",
+      "ELECTIVE": "Opsyonèl (elektif)",
+      "OPTIONAL": "Fakiltatif"
+    },
+    "pageShell": {
+      "addTitle": "Ajoute yon matyè",
+      "createMeta": "Nouvo matyè",
+      "createMetaWithYear": "Nouvo matyè — Ane eskolè {year}",
+      "coeffPrefix": "Kwef. {coefficient}",
+      "yearPrefix": "Ane {year}",
+      "disabledHint": "Anrejistre matyè a pou kontinye"
+    },
+    "tabsBar": {
+      "info": "Enfòmasyon jeneral",
+      "programme": "Pwogram anyèl",
+      "affectations": "Afektasyon klas yo"
+    },
+    "prerequisitesPicker": {
+      "placeholder": "Seleksyone matyè prealab…",
+      "searchPlaceholder": "Chèche yon matyè…",
+      "emptyLabel": "Pa gen matyè yo jwenn"
+    },
+    "create": {
+      "loadError": "Nou pa t kapab chaje done fòm lan.",
+      "draftSaved": "Bouyon « {name} » anrejistre.",
+      "created": "Matyè « {name} » kreye.",
+      "saveDraft": "Anrejistre kòm bouyon",
+      "createSubject": "Kreye matyè a"
+    },
+    "detail": {
+      "notFound": "Matyè a pa jwenn.",
+      "loadError": "Nou pa t kapab chaje matyè a.",
+      "draftSaved": "Bouyon « {name} » anrejistre.",
+      "updated": "Matyè mete ajou.",
+      "save": "Anrejistre"
+    },
+    "form": {
+      "requiredHint": "Chan make ak",
+      "requiredHintSuffix": "obligatwa",
+      "identity": {
+        "title": "Idantite matyè a",
+        "subtitle": "Enfòmasyon debaz pou idantifye matyè a nan aplikasyon an.",
+        "nameLabel": "Non matyè a",
+        "nameHint": "Egzanp : Matematik, Fransè, Fizik-Chimi",
+        "namePlaceholder": "Matematik",
+        "codeLabel": "Kòd matyè",
+        "codeHint": "Kòd kout inik (jenere otomatikman)",
+        "codePlaceholder": "MAT-001",
+        "abbreviationLabel": "Abrevyasyon",
+        "abbreviationHint": "Itilize nan tablo ak bilten yo",
+        "abbreviationPlaceholder": "MATH",
+        "domainLabel": "Depatman / Filyè",
+        "domainPlaceholder": "Syans",
+        "domainOther": "Lòt…",
+        "domainOtherAria": "Lòt depatman",
+        "domainOtherPlaceholder": "Non depatman an",
+        "levelLabel": "Nivo / Ane etid",
+        "levelPlaceholder": "3yèm / 4yèm",
+        "kindLabel": "Estati",
+        "kindHint": "Obligatwa, Opsyonèl (elektif) oswa Fakiltatif",
+        "descriptionLabel": "Deskripsyon / Silabis",
+        "descriptionPlaceholder": "Yon ti deskripsyon pwogram anseyman an, objektif pedagojik jeneral yo..."
+      },
+      "structure": {
+        "title": "Estrikti pedagojik ak ponderasyon",
+        "subtitle": "Kwefisyan, volim orè ak règ evalyasyon pou matyè sa a.",
+        "coefficientLabel": "Kwefisyan",
+        "coefficientHint": "Pwa nan mwayèn jeneral la",
+        "coefficientPlaceholder": "4",
+        "maxScoreLabel": "Nòt maksimòm",
+        "maxScoreHint": "Baram pa defo",
+        "maxScorePlaceholder": "20",
+        "passingScoreLabel": "Nòt pou pase",
+        "passingScoreHint": "Sèy validasyon",
+        "passingScorePlaceholder": "10",
+        "totalHoursLabel": "Volim orè total",
+        "totalHoursLabelHint": "(è)",
+        "totalHoursHint": "Kantite èdtan total pou ane a",
+        "totalHoursPlaceholder": "78",
+        "cmTdTpLabel": "Ladan CM / TD / TP",
+        "cmTdTpHint": "Kou magistral · TD · TP",
+        "cmAria": "Èdtan kou magistral",
+        "cmPlaceholder": "42",
+        "tdAria": "Èdtan TD",
+        "tdPlaceholder": "24",
+        "tpAria": "Èdtan TP",
+        "tpPlaceholder": "12",
+        "evaluationTypeLabel": "Tip evalyasyon",
+        "evaluationTypeHint": "Egzamen final, kontwòl kontinyèl, pwojè, ibrid",
+        "evaluationTypePlaceholder": "Kontwòl kontinyèl + Egzamen final",
+        "maxCapacityLabel": "Kapasite maks. elèv",
+        "maxCapacityHint": "Limit plas (kou opsyonèl)",
+        "maxCapacityPlaceholder": "Egz. : 35",
+        "includeInAverageTitle": "Enkli nan mwayèn jeneral la",
+        "includeInAverageDesc": "Matyè sa a ap konte nan kalkil mwayèn nan",
+        "showOnBulletinTitle": "Montre sou bilten an",
+        "showOnBulletinDesc": "Nòt la ak apresyasyon an ap parèt sou bilten lekòl la"
+      },
+      "assignment": {
+        "title": "Afektasyon ak lojistik",
+        "subtitle": "Pwofesè responsab, sal ak matyè prealab.",
+        "teacherLabel": "Pwofesè responsab",
+        "teacherHint": "Pwofesè a dwe deja kreye nan lis pwofesè yo",
+        "teacherPlaceholder": "Chwazi yon pwofesè",
+        "teacherNone": "— Okenn —",
+        "roomLabel": "Sal / Tip lokal ki nesesè",
+        "roomHint": "Egzanp : Anfiteyat, Laboratwa, Sal enfòmatik",
+        "roomPlaceholder": "Sal klas estanda",
+        "roomNone": "— Pa presize —",
+        "prerequisitesLabel": "Prealab",
+        "prerequisitesHint": "Matyè ki dwe validè anvan (egz. avwa validè MAT-001 pou MATH202)"
+      },
+      "advanced": {
+        "title": "Opsyon avanse ak paramèt",
+        "subtitle": "Paramèt espesifik ki gen rapò ak ane akademik la ak sèy evalyasyon yo.",
+        "yearLabel": "Ane akademik / Semès",
+        "yearHint": "Atachman ak peryòd aktyèl la",
+        "yearActive": "Ane konplè {year}",
+        "yearNone": "Pa gen ane eskolè aktif",
+        "eliminatoryLabel": "Nòt eliminatwa",
+        "eliminatoryHint": "Anba sèy sa a, matyè a eliminatwa",
+        "eliminatoryPlaceholder": "Egz. : 6 / {max}"
+      },
+      "hintBanner": {
+        "title": "Kontinye ak onglè « Pwogram anyèl »",
+        "description": "Defini chapit ak objektif yo pa trimès, ansanm ak konpetans yo evalye nan onglè apre yo.",
+        "disabledHint": "Anrejistre matyè a pou kontinye",
+        "goToProgramme": "Ale nan pwogram nan"
+      },
+      "appearance": {
+        "title": "Aparans",
+        "subtitle": "Koulè ak ikòn ki parèt nan entèfas la.",
+        "iconLabel": "Ikòn",
+        "colorLabel": "Koulè aksan",
+        "previewLabel": "Apèsi",
+        "namePlaceholder": "Non matyè a",
+        "coeffPrefix": "Kwef. {coefficient}"
+      },
+      "statusCard": {
+        "title": "Estati piblikasyon"
+      },
+      "classesCard": {
+        "title": "Klas konsène yo",
+        "subtitle": "Seleksyon rapid — detay nan onglè Afektasyon.",
+        "empty": "Pa gen klas nan ane eskolè aktif la.",
+        "studentCount": {
+          "one": "{count} elèv",
+          "other": "{count} elèv"
+        }
+      },
+      "errors": {
+        "nameTooShort": "Non an dwe gen omwen 2 karaktè.",
+        "codeRequired": "Kòd matyè a obligatwa.",
+        "domainRequired": "Chwazi yon depatman / filyè.",
+        "domainOtherRequired": "Presize depatman an.",
+        "levelRequired": "Chwazi yon nivo.",
+        "coefficientRange": "Ant 1 ak 10.",
+        "maxScoreRange": "Ant 1 ak 100.",
+        "scoreRange": "Ant 0 ak {max}.",
+        "evaluationTypeRequired": "Chwazi yon tip evalyasyon."
+      }
+    },
+    "affectations": {
+      "kpi": {
+        "classesAssigned": "Klas afekte",
+        "teachersAssigned": "Pwofesè asiyen",
+        "studentsInvolved": "Elèv konsène",
+        "withoutTeacher": "San pwofesè"
+      },
+      "table": {
+        "title": "Afektasyon klas yo",
+        "filterPlaceholder": "Filtre klas yo...",
+        "filterAria": "Filtre klas yo",
+        "addClass": "Ajoute yon klas",
+        "addClassFull": "Ajoute yon klas nan matyè sa a",
+        "headers": {
+          "class": "Klas",
+          "level": "Nivo",
+          "teacher": "Pwofesè asiyen",
+          "coeff": "Kwef.",
+          "weeklyHours": "Èdtan/sem.",
+          "status": "Estati",
+          "actions": "Aksyon"
+        },
+        "empty": {
+          "title": "Poko gen klas ki gen matyè sa a",
+          "description": "Ajoute yon premye klas pou defini pwofesè a, kwefisyan an ak èdtan yo."
+        },
+        "editAria": "Modifye",
+        "removeAria": "Retire",
+        "coefficientAria": "Kwefisyan {class}",
+        "weeklyHoursAria": "Èdtan chak semèn {class}"
+      },
+      "status": {
+        "active": "Aktif",
+        "noTeacher": "San pwof."
+      },
+      "teacherCell": {
+        "placeholder": "Asiyen yon pwofesè",
+        "homeroom": "Pwof. prensipal",
+        "subjectTeacher": "Pwof. {subject}"
+      },
+      "addClassPopover": {
+        "disabledTitle": "Tout klas yo deja gen matyè sa a"
+      },
+      "alertBanner": {
+        "heading": {
+          "one": "{count} klas san pwofesè asiyen",
+          "other": "{count} klas san pwofesè asiyen"
+        },
+        "body": {
+          "one": "Klas <b>{classNames}</b> pa gen pwofesè {subject}. Tanpri asiyen yon pwofesè pou aktive afektasyon sa a.",
+          "other": "Klas <b>{classNames}</b> yo pa gen pwofesè {subject}. Tanpri asiyen yon pwofesè pou aktive afektasyon sa yo."
+        },
+        "resolve": "Rezoud"
+      },
+      "teachersSection": {
+        "title": "Pwofesè ki disponib pou matyè sa a",
+        "addTeacher": "Ajoute yon pwofesè",
+        "empty": "Poko gen pwofesè asiyen nan matyè sa a.",
+        "available": "Disponib",
+        "busy": "Okipe",
+        "perWeekSuffix": "/sem."
+      },
+      "sideCard": {
+        "subjectTitle": "Matyè",
+        "category": "Kategori",
+        "defaultCoefficient": "Kwefisyan pa defo",
+        "assignedClasses": "Klas afekte",
+        "totalStudents": "Total elèv",
+        "status": "Estati",
+        "summaryTitle": "Rezime afektasyon yo",
+        "totalClasses": "Total klas",
+        "withTeacher": "Ak pwofesè",
+        "withoutTeacher": "San pwofesè",
+        "totalHoursWeek": "Total èdtan/sem.",
+        "coverageRate": "To kouvèti",
+        "unassignedTitle": "Klas ki pa afekte",
+        "unassignedDesc": "Klas sa yo poko gen matyè sa a nan pwogram yo.",
+        "allAssigned": "Tout klas yo gen matyè sa a ✓",
+        "assign": "Afekte",
+        "quickNav": "Navigasyon rapid",
+        "navProgramme": "Pwogram anyèl",
+        "navInfo": "Enfòmasyon jeneral",
+        "coeffPrefix": "Kwef. {coefficient}"
+      },
+      "footer": {
+        "cancel": "Anile chanjman yo",
+        "export": "Ekspòte",
+        "save": "Anrejistre afektasyon yo"
+      },
+      "toast": {
+        "attached": "Klas afekte.",
+        "detached": "Afektasyon retire.",
+        "saved": "Afektasyon yo anrejistre."
+      },
+      "detachConfirm": {
+        "message": "Retire « {subject} » nan klas {class} ?",
+        "confirmLabel": "Retire"
+      },
+      "plural": {
+        "classesAssigned": {
+          "one": "{count} klas afekte",
+          "other": "{count} klas afekte"
+        },
+        "students": {
+          "one": "{count} elèv",
+          "other": "{count} elèv"
+        },
+        "teachersAssigned": {
+          "one": "{count} pwofesè",
+          "other": "{count} pwofesè"
+        },
+        "classesWithoutTeacher": {
+          "one": "{count} klas san pwofesè",
+          "other": "{count} klas san pwofesè"
+        },
+        "teacherClasses": {
+          "one": "{count} klas asiyen",
+          "other": "{count} klas asiyen"
+        }
+      },
+      "csv": {
+        "class": "Klas",
+        "level": "Nivo",
+        "teacher": "Pwofesè",
+        "coefficient": "Kwefisyan",
+        "students": "Elèv",
+        "weeklyHours": "Èdtan/sem.",
+        "status": "Estati"
+      }
+    },
+    "programme": {
+      "loadError": "Pa kapab chaje pwogram nan.",
+      "saveError": "Anrejistreman pa posib.",
+      "newChapterTitle": "Nouvo chapit",
+      "reorderError": "Reklasman pa posib.",
+      "deleteConfirm": "Efase chapit « {title} » ?",
+      "toast": {
+        "chapterDeleted": "Chapit efase.",
+        "saved": "Pwogram anrejistre."
+      },
+      "csv": {
+        "period": "Peryòd",
+        "number": "N°",
+        "chapter": "Chapit",
+        "objectives": "Objektif",
+        "hours": "Dire (è)",
+        "reference": "Referans",
+        "competence": "Konpetans"
+      },
+      "footer": {
+        "cancel": "Anile",
+        "export": "Ekspòte CSV",
+        "save": "Anrejistre pwogram nan",
+        "totalOn": "antou sou"
+      },
+      "toolbar": {
+        "title": "Pwogram pa trimès",
+        "description": "Ekri chapit ak objektif chak trimès. Trennen-lage pou reklase.",
+        "import": "Enpòte",
+        "importToast": "Enpòte pwogram — talè konsa.",
+        "duplicate": "Duplike ane pase a",
+        "duplicateToast": "Duplikasyon ane pase a — talè konsa."
+      },
+      "empty": {
+        "title": "Pa gen peryòd eskolè",
+        "description": "Kreye trimès yo dabò nan paramèt ane eskolè a.",
+        "link": "Paramèt › Ane eskolè →"
+      },
+      "addChapterButton": "Ajoute yon chapit",
+      "plural": {
+        "chapters": {
+          "one": "{count} chapit",
+          "other": "{count} chapit"
+        },
+        "periods": {
+          "one": "{count} peryòd",
+          "other": "{count} peryòd"
+        }
+      },
+      "summary": {
+        "title": "Rezime pwogram nan",
+        "totalChapters": "Total chapit",
+        "totalHours": "Total èdtan",
+        "termLabel": "Trimès {number}",
+        "termValue": "{hours} · {count} ch.",
+        "distribution": "Repatisyon",
+        "distributionTotal": "{hours} total"
+      },
+      "calendar": {
+        "title": "Kalandriye eskolè",
+        "empty": "Pa gen peryòd."
+      },
+      "subjectCard": {
+        "title": "Matyè",
+        "teacher": "Pwofesè",
+        "classes": "Klas",
+        "status": "Estati",
+        "coeffPrefix": "Kwef. {coefficient}"
+      },
+      "chapterRow": {
+        "reorderAria": "Reklase",
+        "titlePlaceholder": "Tit chapit la",
+        "objectivesPlaceholder": "Objektif pedagojik chapit la…",
+        "objectivesAria": "Objektif",
+        "durationLabel": "Dire :",
+        "durationAria": "Dire an èdtan",
+        "referencePlaceholder": "Liv ch. …",
+        "referenceAria": "Referans",
+        "competencePlaceholder": "Konpetans",
+        "deleteAria": "Efase chapit la"
+      }
+    }
   }
 }

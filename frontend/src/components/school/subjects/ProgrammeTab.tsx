@@ -24,6 +24,7 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
@@ -33,6 +34,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { ASIDE_GRID } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import type {
@@ -52,17 +54,17 @@ const TERM_TONES: { pill: string; bar: string; badge: BadgeTone }[] = [
 const toneOf = (index: number) => TERM_TONES[index % TERM_TONES.length]!;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-function termRange(t: TermData): string {
+function termRange(t: TermData, bcp47: string): string {
   const a = new Date(t.startDate);
   const b = new Date(t.endDate);
-  const month = (d: Date) => cap(d.toLocaleDateString('fr-FR', { month: 'long' }));
+  const month = (d: Date) => cap(d.toLocaleDateString(bcp47, { month: 'long' }));
   return a.getFullYear() === b.getFullYear()
     ? `${month(a)} – ${month(b)} ${b.getFullYear()}`
     : `${month(a)} ${a.getFullYear()} – ${month(b)} ${b.getFullYear()}`;
 }
-function termShort(t: TermData): string {
+function termShort(t: TermData, bcp47: string): string {
   const f = (d: Date) =>
-    cap(new Date(d).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }));
+    cap(new Date(d).toLocaleDateString(bcp47, { month: 'short', year: 'numeric' }));
   return `${f(new Date(t.startDate))} → ${f(new Date(t.endDate))}`;
 }
 const fmtHours = (h: number) => `${Number.isInteger(h) ? h : h.toFixed(1)} h`;
@@ -80,6 +82,10 @@ export function ProgrammeTab({
 }) {
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.matieres.programme');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [terms, setTerms] = useState<TermData[] | null>(null);
   const [chapters, setChapters] = useState<ChapterData[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -96,9 +102,9 @@ export function ProgrammeTab({
       setTerms(res.terms);
       setChapters(res.chapters);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Impossible de charger le programme.');
+      setError(err instanceof ApiError ? err.message : t('loadError'));
     }
-  }, [subject.id]);
+  }, [subject.id, t]);
 
   useEffect(() => {
     void load();
@@ -121,10 +127,10 @@ export function ProgrammeTab({
           body: entry.patch,
         });
       } catch (err) {
-        toast(err instanceof ApiError ? err.message : 'Enregistrement impossible.', 'error');
+        toast(err instanceof ApiError ? err.message : t('saveError'), 'error');
       }
     },
-    [subject.id, toast],
+    [subject.id, toast, t],
   );
 
   const edit = useCallback(
@@ -161,7 +167,7 @@ export function ProgrammeTab({
         `/api/school/subjects/${subject.id}/chapters`,
         {
           method: 'POST',
-          body: { termId, title: 'Nouveau chapitre' },
+          body: { termId, title: t('newChapterTitle') },
         },
       );
       setChapters((prev) => [...prev, res.chapter]);
@@ -173,20 +179,20 @@ export function ProgrammeTab({
         el?.select();
       });
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   async function removeChapter(chapter: ChapterData) {
-    if (!(await confirm({ message: `Supprimer le chapitre « ${chapter.title} » ?`, danger: true })))
+    if (!(await confirm({ message: t('deleteConfirm', { title: chapter.title }), danger: true })))
       return;
     try {
       pending.current.delete(chapter.id);
       await api(`/api/school/subjects/${subject.id}/chapters/${chapter.id}`, { method: 'DELETE' });
       setChapters((prev) => prev.filter((c) => c.id !== chapter.id));
-      toast('Chapitre supprimé.', 'success');
+      toast(t('toast.chapterDeleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -201,7 +207,7 @@ export function ProgrammeTab({
         body: { termId, ids: ordered.map((c) => c.id) },
       });
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Réordonnancement impossible.', 'error');
+      toast(err instanceof ApiError ? err.message : t('reorderError'), 'error');
       void load();
     }
   }
@@ -210,14 +216,22 @@ export function ProgrammeTab({
     setSaving(true);
     await flushAll();
     setSaving(false);
-    toast('Programme enregistré.', 'success');
+    toast(t('toast.saved'), 'success');
   }
 
   function exportCsv() {
-    const byTerm = new Map((terms ?? []).map((t) => [t.id, t.label]));
+    const byTerm = new Map((terms ?? []).map((term) => [term.id, term.label]));
     exportToCsv(
       `programme-${subject.code ?? subject.name}.csv`,
-      ['Période', 'N°', 'Chapitre', 'Objectifs', 'Durée (h)', 'Référence', 'Compétence'],
+      [
+        t('csv.period'),
+        t('csv.number'),
+        t('csv.chapter'),
+        t('csv.objectives'),
+        t('csv.hours'),
+        t('csv.reference'),
+        t('csv.competence'),
+      ],
       sortedChapters.map((c, i) => [
         byTerm.get(c.termId) ?? '',
         String(i + 1),
@@ -231,7 +245,7 @@ export function ProgrammeTab({
   }
 
   // ── derived ─────────────────────────────────────────────────────────
-  const termOrder = useMemo(() => new Map((terms ?? []).map((t, i) => [t.id, i])), [terms]);
+  const termOrder = useMemo(() => new Map((terms ?? []).map((term, i) => [term.id, i])), [terms]);
   const sortedChapters = useMemo(
     () =>
       [...chapters].sort(
@@ -242,7 +256,7 @@ export function ProgrammeTab({
   );
   const perTerm = useMemo(() => {
     const m = new Map<string, { chapters: ChapterData[]; hours: number }>();
-    for (const t of terms ?? []) m.set(t.id, { chapters: [], hours: 0 });
+    for (const term of terms ?? []) m.set(term.id, { chapters: [], hours: 0 });
     for (const c of sortedChapters) {
       const e = m.get(c.termId);
       if (!e) continue;
@@ -262,6 +276,7 @@ export function ProgrammeTab({
     subject.classSubjects.find((cs) => cs.teacher)?.teacher?.name ??
     '—';
   const classLabel = subject.classSubjects.map((cs) => cs.class.name).join(', ') || '—';
+  const termsCount = (terms ?? []).length;
 
   const footer = (
     <SubjectPageFooter
@@ -269,16 +284,20 @@ export function ProgrammeTab({
         <>
           <BookMarked size={14} />
           <span>
-            {sortedChapters.length} chapitre{sortedChapters.length > 1 ? 's' : ''} ·{' '}
-            {fmtHours(totalHours)} au total sur {(terms ?? []).length} période
-            {(terms ?? []).length > 1 ? 's' : ''}
+            {t(sortedChapters.length > 1 ? 'plural.chapters.other' : 'plural.chapters.one', {
+              count: sortedChapters.length,
+            })}{' '}
+            · {fmtHours(totalHours)} {t('footer.totalOn')}{' '}
+            {t(termsCount > 1 ? 'plural.periods.other' : 'plural.periods.one', {
+              count: termsCount,
+            })}
           </span>
         </>
       }
       right={
         <>
           <Button variant="ghost" className="w-fit" onClick={() => void load()}>
-            Annuler
+            {t('footer.cancel')}
           </Button>
           <Button
             variant="outline"
@@ -287,11 +306,11 @@ export function ProgrammeTab({
             disabled={sortedChapters.length === 0}
           >
             <Download size={13} />
-            Exporter CSV
+            {t('footer.export')}
           </Button>
           <Button className="w-fit" loading={saving} onClick={() => void saveAll()}>
             <Check size={14} />
-            Enregistrer le programme
+            {t('footer.save')}
           </Button>
         </>
       }
@@ -329,32 +348,27 @@ export function ProgrammeTab({
         {/* Toolbar */}
         <div className="mb-3.5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[15px] font-bold text-foreground">Programme par trimestre</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
-              Rédigez les chapitres et objectifs de chaque trimestre. Glissez-déposez pour
-              réordonner.
-            </div>
+            <div className="text-[15px] font-bold text-foreground">{t('toolbar.title')}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{t('toolbar.description')}</div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               className="w-auto"
-              onClick={() => toast('Import de programme — bientôt disponible.', 'info')}
+              onClick={() => toast(t('toolbar.importToast'), 'info')}
             >
               <Upload size={13} />
-              Importer
+              {t('toolbar.import')}
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="w-auto"
-              onClick={() =>
-                toast("Duplication depuis l'année précédente — bientôt disponible.", 'info')
-              }
+              onClick={() => toast(t('toolbar.duplicateToast'), 'info')}
             >
               <Copy size={13} />
-              Dupliquer de l&apos;an passé
+              {t('toolbar.duplicate')}
             </Button>
           </div>
         </div>
@@ -364,23 +378,19 @@ export function ProgrammeTab({
           <div className="min-w-0">
             {terms.length === 0 ? (
               <div className="rounded-lg border border-border bg-card px-5 py-8 text-center">
-                <p className="text-caption font-semibold text-foreground">
-                  Aucune période scolaire
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Crée d&apos;abord tes trimestres dans les paramètres de l&apos;année scolaire.
-                </p>
+                <p className="text-caption font-semibold text-foreground">{t('empty.title')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('empty.description')}</p>
                 <Link
                   href="/settings?tab=year"
                   className="mt-3 inline-flex text-xs font-semibold text-primary"
                 >
-                  Paramètres › Année scolaire →
+                  {t('empty.link')}
                 </Link>
               </div>
             ) : (
               <Accordion.Root
                 type="multiple"
-                defaultValue={terms.map((t) => t.id)}
+                defaultValue={terms.map((term) => term.id)}
                 className="flex flex-col gap-3"
               >
                 {terms.map((term, index) => {
@@ -408,12 +418,16 @@ export function ProgrammeTab({
                                 {term.label}
                               </span>
                               <span className="mt-px block truncate text-xs text-muted-foreground">
-                                {termRange(term)}
+                                {termRange(term, bcp47)}
                               </span>
                             </span>
                             <Badge tone={tone.badge} className="ml-1 hidden sm:inline-flex">
-                              {bucket.chapters.length} chapitre
-                              {bucket.chapters.length > 1 ? 's' : ''}
+                              {t(
+                                bucket.chapters.length > 1
+                                  ? 'plural.chapters.other'
+                                  : 'plural.chapters.one',
+                                { count: bucket.chapters.length },
+                              )}
                             </Badge>
                           </span>
                           <span className="flex shrink-0 items-center gap-2">
@@ -443,6 +457,7 @@ export function ProgrammeTab({
                                 pillClass={tone.pill}
                                 onEdit={(patch) => edit(chapter.id, patch)}
                                 onDelete={() => void removeChapter(chapter)}
+                                t={t}
                               />
                             ))}
                           </Reorder.Group>
@@ -452,7 +467,7 @@ export function ProgrammeTab({
                             className="mt-1.5 flex w-full items-center gap-2 border-t border-dashed border-border pt-2 pb-0.5 pl-8 text-xs font-medium text-primary"
                           >
                             <PlusCircle size={14} />
-                            Ajouter un chapitre
+                            {t('addChapterButton')}
                           </button>
                         </div>
                       </Accordion.Content>
@@ -465,31 +480,34 @@ export function ProgrammeTab({
 
           {/* RIGHT: sticky summary */}
           <div className="flex flex-col gap-4 lg:sticky lg:top-0">
-            <InfoCard icon={<BarChart2 size={14} />} title="Résumé du programme">
-              <StatRow label="Total chapitres" value={String(sortedChapters.length)} />
-              <StatRow label="Heures totales" value={fmtHours(totalHours)} />
-              {terms.map((t, i) => {
-                const b = perTerm.get(t.id) ?? { chapters: [], hours: 0 };
+            <InfoCard icon={<BarChart2 size={14} />} title={t('summary.title')}>
+              <StatRow label={t('summary.totalChapters')} value={String(sortedChapters.length)} />
+              <StatRow label={t('summary.totalHours')} value={fmtHours(totalHours)} />
+              {terms.map((term, i) => {
+                const b = perTerm.get(term.id) ?? { chapters: [], hours: 0 };
                 return (
                   <StatRow
-                    key={t.id}
-                    label={`Trimestre ${i + 1}`}
-                    value={`${fmtHours(b.hours)} · ${b.chapters.length} ch.`}
+                    key={term.id}
+                    label={t('summary.termLabel', { number: i + 1 })}
+                    value={t('summary.termValue', {
+                      hours: fmtHours(b.hours),
+                      count: b.chapters.length,
+                    })}
                   />
                 );
               })}
               {terms.length > 0 && (
                 <div className="mt-3">
                   <div className="mb-[5px] flex justify-between text-2xs text-muted-foreground">
-                    <span>Répartition</span>
-                    <span>{fmtHours(totalHours)} total</span>
+                    <span>{t('summary.distribution')}</span>
+                    <span>{t('summary.distributionTotal', { hours: fmtHours(totalHours) })}</span>
                   </div>
                   <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
-                    {terms.map((t, i) => {
-                      const h = perTerm.get(t.id)?.hours ?? 0;
+                    {terms.map((term, i) => {
+                      const h = perTerm.get(term.id)?.hours ?? 0;
                       return (
                         <div
-                          key={t.id}
+                          key={term.id}
                           className={cn(toneOf(i).bar)}
                           style={{ flex: totalHours > 0 ? h : 1 }}
                         />
@@ -497,9 +515,9 @@ export function ProgrammeTab({
                     })}
                   </div>
                   <div className="mt-1.5 flex flex-wrap gap-2.5">
-                    {terms.map((t, i) => (
+                    {terms.map((term, i) => (
                       <span
-                        key={t.id}
+                        key={term.id}
                         className="flex items-center gap-1 text-2xs text-muted-foreground"
                       >
                         <span className={cn('h-2 w-2 shrink-0 rounded-full', toneOf(i).bar)} />T
@@ -511,19 +529,21 @@ export function ProgrammeTab({
               )}
             </InfoCard>
 
-            <InfoCard icon={<Calendar size={14} />} title="Calendrier scolaire">
+            <InfoCard icon={<Calendar size={14} />} title={t('calendar.title')}>
               {terms.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Aucune période.</p>
+                <p className="text-xs text-muted-foreground">{t('calendar.empty')}</p>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {terms.map((t, i) => (
-                    <div key={t.id} className="flex items-start gap-2">
+                  {terms.map((term, i) => (
+                    <div key={term.id} className="flex items-start gap-2">
                       <span
                         className={cn('mt-[3px] h-2.5 w-2.5 shrink-0 rounded-full', toneOf(i).bar)}
                       />
                       <div>
-                        <div className="text-xs font-semibold text-foreground">{t.label}</div>
-                        <div className="text-2xs text-muted-foreground">{termShort(t)}</div>
+                        <div className="text-xs font-semibold text-foreground">{term.label}</div>
+                        <div className="text-2xs text-muted-foreground">
+                          {termShort(term, bcp47)}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -531,7 +551,7 @@ export function ProgrammeTab({
               )}
             </InfoCard>
 
-            <InfoCard icon={<Info size={14} />} title="Matière">
+            <InfoCard icon={<Info size={14} />} title={t('subjectCard.title')}>
               <div className="mb-2.5 flex items-center gap-2.5 rounded-md bg-background px-2.5 py-2">
                 <div
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
@@ -547,7 +567,7 @@ export function ProgrammeTab({
                     {[
                       subject.code,
                       subject.defaultCoefficient != null
-                        ? `Coeff. ${subject.defaultCoefficient}`
+                        ? t('subjectCard.coeffPrefix', { coefficient: subject.defaultCoefficient })
                         : null,
                     ]
                       .filter(Boolean)
@@ -555,10 +575,10 @@ export function ProgrammeTab({
                   </div>
                 </div>
               </div>
-              <StatRow label="Enseignant" value={teacherLabel} small />
-              <StatRow label="Classes" value={classLabel} small />
+              <StatRow label={t('subjectCard.teacher')} value={teacherLabel} small />
+              <StatRow label={t('subjectCard.classes')} value={classLabel} small />
               <div className="flex items-center justify-between py-[5px] text-xs">
-                <span className="font-medium text-muted-foreground">Statut</span>
+                <span className="font-medium text-muted-foreground">{t('subjectCard.status')}</span>
                 <SubjectStatusBadge status={subject.status} />
               </div>
             </InfoCard>
@@ -572,18 +592,34 @@ export function ProgrammeTab({
 
 // ── pieces ──────────────────────────────────────────────────────────────
 
+type ChapterRowT = (
+  key:
+    | 'chapterRow.reorderAria'
+    | 'chapterRow.titlePlaceholder'
+    | 'chapterRow.objectivesPlaceholder'
+    | 'chapterRow.objectivesAria'
+    | 'chapterRow.durationLabel'
+    | 'chapterRow.durationAria'
+    | 'chapterRow.referencePlaceholder'
+    | 'chapterRow.referenceAria'
+    | 'chapterRow.competencePlaceholder'
+    | 'chapterRow.deleteAria',
+) => string;
+
 function ChapterRow({
   chapter,
   index,
   pillClass,
   onEdit,
   onDelete,
+  t,
 }: {
   chapter: ChapterData;
   index: number;
   pillClass: string;
   onEdit: (patch: ChapterPatch) => void;
   onDelete: () => void;
+  t: ChapterRowT;
 }) {
   const controls = useDragControls();
   return (
@@ -595,7 +631,7 @@ function ChapterRow({
     >
       <button
         type="button"
-        aria-label="Réordonner"
+        aria-label={t('chapterRow.reorderAria')}
         onPointerDown={(e) => controls.start(e)}
         className="mt-0.5 flex shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
       >
@@ -614,19 +650,20 @@ function ChapterRow({
           data-chapter-title={chapter.id}
           value={chapter.title}
           onChange={(e) => onEdit({ title: e.target.value })}
-          placeholder="Titre du chapitre"
-          aria-label="Titre du chapitre"
+          placeholder={t('chapterRow.titlePlaceholder')}
+          aria-label={t('chapterRow.titlePlaceholder')}
           className="w-full bg-transparent text-caption leading-[1.4] font-semibold text-foreground outline-none placeholder:text-muted-foreground"
         />
         <AutoTextarea
           value={chapter.objectives ?? ''}
           onChange={(v) => onEdit({ objectives: v || null })}
-          placeholder="Objectifs pédagogiques du chapitre…"
+          placeholder={t('chapterRow.objectivesPlaceholder')}
+          ariaLabel={t('chapterRow.objectivesAria')}
         />
         <div className="mt-1.5 flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-1 text-2xs text-muted-foreground">
             <Clock size={11} />
-            Durée :
+            {t('chapterRow.durationLabel')}
             <span className="flex items-center rounded-sm bg-muted px-2 py-px text-2xs font-semibold text-foreground">
               <input
                 type="number"
@@ -636,7 +673,7 @@ function ChapterRow({
                 onChange={(e) =>
                   onEdit({ hours: e.target.value === '' ? null : Number(e.target.value) })
                 }
-                aria-label="Durée en heures"
+                aria-label={t('chapterRow.durationAria')}
                 className="w-8 bg-transparent text-right outline-none"
               />
               h
@@ -647,23 +684,23 @@ function ChapterRow({
             <input
               value={chapter.reference ?? ''}
               onChange={(e) => onEdit({ reference: e.target.value || null })}
-              placeholder="Manuel ch. …"
-              aria-label="Référence"
+              placeholder={t('chapterRow.referencePlaceholder')}
+              aria-label={t('chapterRow.referenceAria')}
               className="w-24 bg-transparent outline-none placeholder:text-muted-foreground/70"
             />
           </label>
           <input
             value={chapter.competence ?? ''}
             onChange={(e) => onEdit({ competence: e.target.value || null })}
-            placeholder="Compétence"
-            aria-label="Compétence"
+            placeholder={t('chapterRow.competencePlaceholder')}
+            aria-label={t('chapterRow.competencePlaceholder')}
             className="w-32 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary outline-none placeholder:text-primary/50"
           />
         </div>
       </div>
       <button
         type="button"
-        aria-label="Supprimer le chapitre"
+        aria-label={t('chapterRow.deleteAria')}
         onClick={onDelete}
         className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-sm text-destructive-foreground hover:bg-destructive"
       >
@@ -677,10 +714,12 @@ function AutoTextarea({
   value,
   onChange,
   placeholder,
+  ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  ariaLabel: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -696,7 +735,7 @@ function AutoTextarea({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      aria-label="Objectifs"
+      aria-label={ariaLabel}
       className="mt-[3px] w-full resize-none overflow-hidden bg-transparent text-xs leading-normal text-muted-foreground outline-none placeholder:text-muted-foreground/60"
     />
   );

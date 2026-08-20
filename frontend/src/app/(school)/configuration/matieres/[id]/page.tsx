@@ -6,6 +6,7 @@
 // (add-matiere.md / programme-annuel.md / affectations-classes.md).
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Check } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -52,6 +53,8 @@ function SubjectDetailContent() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const { toast } = useToast();
+  const t = useTranslations('Configuration.matieres.detail');
+  const tCommon = useTranslations('Common');
 
   const tabParam = search.get('tab');
   const tab: SubjectTab = TABS.includes(tabParam as SubjectTab) ? (tabParam as SubjectTab) : 'info';
@@ -100,24 +103,17 @@ function SubjectDetailContent() {
           router.replace('/');
           return;
         }
-        setError(
-          err instanceof ApiError && err.status === 404
-            ? 'Matière introuvable.'
-            : 'Impossible de charger la matière.',
-        );
+        setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
       });
-  }, [user, router, loadDetail]);
+  }, [user, router, loadDetail, t]);
 
   // ── Informations générales (edit form) ─────────────────────────────
   const onSaved = useCallback(
     async (saved: { name: string }, intent: 'draft' | 'publish') => {
-      toast(
-        intent === 'draft' ? `Brouillon « ${saved.name} » enregistré.` : 'Matière mise à jour.',
-        'success',
-      );
+      toast(intent === 'draft' ? t('draftSaved', { name: saved.name }) : t('updated'), 'success');
       await loadDetail();
     },
-    [loadDetail, toast],
+    [loadDetail, toast, t],
   );
   const existingCodes = useMemo(
     () => subjects.filter((s) => s.id !== params.id).map((s) => s.code),
@@ -162,11 +158,11 @@ function SubjectDetailContent() {
         }
         await loadDetail();
       } catch (err) {
-        toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+        toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
         await loadDetail();
       }
     },
-    [subject, loadDetail, toast],
+    [subject, loadDetail, toast, tCommon],
   );
 
   const busy = form.submitting !== null;
@@ -176,7 +172,7 @@ function SubjectDetailContent() {
       {tab === 'info' && (
         <Button className="w-fit" loading={busy} onClick={() => form.submit('publish')}>
           <Check size={14} />
-          Enregistrer
+          {t('save')}
         </Button>
       )}
     </>

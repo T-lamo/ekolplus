@@ -5,6 +5,7 @@
 // lands on the new subject's detail page (Informations tab, banner active).
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -33,6 +34,7 @@ export default function NouvelleMatierePage() {
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations('Configuration.matieres.create');
   const [subjects, setSubjects] = useState<SubjectData[] | null>(null);
   const [teachers, setTeachers] = useState<TeacherRow[]>([]);
   const [classes, setClasses] = useState<ClassRow[]>([]);
@@ -57,21 +59,21 @@ export default function NouvelleMatierePage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les données du formulaire.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   const onSaved = useCallback(
     (subject: { id: string; name: string }, intent: 'draft' | 'publish') => {
       toast(
         intent === 'draft'
-          ? `Brouillon « ${subject.name} » enregistré.`
-          : `Matière « ${subject.name} » créée.`,
+          ? t('draftSaved', { name: subject.name })
+          : t('created', { name: subject.name }),
         'success',
       );
       router.push(`/configuration/matieres/${subject.id}`);
     },
-    [router, toast],
+    [router, toast, t],
   );
 
   const existingCodes = useMemo(() => (subjects ?? []).map((s) => s.code), [subjects]);
@@ -103,7 +105,7 @@ export default function NouvelleMatierePage() {
         disabled={busy}
         onClick={() => form.submit('draft')}
       >
-        Enregistrer comme brouillon
+        {t('saveDraft')}
       </Button>
       <Button
         className="w-fit"
@@ -112,7 +114,7 @@ export default function NouvelleMatierePage() {
         onClick={() => form.submit('publish')}
       >
         <Plus size={14} />
-        Créer la matière
+        {t('createSubject')}
       </Button>
     </>
   );

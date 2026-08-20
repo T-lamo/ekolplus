@@ -4,6 +4,7 @@
 // page so the header/footer buttons living outside the form body can drive
 // it; `SubjectForm` is the presentational half.
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import {
   OTHER_DOMAIN,
@@ -91,24 +92,56 @@ function toInt(v: string): number | null {
   return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
-export function validate(v: SubjectFormValues): SubjectFormErrors {
-  const errors: SubjectFormErrors = {};
-  if (v.name.trim().length < 2) errors.name = 'Le nom doit contenir au moins 2 caractères.';
-  if (v.code.trim() === '') errors.code = 'Le code matière est obligatoire.';
-  if (v.domain === '') errors.domain = 'Choisis un département / une filière.';
+type SubjectFormErrorCode =
+  | 'nameTooShort'
+  | 'codeRequired'
+  | 'domainRequired'
+  | 'domainOtherRequired'
+  | 'levelRequired'
+  | 'coefficientRange'
+  | 'maxScoreRange'
+  | 'scoreRange'
+  | 'evaluationTypeRequired';
+
+export type SubjectFormErrorCodes = Partial<Record<keyof SubjectFormValues, SubjectFormErrorCode>>;
+
+export function validate(v: SubjectFormValues): { codes: SubjectFormErrorCodes; max: number } {
+  const errors: SubjectFormErrorCodes = {};
+  if (v.name.trim().length < 2) errors.name = 'nameTooShort';
+  if (v.code.trim() === '') errors.code = 'codeRequired';
+  if (v.domain === '') errors.domain = 'domainRequired';
   if (v.domain === OTHER_DOMAIN && v.domainOther.trim() === '') {
-    errors.domainOther = 'Précise le département.';
+    errors.domainOther = 'domainOtherRequired';
   }
-  if (v.level === '') errors.level = 'Choisis un niveau.';
+  if (v.level === '') errors.level = 'levelRequired';
   const coeff = toInt(v.defaultCoefficient);
-  if (coeff === null || coeff < 1 || coeff > 10) errors.defaultCoefficient = 'Entre 1 et 10.';
+  if (coeff === null || coeff < 1 || coeff > 10) errors.defaultCoefficient = 'coefficientRange';
   const max = toInt(v.maxScore) ?? 20;
-  if (max < 1 || max > 100) errors.maxScore = 'Entre 1 et 100.';
+  if (max < 1 || max > 100) errors.maxScore = 'maxScoreRange';
   const pass = toInt(v.passingScore);
-  if (pass !== null && (pass < 0 || pass > max)) errors.passingScore = `Entre 0 et ${max}.`;
+  if (pass !== null && (pass < 0 || pass > max)) errors.passingScore = 'scoreRange';
   const elim = toInt(v.eliminatoryScore);
-  if (elim !== null && (elim < 0 || elim > max)) errors.eliminatoryScore = `Entre 0 et ${max}.`;
-  if (v.evaluationType === '') errors.evaluationType = "Choisis un type d'évaluation.";
+  if (elim !== null && (elim < 0 || elim > max)) errors.eliminatoryScore = 'scoreRange';
+  if (v.evaluationType === '') errors.evaluationType = 'evaluationTypeRequired';
+  return { codes: errors, max };
+}
+
+type SubjectFormErrorsT = (
+  key: `errors.${SubjectFormErrorCode}`,
+  values?: { max?: number },
+) => string;
+
+function translateErrors(
+  codes: SubjectFormErrorCodes,
+  max: number,
+  t: SubjectFormErrorsT,
+): SubjectFormErrors {
+  const errors: SubjectFormErrors = {};
+  for (const key of Object.keys(codes) as (keyof SubjectFormValues)[]) {
+    const code = codes[key];
+    if (!code) continue;
+    errors[key] = t(`errors.${code}`, code === 'scoreRange' ? { max } : {});
+  }
   return errors;
 }
 
@@ -157,6 +190,8 @@ export function useSubjectForm({
   schoolDomains: string[];
   onSaved: (subject: SubjectProfile, intent: 'draft' | 'publish') => void;
 }) {
+  const t = useTranslations('Configuration.matieres.form');
+  const tCommon = useTranslations('Common');
   const domainOptions = useMemo(
     () => [...new Set<string>([...SUBJECT_DOMAINS, ...schoolDomains])],
     [schoolDomains],
@@ -198,12 +233,13 @@ export function useSubjectForm({
     async (intent: 'draft' | 'publish') => {
       setServerError(null);
       const status: SubjectStatus = intent === 'draft' ? 'DRAFT' : values.status;
-      const nextErrors = intent === 'draft' ? {} : validate(values);
+      const { codes: nextCodes, max } =
+        intent === 'draft' ? { codes: {}, max: 20 } : validate(values);
       if (intent === 'draft' && values.name.trim().length < 2) {
-        nextErrors.name = 'Le nom doit contenir au moins 2 caractères.';
+        nextCodes.name = 'nameTooShort';
       }
-      if (Object.keys(nextErrors).length > 0) {
-        setErrors(nextErrors);
+      if (Object.keys(nextCodes).length > 0) {
+        setErrors(translateErrors(nextCodes, max, t));
         const first = document.querySelector<HTMLElement>('[data-field-error="true"]');
         first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
@@ -225,13 +261,13 @@ export function useSubjectForm({
         if (err instanceof ApiError && err.code === 'SUBJECT_CODE_TAKEN') {
           setErrors((prev) => ({ ...prev, code: err.message }));
         } else {
-          setServerError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+          setServerError(err instanceof ApiError ? err.message : tCommon('errors.network'));
         }
       } finally {
         setSubmitting(null);
       }
     },
-    [values, subject, onSaved],
+    [values, subject, onSaved, t, tCommon],
   );
 
   return { values, setField, errors, submit, submitting, serverError, domainOptions };

@@ -4,15 +4,10 @@
 // Compétences / Évaluations are deliberately absent (no screen selected yet —
 // user decision 2026-08-17).
 import { BookMarked, Info, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PageTabsBar, type PageTab } from '@/components/school/PageTabsBar';
 
 export type SubjectTab = 'info' | 'programme' | 'affectations';
-
-const TABS: readonly PageTab<SubjectTab>[] = [
-  { key: 'info', label: 'Informations générales', Icon: Info },
-  { key: 'programme', label: 'Programme annuel', Icon: BookMarked },
-  { key: 'affectations', label: 'Affectations classes', Icon: Users },
-];
 
 export function SubjectTabsBar({
   active,
@@ -27,6 +22,12 @@ export function SubjectTabsBar({
   disabledTabs?: SubjectTab[];
   disabledHint?: string;
 }) {
+  const t = useTranslations('Configuration.matieres.tabsBar');
+  const TABS: readonly PageTab<SubjectTab>[] = [
+    { key: 'info', label: t('info'), Icon: Info },
+    { key: 'programme', label: t('programme'), Icon: BookMarked },
+    { key: 'affectations', label: t('affectations'), Icon: Users },
+  ];
   return (
     <PageTabsBar
       tabs={TABS}

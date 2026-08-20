@@ -6,13 +6,12 @@
 // other page title in the app, not flush against the sidebar/topbar — then
 // the page body. Tabs render their own footer card at the end.
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { PageHeaderCard } from '@/components/school/PageHeaderCard';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { getSubjectVisual } from '@/lib/subject-visuals';
-import {
-  SUBJECT_STATUS_LABEL,
-  type SubjectStatus,
-} from '@/app/(school)/configuration/matieres/subject-form.constants';
+import type { SubjectStatus } from '@/app/(school)/configuration/matieres/subject-form.constants';
+import { subjectStatusLabel } from '@/app/(school)/configuration/matieres/status-label';
 import { SubjectTabsBar, type SubjectTab } from './SubjectTabsBar';
 
 export const STATUS_TONE: Record<SubjectStatus, BadgeTone> = {
@@ -28,9 +27,10 @@ export function SubjectStatusBadge({
   status: SubjectStatus;
   className?: string;
 }) {
+  const tStatus = useTranslations('Configuration.matieres.status');
   return (
     <Badge tone={STATUS_TONE[status]} {...(className ? { className } : {})}>
-      {SUBJECT_STATUS_LABEL[status]}
+      {subjectStatusLabel(status, tStatus)}
     </Badge>
   );
 }
@@ -61,17 +61,22 @@ export function SubjectPageShell({
   actions?: ReactNode;
   children: ReactNode;
 }) {
+  const t = useTranslations('Configuration.matieres.pageShell');
   const visual = subject
     ? getSubjectVisual(subject.name, { icon: subject.icon, color: subject.color })
     : null;
   const meta =
     mode === 'create'
-      ? `Nouvelle matière${yearLabel ? ` — Année scolaire ${yearLabel}` : ''}`
+      ? yearLabel
+        ? t('createMetaWithYear', { year: yearLabel })
+        : t('createMeta')
       : [
           subject?.code,
           subject?.domain,
-          subject?.defaultCoefficient != null ? `Coeff. ${subject.defaultCoefficient}` : null,
-          yearLabel ? `Année ${yearLabel}` : null,
+          subject?.defaultCoefficient != null
+            ? t('coeffPrefix', { coefficient: subject.defaultCoefficient })
+            : null,
+          yearLabel ? t('yearPrefix', { year: yearLabel }) : null,
         ]
           .filter(Boolean)
           .join(' · ');
@@ -90,7 +95,7 @@ export function SubjectPageShell({
             </div>
           ) : undefined
         }
-        title={mode === 'create' ? 'Ajouter une matière' : (subject?.name ?? '…')}
+        title={mode === 'create' ? t('addTitle') : (subject?.name ?? '…')}
         meta={meta}
         actions={actions}
         tabs={
@@ -99,7 +104,7 @@ export function SubjectPageShell({
             onChange={onTabChange}
             {...(counts ? { counts } : {})}
             disabledTabs={mode === 'create' ? ['programme', 'affectations'] : []}
-            disabledHint="Enregistre la matière pour continuer"
+            disabledHint={t('disabledHint')}
           />
         }
       />

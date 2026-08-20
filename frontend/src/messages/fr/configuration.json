@@ -284,5 +284,449 @@
         "feesDesc": "Définir les frais et tranches"
       }
     }
+  },
+  "matieres": {
+    "list": {
+      "title": "Matières",
+      "subtitle": "Gestion des matières enseignées.",
+      "loadError": "Impossible de charger les matières.",
+      "export": "Exporter",
+      "addSubject": "Ajouter une matière",
+      "deleteConfirm": "Supprimer la matière « {name} » ?",
+      "subjectDeleted": "Matière supprimée.",
+      "unarchived": "Matière désarchivée.",
+      "archived": "Matière archivée.",
+      "duplicateComingSoon": "Duplication de matière — bientôt disponible.",
+      "csv": {
+        "subject": "Matière",
+        "code": "Code",
+        "domain": "Domaine",
+        "coefficient": "Coefficient",
+        "teachers": "Enseignants",
+        "classes": "Classes",
+        "status": "Statut"
+      },
+      "menu": {
+        "view": "Voir les détails",
+        "edit": "Modifier la matière",
+        "assignTeacher": "Assigner un enseignant",
+        "manageAssignments": "Gérer les affectations",
+        "editCoefficient": "Modifier le coefficient",
+        "duplicate": "Dupliquer",
+        "archive": "Archiver la matière",
+        "unarchive": "Désarchiver la matière",
+        "delete": "Supprimer la matière"
+      },
+      "stats": {
+        "total": "Total matières",
+        "active": "Matières actives",
+        "unassigned": "Non affectées",
+        "teachers": "Enseignants assignés"
+      },
+      "searchPlaceholder": "Rechercher une matière...",
+      "allDomains": "Tous les domaines",
+      "allStatuses": "Tous les statuts",
+      "resultCount": {
+        "one": "{count} matière",
+        "other": "{count} matières"
+      },
+      "emptyNoSubjects": "Aucune matière — ajoute la première.",
+      "emptyNoResults": "Aucun résultat.",
+      "noClasses": "Aucune classe",
+      "unassignedLabel": "Non assigné",
+      "table": {
+        "subject": "Matière",
+        "domain": "Domaine",
+        "coefficient": "Coefficient",
+        "assignedTeacher": "Enseignant assigné",
+        "classes": "Classes",
+        "evaluationCount": "Nb. évaluations",
+        "status": "Statut"
+      }
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DRAFT": "Brouillon",
+      "ARCHIVED": "Archivée",
+      "activeDesc": "Visible et utilisée dans les évaluations",
+      "draftDesc": "En cours de configuration, non visible",
+      "archivedDesc": "Plus utilisée, conservée pour historique",
+      "unassigned": "Non affectée"
+    },
+    "kind": {
+      "REQUIRED": "Obligatoire",
+      "ELECTIVE": "Optionnelle (élective)",
+      "OPTIONAL": "Facultative"
+    },
+    "pageShell": {
+      "addTitle": "Ajouter une matière",
+      "createMeta": "Nouvelle matière",
+      "createMetaWithYear": "Nouvelle matière — Année scolaire {year}",
+      "coeffPrefix": "Coeff. {coefficient}",
+      "yearPrefix": "Année {year}",
+      "disabledHint": "Enregistrez la matière pour continuer"
+    },
+    "tabsBar": {
+      "info": "Informations générales",
+      "programme": "Programme annuel",
+      "affectations": "Affectations classes"
+    },
+    "prerequisitesPicker": {
+      "placeholder": "Sélectionner des matières prérequises…",
+      "searchPlaceholder": "Rechercher une matière…",
+      "emptyLabel": "Aucune matière trouvée"
+    },
+    "create": {
+      "loadError": "Impossible de charger les données du formulaire.",
+      "draftSaved": "Brouillon « {name} » enregistré.",
+      "created": "Matière « {name} » créée.",
+      "saveDraft": "Enregistrer comme brouillon",
+      "createSubject": "Créer la matière"
+    },
+    "detail": {
+      "notFound": "Matière introuvable.",
+      "loadError": "Impossible de charger la matière.",
+      "draftSaved": "Brouillon « {name} » enregistré.",
+      "updated": "Matière mise à jour.",
+      "save": "Enregistrer"
+    },
+    "form": {
+      "requiredHint": "Les champs marqués",
+      "requiredHintSuffix": "sont obligatoires",
+      "identity": {
+        "title": "Identité de la matière",
+        "subtitle": "Informations de base permettant d'identifier la matière dans l'application.",
+        "nameLabel": "Nom de la matière",
+        "nameHint": "Ex : Mathématiques, Français, Physique-Chimie",
+        "namePlaceholder": "Mathématiques",
+        "codeLabel": "Code matière",
+        "codeHint": "Code court unique (généré automatiquement)",
+        "codePlaceholder": "MAT-001",
+        "abbreviationLabel": "Abréviation",
+        "abbreviationHint": "Utilisée dans les tableaux et bulletins",
+        "abbreviationPlaceholder": "MATH",
+        "domainLabel": "Département / Filière",
+        "domainPlaceholder": "Sciences",
+        "domainOther": "Autre…",
+        "domainOtherAria": "Autre département",
+        "domainOtherPlaceholder": "Nom du département",
+        "levelLabel": "Niveau / Année d'étude",
+        "levelPlaceholder": "3ème / 4ème",
+        "kindLabel": "Statut",
+        "kindHint": "Obligatoire, Optionnelle (élective) ou Facultative",
+        "descriptionLabel": "Description / Syllabi",
+        "descriptionPlaceholder": "Brève description du programme d'enseignement, objectifs pédagogiques généraux..."
+      },
+      "structure": {
+        "title": "Structure pédagogique et pondération",
+        "subtitle": "Coefficient, volume horaire et règles d'évaluation pour cette matière.",
+        "coefficientLabel": "Coefficient",
+        "coefficientHint": "Poids dans la moyenne générale",
+        "coefficientPlaceholder": "4",
+        "maxScoreLabel": "Note maximale",
+        "maxScoreHint": "Barème par défaut",
+        "maxScorePlaceholder": "20",
+        "passingScoreLabel": "Note de passage",
+        "passingScoreHint": "Seuil de validation",
+        "passingScorePlaceholder": "10",
+        "totalHoursLabel": "Volume horaire total",
+        "totalHoursLabelHint": "(h)",
+        "totalHoursHint": "Nombre d'heures total annuel",
+        "totalHoursPlaceholder": "78",
+        "cmTdTpLabel": "Dont CM / TD / TP",
+        "cmTdTpHint": "Cours magistral · TD · TP",
+        "cmAria": "Heures de cours magistral",
+        "cmPlaceholder": "42",
+        "tdAria": "Heures de TD",
+        "tdPlaceholder": "24",
+        "tpAria": "Heures de TP",
+        "tpPlaceholder": "12",
+        "evaluationTypeLabel": "Type d'évaluation",
+        "evaluationTypeHint": "Examen final, contrôle continu, projet, hybride",
+        "evaluationTypePlaceholder": "Contrôle continu + Examen final",
+        "maxCapacityLabel": "Capacité max. d'élèves",
+        "maxCapacityHint": "Limite de places (cours d'option)",
+        "maxCapacityPlaceholder": "Ex : 35",
+        "includeInAverageTitle": "Inclure dans la moyenne générale",
+        "includeInAverageDesc": "Cette matière sera prise en compte dans le calcul de la moyenne",
+        "showOnBulletinTitle": "Afficher dans le bulletin",
+        "showOnBulletinDesc": "La note et l'appréciation apparaîtront sur le bulletin scolaire"
+      },
+      "assignment": {
+        "title": "Assignation et logistique",
+        "subtitle": "Enseignant responsable, salle et prérequis pédagogiques.",
+        "teacherLabel": "Enseignant responsable",
+        "teacherHint": "L'enseignant doit être créé dans la liste des enseignants",
+        "teacherPlaceholder": "Sélectionner un enseignant",
+        "teacherNone": "— Aucun —",
+        "roomLabel": "Salle / Type de local requis",
+        "roomHint": "Ex : Amphithéâtre, Laboratoire, Salle informatique",
+        "roomPlaceholder": "Salle de cours standard",
+        "roomNone": "— Non précisé —",
+        "prerequisitesLabel": "Prérequis",
+        "prerequisitesHint": "Matières devant être validées au préalable (ex. avoir validé MAT-001 pour MATH202)"
+      },
+      "advanced": {
+        "title": "Options avancées et paramètres",
+        "subtitle": "Paramètres spécifiques liés à l'année académique et aux seuils d'évaluation.",
+        "yearLabel": "Année académique / Semestre",
+        "yearHint": "Rattachement à la période en cours",
+        "yearActive": "Année complète {year}",
+        "yearNone": "Aucune année scolaire active",
+        "eliminatoryLabel": "Note éliminatoire",
+        "eliminatoryHint": "En dessous de ce seuil, la matière est éliminatoire",
+        "eliminatoryPlaceholder": "Ex : 6 / {max}"
+      },
+      "hintBanner": {
+        "title": "Continuez avec l'onglet « Programme annuel »",
+        "description": "Définissez les chapitres et objectifs par trimestre, ainsi que les compétences évaluées dans les onglets suivants.",
+        "disabledHint": "Enregistrez la matière pour continuer",
+        "goToProgramme": "Aller au programme"
+      },
+      "appearance": {
+        "title": "Apparence",
+        "subtitle": "Couleur et icône affichées dans l'interface.",
+        "iconLabel": "Icône",
+        "colorLabel": "Couleur d'accent",
+        "previewLabel": "Aperçu",
+        "namePlaceholder": "Nom de la matière",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "statusCard": {
+        "title": "Statut de publication"
+      },
+      "classesCard": {
+        "title": "Classes concernées",
+        "subtitle": "Sélection rapide — détails dans l'onglet Affectations.",
+        "empty": "Aucune classe dans l'année scolaire active.",
+        "studentCount": {
+          "one": "{count} élève",
+          "other": "{count} élèves"
+        }
+      },
+      "errors": {
+        "nameTooShort": "Le nom doit contenir au moins 2 caractères.",
+        "codeRequired": "Le code matière est obligatoire.",
+        "domainRequired": "Choisissez un département / une filière.",
+        "domainOtherRequired": "Précisez le département.",
+        "levelRequired": "Choisissez un niveau.",
+        "coefficientRange": "Entre 1 et 10.",
+        "maxScoreRange": "Entre 1 et 100.",
+        "scoreRange": "Entre 0 et {max}.",
+        "evaluationTypeRequired": "Choisissez un type d'évaluation."
+      }
+    },
+    "affectations": {
+      "kpi": {
+        "classesAssigned": "Classes affectées",
+        "teachersAssigned": "Enseignants assignés",
+        "studentsInvolved": "Élèves concernés",
+        "withoutTeacher": "Sans enseignant"
+      },
+      "table": {
+        "title": "Affectations des classes",
+        "filterPlaceholder": "Filtrer les classes...",
+        "filterAria": "Filtrer les classes",
+        "addClass": "Ajouter une classe",
+        "addClassFull": "Ajouter une classe à cette matière",
+        "headers": {
+          "class": "Classe",
+          "level": "Niveau",
+          "teacher": "Enseignant assigné",
+          "coeff": "Coeff.",
+          "weeklyHours": "Heures/sem.",
+          "status": "Statut",
+          "actions": "Actions"
+        },
+        "empty": {
+          "title": "Aucune classe n'a encore cette matière",
+          "description": "Ajoutez une première classe pour définir l'enseignant, le coefficient et les heures."
+        },
+        "editAria": "Modifier",
+        "removeAria": "Retirer",
+        "coefficientAria": "Coefficient {class}",
+        "weeklyHoursAria": "Heures hebdomadaires {class}"
+      },
+      "status": {
+        "active": "Active",
+        "noTeacher": "Sans prof."
+      },
+      "teacherCell": {
+        "placeholder": "Assigner un enseignant",
+        "homeroom": "Prof. principal",
+        "subjectTeacher": "Prof. de {subject}"
+      },
+      "addClassPopover": {
+        "disabledTitle": "Toutes les classes ont déjà cette matière"
+      },
+      "alertBanner": {
+        "heading": {
+          "one": "{count} classe sans enseignant assigné",
+          "other": "{count} classes sans enseignant assigné"
+        },
+        "body": {
+          "one": "La classe <b>{classNames}</b> n'a pas d'enseignant de {subject}. Veuillez assigner un enseignant pour activer cette affectation.",
+          "other": "Les classes <b>{classNames}</b> n'ont pas d'enseignant de {subject}. Veuillez assigner un enseignant pour activer ces affectations."
+        },
+        "resolve": "Résoudre"
+      },
+      "teachersSection": {
+        "title": "Enseignants disponibles pour cette matière",
+        "addTeacher": "Ajouter un enseignant",
+        "empty": "Aucun enseignant n'est encore assigné à cette matière.",
+        "available": "Disponible",
+        "busy": "Chargé",
+        "perWeekSuffix": "/sem."
+      },
+      "sideCard": {
+        "subjectTitle": "Matière",
+        "category": "Catégorie",
+        "defaultCoefficient": "Coefficient par défaut",
+        "assignedClasses": "Classes affectées",
+        "totalStudents": "Total élèves",
+        "status": "Statut",
+        "summaryTitle": "Résumé des affectations",
+        "totalClasses": "Total classes",
+        "withTeacher": "Avec enseignant",
+        "withoutTeacher": "Sans enseignant",
+        "totalHoursWeek": "Heures total/sem.",
+        "coverageRate": "Taux de couverture",
+        "unassignedTitle": "Classes non affectées",
+        "unassignedDesc": "Ces classes n'ont pas encore cette matière dans leur programme.",
+        "allAssigned": "Toutes les classes ont cette matière ✓",
+        "assign": "Affecter",
+        "quickNav": "Navigation rapide",
+        "navProgramme": "Programme annuel",
+        "navInfo": "Informations générales",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "footer": {
+        "cancel": "Annuler les modifications",
+        "export": "Exporter",
+        "save": "Enregistrer les affectations"
+      },
+      "toast": {
+        "attached": "Classe affectée.",
+        "detached": "Affectation retirée.",
+        "saved": "Affectations enregistrées."
+      },
+      "detachConfirm": {
+        "message": "Retirer « {subject} » de la classe {class} ?",
+        "confirmLabel": "Retirer"
+      },
+      "plural": {
+        "classesAssigned": {
+          "one": "{count} classe affectée",
+          "other": "{count} classes affectées"
+        },
+        "students": {
+          "one": "{count} élève",
+          "other": "{count} élèves"
+        },
+        "teachersAssigned": {
+          "one": "{count} enseignant",
+          "other": "{count} enseignants"
+        },
+        "classesWithoutTeacher": {
+          "one": "{count} classe sans enseignant",
+          "other": "{count} classes sans enseignant"
+        },
+        "teacherClasses": {
+          "one": "{count} classe assignée",
+          "other": "{count} classes assignées"
+        }
+      },
+      "csv": {
+        "class": "Classe",
+        "level": "Niveau",
+        "teacher": "Enseignant",
+        "coefficient": "Coefficient",
+        "students": "Élèves",
+        "weeklyHours": "Heures/sem.",
+        "status": "Statut"
+      }
+    },
+    "programme": {
+      "loadError": "Impossible de charger le programme.",
+      "saveError": "Enregistrement impossible.",
+      "newChapterTitle": "Nouveau chapitre",
+      "reorderError": "Réordonnancement impossible.",
+      "deleteConfirm": "Supprimer le chapitre « {title} » ?",
+      "toast": {
+        "chapterDeleted": "Chapitre supprimé.",
+        "saved": "Programme enregistré."
+      },
+      "csv": {
+        "period": "Période",
+        "number": "N°",
+        "chapter": "Chapitre",
+        "objectives": "Objectifs",
+        "hours": "Durée (h)",
+        "reference": "Référence",
+        "competence": "Compétence"
+      },
+      "footer": {
+        "cancel": "Annuler",
+        "export": "Exporter CSV",
+        "save": "Enregistrer le programme",
+        "totalOn": "au total sur"
+      },
+      "toolbar": {
+        "title": "Programme par trimestre",
+        "description": "Rédigez les chapitres et objectifs de chaque trimestre. Glissez-déposez pour réordonner.",
+        "import": "Importer",
+        "importToast": "Import de programme — bientôt disponible.",
+        "duplicate": "Dupliquer de l'an passé",
+        "duplicateToast": "Duplication depuis l'année précédente — bientôt disponible."
+      },
+      "empty": {
+        "title": "Aucune période scolaire",
+        "description": "Créez d'abord vos trimestres dans les paramètres de l'année scolaire.",
+        "link": "Paramètres › Année scolaire →"
+      },
+      "addChapterButton": "Ajouter un chapitre",
+      "plural": {
+        "chapters": {
+          "one": "{count} chapitre",
+          "other": "{count} chapitres"
+        },
+        "periods": {
+          "one": "{count} période",
+          "other": "{count} périodes"
+        }
+      },
+      "summary": {
+        "title": "Résumé du programme",
+        "totalChapters": "Total chapitres",
+        "totalHours": "Heures totales",
+        "termLabel": "Trimestre {number}",
+        "termValue": "{hours} · {count} ch.",
+        "distribution": "Répartition",
+        "distributionTotal": "{hours} total"
+      },
+      "calendar": {
+        "title": "Calendrier scolaire",
+        "empty": "Aucune période."
+      },
+      "subjectCard": {
+        "title": "Matière",
+        "teacher": "Enseignant",
+        "classes": "Classes",
+        "status": "Statut",
+        "coeffPrefix": "Coeff. {coefficient}"
+      },
+      "chapterRow": {
+        "reorderAria": "Réordonner",
+        "titlePlaceholder": "Titre du chapitre",
+        "objectivesPlaceholder": "Objectifs pédagogiques du chapitre…",
+        "objectivesAria": "Objectifs",
+        "durationLabel": "Durée :",
+        "durationAria": "Durée en heures",
+        "referencePlaceholder": "Manuel ch. …",
+        "referenceAria": "Référence",
+        "competencePlaceholder": "Compétence",
+        "deleteAria": "Supprimer le chapitre"
+      }
+    }
   }
 }

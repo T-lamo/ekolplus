@@ -19,6 +19,7 @@ import {
   ArchiveRestore,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -43,7 +44,7 @@ import { CardGrid } from '@/components/school/CardGrid';
 import { getSubjectVisual } from '@/lib/subject-visuals';
 import { exportToCsv } from '@/lib/csv-export';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
-import { SUBJECT_STATUS_LABEL } from './subject-form.constants';
+import { subjectStatusLabel } from './status-label';
 import type { SubjectData } from './types';
 
 const PAGE_SIZE = 20;
@@ -62,6 +63,9 @@ export default function MatieresPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.matieres.list');
+  const tCommon = useTranslations('Common');
+  const tStatus = useTranslations('Configuration.matieres.status');
   const [subjects, setSubjects] = useState<SubjectData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -79,9 +83,9 @@ export default function MatieresPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les matières.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   const domains = useMemo(
     () => [...new Set((subjects ?? []).map((s) => s.domain).filter((d): d is string => !!d))],
@@ -116,14 +120,14 @@ export default function MatieresPage() {
   }, [subjects]);
 
   async function onDelete(subject: SubjectData) {
-    if (!(await confirm({ message: `Supprimer la matière « ${subject.name} » ?`, danger: true })))
+    if (!(await confirm({ message: t('deleteConfirm', { name: subject.name }), danger: true })))
       return;
     try {
       await api(`/api/school/subjects/${subject.id}`, { method: 'DELETE' });
       setSubjects((prev) => (prev ? prev.filter((s) => s.id !== subject.id) : prev));
-      toast('Matière supprimée.', 'success');
+      toast(t('subjectDeleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
@@ -145,16 +149,24 @@ export default function MatieresPage() {
             )
           : prev,
       );
-      toast(res.subject.isActive ? 'Matière désarchivée.' : 'Matière archivée.', 'success');
+      toast(res.subject.isActive ? t('unarchived') : t('archived'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   function onExport() {
     exportToCsv(
       'matieres.csv',
-      ['Matière', 'Code', 'Domaine', 'Coefficient', 'Enseignants', 'Classes', 'Statut'],
+      [
+        t('csv.subject'),
+        t('csv.code'),
+        t('csv.domain'),
+        t('csv.coefficient'),
+        t('csv.teachers'),
+        t('csv.classes'),
+        t('csv.status'),
+      ],
       filtered.map((s) => [
         s.name,
         s.code ?? '',
@@ -163,10 +175,10 @@ export default function MatieresPage() {
         s.teacherNames.join('; '),
         s.classes.map((c) => c.name).join('; '),
         s.status !== 'ACTIVE'
-          ? SUBJECT_STATUS_LABEL[s.status]
+          ? subjectStatusLabel(s.status, tStatus)
           : s.classes.length > 0
-            ? 'Active'
-            : 'Non affectée',
+            ? tStatus('ACTIVE')
+            : tStatus('unassigned'),
       ]),
     );
   }
@@ -174,43 +186,43 @@ export default function MatieresPage() {
   function menuItemsFor(s: SubjectData) {
     return [
       {
-        label: 'Voir les détails',
+        label: t('menu.view'),
         icon: <Eye size={14} />,
         onClick: () => router.push(`/configuration/matieres/${s.id}`),
       },
       {
-        label: 'Modifier la matière',
+        label: t('menu.edit'),
         icon: <Pencil size={14} />,
         onClick: () => router.push(`/configuration/matieres/${s.id}`),
       },
       {
-        label: 'Assigner un enseignant',
+        label: t('menu.assignTeacher'),
         icon: <UserPlus size={14} />,
         onClick: () => router.push(`/configuration/matieres/${s.id}?tab=affectations`),
       },
       {
-        label: 'Gérer les affectations',
+        label: t('menu.manageAssignments'),
         icon: <LinkIcon size={14} />,
         onClick: () => router.push(`/configuration/matieres/${s.id}?tab=affectations`),
       },
       {
-        label: 'Modifier le coefficient',
+        label: t('menu.editCoefficient'),
         icon: <Percent size={14} />,
         onClick: () => router.push(`/configuration/matieres/${s.id}`),
       },
       {
-        label: 'Dupliquer',
+        label: t('menu.duplicate'),
         icon: <Copy size={14} />,
-        onClick: () => toast('Duplication de matière — bientôt disponible.', 'info'),
+        onClick: () => toast(t('duplicateComingSoon'), 'info'),
         divider: true,
       },
       {
-        label: s.isActive ? 'Archiver la matière' : 'Désarchiver la matière',
+        label: s.isActive ? t('menu.archive') : t('menu.unarchive'),
         icon: s.isActive ? <Archive size={14} /> : <ArchiveRestore size={14} />,
         onClick: () => onToggleArchive(s),
       },
       {
-        label: 'Supprimer la matière',
+        label: t('menu.delete'),
         icon: <Trash2 size={14} />,
         onClick: () => onDelete(s),
         tone: 'danger' as const,
@@ -230,17 +242,17 @@ export default function MatieresPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Matières</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">Gestion des matières enseignées.</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <Download size={14} />
-            Exporter
+            {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => router.push('/configuration/matieres/nouvelle')}>
             <Plus size={14} />
-            Ajouter une matière
+            {t('addSubject')}
           </Button>
         </div>
       </div>
@@ -264,22 +276,22 @@ export default function MatieresPage() {
       {subjects !== null && (
         <>
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            <SummaryCard icon={BookOpen} label="Total matières" value={stats.total} />
+            <SummaryCard icon={BookOpen} label={t('stats.total')} value={stats.total} />
             <SummaryCard
               icon={CheckCircle2}
-              label="Matières actives"
+              label={t('stats.active')}
               value={stats.active}
               tone="success"
             />
             <SummaryCard
               icon={AlertCircle}
-              label="Non affectées"
+              label={t('stats.unassigned')}
               value={stats.unassigned}
               tone="warning"
             />
             <SummaryCard
               icon={Users}
-              label="Enseignants assignés"
+              label={t('stats.teachers')}
               value={stats.teachers}
               tone="blue"
             />
@@ -289,11 +301,11 @@ export default function MatieresPage() {
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une matière..."
+              placeholder={t('searchPlaceholder')}
               className="max-w-[260px]"
             />
             <FilterSelect value={domain} onValueChange={setDomain}>
-              <SelectItem value="">Tous les domaines</SelectItem>
+              <SelectItem value="">{t('allDomains')}</SelectItem>
               {domains.map((d) => (
                 <SelectItem key={d} value={d}>
                   {d}
@@ -301,12 +313,16 @@ export default function MatieresPage() {
               ))}
             </FilterSelect>
             <FilterSelect value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>
-              <SelectItem value="">Tous les statuts</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="unassigned">Non affectée</SelectItem>
-              <SelectItem value="archived">Archivée</SelectItem>
+              <SelectItem value="">{t('allStatuses')}</SelectItem>
+              <SelectItem value="active">{tStatus('ACTIVE')}</SelectItem>
+              <SelectItem value="unassigned">{tStatus('unassigned')}</SelectItem>
+              <SelectItem value="archived">{tStatus('ARCHIVED')}</SelectItem>
             </FilterSelect>
-            <span className="text-sm text-muted-foreground">{filtered.length} matières</span>
+            <span className="text-sm text-muted-foreground">
+              {t(filtered.length > 1 ? 'resultCount.other' : 'resultCount.one', {
+                count: filtered.length,
+              })}
+            </span>
             {/* Table view needs real width to be usable — mobile always
                 gets the card grid instead, so the toggle (and the way to
                 reach the table) only shows from `md` up. */}
@@ -318,7 +334,7 @@ export default function MatieresPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="p-5 text-sm text-muted-foreground">
-                {subjects.length === 0 ? 'Aucune matière — ajoute la première.' : 'Aucun résultat.'}
+                {subjects.length === 0 ? t('emptyNoSubjects') : t('emptyNoResults')}
               </p>
             </Card>
           ) : view === 'grid' ? (
@@ -327,13 +343,13 @@ export default function MatieresPage() {
                 const visual = getSubjectVisual(s.name, { icon: s.icon, color: s.color });
                 const status =
                   s.status === 'DRAFT' ? (
-                    <Badge>Brouillon</Badge>
+                    <Badge>{tStatus('DRAFT')}</Badge>
                   ) : !s.isActive ? (
-                    <Badge>Archivée</Badge>
+                    <Badge>{tStatus('ARCHIVED')}</Badge>
                   ) : s.classes.length > 0 ? (
-                    <Badge tone="success">Active</Badge>
+                    <Badge tone="success">{tStatus('ACTIVE')}</Badge>
                   ) : (
-                    <Badge tone="warning">Non affectée</Badge>
+                    <Badge tone="warning">{tStatus('unassigned')}</Badge>
                   );
                 return (
                   <ListCard
@@ -361,7 +377,7 @@ export default function MatieresPage() {
                         items={s.classes}
                         keyOf={(c) => c.id}
                         renderItem={(c) => <Badge>{c.name}</Badge>}
-                        emptyLabel="Aucune classe"
+                        emptyLabel={t('noClasses')}
                       />
                     }
                     footerRight={
@@ -382,13 +398,13 @@ export default function MatieresPage() {
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>Matière</Th>
-                      <Th>Domaine</Th>
-                      <Th>Coefficient</Th>
-                      <Th>Enseignant assigné</Th>
-                      <Th>Classes</Th>
-                      <Th>Nb. évaluations</Th>
-                      <Th>Statut</Th>
+                      <Th>{t('table.subject')}</Th>
+                      <Th>{t('table.domain')}</Th>
+                      <Th>{t('table.coefficient')}</Th>
+                      <Th>{t('table.assignedTeacher')}</Th>
+                      <Th>{t('table.classes')}</Th>
+                      <Th>{t('table.evaluationCount')}</Th>
+                      <Th>{t('table.status')}</Th>
                       <Th className="w-[80px]" />
                     </tr>
                   </thead>
@@ -438,7 +454,9 @@ export default function MatieresPage() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="italic text-muted-foreground">Non assigné</span>
+                              <span className="italic text-muted-foreground">
+                                {t('unassignedLabel')}
+                              </span>
                             )}
                           </td>
                           <td className="px-3.5 py-2.5">
@@ -446,19 +464,19 @@ export default function MatieresPage() {
                               items={s.classes}
                               keyOf={(c) => c.id}
                               renderItem={(c) => <Badge>{c.name}</Badge>}
-                              emptyLabel="Aucune classe"
+                              emptyLabel={t('noClasses')}
                             />
                           </td>
                           <td className="px-3.5 py-2.5 text-muted-foreground">—</td>
                           <td className="px-3.5 py-2.5">
                             {s.status === 'DRAFT' ? (
-                              <Badge>Brouillon</Badge>
+                              <Badge>{tStatus('DRAFT')}</Badge>
                             ) : !s.isActive ? (
-                              <Badge>Archivée</Badge>
+                              <Badge>{tStatus('ARCHIVED')}</Badge>
                             ) : s.classes.length > 0 ? (
-                              <Badge tone="success">Active</Badge>
+                              <Badge tone="success">{tStatus('ACTIVE')}</Badge>
                             ) : (
-                              <Badge tone="warning">Non affectée</Badge>
+                              <Badge tone="warning">{tStatus('unassigned')}</Badge>
                             )}
                           </td>
                           <td className="px-3.5 py-2.5">

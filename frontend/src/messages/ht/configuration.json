@@ -729,5 +729,264 @@
         "deleteAria": "Efase chapit la"
       }
     }
+  },
+  "salles": {
+    "title": "Sal",
+    "subtitle": "Sal ak kote yo ofri pou klas yo ak orè a.",
+    "addRoom": "Ajoute yon sal",
+    "loadError": "Pa kapab chaje sal yo.",
+    "toast": {
+      "created": "Sal kreye.",
+      "updated": "Sal mizajou.",
+      "reactivated": "Sal reyaktive.",
+      "deactivated": "Sal dezaktive.",
+      "deleted": "Sal efase."
+    },
+    "deleteUsageNote": "\n{classCount} klas ak {sessionCount} seyans k ap itilize l ap kenbe « {name} » kòm tèks lib.",
+    "deleteConfirm": {
+      "message": "Efase sal « {name} » ?"
+    },
+    "menu": {
+      "edit": "Modifye",
+      "deactivate": "Dezaktive",
+      "reactivate": "Reyaktive",
+      "delete": "Efase sal la"
+    },
+    "stats": {
+      "total": "Total sal",
+      "active": "Sal aktif",
+      "seats": "Total plas",
+      "used": "Sal itilize"
+    },
+    "search": {
+      "placeholder": "Chèche yon sal..."
+    },
+    "filters": {
+      "allTypes": "Tout kalite",
+      "allStatuses": "Tout estati",
+      "active": "Aktif",
+      "inactive": "Inaktif"
+    },
+    "empty": {
+      "noRooms": "Pa gen sal — ajoute premye a pou ofri l pou klas yo ak orè a.",
+      "noResults": "Pa gen rezilta."
+    },
+    "card": {
+      "noLocation": "Pa gen kote presize"
+    },
+    "status": {
+      "active": "Aktif",
+      "inactive": "Inaktif"
+    },
+    "table": {
+      "room": "Sal",
+      "type": "Kalite",
+      "capacity": "Kapasite",
+      "equipment": "Ekipman",
+      "classes": "Klas",
+      "sessions": "Seyans",
+      "status": "Estati"
+    },
+    "plural": {
+      "rooms": {
+        "one": "{count} sal",
+        "other": "{count} sal"
+      },
+      "classes": {
+        "one": "{count} klas",
+        "other": "{count} klas"
+      },
+      "sessions": {
+        "one": "{count} seyans",
+        "other": "{count} seyans"
+      },
+      "wordClasses": {
+        "one": "klas",
+        "other": "klas"
+      },
+      "wordSessions": {
+        "one": "seyans",
+        "other": "seyans"
+      }
+    },
+    "placesSuffix": "plas",
+    "modal": {
+      "createTitle": "Nouvo sal",
+      "editTitle": "Modifye sal la",
+      "createSubtitle": "Ajoute yon sal oswa yon kote nan katalòg lekòl la",
+      "cancel": "Anile",
+      "create": "Kreye sal la",
+      "save": "Anrejistre",
+      "nameLabel": "Non",
+      "namePlaceholder": "Egz. Sal 12, Laboratwa syans, Teren",
+      "typeLabel": "Kalite",
+      "capacityLabel": "Kapasite",
+      "capacityHint": "(plas)",
+      "capacityAlertHint": "Alèt si efektif yon klas depase l",
+      "buildingLabel": "Bilding",
+      "buildingPlaceholder": "Egz. Bilding A",
+      "floorLabel": "Etaj",
+      "floorPlaceholder": "Egz. 1ye etaj",
+      "equipmentLabel": "Ekipman",
+      "equipmentPlaceholder": "Videyoprojektè, tablo blan, tab laboratwa…",
+      "activeTitle": "Sal aktif",
+      "activeDesc": "Yon sal inaktif pa ofri ankò pou klas yo ni pou orè a.",
+      "errors": {
+        "nameRequired": "Non an obligatwa.",
+        "nameTooLong": "80 karaktè maksimòm.",
+        "capacityRange": "Nonm antye ant 1 ak 5000.",
+        "nameTaken": "Gen yon sal ki deja gen non sa a."
+      }
+    }
+  },
+  "modeleBulletin": {
+    "title": "Modèl bilten",
+    "subtitle": "Chwazi yon modèl pou itilize oswa pèsonalize pou bilten lekòl ou yo",
+    "loadError": "Pa kapab chaje modèl bilten yo.",
+    "toast": {
+      "forked": "Modèl la dupike — kounye a ou ka pèsonalize l.",
+      "forkError": "Erè pandan y ap dupike modèl la.",
+      "activated": "Modèl defini kòm aktif.",
+      "activateError": "Erè pandan aktivasyon modèl la.",
+      "deleted": "Modèl efase.",
+      "deleteError": "Erè pandan efasman an."
+    },
+    "deleteConfirm": "Efase modèl bilten sa a ?",
+    "activeCard": {
+      "label": "Modèl aktif : {name}",
+      "description": "Modèl sa a itilize kounye a pou jenere bilten yo. Dènye modifikasyon : {date}",
+      "edit": "Modifye"
+    },
+    "tabs": {
+      "personal": "Modèl mwen yo",
+      "global": "Modèl global yo"
+    },
+    "globalHint": "Dupike yon modèl pou pèsonalize l — modèl global yo pa modifyab dirèkteman.",
+    "empty": {
+      "personal": "Ou poko gen modèl pèsonalize — dupike yon modèl global pou kòmanse.",
+      "global": "Pa gen modèl global disponib."
+    },
+    "menu": {
+      "setActive": "Defini kòm aktif",
+      "fork": "Dupike",
+      "delete": "Efase"
+    },
+    "badge": {
+      "active": "Aktif",
+      "global": "Global",
+      "predefined": "Predefini",
+      "personal": "Pèsonèl"
+    },
+    "editLink": "Modifye",
+    "block": {
+      "header": "Antèt",
+      "studentInfo": "Enfo elèv",
+      "stats": "Estatistik",
+      "notes": "Tablo nòt yo",
+      "absences": "Absans",
+      "appreciation": "Apresyasyon",
+      "signatures": "Siyati"
+    },
+    "editor": {
+      "notFound": "Modèl pa jwenn.",
+      "loadError": "Pa kapab chaje modèl la.",
+      "toast": {
+        "saved": "Modèl anrejistre.",
+        "saveError": "Erè pandan anrejistreman an.",
+        "exportError": "Erè pandan ekspòtasyon PDF la.",
+        "forked": "Modèl la dupike — kounye a ou ka pèsonalize l.",
+        "forkError": "Erè pandan y ap dupike modèl la.",
+        "activated": "Modèl defini kòm aktif.",
+        "activateError": "Erè pandan aktivasyon modèl la.",
+        "renameError": "Erè pandan chanjman non modèl la.",
+        "logoError": "Erè pandan anrejistreman logo a.",
+        "signatureError": "Erè pandan anrejistreman siyati a."
+      },
+      "mobileGate": {
+        "title": "Editè disponib sou gwo ekran",
+        "description": "Mizanpaj modèl bilten an fèt sou òdinatè oswa tablèt — retounen isit sou yon ekran pi laj.",
+        "back": "Retounen nan modèl yo"
+      },
+      "back": "Retounen",
+      "nameAria": "Non modèl la",
+      "readOnlyBadge": "Lekti sèlman — modèl global",
+      "orientation": {
+        "landscape": "Peyizaj",
+        "portrait": "Pòtrè"
+      },
+      "setActive": "Defini kòm aktif",
+      "exportPdf": "Ekspòte PDF",
+      "exporting": "Ekspòte…",
+      "save": "Anrejistre",
+      "saving": "Anrejistreman…",
+      "forkToCustomize": "Dupike pou pèsonalize",
+      "blocksPanel": {
+        "title": "Blòk bilten an",
+        "hint": "Trennen pou reòganize blòk yo",
+        "hideBlock": "Kache blòk la",
+        "showBlock": "Montre blòk la"
+      },
+      "zoomOut": "Zoom aryè",
+      "zoomIn": "Zoom devan",
+      "fitToPage": "Ajiste sou paj la",
+      "formatLine": "Fòma {format} · {orientation}",
+      "selectedBlock": "Blòk seleksyone",
+      "tabs": {
+        "style": "Style",
+        "content": "Kontni",
+        "spacing": "Espasman"
+      },
+      "style": {
+        "colorsTitle": "Koulè tèm nan",
+        "typographyTitle": "Tipografi",
+        "primaryColor": "Koulè prensipal",
+        "schoolName": "Non etablisman",
+        "titleSize": "Tit bilten",
+        "tableBody": "Non matyè yo",
+        "tableHeader": "Antèt kolòn yo",
+        "noteValue": "Nòt / apresyasyon",
+        "footer": "Pye paj"
+      },
+      "content": {
+        "logoTitle": "Logo etablisman an",
+        "logoLabel": "Logo",
+        "imageHint": "PNG, JPG oswa WebP — 10 Mo maksimòm",
+        "signatureTitle": "Siyati direktè a",
+        "signatureLabel": "Siyati",
+        "textTitle": "Tèks bilten an",
+        "titleLabel": "Tit bilten an",
+        "footerLabel": "Mesaj pye paj",
+        "footerPlaceholder": "Opsyonèl — egz. « Ansanm pou reyisit »",
+        "signaturesTitle": "Siyati",
+        "signatureDirector": "Direktè",
+        "signatureHomeroom": "Titilè klas",
+        "signatureGuardian": "Paran / Titilè",
+        "columnsTitle": "Kolòn tablo a",
+        "colCoefficient": "Kwef.",
+        "colClassAverage": "Moy. klas",
+        "colMinMax": "Min. / Max.",
+        "colAppreciation": "Apresyasyon",
+        "colAbsences": "Absans (estatistik)",
+        "colRank": "Ran (estatistik)"
+      },
+      "spacing": {
+        "layoutTitle": "Mizanpaj",
+        "pageMargin": "Marj paj (px)",
+        "blockSpacing": "Espasman ant blòk yo (px)",
+        "tableTitle": "Tablo nòt yo",
+        "cellPaddingX": "Espasman orizontal selil yo",
+        "cellPaddingY": "Espasman vètikal selil yo",
+        "lineHeight": "Wotè liy",
+        "borderWidth": "Epesè kad (px)",
+        "borderStyleLabel": "Style kad",
+        "borderStyle": {
+          "solid": "Plen",
+          "dashed": "Tirè",
+          "dotted": "Pwentiye"
+        },
+        "borderColor": "Koulè kad",
+        "showBackgrounds": "Fon koulè nan tablo a"
+      }
+    }
   }
 }

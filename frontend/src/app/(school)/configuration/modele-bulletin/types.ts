@@ -18,16 +18,6 @@ export const REORDERABLE_BLOCK_IDS: BlockId[] = [
   'signatures',
 ];
 
-export const BLOCK_LABEL: Record<BlockId, string> = {
-  header: 'En-tête',
-  studentInfo: 'Infos élève',
-  stats: 'Statistiques',
-  notes: 'Tableau de notes',
-  absences: 'Absences',
-  appreciation: 'Appréciation',
-  signatures: 'Signatures',
-};
-
 export interface BulletinTemplateConfig {
   primaryColor: string;
   pageFormat: 'LETTER' | 'A4';

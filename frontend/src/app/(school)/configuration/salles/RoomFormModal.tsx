@@ -6,6 +6,7 @@
 // remonte sous le champ Nom.
 import { useState } from 'react';
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { ROOM_TYPES, ROOM_TYPE_LABELS, type RoomRow, type RoomType } from '@/lib/rooms';
 import { Button } from '@/components/ui/Button';
@@ -29,6 +30,9 @@ export function RoomFormModal({
   onClose: () => void;
   onSaved: (room: RoomRow, mode: 'create' | 'edit') => void;
 }) {
+  const t = useTranslations('Configuration.salles.modal');
+  const tSalles = useTranslations('Configuration.salles');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState(room?.name ?? '');
   const [type, setType] = useState<RoomType>(
     (ROOM_TYPES as readonly string[]).includes(room?.type ?? '')
@@ -46,11 +50,11 @@ export function RoomFormModal({
 
   async function submit() {
     const next: { name?: string; capacity?: string } = {};
-    if (name.trim().length === 0) next.name = 'Le nom est requis.';
-    else if (name.trim().length > 80) next.name = '80 caractères maximum.';
+    if (name.trim().length === 0) next.name = t('errors.nameRequired');
+    else if (name.trim().length > 80) next.name = t('errors.nameTooLong');
     const cap = capacity.trim() === '' ? null : Number(capacity);
     if (cap !== null && (!Number.isInteger(cap) || cap < 1 || cap > 5000)) {
-      next.capacity = 'Nombre entier entre 1 et 5000.';
+      next.capacity = t('errors.capacityRange');
     }
     setErrors(next);
     setServerError(null);
@@ -72,9 +76,9 @@ export function RoomFormModal({
       onSaved(res.room, room ? 'edit' : 'create');
     } catch (err) {
       if (err instanceof ApiError && err.code === 'ROOM_NAME_TAKEN') {
-        setErrors({ name: 'Une salle porte déjà ce nom.' });
+        setErrors({ name: t('errors.nameTaken') });
       } else {
-        setServerError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+        setServerError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       }
     } finally {
       setSubmitting(false);
@@ -83,11 +87,15 @@ export function RoomFormModal({
 
   return (
     <Modal
-      title={room ? 'Modifier la salle' : 'Nouvelle salle'}
+      title={room ? t('editTitle') : t('createTitle')}
       subtitle={
         room
-          ? `${room.name} · ${room.classCount} classe${room.classCount > 1 ? 's' : ''} · ${room.sessionCount} séance${room.sessionCount > 1 ? 's' : ''}`
-          : 'Ajouter une salle ou un lieu au catalogue de l’école'
+          ? `${room.name} · ${room.classCount} ${tSalles(
+              room.classCount > 1 ? 'plural.wordClasses.other' : 'plural.wordClasses.one',
+            )} · ${room.sessionCount} ${tSalles(
+              room.sessionCount > 1 ? 'plural.wordSessions.other' : 'plural.wordSessions.one',
+            )}`
+          : t('createSubtitle')
       }
       onClose={onClose}
       bodyClassName="px-6 py-5"
@@ -95,11 +103,11 @@ export function RoomFormModal({
       footer={
         <div className="flex items-center justify-end gap-2.5">
           <Button type="button" variant="outline" className="w-fit" onClick={onClose}>
-            Annuler
+            {t('cancel')}
           </Button>
           <Button type="button" className="w-fit" loading={submitting} onClick={submit}>
             <Check size={14} />
-            {room ? 'Enregistrer' : 'Créer la salle'}
+            {room ? t('save') : t('create')}
           </Button>
         </div>
       }
@@ -107,7 +115,7 @@ export function RoomFormModal({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row">
           <FormGroup
-            label="Nom"
+            label={t('nameLabel')}
             required
             error={errors.name}
             htmlFor="room-name"
@@ -117,15 +125,15 @@ export function RoomFormModal({
               id="room-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex. Salle 12, Labo SVT, Terrain"
+              placeholder={t('namePlaceholder')}
               autoFocus
             />
           </FormGroup>
-          <FormGroup label="Type" required htmlFor="room-type" className="sm:w-[200px]">
+          <FormGroup label={t('typeLabel')} required htmlFor="room-type" className="sm:w-[200px]">
             <BareSelect id="room-type" value={type} onValueChange={(v) => setType(v as RoomType)}>
-              {ROOM_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {ROOM_TYPE_LABELS[t]}
+              {ROOM_TYPES.map((rt) => (
+                <SelectItem key={rt} value={rt}>
+                  {ROOM_TYPE_LABELS[rt]}
                 </SelectItem>
               ))}
             </BareSelect>
@@ -133,12 +141,12 @@ export function RoomFormModal({
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <FormGroup
-            label="Capacité"
-            labelHint="(places)"
+            label={t('capacityLabel')}
+            labelHint={t('capacityHint')}
             error={errors.capacity}
             htmlFor="room-capacity"
             className="sm:w-[140px]"
-            hint="Alerte si l’effectif d’une classe la dépasse"
+            hint={t('capacityAlertHint')}
           >
             <TextInput
               id="room-capacity"
@@ -151,36 +159,36 @@ export function RoomFormModal({
               placeholder="—"
             />
           </FormGroup>
-          <FormGroup label="Bâtiment" optional htmlFor="room-building" className="flex-1">
+          <FormGroup label={t('buildingLabel')} optional htmlFor="room-building" className="flex-1">
             <TextInput
               id="room-building"
               value={building}
               onChange={(e) => setBuilding(e.target.value)}
-              placeholder="Ex. Bâtiment A"
+              placeholder={t('buildingPlaceholder')}
             />
           </FormGroup>
-          <FormGroup label="Étage" optional htmlFor="room-floor" className="flex-1">
+          <FormGroup label={t('floorLabel')} optional htmlFor="room-floor" className="flex-1">
             <TextInput
               id="room-floor"
               value={floor}
               onChange={(e) => setFloor(e.target.value)}
-              placeholder="Ex. 1er étage"
+              placeholder={t('floorPlaceholder')}
             />
           </FormGroup>
         </div>
-        <FormGroup label="Équipements" optional htmlFor="room-equipment">
+        <FormGroup label={t('equipmentLabel')} optional htmlFor="room-equipment">
           <TextArea
             id="room-equipment"
             className="min-h-14"
             value={equipment}
             onChange={(e) => setEquipment(e.target.value)}
-            placeholder="Vidéoprojecteur, tableau blanc, paillasses…"
+            placeholder={t('equipmentPlaceholder')}
           />
         </FormGroup>
         <div className="rounded-md border border-border px-3">
           <ToggleRow
-            title="Salle active"
-            description="Une salle inactive n’est plus proposée pour les classes ni l’emploi du temps."
+            title={t('activeTitle')}
+            description={t('activeDesc')}
             checked={isActive}
             onChange={setIsActive}
           />

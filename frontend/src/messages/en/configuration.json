@@ -728,5 +728,264 @@
         "deleteAria": "Delete chapter"
       }
     }
+  },
+  "salles": {
+    "title": "Rooms",
+    "subtitle": "Rooms and locations offered to classes and the timetable.",
+    "addRoom": "Add a room",
+    "loadError": "Unable to load rooms.",
+    "toast": {
+      "created": "Room created.",
+      "updated": "Room updated.",
+      "reactivated": "Room reactivated.",
+      "deactivated": "Room deactivated.",
+      "deleted": "Room deleted."
+    },
+    "deleteUsageNote": "\nThe {classCount} class(es) and {sessionCount} session(s) using it will keep \"{name}\" as free text.",
+    "deleteConfirm": {
+      "message": "Delete room \"{name}\"?"
+    },
+    "menu": {
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "delete": "Delete room"
+    },
+    "stats": {
+      "total": "Total rooms",
+      "active": "Active rooms",
+      "seats": "Total seats",
+      "used": "Rooms in use"
+    },
+    "search": {
+      "placeholder": "Search a room..."
+    },
+    "filters": {
+      "allTypes": "All types",
+      "allStatuses": "All statuses",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "empty": {
+      "noRooms": "No rooms yet — add the first one to offer it to classes and the timetable.",
+      "noResults": "No results."
+    },
+    "card": {
+      "noLocation": "No location set"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "room": "Room",
+      "type": "Type",
+      "capacity": "Capacity",
+      "equipment": "Equipment",
+      "classes": "Classes",
+      "sessions": "Sessions",
+      "status": "Status"
+    },
+    "plural": {
+      "rooms": {
+        "one": "{count} room",
+        "other": "{count} rooms"
+      },
+      "classes": {
+        "one": "{count} class",
+        "other": "{count} classes"
+      },
+      "sessions": {
+        "one": "{count} session",
+        "other": "{count} sessions"
+      },
+      "wordClasses": {
+        "one": "class",
+        "other": "classes"
+      },
+      "wordSessions": {
+        "one": "session",
+        "other": "sessions"
+      }
+    },
+    "placesSuffix": "seats",
+    "modal": {
+      "createTitle": "New room",
+      "editTitle": "Edit room",
+      "createSubtitle": "Add a room or location to the school's catalog",
+      "cancel": "Cancel",
+      "create": "Create room",
+      "save": "Save",
+      "nameLabel": "Name",
+      "namePlaceholder": "E.g. Room 12, Science lab, Field",
+      "typeLabel": "Type",
+      "capacityLabel": "Capacity",
+      "capacityHint": "(seats)",
+      "capacityAlertHint": "Alerts if a class's enrollment exceeds it",
+      "buildingLabel": "Building",
+      "buildingPlaceholder": "E.g. Building A",
+      "floorLabel": "Floor",
+      "floorPlaceholder": "E.g. 1st floor",
+      "equipmentLabel": "Equipment",
+      "equipmentPlaceholder": "Projector, whiteboard, lab benches…",
+      "activeTitle": "Room active",
+      "activeDesc": "An inactive room is no longer offered for classes or the timetable.",
+      "errors": {
+        "nameRequired": "Name is required.",
+        "nameTooLong": "80 characters maximum.",
+        "capacityRange": "Whole number between 1 and 5000.",
+        "nameTaken": "A room already has this name."
+      }
+    }
+  },
+  "modeleBulletin": {
+    "title": "Report card templates",
+    "subtitle": "Select a template to use or customize for your report cards",
+    "loadError": "Unable to load report card templates.",
+    "toast": {
+      "forked": "Template duplicated — you can now customize it.",
+      "forkError": "Error duplicating the template.",
+      "activated": "Template set as active.",
+      "activateError": "Error activating the template.",
+      "deleted": "Template deleted.",
+      "deleteError": "Error deleting the template."
+    },
+    "deleteConfirm": "Delete this report card template?",
+    "activeCard": {
+      "label": "Active template: {name}",
+      "description": "This template is currently used to generate report cards. Last modified: {date}",
+      "edit": "Edit"
+    },
+    "tabs": {
+      "personal": "My templates",
+      "global": "Global templates"
+    },
+    "globalHint": "Duplicate a template to customize it — global templates cannot be edited directly.",
+    "empty": {
+      "personal": "You don't have a custom template yet — duplicate a global template to get started.",
+      "global": "No global template available."
+    },
+    "menu": {
+      "setActive": "Set as active",
+      "fork": "Duplicate",
+      "delete": "Delete"
+    },
+    "badge": {
+      "active": "Active",
+      "global": "Global",
+      "predefined": "Predefined",
+      "personal": "Personal"
+    },
+    "editLink": "Edit",
+    "block": {
+      "header": "Header",
+      "studentInfo": "Student info",
+      "stats": "Statistics",
+      "notes": "Grades table",
+      "absences": "Absences",
+      "appreciation": "Remarks",
+      "signatures": "Signatures"
+    },
+    "editor": {
+      "notFound": "Template not found.",
+      "loadError": "Unable to load the template.",
+      "toast": {
+        "saved": "Template saved.",
+        "saveError": "Error while saving.",
+        "exportError": "Error exporting the PDF.",
+        "forked": "Template duplicated — you can now customize it.",
+        "forkError": "Error duplicating the template.",
+        "activated": "Template set as active.",
+        "activateError": "Error activating the template.",
+        "renameError": "Error renaming the template.",
+        "logoError": "Error saving the logo.",
+        "signatureError": "Error saving the signature."
+      },
+      "mobileGate": {
+        "title": "Editor available on larger screens",
+        "description": "Designing a report card template works on a computer or tablet — come back here from a wider screen.",
+        "back": "Back to templates"
+      },
+      "back": "Back",
+      "nameAria": "Template name",
+      "readOnlyBadge": "Read-only — global template",
+      "orientation": {
+        "landscape": "Landscape",
+        "portrait": "Portrait"
+      },
+      "setActive": "Set as active",
+      "exportPdf": "Export PDF",
+      "exporting": "Exporting…",
+      "save": "Save",
+      "saving": "Saving…",
+      "forkToCustomize": "Duplicate to customize",
+      "blocksPanel": {
+        "title": "Report card blocks",
+        "hint": "Drag to reorder blocks",
+        "hideBlock": "Hide block",
+        "showBlock": "Show block"
+      },
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "fitToPage": "Fit to page",
+      "formatLine": "Format {format} · {orientation}",
+      "selectedBlock": "Selected block",
+      "tabs": {
+        "style": "Style",
+        "content": "Content",
+        "spacing": "Spacing"
+      },
+      "style": {
+        "colorsTitle": "Theme colors",
+        "typographyTitle": "Typography",
+        "primaryColor": "Primary color",
+        "schoolName": "School name",
+        "titleSize": "Report card title",
+        "tableBody": "Subject names",
+        "tableHeader": "Column headers",
+        "noteValue": "Grades / remarks",
+        "footer": "Footer"
+      },
+      "content": {
+        "logoTitle": "School logo",
+        "logoLabel": "Logo",
+        "imageHint": "PNG, JPG or WebP — 10 MB max",
+        "signatureTitle": "Principal's signature",
+        "signatureLabel": "Signature",
+        "textTitle": "Report card text",
+        "titleLabel": "Report card title",
+        "footerLabel": "Footer message",
+        "footerPlaceholder": "Optional — e.g. \"Together towards success\"",
+        "signaturesTitle": "Signatures",
+        "signatureDirector": "Principal",
+        "signatureHomeroom": "Homeroom teacher",
+        "signatureGuardian": "Parent / Guardian",
+        "columnsTitle": "Table columns",
+        "colCoefficient": "Coeff.",
+        "colClassAverage": "Class avg.",
+        "colMinMax": "Min. / Max.",
+        "colAppreciation": "Remarks",
+        "colAbsences": "Absences (stats)",
+        "colRank": "Rank (stats)"
+      },
+      "spacing": {
+        "layoutTitle": "Page layout",
+        "pageMargin": "Page margin (px)",
+        "blockSpacing": "Spacing between blocks (px)",
+        "tableTitle": "Grades table",
+        "cellPaddingX": "Horizontal cell padding",
+        "cellPaddingY": "Vertical cell padding",
+        "lineHeight": "Line height",
+        "borderWidth": "Border width (px)",
+        "borderStyleLabel": "Border style",
+        "borderStyle": {
+          "solid": "Solid",
+          "dashed": "Dashed",
+          "dotted": "Dotted"
+        },
+        "borderColor": "Border color",
+        "showBackgrounds": "Colored table backgrounds"
+      }
+    }
   }
 }

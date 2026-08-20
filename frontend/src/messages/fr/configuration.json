@@ -728,5 +728,264 @@
         "deleteAria": "Supprimer le chapitre"
       }
     }
+  },
+  "salles": {
+    "title": "Salles",
+    "subtitle": "Salles et lieux proposés aux classes et à l'emploi du temps.",
+    "addRoom": "Ajouter une salle",
+    "loadError": "Impossible de charger les salles.",
+    "toast": {
+      "created": "Salle créée.",
+      "updated": "Salle mise à jour.",
+      "reactivated": "Salle réactivée.",
+      "deactivated": "Salle désactivée.",
+      "deleted": "Salle supprimée."
+    },
+    "deleteUsageNote": "\nLes {classCount} classe(s) et {sessionCount} séance(s) qui l'utilisent garderont « {name} » en texte libre.",
+    "deleteConfirm": {
+      "message": "Supprimer la salle « {name} » ?"
+    },
+    "menu": {
+      "edit": "Modifier",
+      "deactivate": "Désactiver",
+      "reactivate": "Réactiver",
+      "delete": "Supprimer la salle"
+    },
+    "stats": {
+      "total": "Total salles",
+      "active": "Salles actives",
+      "seats": "Places au total",
+      "used": "Salles utilisées"
+    },
+    "search": {
+      "placeholder": "Rechercher une salle..."
+    },
+    "filters": {
+      "allTypes": "Tous types",
+      "allStatuses": "Tous statuts",
+      "active": "Actives",
+      "inactive": "Inactives"
+    },
+    "empty": {
+      "noRooms": "Aucune salle — ajoutez la première pour la proposer aux classes et à l'emploi du temps.",
+      "noResults": "Aucun résultat."
+    },
+    "card": {
+      "noLocation": "Emplacement non renseigné"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "room": "Salle",
+      "type": "Type",
+      "capacity": "Capacité",
+      "equipment": "Équipements",
+      "classes": "Classes",
+      "sessions": "Séances",
+      "status": "Statut"
+    },
+    "plural": {
+      "rooms": {
+        "one": "{count} salle",
+        "other": "{count} salles"
+      },
+      "classes": {
+        "one": "{count} classe",
+        "other": "{count} classes"
+      },
+      "sessions": {
+        "one": "{count} séance",
+        "other": "{count} séances"
+      },
+      "wordClasses": {
+        "one": "classe",
+        "other": "classes"
+      },
+      "wordSessions": {
+        "one": "séance",
+        "other": "séances"
+      }
+    },
+    "placesSuffix": "places",
+    "modal": {
+      "createTitle": "Nouvelle salle",
+      "editTitle": "Modifier la salle",
+      "createSubtitle": "Ajouter une salle ou un lieu au catalogue de l'école",
+      "cancel": "Annuler",
+      "create": "Créer la salle",
+      "save": "Enregistrer",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Ex. Salle 12, Labo SVT, Terrain",
+      "typeLabel": "Type",
+      "capacityLabel": "Capacité",
+      "capacityHint": "(places)",
+      "capacityAlertHint": "Alerte si l'effectif d'une classe la dépasse",
+      "buildingLabel": "Bâtiment",
+      "buildingPlaceholder": "Ex. Bâtiment A",
+      "floorLabel": "Étage",
+      "floorPlaceholder": "Ex. 1er étage",
+      "equipmentLabel": "Équipements",
+      "equipmentPlaceholder": "Vidéoprojecteur, tableau blanc, paillasses…",
+      "activeTitle": "Salle active",
+      "activeDesc": "Une salle inactive n'est plus proposée pour les classes ni l'emploi du temps.",
+      "errors": {
+        "nameRequired": "Le nom est requis.",
+        "nameTooLong": "80 caractères maximum.",
+        "capacityRange": "Nombre entier entre 1 et 5000.",
+        "nameTaken": "Une salle porte déjà ce nom."
+      }
+    }
+  },
+  "modeleBulletin": {
+    "title": "Modèles de bulletin",
+    "subtitle": "Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires",
+    "loadError": "Impossible de charger les modèles de bulletin.",
+    "toast": {
+      "forked": "Modèle dupliqué — vous pouvez maintenant le personnaliser.",
+      "forkError": "Erreur lors de la duplication du modèle.",
+      "activated": "Modèle défini comme actif.",
+      "activateError": "Erreur lors de l'activation du modèle.",
+      "deleted": "Modèle supprimé.",
+      "deleteError": "Erreur lors de la suppression."
+    },
+    "deleteConfirm": "Supprimer ce modèle de bulletin ?",
+    "activeCard": {
+      "label": "Modèle actif : {name}",
+      "description": "Ce modèle est actuellement utilisé pour la génération des bulletins. Dernière modification : {date}",
+      "edit": "Modifier"
+    },
+    "tabs": {
+      "personal": "Mes modèles",
+      "global": "Modèles globaux"
+    },
+    "globalHint": "Dupliquez un modèle pour le personnaliser — les modèles globaux ne sont pas modifiables directement.",
+    "empty": {
+      "personal": "Vous n'avez pas encore de modèle personnalisé — dupliquez un modèle global pour commencer.",
+      "global": "Aucun modèle global disponible."
+    },
+    "menu": {
+      "setActive": "Définir comme actif",
+      "fork": "Dupliquer",
+      "delete": "Supprimer"
+    },
+    "badge": {
+      "active": "Actif",
+      "global": "Global",
+      "predefined": "Prédéfini",
+      "personal": "Personnel"
+    },
+    "editLink": "Éditer",
+    "block": {
+      "header": "En-tête",
+      "studentInfo": "Infos élève",
+      "stats": "Statistiques",
+      "notes": "Tableau de notes",
+      "absences": "Absences",
+      "appreciation": "Appréciation",
+      "signatures": "Signatures"
+    },
+    "editor": {
+      "notFound": "Modèle introuvable.",
+      "loadError": "Impossible de charger le modèle.",
+      "toast": {
+        "saved": "Modèle enregistré.",
+        "saveError": "Erreur lors de l'enregistrement.",
+        "exportError": "Erreur lors de l'export PDF.",
+        "forked": "Modèle dupliqué — vous pouvez maintenant le personnaliser.",
+        "forkError": "Erreur lors de la duplication du modèle.",
+        "activated": "Modèle défini comme actif.",
+        "activateError": "Erreur lors de l'activation du modèle.",
+        "renameError": "Erreur lors du renommage du modèle.",
+        "logoError": "Erreur lors de l'enregistrement du logo.",
+        "signatureError": "Erreur lors de l'enregistrement de la signature."
+      },
+      "mobileGate": {
+        "title": "Éditeur disponible sur grand écran",
+        "description": "La mise en page du modèle de bulletin se prépare sur ordinateur ou tablette — revenez ici depuis un écran plus large.",
+        "back": "Retour aux modèles"
+      },
+      "back": "Retour",
+      "nameAria": "Nom du modèle",
+      "readOnlyBadge": "Lecture seule — modèle global",
+      "orientation": {
+        "landscape": "Paysage",
+        "portrait": "Portrait"
+      },
+      "setActive": "Définir comme actif",
+      "exportPdf": "Exporter PDF",
+      "exporting": "Export…",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "forkToCustomize": "Dupliquer pour personnaliser",
+      "blocksPanel": {
+        "title": "Blocs du bulletin",
+        "hint": "Glissez pour réorganiser les blocs",
+        "hideBlock": "Masquer le bloc",
+        "showBlock": "Afficher le bloc"
+      },
+      "zoomOut": "Zoom arrière",
+      "zoomIn": "Zoom avant",
+      "fitToPage": "Ajuster à la page",
+      "formatLine": "Format {format} · {orientation}",
+      "selectedBlock": "Bloc sélectionné",
+      "tabs": {
+        "style": "Style",
+        "content": "Contenu",
+        "spacing": "Espacement"
+      },
+      "style": {
+        "colorsTitle": "Couleurs du thème",
+        "typographyTitle": "Typographie",
+        "primaryColor": "Couleur principale",
+        "schoolName": "Nom établissement",
+        "titleSize": "Titre bulletin",
+        "tableBody": "Nom des matières",
+        "tableHeader": "En-têtes de colonnes",
+        "noteValue": "Notes / appréciations",
+        "footer": "Pied de page"
+      },
+      "content": {
+        "logoTitle": "Logo de l'établissement",
+        "logoLabel": "Logo",
+        "imageHint": "PNG, JPG ou WebP — 10 Mo max",
+        "signatureTitle": "Signature du directeur",
+        "signatureLabel": "Signature",
+        "textTitle": "Texte du bulletin",
+        "titleLabel": "Titre du bulletin",
+        "footerLabel": "Message de pied de page",
+        "footerPlaceholder": "Optionnel — ex. « Ensemble vers la réussite »",
+        "signaturesTitle": "Signatures",
+        "signatureDirector": "Directeur",
+        "signatureHomeroom": "Titulaire de classe",
+        "signatureGuardian": "Parent / Tuteur",
+        "columnsTitle": "Colonnes du tableau",
+        "colCoefficient": "Coeff.",
+        "colClassAverage": "Moy. classe",
+        "colMinMax": "Min. / Max.",
+        "colAppreciation": "Appréciation",
+        "colAbsences": "Absences (statistiques)",
+        "colRank": "Rang (statistiques)"
+      },
+      "spacing": {
+        "layoutTitle": "Mise en page",
+        "pageMargin": "Marge de page (px)",
+        "blockSpacing": "Espacement entre les blocs (px)",
+        "tableTitle": "Tableau des notes",
+        "cellPaddingX": "Espacement horizontal des cellules",
+        "cellPaddingY": "Espacement vertical des cellules",
+        "lineHeight": "Hauteur de ligne",
+        "borderWidth": "Épaisseur de bordure (px)",
+        "borderStyleLabel": "Style de bordure",
+        "borderStyle": {
+          "solid": "Plein",
+          "dashed": "Tirets",
+          "dotted": "Pointillés"
+        },
+        "borderColor": "Couleur de bordure",
+        "showBackgrounds": "Fonds colorés du tableau"
+      }
+    }
   }
 }

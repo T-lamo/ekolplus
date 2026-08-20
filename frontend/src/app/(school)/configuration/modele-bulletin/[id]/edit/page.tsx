@@ -24,6 +24,7 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -38,7 +39,8 @@ import {
 } from '@/components/bulletin/BulletinCanvas';
 import { SAMPLE_BULLETIN_DATA } from '@/components/bulletin/sample-bulletin-data';
 import { API_URL, COOKIE_PREFIX } from '@/lib/constants';
-import { REORDERABLE_BLOCK_IDS, BLOCK_LABEL } from '../../types';
+import { blockLabel } from '../../block-label';
+import { REORDERABLE_BLOCK_IDS } from '../../types';
 import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
 // The editor preview renders BulletinCanvas at its TRUE natural page size
@@ -79,6 +81,9 @@ export default function BulletinEditorPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
+  const t = useTranslations('Configuration.modeleBulletin.editor');
+  const tBlock = useTranslations('Configuration.modeleBulletin.block');
+  const tBadge = useTranslations('Configuration.modeleBulletin.badge');
   const [data, setData] = useState<TemplateDetail | null>(null);
   const [config, setConfig] = useState<BulletinTemplateConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,12 +136,12 @@ export default function BulletinEditorPage() {
       })
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError('Modèle introuvable.');
+          setError(t('notFound'));
           return;
         }
-        setError('Impossible de charger le modèle.');
+        setError(t('loadError'));
       });
-  }, [user, params.id]);
+  }, [user, params.id, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -182,9 +187,9 @@ export default function BulletinEditorPage() {
         method: 'PATCH',
         body: { config },
       });
-      toast('Modèle enregistré.', 'success');
+      toast(t('toast.saved'), 'success');
     } catch {
-      toast("Erreur lors de l'enregistrement.", 'error');
+      toast(t('toast.saveError'), 'error');
     } finally {
       setSaving(false);
     }
@@ -217,7 +222,7 @@ export default function BulletinEditorPage() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch {
-      toast("Erreur lors de l'export PDF.", 'error');
+      toast(t('toast.exportError'), 'error');
     } finally {
       setExportingPdf(false);
     }
@@ -230,10 +235,10 @@ export default function BulletinEditorPage() {
         `/api/school/bulletin-templates/${data.id}/fork`,
         { method: 'POST' },
       );
-      toast('Modèle dupliqué — vous pouvez maintenant le personnaliser.', 'success');
+      toast(t('toast.forked'), 'success');
       router.push(`/configuration/modele-bulletin/${res.template.id}/edit`);
     } catch {
-      toast('Erreur lors de la duplication du modèle.', 'error');
+      toast(t('toast.forkError'), 'error');
     }
   }
 
@@ -244,10 +249,10 @@ export default function BulletinEditorPage() {
         method: 'PATCH',
         body: { isActive: true },
       });
-      toast('Modèle défini comme actif.', 'success');
+      toast(t('toast.activated'), 'success');
       setData((d) => (d ? { ...d, isActive: true } : d));
     } catch {
-      toast("Erreur lors de l'activation du modèle.", 'error');
+      toast(t('toast.activateError'), 'error');
     }
   }
 
@@ -266,7 +271,7 @@ export default function BulletinEditorPage() {
         body: { name: trimmed },
       });
     } catch {
-      toast('Erreur lors du renommage du modèle.', 'error');
+      toast(t('toast.renameError'), 'error');
     }
   }
 
@@ -275,7 +280,7 @@ export default function BulletinEditorPage() {
     try {
       await api('/api/school', { method: 'PUT', body: { logoUrl: url } });
     } catch {
-      toast("Erreur lors de l'enregistrement du logo.", 'error');
+      toast(t('toast.logoError'), 'error');
     }
   }
 
@@ -284,7 +289,7 @@ export default function BulletinEditorPage() {
     try {
       await api('/api/school', { method: 'PUT', body: { directorSignatureUrl: url } });
     } catch {
-      toast("Erreur lors de l'enregistrement de la signature.", 'error');
+      toast(t('toast.signatureError'), 'error');
     }
   }
 
@@ -350,7 +355,7 @@ export default function BulletinEditorPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour
+          {t('back')}
         </button>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -370,20 +375,15 @@ export default function BulletinEditorPage() {
           instead of forcing it. */}
       <div className="flex h-[60vh] flex-col items-center justify-center gap-3 px-6 text-center lg:hidden">
         <Monitor size={32} className="text-muted-foreground" />
-        <p className="text-caption font-semibold text-foreground">
-          Éditeur disponible sur grand écran
-        </p>
-        <p className="max-w-xs text-xs text-muted-foreground">
-          La mise en page du modèle de bulletin se prépare sur ordinateur ou tablette — repasse ici
-          depuis un écran plus large.
-        </p>
+        <p className="text-caption font-semibold text-foreground">{t('mobileGate.title')}</p>
+        <p className="max-w-xs text-xs text-muted-foreground">{t('mobileGate.description')}</p>
         <button
           type="button"
           onClick={() => router.push('/configuration/modele-bulletin')}
           className="mt-1 flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground"
         >
           <ArrowLeft size={14} />
-          Retour aux modèles
+          {t('mobileGate.back')}
         </button>
       </div>
 
@@ -397,7 +397,7 @@ export default function BulletinEditorPage() {
               className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
             >
               <ArrowLeft size={12} />
-              Retour
+              {t('back')}
             </button>
             <div className="h-5 w-px bg-border" />
             {data.isOwn ? (
@@ -409,7 +409,7 @@ export default function BulletinEditorPage() {
                   onChange={(e) => setNameInput(e.target.value)}
                   onBlur={() => renameTemplate(nameInput)}
                   maxLength={120}
-                  aria-label="Nom du modèle"
+                  aria-label={t('nameAria')}
                   className="w-48 rounded border border-transparent bg-transparent px-1 py-0.5 text-caption font-semibold text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
                 />
               </div>
@@ -422,12 +422,12 @@ export default function BulletinEditorPage() {
             {data.isActive && (
               <span className="flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
                 <CheckCircle2 size={10} />
-                Actif
+                {tBadge('active')}
               </span>
             )}
             {!data.isOwn && (
               <span className="flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
-                Lecture seule — modèle global
+                {t('readOnlyBadge')}
               </span>
             )}
           </div>
@@ -456,7 +456,7 @@ export default function BulletinEditorPage() {
                   className={`flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium ${config.orientation === 'LANDSCAPE' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
                 >
                   <Monitor size={12} />
-                  Paysage
+                  {t('orientation.landscape')}
                 </button>
                 <button
                   type="button"
@@ -464,7 +464,7 @@ export default function BulletinEditorPage() {
                   className={`flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium ${config.orientation === 'PORTRAIT' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
                 >
                   <Smartphone size={12} />
-                  Portrait
+                  {t('orientation.portrait')}
                 </button>
               </div>
               <div className="h-5 w-px bg-border" />
@@ -475,7 +475,7 @@ export default function BulletinEditorPage() {
                   className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
                 >
                   <CheckCircle2 size={12} />
-                  Définir comme actif
+                  {t('setActive')}
                 </button>
               )}
               <button
@@ -485,7 +485,7 @@ export default function BulletinEditorPage() {
                 className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-60"
               >
                 <Download size={12} />
-                {exportingPdf ? 'Export…' : 'Exporter PDF'}
+                {exportingPdf ? t('exporting') : t('exportPdf')}
               </button>
               <button
                 type="button"
@@ -494,7 +494,7 @@ export default function BulletinEditorPage() {
                 className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-60"
               >
                 <Save size={12} />
-                {saving ? 'Enregistrement…' : 'Enregistrer'}
+                {saving ? t('saving') : t('save')}
               </button>
             </div>
           ) : (
@@ -504,7 +504,7 @@ export default function BulletinEditorPage() {
               className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
             >
               <Copy size={12} />
-              Dupliquer pour personnaliser
+              {t('forkToCustomize')}
             </button>
           )}
         </div>
@@ -514,11 +514,9 @@ export default function BulletinEditorPage() {
           {data.isOwn && (
             <div className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-card p-3.5">
               <div className="mb-2.5 text-2xs font-bold tracking-wide text-muted-foreground uppercase">
-                Blocs du bulletin
+                {t('blocksPanel.title')}
               </div>
-              <p className="mb-2.5 text-2xs text-muted-foreground">
-                Glissez pour réorganiser les blocs
-              </p>
+              <p className="mb-2.5 text-2xs text-muted-foreground">{t('blocksPanel.hint')}</p>
               {orderedBlocks.map((b) => {
                 const Icon = BLOCK_ICON[b.id];
                 const draggable = REORDERABLE_BLOCK_IDS.includes(b.id);
@@ -548,7 +546,7 @@ export default function BulletinEditorPage() {
                       <span className="flex h-6.5 w-6.5 items-center justify-center rounded bg-secondary">
                         <Icon size={13} style={{ color: 'var(--color-primary)' }} />
                       </span>
-                      <span>{BLOCK_LABEL[b.id]}</span>
+                      <span>{blockLabel(b.id, tBlock)}</span>
                     </div>
                     <button
                       type="button"
@@ -557,7 +555,9 @@ export default function BulletinEditorPage() {
                         toggleBlock(b.id);
                       }}
                       className={b.visible ? 'text-foreground' : 'text-muted-foreground opacity-40'}
-                      aria-label={b.visible ? 'Masquer le bloc' : 'Afficher le bloc'}
+                      aria-label={
+                        b.visible ? t('blocksPanel.hideBlock') : t('blocksPanel.showBlock')
+                      }
                     >
                       <Eye size={12} />
                     </button>
@@ -574,7 +574,7 @@ export default function BulletinEditorPage() {
                 type="button"
                 onClick={() => setZoom((z) => Math.max(50, z - 10))}
                 className="flex h-6.5 w-6.5 items-center justify-center rounded text-muted-foreground hover:bg-muted"
-                aria-label="Zoom arrière"
+                aria-label={t('zoomOut')}
               >
                 <ZoomOut size={13} />
               </button>
@@ -585,7 +585,7 @@ export default function BulletinEditorPage() {
                 type="button"
                 onClick={() => setZoom((z) => Math.min(200, z + 10))}
                 className="flex h-6.5 w-6.5 items-center justify-center rounded text-muted-foreground hover:bg-muted"
-                aria-label="Zoom avant"
+                aria-label={t('zoomIn')}
               >
                 <ZoomIn size={13} />
               </button>
@@ -594,7 +594,7 @@ export default function BulletinEditorPage() {
                 onClick={() => setZoom(computeFitZoom())}
                 className="text-2xs font-medium text-primary"
               >
-                Ajuster à la page
+                {t('fitToPage')}
               </button>
             </div>
             <div
@@ -604,8 +604,13 @@ export default function BulletinEditorPage() {
               <div style={{ width: scaledSize.width }}>
                 <div className="mb-2 flex items-center justify-center gap-1.5 text-2xs text-[#888]">
                   <FileText size={12} />
-                  Format {config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ·{' '}
-                  {config.orientation === 'LANDSCAPE' ? 'Paysage' : 'Portrait'}
+                  {t('formatLine', {
+                    format: config.pageFormat === 'LETTER' ? 'Letter' : 'A4',
+                    orientation:
+                      config.orientation === 'LANDSCAPE'
+                        ? t('orientation.landscape')
+                        : t('orientation.portrait'),
+                  })}
                 </div>
                 {/* Outer div reserves the SCALED footprint so the scroll area
                   sizes correctly; the inner div is the real page at its
@@ -655,20 +660,20 @@ export default function BulletinEditorPage() {
                   </span>
                   <div>
                     <div className="text-caption font-bold text-foreground">
-                      {BLOCK_LABEL[selected]}
+                      {blockLabel(selected, tBlock)}
                     </div>
-                    <div className="text-2xs text-muted-foreground">Bloc sélectionné</div>
+                    <div className="text-2xs text-muted-foreground">{t('selectedBlock')}</div>
                   </div>
                 </div>
                 <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
-                  {(['style', 'content', 'spacing'] as Tab[]).map((t) => (
+                  {(['style', 'content', 'spacing'] as Tab[]).map((tabKey) => (
                     <button
-                      key={t}
+                      key={tabKey}
                       type="button"
-                      onClick={() => setPropTab(t)}
-                      className={`flex-1 rounded px-1 py-1 text-2xs font-medium ${propTab === t ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
+                      onClick={() => setPropTab(tabKey)}
+                      className={`flex-1 rounded px-1 py-1 text-2xs font-medium ${propTab === tabKey ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
                     >
-                      {t === 'style' ? 'Style' : t === 'content' ? 'Contenu' : 'Espacement'}
+                      {t(`tabs.${tabKey}`)}
                     </button>
                   ))}
                 </div>
@@ -676,8 +681,8 @@ export default function BulletinEditorPage() {
 
               {propTab === 'style' && (
                 <>
-                  <PropSection title="Couleurs du thème">
-                    <PropRow label="Couleur principale">
+                  <PropSection title={t('style.colorsTitle')}>
+                    <PropRow label={t('style.primaryColor')}>
                       <input
                         type="color"
                         value={config.primaryColor}
@@ -699,9 +704,9 @@ export default function BulletinEditorPage() {
                     </div>
                   </PropSection>
 
-                  <PropSection title="Typographie" last>
+                  <PropSection title={t('style.typographyTitle')} last>
                     <PropSliderRow
-                      label="Nom établissement"
+                      label={t('style.schoolName')}
                       value={config.typography.schoolName}
                       min={8}
                       max={32}
@@ -711,7 +716,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Titre bulletin"
+                      label={t('style.titleSize')}
                       value={config.typography.title}
                       min={8}
                       max={32}
@@ -721,7 +726,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Nom des matières"
+                      label={t('style.tableBody')}
                       value={config.typography.tableBody}
                       min={8}
                       max={24}
@@ -731,7 +736,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="En-têtes de colonnes"
+                      label={t('style.tableHeader')}
                       value={config.typography.tableHeader}
                       min={8}
                       max={16}
@@ -741,7 +746,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Notes / appréciations"
+                      label={t('style.noteValue')}
                       value={config.typography.noteValue}
                       min={8}
                       max={20}
@@ -751,7 +756,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Pied de page"
+                      label={t('style.footer')}
                       value={config.typography.footer}
                       min={6}
                       max={14}
@@ -766,30 +771,30 @@ export default function BulletinEditorPage() {
 
               {propTab === 'content' && (
                 <>
-                  <PropSection title="Logo de l'établissement">
+                  <PropSection title={t('content.logoTitle')}>
                     <ImageUploader
-                      label="Logo"
-                      hint="PNG, JPG ou WebP — 10 Mo max"
+                      label={t('content.logoLabel')}
+                      hint={t('content.imageHint')}
                       value={school?.logoUrl ?? null}
                       onChange={updateSchoolLogo}
                     />
                   </PropSection>
 
-                  <PropSection title="Signature du directeur">
+                  <PropSection title={t('content.signatureTitle')}>
                     <ImageUploader
-                      label="Signature"
-                      hint="PNG, JPG ou WebP — 10 Mo max"
+                      label={t('content.signatureLabel')}
+                      hint={t('content.imageHint')}
                       value={school?.directorSignatureUrl ?? null}
                       onChange={updateSchoolSignature}
                     />
                   </PropSection>
 
-                  <PropSection title="Texte du bulletin">
+                  <PropSection title={t('content.textTitle')}>
                     <label
                       className="mb-1 block text-xs font-medium text-foreground"
                       htmlFor="content-title"
                     >
-                      Titre du bulletin
+                      {t('content.titleLabel')}
                     </label>
                     <input
                       id="content-title"
@@ -805,7 +810,7 @@ export default function BulletinEditorPage() {
                       className="mb-1 block text-xs font-medium text-foreground"
                       htmlFor="content-footer"
                     >
-                      Message de pied de page
+                      {t('content.footerLabel')}
                     </label>
                     <textarea
                       id="content-footer"
@@ -818,27 +823,27 @@ export default function BulletinEditorPage() {
                         })
                       }
                       className="w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
-                      placeholder="Optionnel — ex. « Ensemble vers la réussite »"
+                      placeholder={t('content.footerPlaceholder')}
                     />
                   </PropSection>
 
-                  <PropSection title="Signatures">
+                  <PropSection title={t('content.signaturesTitle')}>
                     <SwitchRow
-                      label="Directeur"
+                      label={t('content.signatureDirector')}
                       checked={config.signatures.director}
                       onChange={(v) =>
                         patchConfig({ signatures: { ...config.signatures, director: v } })
                       }
                     />
                     <SwitchRow
-                      label="Titulaire de classe"
+                      label={t('content.signatureHomeroom')}
                       checked={config.signatures.homeroom}
                       onChange={(v) =>
                         patchConfig({ signatures: { ...config.signatures, homeroom: v } })
                       }
                     />
                     <SwitchRow
-                      label="Parent / Tuteur"
+                      label={t('content.signatureGuardian')}
                       checked={config.signatures.guardian}
                       onChange={(v) =>
                         patchConfig({ signatures: { ...config.signatures, guardian: v } })
@@ -846,40 +851,40 @@ export default function BulletinEditorPage() {
                     />
                   </PropSection>
 
-                  <PropSection title="Colonnes du tableau" last>
+                  <PropSection title={t('content.columnsTitle')} last>
                     <SwitchRow
-                      label="Coeff."
+                      label={t('content.colCoefficient')}
                       checked={config.columns.coefficient}
                       onChange={(v) =>
                         patchConfig({ columns: { ...config.columns, coefficient: v } })
                       }
                     />
                     <SwitchRow
-                      label="Moy. classe"
+                      label={t('content.colClassAverage')}
                       checked={config.columns.classAverage}
                       onChange={(v) =>
                         patchConfig({ columns: { ...config.columns, classAverage: v } })
                       }
                     />
                     <SwitchRow
-                      label="Min. / Max."
+                      label={t('content.colMinMax')}
                       checked={config.columns.minMax}
                       onChange={(v) => patchConfig({ columns: { ...config.columns, minMax: v } })}
                     />
                     <SwitchRow
-                      label="Appréciation"
+                      label={t('content.colAppreciation')}
                       checked={config.columns.appreciation}
                       onChange={(v) =>
                         patchConfig({ columns: { ...config.columns, appreciation: v } })
                       }
                     />
                     <SwitchRow
-                      label="Absences (statistiques)"
+                      label={t('content.colAbsences')}
                       checked={config.columns.absences}
                       onChange={(v) => patchConfig({ columns: { ...config.columns, absences: v } })}
                     />
                     <SwitchRow
-                      label="Rang (statistiques)"
+                      label={t('content.colRank')}
                       checked={config.columns.rank}
                       onChange={(v) => patchConfig({ columns: { ...config.columns, rank: v } })}
                     />
@@ -889,16 +894,16 @@ export default function BulletinEditorPage() {
 
               {propTab === 'spacing' && (
                 <>
-                  <PropSection title="Mise en page">
+                  <PropSection title={t('spacing.layoutTitle')}>
                     <PropNumberRow
-                      label="Marge de page (px)"
+                      label={t('spacing.pageMargin')}
                       value={config.layout.pageMargin}
                       min={0}
                       max={48}
                       onChange={(v) => patchConfig({ layout: { ...config.layout, pageMargin: v } })}
                     />
                     <PropNumberRow
-                      label="Espacement entre les blocs (px)"
+                      label={t('spacing.blockSpacing')}
                       value={config.layout.blockSpacing}
                       min={0}
                       max={32}
@@ -908,9 +913,9 @@ export default function BulletinEditorPage() {
                     />
                   </PropSection>
 
-                  <PropSection title="Tableau des notes" last>
+                  <PropSection title={t('spacing.tableTitle')} last>
                     <PropSliderRow
-                      label="Espacement horizontal des cellules"
+                      label={t('spacing.cellPaddingX')}
                       value={config.layout.cellPaddingX}
                       min={0}
                       max={24}
@@ -920,7 +925,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Espacement vertical des cellules"
+                      label={t('spacing.cellPaddingY')}
                       value={config.layout.cellPaddingY}
                       min={0}
                       max={16}
@@ -930,7 +935,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSliderRow
-                      label="Hauteur de ligne"
+                      label={t('spacing.lineHeight')}
                       value={config.layout.tableLineHeight}
                       min={1}
                       max={2.4}
@@ -940,7 +945,7 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropNumberRow
-                      label="Épaisseur de bordure (px)"
+                      label={t('spacing.borderWidth')}
                       value={config.layout.borderWidth}
                       min={0}
                       max={4}
@@ -949,12 +954,12 @@ export default function BulletinEditorPage() {
                       }
                     />
                     <PropSelectRow
-                      label="Style de bordure"
+                      label={t('spacing.borderStyleLabel')}
                       value={config.layout.borderStyle}
                       options={[
-                        { value: 'solid', label: 'Plein' },
-                        { value: 'dashed', label: 'Tirets' },
-                        { value: 'dotted', label: 'Pointillés' },
+                        { value: 'solid', label: t('spacing.borderStyle.solid') },
+                        { value: 'dashed', label: t('spacing.borderStyle.dashed') },
+                        { value: 'dotted', label: t('spacing.borderStyle.dotted') },
                       ]}
                       onChange={(v) =>
                         patchConfig({
@@ -965,7 +970,7 @@ export default function BulletinEditorPage() {
                         })
                       }
                     />
-                    <PropRow label="Couleur de bordure">
+                    <PropRow label={t('spacing.borderColor')}>
                       <input
                         type="color"
                         value={config.layout.borderColor}
@@ -976,7 +981,7 @@ export default function BulletinEditorPage() {
                       />
                     </PropRow>
                     <SwitchRow
-                      label="Fonds colorés du tableau"
+                      label={t('spacing.showBackgrounds')}
                       checked={config.layout.showTableBackgrounds}
                       onChange={(v) =>
                         patchConfig({ layout: { ...config.layout, showTableBackgrounds: v } })

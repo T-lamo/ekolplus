@@ -18,6 +18,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
@@ -39,6 +40,7 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { Pager } from '@/components/ui/Pager';
 import { CardGrid } from '@/components/school/CardGrid';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import {
   ROOM_TYPES,
   ROOM_TYPE_LABELS,
@@ -58,6 +60,10 @@ export default function RoomsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.salles');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [rooms, setRooms] = useState<RoomRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -77,9 +83,9 @@ export default function RoomsPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les salles.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -118,12 +124,12 @@ export default function RoomsPage() {
     setRooms((prev) => {
       if (!prev) return [room];
       if (mode === 'create') {
-        return [...prev, room].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+        return [...prev, room].sort((a, b) => a.name.localeCompare(b.name, bcp47));
       }
       return prev.map((r) => (r.id === room.id ? room : r));
     });
     setEditing(null);
-    toast(mode === 'create' ? 'Salle créée.' : 'Salle mise à jour.', 'success');
+    toast(mode === 'create' ? t('toast.created') : t('toast.updated'), 'success');
   }
 
   async function onToggleActive(room: RoomRow) {
@@ -133,40 +139,47 @@ export default function RoomsPage() {
         body: { isActive: !room.isActive },
       });
       setRooms((prev) => (prev ? prev.map((r) => (r.id === room.id ? res.room : r)) : prev));
-      toast(res.room.isActive ? 'Salle réactivée.' : 'Salle désactivée.', 'success');
+      toast(res.room.isActive ? t('toast.reactivated') : t('toast.deactivated'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   async function onDelete(room: RoomRow) {
     const usage =
       room.classCount + room.sessionCount > 0
-        ? `\nLes ${room.classCount} classe(s) et ${room.sessionCount} séance(s) qui l’utilisent garderont « ${room.name} » en texte libre.`
+        ? t('deleteUsageNote', {
+            classCount: room.classCount,
+            sessionCount: room.sessionCount,
+            name: room.name,
+          })
         : '';
     if (
-      !(await confirm({ message: `Supprimer la salle « ${room.name} » ?${usage}`, danger: true }))
+      !(await confirm({
+        message: `${t('deleteConfirm.message', { name: room.name })}${usage}`,
+        danger: true,
+      }))
     )
       return;
     try {
       await api(`/api/school/rooms/${room.id}`, { method: 'DELETE' });
       setRooms((prev) => (prev ? prev.filter((r) => r.id !== room.id) : prev));
-      toast('Salle supprimée.', 'success');
+      toast(t('toast.deleted'), 'success');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.', 'error');
+      toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
 
   function menuItemsFor(r: RoomRow) {
     return [
-      { label: 'Modifier', icon: <Pencil size={14} />, onClick: () => setEditing(r) },
+      { label: t('menu.edit'), icon: <Pencil size={14} />, onClick: () => setEditing(r) },
       {
-        label: r.isActive ? 'Désactiver' : 'Réactiver',
+        label: r.isActive ? t('menu.deactivate') : t('menu.reactivate'),
         icon: r.isActive ? <PowerOff size={14} /> : <Power size={14} />,
         onClick: () => onToggleActive(r),
       },
       {
-        label: 'Supprimer la salle',
+        label: t('menu.delete'),
         icon: <Trash2 size={14} />,
         onClick: () => onDelete(r),
         tone: 'danger' as const,
@@ -187,14 +200,12 @@ export default function RoomsPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">Salles</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Salles et lieux proposés aux classes et à l&apos;emploi du temps.
-          </p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button className="w-fit" onClick={() => setEditing('new')}>
           <Plus size={14} />
-          Ajouter une salle
+          {t('addRoom')}
         </Button>
       </div>
 
@@ -217,17 +228,17 @@ export default function RoomsPage() {
       {rooms !== null && (
         <>
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            <SummaryCard icon={DoorOpen} label="Total salles" value={stats.total} />
+            <SummaryCard icon={DoorOpen} label={t('stats.total')} value={stats.total} />
             <SummaryCard
               icon={CheckCircle2}
-              label="Salles actives"
+              label={t('stats.active')}
               value={`${stats.active} / ${stats.total}`}
               tone="success"
             />
-            <SummaryCard icon={Armchair} label="Places au total" value={stats.seats} tone="blue" />
+            <SummaryCard icon={Armchair} label={t('stats.seats')} value={stats.seats} tone="blue" />
             <SummaryCard
               icon={Users}
-              label="Salles utilisées"
+              label={t('stats.used')}
               value={`${stats.used} / ${stats.total}`}
               tone="warning"
             />
@@ -237,24 +248,26 @@ export default function RoomsPage() {
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une salle..."
+              placeholder={t('search.placeholder')}
               className="max-w-[260px]"
             />
             <FilterSelect value={type} onValueChange={setType}>
-              <SelectItem value="">Tous types</SelectItem>
-              {ROOM_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {ROOM_TYPE_LABELS[t]}
+              <SelectItem value="">{t('filters.allTypes')}</SelectItem>
+              {ROOM_TYPES.map((rt) => (
+                <SelectItem key={rt} value={rt}>
+                  {ROOM_TYPE_LABELS[rt]}
                 </SelectItem>
               ))}
             </FilterSelect>
             <FilterSelect value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>
-              <SelectItem value="">Tous statuts</SelectItem>
-              <SelectItem value="active">Actives</SelectItem>
-              <SelectItem value="inactive">Inactives</SelectItem>
+              <SelectItem value="">{t('filters.allStatuses')}</SelectItem>
+              <SelectItem value="active">{t('filters.active')}</SelectItem>
+              <SelectItem value="inactive">{t('filters.inactive')}</SelectItem>
             </FilterSelect>
             <span className="text-sm text-muted-foreground">
-              {filtered.length} salle{filtered.length > 1 ? 's' : ''}
+              {t(filtered.length > 1 ? 'plural.rooms.other' : 'plural.rooms.one', {
+                count: filtered.length,
+              })}
             </span>
             {/* Table view needs real width to be usable — mobile always
                 gets the card grid instead, so the toggle (and the way to
@@ -267,9 +280,7 @@ export default function RoomsPage() {
           {filtered.length === 0 ? (
             <Card>
               <p className="p-5 text-sm text-muted-foreground">
-                {rooms.length === 0
-                  ? 'Aucune salle — ajoute la première pour la proposer aux classes et à l’emploi du temps.'
-                  : 'Aucun résultat.'}
+                {rooms.length === 0 ? t('empty.noRooms') : t('empty.noResults')}
               </p>
             </Card>
           ) : view === 'grid' ? (
@@ -289,7 +300,7 @@ export default function RoomsPage() {
                     title={r.name}
                     subtitle={[
                       roomTypeLabel(r.type),
-                      r.capacity != null ? `${r.capacity} places` : null,
+                      r.capacity != null ? `${r.capacity} ${t('placesSuffix')}` : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}
@@ -298,26 +309,30 @@ export default function RoomsPage() {
                       location ? (
                         <span className="truncate">{location}</span>
                       ) : (
-                        <span className="text-muted-foreground italic">
-                          Emplacement non renseigné
-                        </span>
+                        <span className="text-muted-foreground italic">{t('card.noLocation')}</span>
                       )
                     }
                     metaRight={
                       <Badge tone={r.isActive ? 'success' : 'secondary'}>
-                        {r.isActive ? 'Active' : 'Inactive'}
+                        {r.isActive ? t('status.active') : t('status.inactive')}
                       </Badge>
                     }
                     footerLeft={
                       <>
-                        <span className="font-bold text-foreground">{r.classCount}</span> classe
-                        {r.classCount > 1 ? 's' : ''}
+                        <span className="font-bold text-foreground">{r.classCount}</span>{' '}
+                        {t(
+                          r.classCount > 1 ? 'plural.wordClasses.other' : 'plural.wordClasses.one',
+                        )}
                       </>
                     }
                     footerRight={
                       <>
-                        <span className="font-bold text-foreground">{r.sessionCount}</span> séance
-                        {r.sessionCount > 1 ? 's' : ''}
+                        <span className="font-bold text-foreground">{r.sessionCount}</span>{' '}
+                        {t(
+                          r.sessionCount > 1
+                            ? 'plural.wordSessions.other'
+                            : 'plural.wordSessions.one',
+                        )}
                       </>
                     }
                   />
@@ -330,13 +345,13 @@ export default function RoomsPage() {
                 <table className="w-full min-w-[860px] border-collapse text-sm">
                   <thead className={STICKY_THEAD}>
                     <tr className="border-b border-border">
-                      <Th>Salle</Th>
-                      <Th>Type</Th>
-                      <Th>Capacité</Th>
-                      <Th>Équipements</Th>
-                      <Th>Classes</Th>
-                      <Th>Séances</Th>
-                      <Th>Statut</Th>
+                      <Th>{t('table.room')}</Th>
+                      <Th>{t('table.type')}</Th>
+                      <Th>{t('table.capacity')}</Th>
+                      <Th>{t('table.equipment')}</Th>
+                      <Th>{t('table.classes')}</Th>
+                      <Th>{t('table.sessions')}</Th>
+                      <Th>{t('table.status')}</Th>
                       <Th className="w-[80px]" />
                     </tr>
                   </thead>
@@ -366,7 +381,7 @@ export default function RoomsPage() {
                             {r.capacity != null ? (
                               <>
                                 <span className="font-semibold">{r.capacity}</span>
-                                <span className="text-muted-foreground"> places</span>
+                                <span className="text-muted-foreground"> {t('placesSuffix')}</span>
                               </>
                             ) : (
                               <span className="text-muted-foreground">—</span>
@@ -383,7 +398,7 @@ export default function RoomsPage() {
                           </td>
                           <td className="px-3.5 py-2.5">
                             <Badge tone={r.isActive ? 'success' : 'secondary'}>
-                              {r.isActive ? 'Active' : 'Inactive'}
+                              {r.isActive ? t('status.active') : t('status.inactive')}
                             </Badge>
                           </td>
                           <td className="px-3.5 py-2.5">

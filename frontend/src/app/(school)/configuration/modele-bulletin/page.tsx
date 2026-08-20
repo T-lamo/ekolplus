@@ -12,6 +12,7 @@ import {
   Trash2,
   Edit2,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
@@ -21,6 +22,7 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { TemplateListData, TemplateRow } from './types';
 
 function TemplateCardSkeleton() {
@@ -57,6 +59,9 @@ export default function BulletinTemplatesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
+  const t = useTranslations('Configuration.modeleBulletin');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const [data, setData] = useState<TemplateListData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'personal' | 'global'>('personal');
@@ -70,9 +75,9 @@ export default function BulletinTemplatesPage() {
           router.replace('/');
           return;
         }
-        setError('Impossible de charger les modèles de bulletin.');
+        setError(t('loadError'));
       });
-  }, [user, router]);
+  }, [user, router, t]);
 
   async function fork(id: string) {
     try {
@@ -80,10 +85,10 @@ export default function BulletinTemplatesPage() {
         `/api/school/bulletin-templates/${id}/fork`,
         { method: 'POST' },
       );
-      toast('Modèle dupliqué — vous pouvez maintenant le personnaliser.', 'success');
+      toast(t('toast.forked'), 'success');
       router.push(`/configuration/modele-bulletin/${res.template.id}/edit`);
     } catch {
-      toast('Erreur lors de la duplication du modèle.', 'error');
+      toast(t('toast.forkError'), 'error');
     }
   }
 
@@ -93,27 +98,27 @@ export default function BulletinTemplatesPage() {
         method: 'PATCH',
         body: { isActive: true },
       });
-      toast('Modèle défini comme actif.', 'success');
+      toast(t('toast.activated'), 'success');
       setData((d) =>
-        d ? { ...d, personal: d.personal.map((t) => ({ ...t, isActive: t.id === id })) } : d,
+        d ? { ...d, personal: d.personal.map((tpl) => ({ ...tpl, isActive: tpl.id === id })) } : d,
       );
     } catch {
-      toast("Erreur lors de l'activation du modèle.", 'error');
+      toast(t('toast.activateError'), 'error');
     }
   }
 
   async function remove(id: string) {
-    if (!(await confirm({ message: 'Supprimer ce modèle de bulletin ?', danger: true }))) return;
+    if (!(await confirm({ message: t('deleteConfirm'), danger: true }))) return;
     try {
       await api(`/api/school/bulletin-templates/${id}`, { method: 'DELETE' });
-      toast('Modèle supprimé.', 'success');
-      setData((d) => (d ? { ...d, personal: d.personal.filter((t) => t.id !== id) } : d));
+      toast(t('toast.deleted'), 'success');
+      setData((d) => (d ? { ...d, personal: d.personal.filter((tpl) => tpl.id !== id) } : d));
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_FAILED') {
         toast(err.message, 'error');
         return;
       }
-      toast('Erreur lors de la suppression.', 'error');
+      toast(t('toast.deleteError'), 'error');
     }
   }
 
@@ -163,10 +168,8 @@ export default function BulletinTemplatesPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-xl font-bold text-foreground">Modèles de bulletin</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires
-        </p>
+        <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {active && (
@@ -174,15 +177,15 @@ export default function BulletinTemplatesPage() {
           <CheckCircle2 size={20} className="shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
             <div className="text-caption font-semibold text-primary">
-              Modèle actif : {active.name}
+              {t('activeCard.label', { name: active.name })}
             </div>
             <div className="mt-0.5 text-xs text-secondary-foreground opacity-85">
-              Ce modèle est actuellement utilisé pour la génération des bulletins. Dernière
-              modification :{' '}
-              {new Date(active.updatedAt).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
+              {t('activeCard.description', {
+                date: new Date(active.updatedAt).toLocaleDateString(bcp47, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                }),
               })}
             </div>
           </div>
@@ -191,7 +194,7 @@ export default function BulletinTemplatesPage() {
             className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
           >
             <Edit2 size={12} />
-            Modifier
+            {t('activeCard.edit')}
           </Link>
         </Card>
       )}
@@ -205,7 +208,7 @@ export default function BulletinTemplatesPage() {
           className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'personal' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           <User size={13} />
-          Mes modèles
+          {t('tabs.personal')}
           <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
             {data.personal.length}
           </span>
@@ -218,7 +221,7 @@ export default function BulletinTemplatesPage() {
           className={`flex items-center gap-1.5 rounded-md px-4 py-1.5 text-caption font-medium ${tab === 'global' ? 'bg-card font-semibold text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           <Globe size={13} />
-          Modèles globaux
+          {t('tabs.global')}
           <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-secondary px-1 text-2xs font-bold text-primary">
             {data.global.length}
           </span>
@@ -227,8 +230,7 @@ export default function BulletinTemplatesPage() {
 
       {tab === 'global' && (
         <div className="flex w-fit items-center gap-1.5 rounded-md bg-warning px-2.5 py-1.5 text-xs font-medium text-warning-foreground">
-          Dupliquez un modèle pour le personnaliser — les modèles globaux ne sont pas modifiables
-          directement.
+          {t('globalHint')}
         </div>
       )}
 
@@ -236,21 +238,19 @@ export default function BulletinTemplatesPage() {
         <Card className="items-center gap-2 p-10 text-center">
           <LayoutTemplate size={28} className="text-muted-foreground" />
           <p className="max-w-sm text-sm text-muted-foreground">
-            {tab === 'personal'
-              ? "Vous n'avez pas encore de modèle personnalisé — dupliquez un modèle global pour commencer."
-              : 'Aucun modèle global disponible.'}
+            {tab === 'personal' ? t('empty.personal') : t('empty.global')}
           </p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((t) => (
+          {rows.map((tpl) => (
             <TemplateCard
-              key={t.id}
-              template={t}
+              key={tpl.id}
+              template={tpl}
               isGlobal={tab === 'global'}
-              onFork={() => fork(t.id)}
-              onDelete={() => remove(t.id)}
-              onSetActive={() => setActive(t.id)}
+              onFork={() => fork(tpl.id)}
+              onDelete={() => remove(tpl.id)}
+              onSetActive={() => setActive(tpl.id)}
             />
           ))}
         </div>
@@ -272,6 +272,7 @@ function TemplateCard({
   onDelete: () => void;
   onSetActive: () => void;
 }) {
+  const t = useTranslations('Configuration.modeleBulletin');
   const items: ActionMenuItem[] = isGlobal
     ? []
     : [
@@ -279,18 +280,18 @@ function TemplateCard({
           ? []
           : [
               {
-                label: 'Définir comme actif',
+                label: t('menu.setActive'),
                 icon: <CheckCircle2 size={13} />,
                 onClick: onSetActive,
               },
             ]),
         {
-          label: 'Dupliquer',
+          label: t('menu.fork'),
           icon: <Copy size={13} />,
           onClick: onFork,
         },
         {
-          label: 'Supprimer',
+          label: t('menu.delete'),
           icon: <Trash2 size={13} />,
           onClick: onDelete,
           tone: 'danger',
@@ -308,7 +309,7 @@ function TemplateCard({
         {template.isActive && (
           <span className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold text-primary-foreground">
             <CheckCircle2 size={10} />
-            Actif
+            {t('badge.active')}
           </span>
         )}
         {isGlobal && (
@@ -321,7 +322,7 @@ function TemplateCard({
             }}
           >
             <Globe size={10} />
-            Global
+            {t('badge.global')}
           </span>
         )}
       </div>
@@ -335,14 +336,14 @@ function TemplateCard({
               style={{ background: `${template.primaryColor}1a`, color: template.primaryColor }}
             >
               <Lock size={11} />
-              Prédéfini
+              {t('badge.predefined')}
             </span>
           ) : (
             <span
               className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${template.isActive ? 'bg-success text-success-foreground' : 'bg-secondary text-secondary-foreground'}`}
             >
               {template.isActive ? <CheckCircle2 size={11} /> : <LayoutTemplate size={11} />}
-              {template.isActive ? 'Actif' : 'Personnel'}
+              {template.isActive ? t('badge.active') : t('badge.personal')}
             </span>
           )}
           <div className="flex items-center gap-1.5">
@@ -353,7 +354,7 @@ function TemplateCard({
                 className="flex items-center gap-1.5 rounded-md border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
               >
                 <Copy size={12} className="text-primary" />
-                Dupliquer
+                {t('menu.fork')}
               </button>
             ) : (
               <Link
@@ -361,7 +362,7 @@ function TemplateCard({
                 className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-xs font-medium text-foreground"
               >
                 <Pencil size={11} className="text-primary" />
-                Éditer
+                {t('editLink')}
               </Link>
             )}
             {!isGlobal && <ActionMenu items={items} />}

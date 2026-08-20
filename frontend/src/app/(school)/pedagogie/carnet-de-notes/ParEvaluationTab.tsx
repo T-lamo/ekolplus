@@ -12,23 +12,13 @@
 import { useMemo } from 'react';
 import { AlertCircle, Calendar, Pencil, UserX } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { EvaluationType, UnifiedNotebookData } from './types';
-
-const TYPE_LABEL: Record<EvaluationType, string> = {
-  DS: 'Devoir surveillé',
-  INTERROGATION: 'Interrogation',
-  EXAMEN: 'Examen',
-  AUTRE: 'Autre',
-};
 
 function fmt(n: number | null): string {
   return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
-function fmtDate(d: string | null): string | null {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
 interface EvalRow {
@@ -49,6 +39,16 @@ interface EvalRow {
 }
 
 export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) {
+  const t = useTranslations('Gradebook.parEvaluation');
+  const tType = useTranslations('Gradebook.evaluationType');
+  const tStatus = useTranslations('Gradebook.evaluationStatus');
+  const locale = useLocale();
+
+  function fmtDate(d: string | null): string | null {
+    if (!d) return null;
+    return new Date(d).toLocaleDateString(LOCALE_BCP47[locale], { day: 'numeric', month: 'short' });
+  }
+
   const rows = useMemo<EvalRow[]>(() => {
     const list = unified.subjects.flatMap((sub) =>
       sub.evaluations.map((ev) => {
@@ -99,9 +99,7 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
     return (
       <Card className="items-center gap-2 p-10 text-center">
         <AlertCircle size={24} className="text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          Aucune évaluation pour cette période — crée la première avec « Nouvelle évaluation ».
-        </p>
+        <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
       </Card>
     );
   }
@@ -120,7 +118,7 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
                 )}
                 <span className="font-semibold text-foreground">{r.label}</span>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
-                  {TYPE_LABEL[r.type]}
+                  {tType(r.type)}
                 </span>
                 <span
                   className={`rounded-full px-2 py-0.5 text-2xs font-semibold ${
@@ -129,12 +127,12 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
                       : 'bg-warning text-warning-foreground'
                   }`}
                 >
-                  {r.status === 'PUBLISHED' ? 'Publiée' : 'Brouillon'}
+                  {tStatus(r.status)}
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-muted-foreground">
-                <span>Coeff. {r.coefficient}</span>
-                <span>Sur {r.maxScore} pts</span>
+                <span>{t('coefficient', { n: r.coefficient })}</span>
+                <span>{t('outOf', { n: r.maxScore })}</span>
                 {fmtDate(r.date) && (
                   <span className="flex items-center gap-1">
                     <Calendar size={11} />
@@ -144,7 +142,9 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
                 {r.absentCount > 0 && (
                   <span className="flex items-center gap-1 text-warning-foreground">
                     <UserX size={11} />
-                    {r.absentCount} absent{r.absentCount > 1 ? 's' : ''}
+                    {t(r.absentCount > 1 ? 'absentCount.other' : 'absentCount.one', {
+                      count: r.absentCount,
+                    })}
                   </span>
                 )}
               </div>
@@ -154,24 +154,24 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
               className="flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-2xs font-semibold text-foreground hover:bg-muted"
             >
               <Pencil size={12} />
-              Voir / modifier les notes
+              {t('viewEditGrades')}
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-border pt-3 sm:grid-cols-4">
             <EvalStat
-              label="Moyenne"
+              label={t('average')}
               value={r.average != null ? `${fmt(r.average)}/${r.maxScore}` : '—'}
             />
             <EvalStat
-              label="Meilleure note"
+              label={t('bestScore')}
               value={r.best != null ? `${fmt(r.best)}/${r.maxScore}` : '—'}
             />
             <EvalStat
-              label="Note la plus basse"
+              label={t('worstScore')}
               value={r.worst != null ? `${fmt(r.worst)}/${r.maxScore}` : '—'}
             />
-            <EvalStat label="Notes saisies" value={`${r.gradedCount} / ${r.totalCount}`} />
+            <EvalStat label={t('gradedCount')} value={`${r.gradedCount} / ${r.totalCount}`} />
           </div>
         </Card>
       ))}

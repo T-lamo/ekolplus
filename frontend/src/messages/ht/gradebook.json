@@ -53,5 +53,19 @@
     "loadError": "Nou pa t kapab chaje l.",
     "updatedToast": "Evalyasyon mete ajou.",
     "deletedToast": "Evalyasyon efase."
+  },
+  "parEvaluation": {
+    "emptyState": "Pa gen evalyasyon pou peryòd sa a — kreye premye a avèk « Nouvo evalyasyon ».",
+    "viewEditGrades": "Wè / modifye nòt yo",
+    "coefficient": "Kowef. {n}",
+    "outOf": "Sou {n} pwen",
+    "absentCount": {
+      "one": "1 absan",
+      "other": "{count} absan"
+    },
+    "average": "Mwayèn",
+    "bestScore": "Pi bon nòt",
+    "worstScore": "Pi ba nòt",
+    "gradedCount": "Nòt antre"
   }
 }

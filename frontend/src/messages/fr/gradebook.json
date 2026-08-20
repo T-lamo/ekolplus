@@ -52,5 +52,19 @@
     "loadError": "Impossible de charger.",
     "updatedToast": "Évaluation mise à jour.",
     "deletedToast": "Évaluation supprimée."
+  },
+  "parEvaluation": {
+    "emptyState": "Aucune évaluation pour cette période — créez la première avec « Nouvelle évaluation ».",
+    "viewEditGrades": "Voir / modifier les notes",
+    "coefficient": "Coeff. {n}",
+    "outOf": "Sur {n} pts",
+    "absentCount": {
+      "one": "1 absent",
+      "other": "{count} absents"
+    },
+    "average": "Moyenne",
+    "bestScore": "Meilleure note",
+    "worstScore": "Note la plus basse",
+    "gradedCount": "Notes saisies"
   }
 }

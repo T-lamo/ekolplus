@@ -52,5 +52,19 @@
     "loadError": "Unable to load.",
     "updatedToast": "Evaluation updated.",
     "deletedToast": "Evaluation deleted."
+  },
+  "parEvaluation": {
+    "emptyState": "No evaluation for this period — create the first one with \"New evaluation\".",
+    "viewEditGrades": "View / edit grades",
+    "coefficient": "Coeff. {n}",
+    "outOf": "Out of {n} pts",
+    "absentCount": {
+      "one": "1 absent",
+      "other": "{count} absent"
+    },
+    "average": "Average",
+    "bestScore": "Best score",
+    "worstScore": "Lowest score",
+    "gradedCount": "Grades entered"
   }
 }

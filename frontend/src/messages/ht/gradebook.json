@@ -35,5 +35,23 @@
     "createdToast": "Evalyasyon kreye — antre nòt yo.",
     "submitLabel": "Kreye epi antre nòt yo",
     "submitting": "K ap kreye…"
+  },
+  "editEvaluation": {
+    "backToEntry": "Retounen nan antre nòt yo",
+    "back": "Retounen",
+    "title": "Modifye paramèt evalyasyon an",
+    "subtitle": "Nòt ki deja antre yo ap konsève.",
+    "deleteButton": "Efase evalyasyon an",
+    "warningTitle": "W ap modifye yon evalyasyon ki egziste deja",
+    "warningBody": "Chanje klas la, matyè a oswa baram nòt la ka afekte nòt ki deja antre yo.",
+    "unsavedNotice": "Gen chanjman ki ka pa anrejistre.",
+    "cancel": "Anile",
+    "saving": "K ap anrejistre…",
+    "confirmChanges": "Konfime chanjman yo",
+    "deleteConfirmMessage": "Efase evalyasyon sa a ak tout nòt ki gen rapò avè l yo? Aksyon sa a pa ka anile.",
+    "notFound": "Nou pa jwenn evalyasyon an.",
+    "loadError": "Nou pa t kapab chaje l.",
+    "updatedToast": "Evalyasyon mete ajou.",
+    "deletedToast": "Evalyasyon efase."
   }
 }

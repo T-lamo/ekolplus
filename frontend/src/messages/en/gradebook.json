@@ -34,5 +34,23 @@
     "createdToast": "Evaluation created — enter the grades.",
     "submitLabel": "Create and enter grades",
     "submitting": "Creating…"
+  },
+  "editEvaluation": {
+    "backToEntry": "Back to grade entry",
+    "back": "Back",
+    "title": "Edit evaluation settings",
+    "subtitle": "Grades already entered will be kept.",
+    "deleteButton": "Delete evaluation",
+    "warningTitle": "Editing an existing evaluation",
+    "warningBody": "Changing the class, subject, or scoring scale may affect grades already entered.",
+    "unsavedNotice": "Unsaved changes may exist.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "confirmChanges": "Confirm changes",
+    "deleteConfirmMessage": "Delete this evaluation and all its grades? This action is irreversible.",
+    "notFound": "Evaluation not found.",
+    "loadError": "Unable to load.",
+    "updatedToast": "Evaluation updated.",
+    "deletedToast": "Evaluation deleted."
   }
 }

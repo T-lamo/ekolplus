@@ -34,5 +34,23 @@
     "createdToast": "Évaluation créée — saisissez les notes.",
     "submitLabel": "Créer et saisir les notes",
     "submitting": "Création…"
+  },
+  "editEvaluation": {
+    "backToEntry": "Retour à la saisie",
+    "back": "Retour",
+    "title": "Modifier les paramètres de l'évaluation",
+    "subtitle": "Les notes déjà saisies seront conservées.",
+    "deleteButton": "Supprimer l'évaluation",
+    "warningTitle": "Modification d'une évaluation existante",
+    "warningBody": "Changer la classe, la matière ou le barème peut affecter les notes déjà saisies.",
+    "unsavedNotice": "Des modifications non enregistrées peuvent exister.",
+    "cancel": "Annuler",
+    "saving": "Enregistrement…",
+    "confirmChanges": "Confirmer les modifications",
+    "deleteConfirmMessage": "Supprimer cette évaluation et toutes les notes associées ? Cette action est irréversible.",
+    "notFound": "Évaluation introuvable.",
+    "loadError": "Impossible de charger.",
+    "updatedToast": "Évaluation mise à jour.",
+    "deletedToast": "Évaluation supprimée."
   }
 }

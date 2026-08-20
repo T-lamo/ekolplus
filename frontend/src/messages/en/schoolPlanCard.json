@@ -1,0 +1,31 @@
+{
+  "suspendedTitle": "{plan} suspended",
+  "paymentFailedRegularize": "Payment failed — fix billing",
+  "suspendedContactUs": "Suspended · contact us",
+  "regularizeShortLabel": "{plan} · Fix billing",
+  "regularizeCta": "Fix billing",
+  "contactUsCta": "Contact us",
+  "reactivateTitle": "Reactivate {plan}",
+  "overCapBlocked": "{count} students for {limit} seats — enrolment blocked",
+  "dataKept": "Your data is kept · resume in 1 click",
+  "reactivateShortLabel": "Reactivate {plan}",
+  "reactivateCta": "Reactivate",
+  "capReached": "Limit reached ({count}/{limit}) — enrolment blocked",
+  "nearCap": {
+    "one": "{count}/{limit} students — {left} seat left",
+    "other": "{count}/{limit} students — {left} seats left"
+  },
+  "genericPitch": "Up to {limit} students · {trialDays}-day free trial",
+  "upsellTitle": "Upgrade to {plan}",
+  "upsellShortLabel": "Upgrade to {plan}",
+  "discoverCta": "Learn more",
+  "paymentFailed": "Payment failed",
+  "enterpriseContract": "Enterprise contract",
+  "activeUntil": "Active until {date}",
+  "trialUntil": "Trial until {date}",
+  "renewalDate": "Renews {date}",
+  "active": "Active",
+  "toRegularize": "Needs attention",
+  "trialState": "Trial",
+  "paidShortLabel": "{plan} · {state}"
+}

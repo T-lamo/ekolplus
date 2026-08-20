@@ -35,6 +35,7 @@ export default getRequestConfig(async () => {
     verifyEmail,
     dashboard,
     adminDashboard,
+    schoolPlanCard,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -48,6 +49,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/verifyEmail.json`),
     import(`../messages/${locale}/dashboard.json`),
     import(`../messages/${locale}/adminDashboard.json`),
+    import(`../messages/${locale}/schoolPlanCard.json`),
   ]);
 
   return {
@@ -65,6 +67,7 @@ export default getRequestConfig(async () => {
       VerifyEmail: verifyEmail.default,
       Dashboard: dashboard.default,
       AdminDashboard: adminDashboard.default,
+      SchoolPlanCard: schoolPlanCard.default,
     },
   };
 });

@@ -55,6 +55,7 @@ export const MESSAGE_NAMESPACES = [
   'verifyEmail',
   'dashboard',
   'adminDashboard',
+  'schoolPlanCard',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

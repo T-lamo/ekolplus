@@ -17,6 +17,7 @@ import type resetPassword from '@/messages/fr/resetPassword.json';
 import type verifyEmail from '@/messages/fr/verifyEmail.json';
 import type dashboard from '@/messages/fr/dashboard.json';
 import type adminDashboard from '@/messages/fr/adminDashboard.json';
+import type schoolPlanCard from '@/messages/fr/schoolPlanCard.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -35,6 +36,7 @@ declare module 'next-intl' {
       VerifyEmail: typeof verifyEmail;
       Dashboard: typeof dashboard;
       AdminDashboard: typeof adminDashboard;
+      SchoolPlanCard: typeof schoolPlanCard;
     };
   }
 }

@@ -289,6 +289,16 @@
   --color-card: #231937;
   --color-card-foreground: #fbf8ff;
   --color-destructive-foreground: #dc2626;
+  /* Nothing on the landing page currently reads these 4 — re-defined anyway
+     so the scope shields ALL 16 tokens src/lib/themes.ts's THEMED_TOKENS
+     touches, not just the 12 the page happens to use today. Values are the
+     app's own default (Lavande, untouched by data-theme) — same "the
+     landing page renders identically no matter which theme the viewer has
+     saved" guarantee as the rest of this block, just future-proofed. */
+  --color-primary-gradient-end: #a855f7;
+  --color-sidebar-light-foreground: #1a1a2e;
+  --color-sidebar-dark: #16102e;
+  --color-sidebar-dark-foreground: #e8e3f7;
   background:
     radial-gradient(circle at 18% 16%, rgba(199, 167, 255, 0.24), transparent 26%),
     radial-gradient(circle at 78% 10%, rgba(231, 216, 255, 0.16), transparent 24%),
@@ -323,6 +333,6 @@
    backdrop-blur layer gives a graduated edge; the pill itself sits above
    this layer (higher z-index) so its own background/blur is untouched. */
 .landing-scroll-blur {
-  -webkit-mask-image: linear-gradient(to bottom, black, black 45%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black, black 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black, black 25%, transparent 75%);
+  mask-image: linear-gradient(to bottom, black, black 25%, transparent 75%);
 }

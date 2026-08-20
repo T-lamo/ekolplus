@@ -40,7 +40,7 @@ export function LandingHeader() {
           untouched. */}
       <div
         aria-hidden="true"
-        className="landing-scroll-blur pointer-events-none fixed inset-x-0 top-0 z-40 h-36 backdrop-blur-lg sm:h-44 lg:h-52"
+        className="landing-scroll-blur pointer-events-none fixed inset-x-0 top-0 z-40 h-24 backdrop-blur-md sm:h-28 lg:h-32"
       />
       <header className="fixed inset-x-0 top-0 z-50 px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div

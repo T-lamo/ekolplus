@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -84,6 +85,9 @@ const PILL_CLASS: Record<string, string> = {
 };
 
 export default function GradeEntryPage() {
+  const t = useTranslations('Gradebook.saisie');
+  const tStatus = useTranslations('Gradebook.evaluationStatus');
+  const tCommon = useTranslations('Common');
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -119,12 +123,12 @@ export default function GradeEntryPage() {
       })
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          setError('Évaluation introuvable.');
+          setError(t('notFound'));
           return;
         }
-        setError('Impossible de charger la saisie des notes.');
+        setError(t('loadError'));
       });
-  }, [user, params.evaluationId]);
+  }, [user, params.evaluationId, t]);
 
   function previewAverage(studentId: string): number | null {
     if (!notebook || !evaluation) return null;
@@ -243,15 +247,15 @@ export default function GradeEntryPage() {
       if (queued) {
         toast(OFFLINE_SYNC.queuedToast, 'info');
       } else if (publish) {
-        toast('Notes validées.', 'success');
+        toast(t('validatedToast'), 'success');
       } else {
-        toast('Brouillon enregistré.', 'success');
+        toast(t('draftSavedToast'), 'success');
       }
       if (publish) {
         router.push('/pedagogie/carnet-de-notes');
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur réseau. Réessaie.');
+      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSaving(false);
     }
@@ -272,7 +276,7 @@ export default function GradeEntryPage() {
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
         >
           <ArrowLeft size={14} />
-          Retour
+          {t('back')}
         </Link>
         <p role="alert" className="text-sm text-destructive-foreground">
           {error}
@@ -293,25 +297,25 @@ export default function GradeEntryPage() {
             className="mb-1 flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground"
           >
             <ArrowLeft size={14} />
-            Retour
+            {t('back')}
           </Link>
-          <h1 className="text-lg font-bold text-foreground">Saisir des notes</h1>
+          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             className="w-fit"
-            onClick={() => toast('Import CSV — bientôt disponible.', 'info')}
+            onClick={() => toast(t('importCsvToast'), 'info')}
           >
             <Upload size={14} />
-            Importer (CSV)
+            {t('importCsv')}
           </Button>
           <Link
             href={`/pedagogie/carnet-de-notes/${evaluation.id}/edit`}
             className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-semibold text-foreground"
           >
             <Pencil size={14} />
-            Modifier
+            {t('edit')}
           </Link>
         </div>
       </div>
@@ -321,26 +325,26 @@ export default function GradeEntryPage() {
         <Badge>{evaluation.classSubject.subject.name}</Badge>
         <Badge muted>{evaluation.term.label}</Badge>
         <Badge muted>{evaluation.label}</Badge>
-        <Badge muted>Coefficient {evaluation.coefficient}</Badge>
-        <Badge muted>Note sur {evaluation.maxScore}</Badge>
-        {evaluation.status === 'DRAFT' && <Badge warning>Brouillon</Badge>}
+        <Badge muted>{t('coefficientBadge', { n: evaluation.coefficient })}</Badge>
+        <Badge muted>{t('outOfBadge', { n: evaluation.maxScore })}</Badge>
+        {evaluation.status === 'DRAFT' && <Badge warning>{tStatus('DRAFT')}</Badge>}
       </Card>
 
       <Card className="gap-0 overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-foreground">
-              Saisie des notes — {evaluation.classSubject.class.name}
+              {t('tableTitle', { className: evaluation.classSubject.class.name })}
             </span>
             <Badge muted small>
-              {stats.total} élèves
+              {t('studentsBadge', { count: stats.total })}
             </Badge>
             <Badge success small>
-              {stats.noted} notés
+              {t('gradedBadge', { count: stats.noted })}
             </Badge>
             {stats.pending > 0 && (
               <Badge warning small>
-                {stats.pending} en attente
+                {t('pendingBadge', { count: stats.pending })}
               </Badge>
             )}
           </div>
@@ -351,7 +355,7 @@ export default function GradeEntryPage() {
               className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground"
             >
               <UserX size={12} />
-              Tout marquer absent
+              {t('markAllAbsent')}
             </button>
             <button
               type="button"
@@ -359,7 +363,7 @@ export default function GradeEntryPage() {
               className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground"
             >
               <Eraser size={12} />
-              Effacer tout
+              {t('clearAll')}
             </button>
           </div>
         </div>
@@ -369,22 +373,22 @@ export default function GradeEntryPage() {
             <thead className={STICKY_THEAD}>
               <tr className="border-b border-border">
                 <th className="w-9 py-2.5 pl-4 text-left text-2xs font-semibold text-muted-foreground">
-                  #
+                  {t('colNumber')}
                 </th>
                 <th className="py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Élève
+                  {t('colStudent')}
                 </th>
                 <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Note (sur {evaluation.maxScore})
+                  {t('colScore', { n: evaluation.maxScore })}
                 </th>
                 <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Absent
+                  {t('colAbsent')}
                 </th>
                 <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Aperçu moy.
+                  {t('colAveragePreview')}
                 </th>
                 <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Commentaire
+                  {t('colComment')}
                 </th>
               </tr>
             </thead>
@@ -416,7 +420,7 @@ export default function GradeEntryPage() {
                     <td className="px-3 py-2.5 text-center">
                       {row.absent ? (
                         <span className="inline-flex h-8 w-16 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-                          Abs.
+                          {t('absentBadge')}
                         </span>
                       ) : (
                         <div className="flex flex-col items-center gap-1">
@@ -432,7 +436,7 @@ export default function GradeEntryPage() {
                           />
                           {invalid && (
                             <span className="text-[10px] font-semibold text-destructive-foreground">
-                              Max. {evaluation.maxScore}
+                              {t('maxScoreHint', { n: evaluation.maxScore })}
                             </span>
                           )}
                         </div>
@@ -442,7 +446,7 @@ export default function GradeEntryPage() {
                       <button
                         type="button"
                         onClick={() => setRow(s.studentId, { absent: !row.absent, score: '' })}
-                        aria-label="Marquer absent"
+                        aria-label={t('markAbsentAriaLabel')}
                         aria-pressed={row.absent}
                         className={`mx-auto flex h-6.5 w-6.5 items-center justify-center rounded-md ${row.absent ? 'bg-destructive text-destructive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
                       >
@@ -460,7 +464,7 @@ export default function GradeEntryPage() {
                       <input
                         value={row.comment}
                         onChange={(e) => setRow(s.studentId, { comment: e.target.value })}
-                        placeholder="Ajouter un commentaire..."
+                        placeholder={t('commentPlaceholder')}
                         className="w-full min-w-[160px] rounded-md border border-border bg-input px-2.5 py-1.5 text-xs text-foreground outline-none placeholder:text-border focus:border-primary"
                       />
                     </td>
@@ -475,29 +479,30 @@ export default function GradeEntryPage() {
           <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Users size={13} />
-              Notés :{' '}
+              {t('notedStat')}{' '}
               <strong className="text-foreground">
                 {stats.noted} / {stats.total}
               </strong>
             </span>
             <span className="flex items-center gap-1.5">
               <BarChart2 size={13} />
-              Moy. provisoire :{' '}
+              {t('provisionalAvgStat')}{' '}
               <strong className="text-primary">
                 {stats.avg != null ? stats.avg.toFixed(1) : '—'} / {evaluation.maxScore}
               </strong>
             </span>
             <span className="flex items-center gap-1.5">
               <TrendingUp size={13} />
-              Max : <strong className="text-success-foreground">{stats.max ?? '—'}</strong>
+              {t('maxStat')} <strong className="text-success-foreground">{stats.max ?? '—'}</strong>
             </span>
             <span className="flex items-center gap-1.5">
               <TrendingDown size={13} />
-              Min : <strong className="text-destructive-foreground">{stats.min ?? '—'}</strong>
+              {t('minStat')}{' '}
+              <strong className="text-destructive-foreground">{stats.min ?? '—'}</strong>
             </span>
             <span className="flex items-center gap-1.5">
               <UserX size={13} />
-              Absents : <strong className="text-foreground">{stats.absents}</strong>
+              {t('absentsStat')} <strong className="text-foreground">{stats.absents}</strong>
             </span>
           </div>
           {pageCount > 1 && (
@@ -522,17 +527,17 @@ export default function GradeEntryPage() {
           <span className="text-caption text-muted-foreground">
             {hasInvalidScore ? (
               <strong className="text-destructive-foreground">
-                Corrige les notes au-dessus de {evaluation.maxScore} avant d&apos;enregistrer.
+                {t('fixInvalidScores', { n: evaluation.maxScore })}
               </strong>
             ) : stats.pending > 0 ? (
               <>
-                Modifications non enregistrées —{' '}
+                {t('unsavedChanges')}{' '}
                 <strong className="text-foreground">
-                  {stats.pending} notes en attente de saisie
+                  {t('pendingEntry', { count: stats.pending })}
                 </strong>
               </>
             ) : (
-              'Toutes les notes ont une valeur.'
+              t('allGraded')
             )}
           </span>
         </div>
@@ -542,7 +547,7 @@ export default function GradeEntryPage() {
             className="w-fit"
             onClick={() => router.push('/pedagogie/carnet-de-notes')}
           >
-            Annuler
+            {t('cancel')}
           </Button>
           <Button
             variant="outline"
@@ -552,7 +557,7 @@ export default function GradeEntryPage() {
             disabled={hasInvalidScore}
           >
             <Save size={14} />
-            Enregistrer brouillon
+            {t('saveDraft')}
           </Button>
           <Button
             className="w-fit"
@@ -561,7 +566,7 @@ export default function GradeEntryPage() {
             disabled={hasInvalidScore}
           >
             <Check size={14} />
-            Valider les notes
+            {t('validate')}
           </Button>
         </div>
       </Card>

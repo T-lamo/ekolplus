@@ -1,18 +1,28 @@
 // Reminder eligibility + dispatch for the fee-reminders cron. The
 // eligibility logic here is real (correctly finds who should be reminded,
-// per school automation settings, with proper dedup). WhatsApp (via Twilio,
-// see lib/server/whatsapp/twilio.ts) is the only delivery channel by design
-// — see frais-scolarite.md for the decision to drop SMS/email. Falls back
-// to stub behavior automatically when TWILIO_* env vars are absent
-// (sendWhatsAppMessage returns NOT_CONFIGURED), so this is safe to ship
-// before Twilio is set up.
+// per school automation settings, with proper dedup). Email (via the
+// existing EmailQueue/Resend pipeline) is the default channel — free, no
+// per-message fee. WhatsApp (via Twilio, see lib/server/whatsapp/twilio.ts)
+// is opt-in per school (FeeAutomationSettings.whatsappRemindersEnabled):
+// Meta bills per message on top of Twilio's own fee, and it's the platform
+// — not the school — that foots that bill, so it's priced in per school
+// rather than turned on globally. Both channels fall back to stub behavior
+// automatically when unconfigured, so this is safe to ship either way.
 import 'server-only';
 import { prisma } from '@/lib/server/prisma';
 import { createLogger } from '@/lib/server/logger';
 import { getFeeLedgerRows, type FeeLedgerRow } from '@/lib/server/fees/rows';
 import { sendWhatsAppMessage } from '@/lib/server/whatsapp/twilio';
+import { getEmailQueue } from '@/lib/server/queues/email-queue-singleton';
 
 const log = createLogger();
+
+function escapeHtml(s: string): string {
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
+}
 
 const CRITICAL_DAYS = 30;
 const WEEKLY_OVERDUE_MIN_DAYS = 7;
@@ -27,6 +37,7 @@ interface AutomationSettingsLike {
   reminderWeeklyOverdue: boolean;
   reminderCriticalOverdue: boolean;
   currency: string;
+  whatsappRemindersEnabled: boolean;
 }
 
 function daysUntilDue(row: FeeLedgerRow, now: Date): number {
@@ -77,36 +88,70 @@ async function sendFeeReminder(
   rule: FeeReminderRule,
   schoolName: string,
   currency: string,
+  whatsappEnabled: boolean,
 ): Promise<ReminderOutcome> {
+  const message = buildReminderMessage(row, rule, schoolName, currency);
+
+  if (whatsappEnabled) {
+    const guardian = await prisma.guardian.findFirst({
+      where: { studentId: row.studentId, isPrimary: true, phone: { not: null } },
+      select: { phone: true },
+    });
+
+    if (!guardian?.phone) {
+      log.warn('fee reminder skipped — no primary guardian phone on file', {
+        studentId: row.studentId,
+        feeTrancheId: row.trancheId,
+        rule,
+      });
+      return { shouldLog: true, channel: 'skipped_no_contact' };
+    }
+
+    const result = await sendWhatsAppMessage(guardian.phone, message);
+
+    if (result.ok) return { shouldLog: true, channel: 'whatsapp' };
+    if (result.error === 'NOT_CONFIGURED') return { shouldLog: true, channel: 'stub' };
+
+    log.warn('fee reminder WhatsApp send failed — will retry next cron tick', {
+      studentId: row.studentId,
+      feeTrancheId: row.trancheId,
+      rule,
+      error: result.error,
+    });
+    return { shouldLog: false, channel: 'send_failed' };
+  }
+
   const guardian = await prisma.guardian.findFirst({
-    where: { studentId: row.studentId, isPrimary: true, phone: { not: null } },
-    select: { phone: true },
+    where: { studentId: row.studentId, isPrimary: true, email: { not: null } },
+    select: { email: true },
   });
 
-  if (!guardian?.phone) {
-    log.warn('fee reminder skipped — no primary guardian phone on file', {
+  if (!guardian?.email) {
+    log.warn('fee reminder skipped — no primary guardian email on file', {
       studentId: row.studentId,
       feeTrancheId: row.trancheId,
       rule,
     });
-    return { shouldLog: true, channel: 'skipped_no_phone' };
+    return { shouldLog: true, channel: 'skipped_no_contact' };
   }
 
-  const result = await sendWhatsAppMessage(
-    guardian.phone,
-    buildReminderMessage(row, rule, schoolName, currency),
-  );
+  const queue = getEmailQueue();
+  if (!queue) {
+    log.warn('fee reminder: email queue not configured — message not sent', {
+      studentId: row.studentId,
+      feeTrancheId: row.trancheId,
+      rule,
+    });
+    return { shouldLog: true, channel: 'stub' };
+  }
 
-  if (result.ok) return { shouldLog: true, channel: 'whatsapp' };
-  if (result.error === 'NOT_CONFIGURED') return { shouldLog: true, channel: 'stub' };
-
-  log.warn('fee reminder WhatsApp send failed — will retry next cron tick', {
-    studentId: row.studentId,
-    feeTrancheId: row.trancheId,
-    rule,
-    error: result.error,
+  await queue.enqueue({
+    to: guardian.email,
+    subject: `Rappel de paiement — ${schoolName}`,
+    html: `<p>${escapeHtml(message)}</p>`,
+    text: message,
   });
-  return { shouldLog: false, channel: 'send_failed' };
+  return { shouldLog: true, channel: 'email' };
 }
 
 export async function runFeeReminderCron(): Promise<{
@@ -123,6 +168,7 @@ export async function runFeeReminderCron(): Promise<{
       reminderCriticalOverdue: true,
       autoRemindersEnabled: true,
       currency: true,
+      whatsappRemindersEnabled: true,
     },
   });
 
@@ -198,7 +244,13 @@ async function processSchool(
         now.getTime() - lastSent.getTime() >= WEEKLY_REPEAT_DAYS * 24 * 60 * 60 * 1000;
       if (lastSent != null && !dueForRepeat) continue; // already sent, one-shot rule (or not yet due to repeat)
 
-      const outcome = await sendFeeReminder(row, rule, schoolName, settings.currency);
+      const outcome = await sendFeeReminder(
+        row,
+        rule,
+        schoolName,
+        settings.currency,
+        settings.whatsappRemindersEnabled,
+      );
       if (!outcome.shouldLog) continue;
 
       await prisma.feeReminderLog.create({

@@ -48,6 +48,7 @@ const Body = z
     reminderWeeklyOverdue: z.boolean(),
     reminderCriticalOverdue: z.boolean(),
     currency: z.string().trim().min(1).max(10),
+    whatsappRemindersEnabled: z.boolean(),
   })
   .partial();
 
@@ -105,6 +106,9 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
           reminderCriticalOverdue: data.reminderCriticalOverdue,
         }),
         ...(data.currency !== undefined && { currency: data.currency }),
+        ...(data.whatsappRemindersEnabled !== undefined && {
+          whatsappRemindersEnabled: data.whatsappRemindersEnabled,
+        }),
       },
     });
 

@@ -80,6 +80,7 @@ interface AutomationSettings {
   reminderWeeklyOverdue: boolean;
   reminderCriticalOverdue: boolean;
   currency: string;
+  whatsappRemindersEnabled: boolean;
 }
 
 const t = FEES.overdue;
@@ -505,6 +506,14 @@ export default function OverdueFeesPage() {
                       checked={automation.reminderCriticalOverdue}
                       onChange={(v) => patchAutomation({ reminderCriticalOverdue: v })}
                     />
+                    <div className="border-t border-border pt-3">
+                      <ToggleRow
+                        label={t.reminderChannelWhatsapp}
+                        desc={t.reminderChannelWhatsappDesc}
+                        checked={automation.whatsappRemindersEnabled}
+                        onChange={(v) => patchAutomation({ whatsappRemindersEnabled: v })}
+                      />
+                    </div>
                   </div>
                 )}
               </Card>

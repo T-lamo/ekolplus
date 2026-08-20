@@ -250,6 +250,8 @@ export const FEES = {
     reminderWeeklyDesc: 'Pour les impayés > 7 jours',
     reminderCritical: 'Alerte critique',
     reminderCriticalDesc: 'Retard > 30 jours',
+    reminderChannelWhatsapp: 'Rappels via WhatsApp',
+    reminderChannelWhatsappDesc: 'Payant (frais Meta) — sinon envoyés par email, gratuit',
     byClassTitle: 'Retards par classe',
     quickActionsTitle: 'Actions rapides',
     exportExcel: 'Exporter Excel',

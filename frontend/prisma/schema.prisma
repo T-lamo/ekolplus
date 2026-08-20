@@ -860,6 +860,12 @@ model FeeAutomationSettings {
   reminderWeeklyOverdue   Boolean @default(false)
   reminderCriticalOverdue Boolean @default(true)
   currency                String  @default("HTG")
+  // Email is the default/free channel (Resend, already wired for the rest of
+  // the app). WhatsApp costs a per-message Meta fee on top of Twilio's own
+  // fee — schools opt in per school, not a global switch, since the platform
+  // (not the school) foots the Twilio bill and needs to price it into the
+  // subscription.
+  whatsappRemindersEnabled Boolean @default(false)
 }
 
 enum FeeReminderRule {
@@ -869,12 +875,11 @@ enum FeeReminderRule {
   CRITICAL_OVERDUE
 }
 
-// Cron dedup + source of the "Dernier rappel" column. `channel` is always
-// "stub" for now — no SMS/WhatsApp/email provider is wired for this feature
-// yet, so nothing is actually delivered; this only records that the system
-// *would* have reminded this student, for real dedup and a real column
-// value instead of an empty one. Kept as a real column so wiring an actual
-// provider later is additive, not a schema change.
+// Cron dedup + source of the "Dernier rappel" column. `channel` is one of
+// "email" | "whatsapp" (real sends), "stub" (provider not configured —
+// nothing delivered, but the rule is still marked handled so it doesn't
+// retry forever), or "skipped_no_contact" (no guardian contact info for the
+// chosen channel) — see lib/server/fees/reminders.ts.
 model FeeReminderLog {
   id           String          @id @default(cuid())
   studentId    String

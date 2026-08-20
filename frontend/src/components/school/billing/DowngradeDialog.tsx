@@ -8,9 +8,12 @@
 // until the date. Confirmation = destructive-outline button; the primary
 // action of the dialog is to KEEP Pro.
 import { CalendarClock, Database, RotateCcw, Users, Wallet } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { PLAN_LABELS, PLAN_STUDENT_HARD_LIMIT, type BillingSummary } from '@/lib/billing-plans';
+import { PLAN_STUDENT_HARD_LIMIT, type BillingSummary } from '@/lib/billing-plans';
+import { planLabel } from '@/lib/billing-plan-i18n';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { fmtDateLong } from './billing-format';
 
 export function DowngradeDialog({
@@ -24,50 +27,52 @@ export function DowngradeDialog({
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations('Abonnement.downgradeDialog');
+  const tPlan = useTranslations('BillingPlans.label');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const cap = PLAN_STUDENT_HARD_LIMIT.STARTER ?? 50;
   const n = billing.studentCount;
   const over = n > cap;
-  const date = fmtDateLong(billing.renewsAt);
+  const date = fmtDateLong(billing.renewsAt, bcp47);
   const trial = billing.status === 'TRIAL';
+  const proLabel = planLabel('PRO', tPlan);
+  const starterLabel = planLabel('STARTER', tPlan);
 
   const rows: { icon: React.ReactNode; title: string; body: string }[] = [
     {
       icon: <CalendarClock size={15} />,
-      title: `Prend effet le ${date}`,
-      body: trial
-        ? 'À la fin de votre période d’essai — aucune facture ne sera émise.'
-        : 'À la fin de la période déjà payée. Aucun remboursement, plus aucune facture ensuite.',
+      title: t('effectiveDateTitle', { date }),
+      body: trial ? t('effectiveBodyTrial') : t('effectiveBodyPaid'),
     },
     {
       icon: <Users size={15} />,
-      title: over
-        ? `Vos ${n} élèves restent, mais plus d’inscriptions au-delà de ${cap}`
-        : `Le plafond de ${cap} élèves s’appliquera de nouveau`,
+      title: over ? t('capTitleOver', { count: n, cap }) : t('capTitleUnder', { cap }),
       body: over
-        ? `Starter est limité à ${cap} élèves : les ${n} fiches existantes restent accessibles et modifiables, mais aucune nouvelle inscription tant que vous dépassez ${cap}.`
-        : `Vous en avez ${n} aujourd’hui — vous pourrez encore en inscrire ${Math.max(cap - n, 0)}.`,
+        ? t('capBodyOver', { cap, count: n })
+        : t('capBodyUnder', { count: n, remaining: Math.max(cap - n, 0) }),
     },
     {
       icon: <Database size={15} />,
-      title: 'Données et modules conservés',
-      body: 'Élèves, notes, bulletins, présences, frais, emploi du temps : rien n’est verrouillé ni supprimé.',
+      title: t('dataKeptTitle'),
+      body: t('dataKeptBody'),
     },
     {
       icon: <Wallet size={15} />,
-      title: 'Factures et reçus toujours disponibles',
-      body: 'L’historique reste consultable ici et dans l’espace Stripe.',
+      title: t('invoicesTitle'),
+      body: t('invoicesBody'),
     },
     {
       icon: <RotateCcw size={15} />,
-      title: `Reprise possible jusqu’au ${date}`,
-      body: `Changez d’avis d’ici là : un clic sur « Reprendre ${PLAN_LABELS.PRO} » annule la rétrogradation sans nouvelle facture.`,
+      title: t('resumeTitle', { date }),
+      body: t('resumeBody', { plan: proLabel }),
     },
   ];
 
   return (
     <Modal
-      title={`Rétrograder vers ${PLAN_LABELS.STARTER}`}
-      subtitle={`Votre plan ${PLAN_LABELS.PRO} reste actif jusqu’au ${date}`}
+      title={t('title', { plan: starterLabel })}
+      subtitle={t('subtitle', { plan: proLabel, date })}
       onClose={onClose}
       medium
       footer={
@@ -81,7 +86,7 @@ export function DowngradeDialog({
             loading={busy}
             data-testid="downgrade-confirm"
           >
-            Rétrograder à la fin de la période
+            {t('confirm')}
           </Button>
           <Button
             type="button"
@@ -91,14 +96,12 @@ export function DowngradeDialog({
             onClick={onClose}
             disabled={busy}
           >
-            Garder {PLAN_LABELS.PRO}
+            {t('keep', { plan: proLabel })}
           </Button>
         </div>
       }
     >
-      <p className="text-caption text-foreground">
-        Voici exactement ce qui se passera si vous confirmez :
-      </p>
+      <p className="text-caption text-foreground">{t('intro')}</p>
       <ul className="mt-3 flex flex-col gap-3">
         {rows.map((r) => (
           <li key={r.title} className="flex items-start gap-3">

@@ -211,10 +211,7 @@
       "one": "{count} élève",
       "other": "{count} élèves"
     },
-    "pluralSeat": {
-      "one": "{count} siège",
-      "other": "{count} sièges"
-    },
+    "salesDefaultSchool": "notre établissement",
     "salesEnterpriseSubject": "Demande de devis Enterprise — {school}",
     "salesSupportSubject": "Abonnement {plan} — {school}",
     "salesGreeting": "Bonjour,",
@@ -273,7 +270,9 @@
     "back": "Retour",
     "toastDowngradeCanceled": "Rétrogradation annulée — {plan} continue sans interruption.",
     "toastDowngradeScheduled": "Rétrogradation programmée — {plan} reste actif jusqu’au {date}.",
-    "toastIntervalUpdated": "Cycle de facturation mis à jour."
+    "toastIntervalUpdated": "Cycle de facturation mis à jour.",
+    "loadErrorNoSchool": "Aucun établissement rattaché à ce compte.",
+    "loadErrorRestricted": "La facturation est réservée aux administrateurs de l’établissement."
   },
   "errors": {
     "stripeNotConfigured": "La facturation en ligne n’est pas encore activée sur cette plateforme.",

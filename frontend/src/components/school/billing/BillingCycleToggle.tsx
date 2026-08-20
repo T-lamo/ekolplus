@@ -3,6 +3,7 @@
 // Banani `.billing-toggle` : muted pill, two 12px/600 options, the active
 // one on a white chip with a soft shadow, plus the green « Économisez 10 % »
 // badge. Reused by the plan cards header and the checkout récap.
+import { useTranslations } from 'next-intl';
 import { ANNUAL_DISCOUNT, type BillingIntervalKey } from '@/lib/billing-plans';
 import { cn } from '@/lib/utils';
 
@@ -19,11 +20,12 @@ export function BillingCycleToggle({
   showSaving?: boolean;
   className?: string;
 }) {
+  const t = useTranslations('Abonnement.billingCycleToggle');
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div
         role="radiogroup"
-        aria-label="Cycle de facturation"
+        aria-label={t('ariaLabel')}
         className="flex items-center gap-0.5 rounded-full bg-muted p-[3px]"
       >
         {(['MONTH', 'YEAR'] as const).map((opt) => {
@@ -43,14 +45,14 @@ export function BillingCycleToggle({
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              {opt === 'MONTH' ? 'Mensuel' : 'Annuel'}
+              {opt === 'MONTH' ? t('monthly') : t('annual')}
             </button>
           );
         })}
       </div>
       {showSaving && (
         <span className="rounded-full bg-success px-[9px] py-[3px] text-[10px] font-bold whitespace-nowrap text-success-foreground">
-          Économisez {Math.round(ANNUAL_DISCOUNT * 100)} %
+          {t('save', { pct: Math.round(ANNUAL_DISCOUNT * 100) })}
         </span>
       )}
     </div>

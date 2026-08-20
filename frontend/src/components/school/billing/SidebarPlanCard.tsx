@@ -13,9 +13,10 @@
 // for Starter on a deployment without Stripe.
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { AlertTriangle, ArrowRight, ChevronRight, Crown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 import { planPresentation } from './plan-presentation';
 
@@ -30,7 +31,9 @@ export function SidebarPlanCard({
 }) {
   const { snapshot } = useSchoolPlan();
   const t = useTranslations('SchoolPlanCard');
-  const p = planPresentation(snapshot, t);
+  const tPlan = useTranslations('BillingPlans.label');
+  const locale = useLocale();
+  const p = planPresentation(snapshot, t, tPlan, LOCALE_BCP47[locale]);
   if (!p) return null;
   const upsell = p.kind === 'upsell';
   const alert = p.tone === 'alert';

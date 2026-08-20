@@ -10,14 +10,73 @@
 // quote…). No module locking (user decision 2026-08-18): a downgrade only
 // re-applies the 50-student cap — data and modules stay reachable.
 import {
-  PLAN_LABELS,
   PLAN_STUDENT_HARD_LIMIT,
   formatUsd,
   type BillingIntervalKey,
   type BillingSummary,
   type PlanKey,
 } from '@/lib/billing-plans';
+import { planLabel, type PlanLabelT } from '@/lib/billing-plan-i18n';
 import { fmtDateLong } from './billing-format';
+
+export type PlanTransitionT = {
+  t(
+    key:
+      | 'ownerOnly'
+      | 'resumeLabel'
+      | 'resumeHint'
+      | 'currentStarterSuspended'
+      | 'currentStarter'
+      | 'currentProTrial'
+      | 'currentProActive.one'
+      | 'currentProActive.other'
+      | 'currentProActiveRenewalDate'
+      | 'currentProActiveRenewalNone'
+      | 'currentEnterprise'
+      | 'requestQuoteLabel'
+      | 'requestQuoteHint'
+      | 'managedByContractLabel'
+      | 'managedByContractHint'
+      | 'managedByContractDisabled'
+      | 'regularizeLabel'
+      | 'regularizeHint'
+      | 'contactSuspendedLabel'
+      | 'contactSuspendedHint'
+      | 'unavailableLabel'
+      | 'unavailableHint'
+      | 'unavailableDisabled'
+      | 'reactivateLabel'
+      | 'reactivateHint'
+      | 'upgradeLabel'
+      | 'upgradeHint'
+      | 'managedManuallyLabel'
+      | 'managedManuallyHint'
+      | 'managedManuallyDisabled'
+      | 'downgradeScheduledLabel'
+      | 'downgradeScheduledHint'
+      | 'downgradeLabel'
+      | 'downgradeEffective'
+      | 'downgradeOver'
+      | 'downgradeUnder'
+      | 'downgradeSuffix'
+      | 'estimatePerMonth'
+      | 'estimatePerYear'
+      | 'pluralStudent.one'
+      | 'pluralStudent.other'
+      | 'salesDefaultSchool'
+      | 'salesEnterpriseSubject'
+      | 'salesSupportSubject'
+      | 'salesGreeting'
+      | 'salesEnterpriseBody'
+      | 'salesSupportBody'
+      | 'salesSchool'
+      | 'salesCurrentPlan'
+      | 'salesCurrentPlanWithSub'
+      | 'salesHeadcount'
+      | 'salesThanks',
+    values?: Record<string, string | number>,
+  ): string;
+}['t'];
 
 export type PlanTransitionKind =
   /** Selected = current plan, nothing to do (badge « Plan actif »). */
@@ -63,35 +122,48 @@ export interface PlanTransitionInput {
   interval: BillingIntervalKey;
 }
 
-const OWNER_ONLY = 'Réservé au propriétaire de l’établissement';
 const STARTER_CAP = PLAN_STUDENT_HARD_LIMIT.STARTER ?? 50;
 
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n > 1 ? 's' : ''}`;
+function pluralStudents(n: number, t: PlanTransitionT): string {
+  return t(n > 1 ? 'pluralStudent.other' : 'pluralStudent.one', { count: n });
 }
 
 /** « ≈ 25 $ / mois » or « ≈ 270 $ / an » for the school's headcount on the chosen cycle. */
-function estimateSentence(b: BillingSummary, interval: BillingIntervalKey): string {
+function estimateSentence(
+  b: BillingSummary,
+  interval: BillingIntervalKey,
+  t: PlanTransitionT,
+  bcp47: string,
+): string {
   const annual = interval === 'YEAR' && b.rates.annualAvailable;
   const n = Math.max(b.studentCount, 1);
   const amount = annual ? b.rates.annualCents * n : b.rates.monthlyCents * n;
-  return `≈ ${formatUsd(amount, { decimals: amount % 100 === 0 ? 0 : 2 })} / ${annual ? 'an' : 'mois'} pour ${plural(n, 'élève')}`;
+  const formatted = formatUsd(amount, bcp47, { decimals: amount % 100 === 0 ? 0 : 2 });
+  return t(annual ? 'estimatePerYear' : 'estimatePerMonth', {
+    amount: formatted,
+    students: pluralStudents(n, t),
+  });
 }
 
 /** Applies the OWNER-only rule to a transition that would mutate the subscription. */
-function ownerGated(t: PlanTransition, canManage: boolean): PlanTransition {
-  if (canManage) return t;
-  return { ...t, disabledReason: OWNER_ONLY };
+function ownerGated(
+  transition: PlanTransition,
+  canManage: boolean,
+  t: PlanTransitionT,
+): PlanTransition {
+  if (canManage) return transition;
+  return { ...transition, disabledReason: t('ownerOnly') };
 }
 
-export function planTransition({
-  selected,
-  billing: b,
-  canManage,
-  interval,
-}: PlanTransitionInput): PlanTransition {
+export function planTransition(
+  { selected, billing: b, canManage, interval }: PlanTransitionInput,
+  t: PlanTransitionT,
+  tPlan: PlanLabelT,
+  bcp47: string,
+): PlanTransition {
   const current = b.plan;
   const proSuspended = b.subscribedPlan === 'PRO' && b.status === 'SUSPENDED';
+  const proName = planLabel('PRO', tPlan);
 
   // ── Same plan ─────────────────────────────────────────────────────────
   if (selected === current) {
@@ -99,26 +171,38 @@ export function planTransition({
       return ownerGated(
         {
           kind: 'resume',
-          label: `Reprendre ${PLAN_LABELS.PRO}`,
-          hint: `Rétrogradation vers Starter programmée le ${fmtDateLong(b.renewsAt)} — reprenez avant cette date pour conserver ${PLAN_LABELS.PRO} sans interruption ni nouvelle facture.`,
+          label: t('resumeLabel', { plan: proName }),
+          hint: t('resumeHint', { date: fmtDateLong(b.renewsAt, bcp47), plan: proName }),
           disabledReason: null,
           tone: 'gold',
         },
         canManage,
+        t,
       );
     }
     let hint: string;
     if (current === 'STARTER') {
       hint = proSuspended
-        ? `Votre école est repassée sur Starter : l’abonnement ${PLAN_LABELS.PRO} est suspendu pour impayé. Sélectionnez ${PLAN_LABELS.PRO} pour régulariser.`
-        : `Vous êtes sur le plan gratuit Starter — jusqu’à ${STARTER_CAP} élèves, sans carte bancaire. Sélectionnez un autre plan pour voir ce qui changerait.`;
+        ? t('currentStarterSuspended', { plan: proName })
+        : t('currentStarter', { cap: STARTER_CAP });
     } else if (current === 'PRO') {
+      const seats = b.billedSeats ?? b.studentCount;
       hint =
         b.status === 'TRIAL'
-          ? `${PLAN_LABELS.PRO} en période d’essai jusqu’au ${fmtDateLong(b.trialEndsAt ?? b.renewsAt)} — première facture à cette date (${estimateSentence(b, b.billingInterval ?? interval)}).`
-          : `${PLAN_LABELS.PRO} actif — ${plural(b.billedSeats ?? b.studentCount, 'siège')} facturé${(b.billedSeats ?? b.studentCount) > 1 ? 's' : ''}, ${b.renewsAt ? `renouvellement le ${fmtDateLong(b.renewsAt)}` : 'sans date de renouvellement'}.`;
+          ? t('currentProTrial', {
+              plan: proName,
+              date: fmtDateLong(b.trialEndsAt ?? b.renewsAt, bcp47),
+              estimate: estimateSentence(b, b.billingInterval ?? interval, t, bcp47),
+            })
+          : t(seats > 1 ? 'currentProActive.other' : 'currentProActive.one', {
+              plan: proName,
+              count: seats,
+              renewal: b.renewsAt
+                ? t('currentProActiveRenewalDate', { date: fmtDateLong(b.renewsAt, bcp47) })
+                : t('currentProActiveRenewalNone'),
+            });
     } else {
-      hint = 'Contrat Enterprise en cours — votre chargé de compte gère les évolutions du plan.';
+      hint = t('currentEnterprise');
     }
     return { kind: 'current', label: null, hint, disabledReason: null, tone: 'outline' };
   }
@@ -127,8 +211,8 @@ export function planTransition({
   if (selected === 'ENTERPRISE') {
     return {
       kind: 'contact',
-      label: 'Demander un devis',
-      hint: `Sur devis — tarif dégressif au-delà de 1000 élèves, multi-établissements, onboarding et support dédiés. Décrivez-nous votre réseau (${plural(b.studentCount, 'élève')} aujourd’hui) et nous revenons vers vous sous 48 h.`,
+      label: t('requestQuoteLabel'),
+      hint: t('requestQuoteHint', { students: pluralStudents(b.studentCount, t) }),
       disabledReason: null,
       tone: 'outline',
     };
@@ -138,9 +222,9 @@ export function planTransition({
   if (current === 'ENTERPRISE') {
     return {
       kind: 'managed',
-      label: 'Géré par votre contrat',
-      hint: `Votre école est sous contrat Enterprise : les changements de plan se font avec votre chargé de compte, pas en libre-service.`,
-      disabledReason: 'Plan géré par votre contrat Enterprise',
+      label: t('managedByContractLabel'),
+      hint: t('managedByContractHint'),
+      disabledReason: t('managedByContractDisabled'),
       tone: 'outline',
     };
   }
@@ -152,18 +236,22 @@ export function planTransition({
         return ownerGated(
           {
             kind: 'regularize',
-            label: 'Régulariser le paiement',
-            hint: `Abonnement ${PLAN_LABELS.PRO} suspendu pour impayé — mettez votre carte à jour dans l’espace Stripe : le plan est rétabli dès le paiement (vos ${plural(b.studentCount, 'élève')} sont conservés).`,
+            label: t('regularizeLabel'),
+            hint: t('regularizeHint', {
+              plan: proName,
+              students: pluralStudents(b.studentCount, t),
+            }),
             disabledReason: null,
             tone: 'gold',
           },
           canManage,
+          t,
         );
       }
       return {
         kind: 'contact',
-        label: 'Nous contacter',
-        hint: `Abonnement ${PLAN_LABELS.PRO} suspendu par l’équipe Schoolgesti — écrivez-nous pour le rétablir.`,
+        label: t('contactSuspendedLabel'),
+        hint: t('contactSuspendedHint', { plan: proName }),
         disabledReason: null,
         tone: 'outline',
       };
@@ -171,9 +259,9 @@ export function planTransition({
     if (!b.stripeConfigured) {
       return {
         kind: 'unavailable',
-        label: `Passer à ${PLAN_LABELS.PRO}`,
-        hint: 'La facturation en ligne n’est pas encore activée sur cette plateforme — contactez-nous pour passer à Établissement Pro.',
-        disabledReason: 'Facturation en ligne non activée',
+        label: t('unavailableLabel', { plan: proName }),
+        hint: t('unavailableHint', { plan: proName }),
+        disabledReason: t('unavailableDisabled'),
         tone: 'gold',
       };
     }
@@ -182,23 +270,28 @@ export function planTransition({
       return ownerGated(
         {
           kind: 'reactivate',
-          label: `Réactiver ${PLAN_LABELS.PRO}`,
-          hint: `Réactivation immédiate, sans nouvel essai — ${estimateSentence(b, interval)}, facturé dès la validation. Vos données n’ont pas bougé.`,
+          label: t('reactivateLabel', { plan: proName }),
+          hint: t('reactivateHint', { estimate: estimateSentence(b, interval, t, bcp47) }),
           disabledReason: null,
           tone: 'gold',
         },
         canManage,
+        t,
       );
     }
     return ownerGated(
       {
         kind: 'upgrade',
-        label: `Passer à Pro — essai ${b.rates.trialDays} j`,
-        hint: `Essai gratuit ${b.rates.trialDays} jours, aucune carte débitée avant la fin. Ensuite ${estimateSentence(b, interval)} — sièges = effectifs réels, sans engagement, résiliable à tout moment.`,
+        label: t('upgradeLabel', { days: b.rates.trialDays }),
+        hint: t('upgradeHint', {
+          days: b.rates.trialDays,
+          estimate: estimateSentence(b, interval, t, bcp47),
+        }),
         disabledReason: null,
         tone: 'gold',
       },
       canManage,
+      t,
     );
   }
 
@@ -206,9 +299,9 @@ export function planTransition({
   if (!b.managedByStripe) {
     return {
       kind: 'managed',
-      label: 'Géré par Schoolgesti',
-      hint: `Votre plan ${PLAN_LABELS.PRO} a été activé manuellement par l’équipe Schoolgesti — contactez-nous pour le modifier.`,
-      disabledReason: 'Plan géré manuellement — contactez-nous',
+      label: t('managedManuallyLabel'),
+      hint: t('managedManuallyHint', { plan: proName }),
+      disabledReason: t('managedManuallyDisabled'),
       tone: 'outline',
     };
   }
@@ -216,28 +309,29 @@ export function planTransition({
     return ownerGated(
       {
         kind: 'downgrade-scheduled',
-        label: 'Annuler la rétrogradation',
-        hint: `Rétrogradation vers Starter programmée le ${fmtDateLong(b.renewsAt)} — ${PLAN_LABELS.PRO} reste actif jusque-là. Annulez-la pour continuer sans interruption.`,
+        label: t('downgradeScheduledLabel'),
+        hint: t('downgradeScheduledHint', { date: fmtDateLong(b.renewsAt, bcp47), plan: proName }),
         disabledReason: null,
         tone: 'primary',
       },
       canManage,
+      t,
     );
   }
   const over = b.studentCount > STARTER_CAP;
+  const capSentence = over
+    ? t('downgradeOver', { students: pluralStudents(b.studentCount, t), cap: STARTER_CAP })
+    : t('downgradeUnder', { cap: STARTER_CAP, count: b.studentCount });
   return ownerGated(
     {
       kind: 'downgrade',
-      label: 'Rétrograder vers Starter',
-      hint: `Prend effet le ${fmtDateLong(b.renewsAt)}, à la fin de la période déjà payée (aucun remboursement, plus aucune facture ensuite). ${
-        over
-          ? `Vous avez ${plural(b.studentCount, 'élève')} : ils restent tous accessibles, mais aucune nouvelle inscription tant que vous dépassez ${STARTER_CAP}.`
-          : `Le plafond de ${STARTER_CAP} élèves s’appliquera de nouveau (vous en avez ${b.studentCount}).`
-      } Données et modules restent accessibles ; reprise possible jusqu’à cette date.`,
+      label: t('downgradeLabel'),
+      hint: `${t('downgradeEffective', { date: fmtDateLong(b.renewsAt, bcp47) })} ${capSentence} ${t('downgradeSuffix')}`,
       disabledReason: null,
       tone: 'destructive',
     },
     canManage,
+    t,
   );
 }
 
@@ -248,28 +342,39 @@ export const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL || 'contact@schoo
  * `mailto:` for the Enterprise quote / support contact — subject + body are
  * pre-filled with what the team needs to answer (plan, headcount, school).
  */
-export function salesMailto(input: {
-  billing: BillingSummary;
-  schoolName?: string | null;
-  topic: 'enterprise' | 'support';
-}): string {
+export function salesMailto(
+  input: {
+    billing: BillingSummary;
+    schoolName?: string | null;
+    topic: 'enterprise' | 'support';
+  },
+  t: PlanTransitionT,
+  tPlan: PlanLabelT,
+): string {
   const { billing: b, schoolName, topic } = input;
   const subject =
     topic === 'enterprise'
-      ? `Demande de devis Enterprise — ${schoolName ?? 'notre établissement'}`
-      : `Abonnement ${PLAN_LABELS[b.subscribedPlan ?? b.plan]} — ${schoolName ?? 'notre établissement'}`;
+      ? t('salesEnterpriseSubject', { school: schoolName ?? t('salesDefaultSchool') })
+      : t('salesSupportSubject', {
+          school: schoolName ?? t('salesDefaultSchool'),
+          plan: planLabel(b.subscribedPlan ?? b.plan, tPlan),
+        });
   const lines = [
-    'Bonjour,',
+    t('salesGreeting'),
     '',
-    topic === 'enterprise'
-      ? 'Nous souhaitons un devis pour le plan Enterprise.'
-      : 'Nous avons besoin d’aide concernant notre abonnement.',
+    topic === 'enterprise' ? t('salesEnterpriseBody') : t('salesSupportBody'),
     '',
-    `Établissement : ${schoolName ?? '—'}`,
-    `Plan actuel : ${PLAN_LABELS[b.plan]}${b.subscribedPlan && b.subscribedPlan !== b.plan ? ` (abonnement ${PLAN_LABELS[b.subscribedPlan]} ${b.status?.toLowerCase() ?? ''})` : ''}`,
-    `Effectif : ${plural(b.studentCount, 'élève')}`,
+    t('salesSchool', { school: schoolName ?? '—' }),
+    b.subscribedPlan && b.subscribedPlan !== b.plan
+      ? t('salesCurrentPlanWithSub', {
+          plan: planLabel(b.plan, tPlan),
+          subPlan: planLabel(b.subscribedPlan, tPlan),
+          status: b.status?.toLowerCase() ?? '',
+        })
+      : t('salesCurrentPlan', { plan: planLabel(b.plan, tPlan) }),
+    t('salesHeadcount', { students: pluralStudents(b.studentCount, t) }),
     '',
-    'Merci,',
+    t('salesThanks'),
   ];
   return `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
 }

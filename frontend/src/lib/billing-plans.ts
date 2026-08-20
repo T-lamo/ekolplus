@@ -96,10 +96,10 @@ export function isPlanKey(value: string): value is PlanKey {
   return (PLAN_KEYS as readonly string[]).includes(value);
 }
 
-/** Cents → "1 190,40 $" (fr-FR grouping, 2 decimals, dollar sign after). */
-export function formatUsd(cents: number, opts: { decimals?: number } = {}): string {
+/** Cents → "1 190,40 $" (locale-aware grouping, 2 decimals, dollar sign after). */
+export function formatUsd(cents: number, bcp47: string, opts: { decimals?: number } = {}): string {
   const decimals = opts.decimals ?? 2;
-  const value = (cents / 100).toLocaleString('fr-FR', {
+  const value = (cents / 100).toLocaleString(bcp47, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });

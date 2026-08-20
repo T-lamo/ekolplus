@@ -15,21 +15,27 @@
 // carte » rule): Pro is the ONE gold card — gold identity always, gold ring
 // + halo when selected; Starter / Enterprise select with the primary ring.
 import { Building2, Check, CheckCircle2, CreditCard, Crown, Send, Sprout, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useId, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import {
   ANNUAL_DISCOUNT,
-  PLAN_FEATURES,
   PLAN_KEYS,
-  PLAN_LABELS,
   formatUsd,
   type BillingIntervalKey,
   type BillingSummary,
   type PlanKey,
 } from '@/lib/billing-plans';
+import { planFeatures, planLabel, type PlanFeatureT } from '@/lib/billing-plan-i18n';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 import { BillingCycleToggle } from './BillingCycleToggle';
-import { planTransition, salesMailto, type PlanTransition } from './plan-transition';
+import {
+  planTransition,
+  salesMailto,
+  type PlanTransition,
+  type PlanTransitionT,
+} from './plan-transition';
 import { PlanTransitionHint } from './PlanTransitionHint';
 
 export type PlanBusy = null | 'checkout' | 'portal' | 'patch';
@@ -68,13 +74,19 @@ export function PlanCards({
   schoolName?: string | null | undefined;
   busy: PlanBusy;
 }) {
+  const t = useTranslations('Abonnement.planCards');
+  const tTransition = useTranslations('Abonnement.planTransition') as unknown as PlanTransitionT;
+  const tPlan = useTranslations('BillingPlans.label');
+  const tFeatures = useTranslations('BillingPlans.features') as unknown as PlanFeatureT;
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const groupId = useId();
   const annualAvailable = billing.rates.annualAvailable;
   const current = billing.plan;
   const perStudent =
     interval === 'YEAR' && annualAvailable
-      ? `${formatUsd(Math.round(billing.rates.annualCents / 12))}`
-      : formatUsd(billing.rates.monthlyCents);
+      ? `${formatUsd(Math.round(billing.rates.annualCents / 12), bcp47)}`
+      : formatUsd(billing.rates.monthlyCents, bcp47);
   const monthlyEstimate =
     interval === 'YEAR' && annualAvailable
       ? Math.round(billing.estimate.annualCents / 12)
@@ -85,7 +97,10 @@ export function PlanCards({
       : billing.estimate.monthlyCents * 12;
 
   const transitions = Object.fromEntries(
-    PLAN_KEYS.map((k) => [k, planTransition({ selected: k, billing, canManage, interval })]),
+    PLAN_KEYS.map((k) => [
+      k,
+      planTransition({ selected: k, billing, canManage, interval }, tTransition, tPlan, bcp47),
+    ]),
   ) as Record<PlanKey, PlanTransition>;
 
   // Roving tabindex + arrow keys, as a native radiogroup behaves.
@@ -124,11 +139,8 @@ export function PlanCards({
     <section id="plans" className="flex scroll-mt-4 flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[15px] font-extrabold text-foreground">Choisir un plan</div>
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            Sélectionnez un plan pour voir exactement ce qui changerait — rien n’est modifié sans
-            votre confirmation.
-          </div>
+          <div className="text-[15px] font-extrabold text-foreground">{t('heading')}</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">{t('subheading')}</div>
         </div>
         {annualAvailable && (
           <BillingCycleToggle
@@ -141,47 +153,63 @@ export function PlanCards({
 
       <div
         role="radiogroup"
-        aria-label="Choisir un plan"
+        aria-label={t('ariaLabel')}
         className="grid grid-cols-1 gap-4 pt-3 md:grid-cols-3"
       >
         {/* Starter */}
         <PlanCard
           {...cardProps('STARTER')}
+          planLabel={planLabel('STARTER', tPlan)}
+          features={planFeatures('STARTER', tFeatures)}
+          currentPlanBadge={t('currentPlanBadge')}
           icon={<Sprout size={20} />}
           iconClass="bg-muted text-muted-foreground"
-          tagline="Découverte & petites écoles"
-          price={<PriceRow amount="0" currency="$" period="/ mois" note="Gratuit pour toujours" />}
-          cta={<PlanCta {...ctaProps('STARTER')} />}
+          tagline={t('starterTagline')}
+          price={
+            <PriceRow amount="0" currency="$" period={t('perMonth')} note={t('starterFree')} />
+          }
+          cta={<PlanCta {...ctaProps('STARTER')} activeLabel={t('activePlanBadge')} />}
         />
 
         {/* Pro — popular, the gold card */}
         <PlanCard
           {...cardProps('PRO')}
+          planLabel={planLabel('PRO', tPlan)}
+          features={planFeatures('PRO', tFeatures)}
+          currentPlanBadge={t('currentPlanBadge')}
           popular
-          badge="⭐ Le plus populaire"
+          badge={t('proBadge')}
           icon={<Crown size={20} />}
           iconClass="bg-linear-to-br from-gold-300 to-gold-500 text-gold-900"
           nameClass="text-gold-700"
-          tagline="Établissements jusqu’à 1000 élèves"
+          tagline={t('proTagline')}
           price={
             <PriceRow
               amount={perStudent.replace(/\s\$$/, '')}
               currency="$"
-              period="/ élève / mois"
+              period={t('perStudentMonth')}
               accent
               note={
                 billing.studentCount > 0
-                  ? `≈ ${formatUsd(monthlyEstimate, { decimals: 0 })} / mois pour ${billing.studentCount} élève${billing.studentCount > 1 ? 's' : ''} · ${formatUsd(yearlyEstimate, { decimals: 0 })} / an${interval === 'YEAR' && annualAvailable ? ` (−${Math.round(ANNUAL_DISCOUNT * 100)} %)` : ''}`
-                  : `Essai gratuit ${billing.rates.trialDays} jours, sans engagement`
+                  ? t(billing.studentCount > 1 ? 'proEstimate.other' : 'proEstimate.one', {
+                      monthly: formatUsd(monthlyEstimate, bcp47, { decimals: 0 }),
+                      count: billing.studentCount,
+                      yearly: formatUsd(yearlyEstimate, bcp47, { decimals: 0 }),
+                      discount:
+                        interval === 'YEAR' && annualAvailable
+                          ? t('proEstimateDiscount', { pct: Math.round(ANNUAL_DISCOUNT * 100) })
+                          : '',
+                    })
+                  : t('proTrialNote', { days: billing.rates.trialDays })
               }
             />
           }
-          cta={<PlanCta {...ctaProps('PRO')} gold />}
+          cta={<PlanCta {...ctaProps('PRO')} gold activeLabel={t('activePlanBadge')} />}
           footer={
             <div className="mt-1 flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 rounded bg-[#635bff] px-[7px] py-0.5 text-[10px] font-extrabold tracking-[0.3px] text-white">
                 <CreditCard size={9} />
-                Paiement via Stripe
+                {t('proStripeBadge')}
               </span>
             </div>
           }
@@ -190,26 +218,34 @@ export function PlanCards({
         {/* Enterprise */}
         <PlanCard
           {...cardProps('ENTERPRISE')}
-          badge="🏆 Le plus complet"
+          planLabel={planLabel('ENTERPRISE', tPlan)}
+          features={planFeatures('ENTERPRISE', tFeatures)}
+          currentPlanBadge={t('currentPlanBadge')}
+          badge={t('enterpriseBadge')}
           icon={<Building2 size={20} />}
           iconClass="bg-muted text-muted-foreground"
-          tagline="Réseaux & grands établissements"
+          tagline={t('enterpriseTagline')}
           price={
             <div>
               <div className="text-xl leading-[1.2] font-extrabold text-foreground">
-                Prix sur devis
+                {t('enterpriseCustomPrice')}
               </div>
               <div className="mt-1 text-2xs text-muted-foreground">
-                Sur mesure · tarif dégressif selon le volume
+                {t('enterpriseCustomPriceNote')}
               </div>
             </div>
           }
           cta={
             <PlanCta
               {...ctaProps('ENTERPRISE')}
+              activeLabel={t('activePlanBadge')}
               href={
                 transitions.ENTERPRISE.kind === 'contact'
-                  ? salesMailto({ billing, schoolName: schoolName ?? null, topic: 'enterprise' })
+                  ? salesMailto(
+                      { billing, schoolName: schoolName ?? null, topic: 'enterprise' },
+                      tTransition,
+                      tPlan,
+                    )
                   : undefined
               }
             />
@@ -234,6 +270,7 @@ function PlanCta({
   onAction,
   gold = false,
   href,
+  activeLabel,
 }: {
   transition: PlanTransition;
   busy: boolean;
@@ -241,8 +278,9 @@ function PlanCta({
   onAction: () => void;
   gold?: boolean;
   href?: string | undefined;
+  activeLabel: string;
 }) {
-  if (t.kind === 'current') return <CurrentCta gold={gold} />;
+  if (t.kind === 'current') return <CurrentCta gold={gold} activeLabel={activeLabel} />;
   const stop = { onClick: (e: MouseEvent) => e.stopPropagation() };
 
   if (t.kind === 'contact' && href) {
@@ -292,7 +330,7 @@ function PlanCta({
   );
 }
 
-function CurrentCta({ gold = false }: { gold?: boolean }) {
+function CurrentCta({ gold = false, activeLabel }: { gold?: boolean; activeLabel: string }) {
   return (
     <span
       className={cn(
@@ -303,7 +341,7 @@ function CurrentCta({ gold = false }: { gold?: boolean }) {
       )}
     >
       <CheckCircle2 size={13} />
-      Plan actif
+      {activeLabel}
     </span>
   );
 }
@@ -350,6 +388,9 @@ function PriceRow({
 function PlanCard({
   id,
   plan,
+  planLabel: planName,
+  features,
+  currentPlanBadge,
   selected,
   isCurrent,
   onSelect,
@@ -366,6 +407,9 @@ function PlanCard({
 }: {
   id: string;
   plan: PlanKey;
+  planLabel: string;
+  features: { label: string; included: boolean }[];
+  currentPlanBadge: string;
   selected: boolean;
   isCurrent: boolean;
   onSelect: () => void;
@@ -385,7 +429,7 @@ function PlanCard({
       id={id}
       role="radio"
       aria-checked={selected}
-      aria-label={`${PLAN_LABELS[plan]}${isCurrent ? ' (plan actuel)' : ''}`}
+      aria-label={`${planName}${isCurrent ? ` (${currentPlanBadge})` : ''}`}
       tabIndex={selected ? 0 : -1}
       data-plan={plan}
       data-selected={selected ? 'true' : 'false'}
@@ -441,7 +485,7 @@ function PlanCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
             <span className={cn('text-base font-extrabold text-foreground', nameClass)}>
-              {PLAN_LABELS[plan]}
+              {planName}
             </span>
             {isCurrent && (
               <span
@@ -450,7 +494,7 @@ function PlanCard({
                   popular ? 'bg-gold-100 text-gold-700' : 'bg-secondary text-secondary-foreground',
                 )}
               >
-                Plan actuel
+                {currentPlanBadge}
               </span>
             )}
           </div>
@@ -460,7 +504,7 @@ function PlanCard({
       {price}
       <div className="h-px bg-border" />
       <ul className="flex flex-col gap-2">
-        {PLAN_FEATURES[plan].map((f) => (
+        {features.map((f) => (
           <li
             key={f.label}
             className={cn(

@@ -211,10 +211,7 @@
       "one": "{count} elèv",
       "other": "{count} elèv"
     },
-    "pluralSeat": {
-      "one": "{count} syèj",
-      "other": "{count} syèj"
-    },
+    "salesDefaultSchool": "etablisman nou an",
     "salesEnterpriseSubject": "Demann devi Enterprise — {school}",
     "salesSupportSubject": "Abònman {plan} — {school}",
     "salesGreeting": "Bonjou,",
@@ -273,7 +270,9 @@
     "back": "Retounen",
     "toastDowngradeCanceled": "Desann anile — {plan} kontinye san entèripsyon.",
     "toastDowngradeScheduled": "Desann pwograme — {plan} rete aktif jiska {date}.",
-    "toastIntervalUpdated": "Sik fakti mete ajou."
+    "toastIntervalUpdated": "Sik fakti mete ajou.",
+    "loadErrorNoSchool": "Pa gen okenn etablisman ki lye ak kont sa a.",
+    "loadErrorRestricted": "Fakti a rezève pou administratè etablisman an."
   },
   "errors": {
     "stripeNotConfigured": "Fakti sou entènèt poko aktive sou platfòm sa a.",

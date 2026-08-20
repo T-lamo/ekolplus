@@ -8,11 +8,14 @@
 // border + faint wash, gold gradient icon chip with a crown, gold plan name,
 // « PRO » pill) ; Starter keeps the neutral look.
 import { CheckCircle2, Crown, Sprout } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import { PLAN_LABELS, formatUsd, type BillingSummary } from '@/lib/billing-plans';
+import { formatUsd, type BillingSummary } from '@/lib/billing-plans';
+import { planLabel } from '@/lib/billing-plan-i18n';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import { cn } from '@/lib/utils';
-import { fmtDateLong, subscriptionStatusLabel } from './billing-format';
+import { fmtDateLong, subscriptionStatusLabel, type SubscriptionStatusT } from './billing-format';
 
 export function CurrentPlanBanner({
   billing,
@@ -22,36 +25,42 @@ export function CurrentPlanBanner({
   /** Right-column button (« Gérer le plan » / « Passer à Pro ») — owner-only. */
   action?: ReactNode;
 }) {
-  const status = subscriptionStatusLabel(billing);
+  const t = useTranslations('Abonnement.currentPlanBanner');
+  const tStatus = useTranslations('Abonnement') as unknown as SubscriptionStatusT;
+  const tPlan = useTranslations('BillingPlans.label');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
+  const status = subscriptionStatusLabel(billing, tStatus);
   const isFree = billing.plan === 'STARTER';
   // Unpaid Pro → effective Starter (user decision 2026-08-18): the banner
   // shows the plan the school is actually on and says why.
   const proSuspended = isFree && billing.subscribedPlan === 'PRO' && billing.status === 'SUSPENDED';
   const Icon = isFree ? Sprout : Crown;
+  const proLabel = planLabel('PRO', tPlan);
 
   const sub = proSuspended
-    ? `${PLAN_LABELS.PRO} suspendu · plafond 50 élèves`
+    ? t('subProSuspended', { plan: proLabel })
     : isFree
-      ? 'Gratuit · jusqu’à 50 élèves'
+      ? t('subFree')
       : billing.plan === 'ENTERPRISE'
-        ? 'Contrat Enterprise · devis personnalisé'
+        ? t('subEnterprise')
         : billing.billingInterval === 'YEAR'
-          ? `Facturation annuelle · ${formatUsd(billing.rates.annualCents)} / élève / an`
-          : `Facturation mensuelle · ${formatUsd(billing.rates.monthlyCents)} / élève / mois`;
+          ? t('subAnnual', { amount: formatUsd(billing.rates.annualCents, bcp47) })
+          : t('subMonthly', { amount: formatUsd(billing.rates.monthlyCents, bcp47) });
 
   const dateLine = isFree
     ? null
     : billing.cancelAtPeriodEnd
-      ? `Actif jusqu’au ${fmtDateLong(billing.renewsAt)}`
+      ? t('dateActiveUntil', { date: fmtDateLong(billing.renewsAt, bcp47) })
       : billing.status === 'TRIAL'
-        ? `Fin de l’essai le ${fmtDateLong(billing.trialEndsAt ?? billing.renewsAt)}`
-        : `Renouvellement le ${fmtDateLong(billing.renewsAt)}`;
+        ? t('dateTrialEnds', { date: fmtDateLong(billing.trialEndsAt ?? billing.renewsAt, bcp47) })
+        : t('dateRenewal', { date: fmtDateLong(billing.renewsAt, bcp47) });
 
   const stats: { value: number; label: string }[] = [
-    { value: billing.usage.students, label: 'Élèves actifs' },
-    { value: billing.usage.teachers, label: 'Enseignants' },
-    { value: billing.usage.classes, label: 'Classes' },
-    { value: billing.usage.admins, label: 'Admins' },
+    { value: billing.usage.students, label: t('statStudents') },
+    { value: billing.usage.teachers, label: t('statTeachers') },
+    { value: billing.usage.classes, label: t('statClasses') },
+    { value: billing.usage.admins, label: t('statAdmins') },
   ];
 
   return (
@@ -81,7 +90,7 @@ export function CurrentPlanBanner({
           </span>
           <div className="min-w-0 sm:shrink-0">
             <div className="mb-[3px] text-[10px] font-semibold tracking-[0.8px] text-muted-foreground uppercase">
-              Plan actuel
+              {t('label')}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span
@@ -90,11 +99,11 @@ export function CurrentPlanBanner({
                   isFree ? 'text-primary' : 'text-gold-700',
                 )}
               >
-                {PLAN_LABELS[billing.plan]}
+                {planLabel(billing.plan, tPlan)}
               </span>
               {!isFree && (
                 <Badge tone="gold" className="px-2 py-0.5 text-[10px] tracking-[0.5px] uppercase">
-                  {billing.plan === 'ENTERPRISE' ? 'Enterprise' : 'Pro'}
+                  {billing.plan === 'ENTERPRISE' ? t('badgeEnterprise') : t('badgePro')}
                 </Badge>
               )}
             </div>

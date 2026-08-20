@@ -211,10 +211,7 @@
       "one": "{count} student",
       "other": "{count} students"
     },
-    "pluralSeat": {
-      "one": "{count} seat",
-      "other": "{count} seats"
-    },
+    "salesDefaultSchool": "our school",
     "salesEnterpriseSubject": "Enterprise quote request — {school}",
     "salesSupportSubject": "{plan} subscription — {school}",
     "salesGreeting": "Hello,",
@@ -273,7 +270,9 @@
     "back": "Back",
     "toastDowngradeCanceled": "Downgrade canceled — {plan} continues without interruption.",
     "toastDowngradeScheduled": "Downgrade scheduled — {plan} stays active until {date}.",
-    "toastIntervalUpdated": "Billing cycle updated."
+    "toastIntervalUpdated": "Billing cycle updated.",
+    "loadErrorNoSchool": "No school linked to this account.",
+    "loadErrorRestricted": "Billing is reserved for the school's administrators."
   },
   "errors": {
     "stripeNotConfigured": "Online billing isn’t enabled on this deployment yet.",

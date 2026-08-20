@@ -7,6 +7,7 @@
 // Every successful load/patch is pushed into SchoolPlanContext so the sidebar
 // plan card mirrors the page instantly (no second request).
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
 import { toPlanSnapshot, type BillingIntervalKey, type BillingSummary } from '@/lib/billing-plans';
@@ -16,28 +17,43 @@ export interface BillingResponse {
   role: 'OWNER' | 'ADMIN' | 'MEMBER';
 }
 
-export function billingErrorMessage(err: unknown): string {
+type ErrorsT = (
+  key:
+    | 'stripeNotConfigured'
+    | 'ownerOnly'
+    | 'alreadySubscribed'
+    | 'noStripeSubscription'
+    | 'stripeError'
+    | 'generic'
+    | 'network',
+) => string;
+
+type LoadErrorT = (key: 'loadErrorNoSchool' | 'loadErrorRestricted' | 'loadError') => string;
+
+function billingErrorMessage(err: unknown, t: ErrorsT): string {
   if (err instanceof ApiError) {
     switch (err.code) {
       case 'STRIPE_NOT_CONFIGURED':
-        return 'La facturation en ligne n’est pas encore activée sur cette plateforme.';
+        return t('stripeNotConfigured');
       case 'ORG_ROLE_INSUFFICIENT':
-        return 'Seul le propriétaire de l’établissement peut modifier l’abonnement.';
+        return t('ownerOnly');
       case 'ALREADY_SUBSCRIBED':
-        return 'Cette école a déjà un abonnement actif.';
+        return t('alreadySubscribed');
       case 'NO_STRIPE_CUSTOMER':
       case 'NO_STRIPE_SUBSCRIPTION':
-        return 'Aucun abonnement Stripe à gérer pour cette école.';
+        return t('noStripeSubscription');
       case 'STRIPE_ERROR':
-        return 'Stripe n’a pas pu traiter la demande. Réessaie dans un instant.';
+        return t('stripeError');
       default:
-        return err.message || 'Action impossible pour le moment.';
+        return err.message || t('generic');
     }
   }
-  return 'Erreur réseau. Réessaie.';
+  return t('network');
 }
 
 export function useBilling(enabled = true) {
+  const t = useTranslations('Abonnement.errors') as unknown as ErrorsT;
+  const tScreen = useTranslations('Abonnement.screen') as unknown as LoadErrorT;
   const [data, setData] = useState<BillingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,16 +75,16 @@ export function useBilling(enabled = true) {
       setErrorCode(code ?? null);
       setError(
         code === 'NO_SCHOOL'
-          ? 'Aucun établissement rattaché à ce compte.'
+          ? tScreen('loadErrorNoSchool')
           : code === 'ORG_ROLE_INSUFFICIENT'
-            ? 'La facturation est réservée aux administrateurs de l’établissement.'
-            : 'Impossible de charger l’abonnement.',
+            ? tScreen('loadErrorRestricted')
+            : tScreen('loadError'),
       );
       return null;
     } finally {
       setLoading(false);
     }
-  }, [applyPlan]);
+  }, [applyPlan, tScreen]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -88,10 +104,10 @@ export function useBilling(enabled = true) {
         return null;
       } catch (err) {
         setBusy(null);
-        return billingErrorMessage(err);
+        return billingErrorMessage(err, t);
       }
     },
-    [],
+    [t],
   );
 
   /** PATCH /subscription — cancel/resume or interval switch, then refresh. */
@@ -107,12 +123,12 @@ export function useBilling(enabled = true) {
         applyPlan({ plan: toPlanSnapshot(res.billing), role: res.role });
         return null;
       } catch (err) {
-        return billingErrorMessage(err);
+        return billingErrorMessage(err, t);
       } finally {
         setBusy(null);
       }
     },
-    [applyPlan],
+    [applyPlan, t],
   );
 
   return { data, loading, error, errorCode, busy, reload: load, redirectTo, patchSubscription };

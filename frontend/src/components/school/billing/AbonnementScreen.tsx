@@ -13,12 +13,15 @@
 // is the gold Button variant, the paid state reads gold.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { AlertTriangle, ArrowUpCircle, Settings2, ShieldAlert, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/contexts/ToastContext';
 import { useApi } from '@/lib/useApi';
-import { PLAN_LABELS, isPlanKey, type BillingIntervalKey, type PlanKey } from '@/lib/billing-plans';
+import { isPlanKey, type BillingIntervalKey, type PlanKey } from '@/lib/billing-plans';
+import { planLabel } from '@/lib/billing-plan-i18n';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { SchoolResponse } from '@/app/(school)/settings/types';
 import { useBilling } from '@/components/school/billing/useBilling';
 import { CurrentPlanBanner } from '@/components/school/billing/CurrentPlanBanner';
@@ -28,9 +31,18 @@ import { DowngradeDialog } from '@/components/school/billing/DowngradeDialog';
 import { PaymentMethodCard } from '@/components/school/billing/PaymentMethodCard';
 import { BillingHistoryTable } from '@/components/school/billing/BillingHistoryTable';
 import { daysUntil, fmtDateLong } from '@/components/school/billing/billing-format';
-import { salesMailto, type PlanTransition } from '@/components/school/billing/plan-transition';
+import {
+  salesMailto,
+  type PlanTransition,
+  type PlanTransitionT,
+} from '@/components/school/billing/plan-transition';
 
 export function AbonnementScreen() {
+  const t = useTranslations('Abonnement.screen');
+  const tTransition = useTranslations('Abonnement.planTransition') as unknown as PlanTransitionT;
+  const tPlan = useTranslations('BillingPlans.label');
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const router = useRouter();
   const params = useSearchParams();
   const { toast } = useToast();
@@ -93,20 +105,15 @@ export function AbonnementScreen() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <ShieldAlert size={22} />
         </span>
-        <h1 className="text-base font-extrabold text-foreground">
-          Réservé aux administrateurs de l’établissement
-        </h1>
-        <p className="max-w-md text-caption text-muted-foreground">
-          L’abonnement, les montants facturés et les reçus ne sont visibles que par le propriétaire
-          et les administrateurs de l’école. Adressez-vous à eux pour toute question sur le plan.
-        </p>
+        <h1 className="text-base font-extrabold text-foreground">{t('restrictedTitle')}</h1>
+        <p className="max-w-md text-caption text-muted-foreground">{t('restrictedBody')}</p>
       </section>
     );
   }
   if (error || !data) {
     return (
       <p role="alert" className="text-sm text-destructive-foreground">
-        {error ?? 'Impossible de charger l’abonnement.'}
+        {error ?? t('loadError')}
       </p>
     );
   }
@@ -133,12 +140,12 @@ export function AbonnementScreen() {
   function goCheckout() {
     router.push(`/abonnement/paiement?cycle=${interval}`);
   }
+  const proLabel = planLabel('PRO', tPlan);
   async function resume() {
     const msg = await patchSubscription({ cancelAtPeriodEnd: false });
     setConfirm(null);
     if (msg) toast(msg, 'error');
-    else
-      toast(`Rétrogradation annulée — ${PLAN_LABELS.PRO} continue sans interruption.`, 'success');
+    else toast(t('toastDowngradeCanceled', { plan: proLabel }), 'success');
   }
   async function confirmDowngrade() {
     const msg = await patchSubscription({ cancelAtPeriodEnd: true });
@@ -146,7 +153,10 @@ export function AbonnementScreen() {
     if (msg) toast(msg, 'error');
     else
       toast(
-        `Rétrogradation programmée — ${PLAN_LABELS.PRO} reste actif jusqu’au ${fmtDateLong(billing.renewsAt)}.`,
+        t('toastDowngradeScheduled', {
+          plan: proLabel,
+          date: fmtDateLong(billing.renewsAt, bcp47),
+        }),
         'success',
       );
   }
@@ -156,12 +166,12 @@ export function AbonnementScreen() {
     const msg = await patchSubscription({ interval });
     setConfirm(null);
     if (msg) toast(msg, 'error');
-    else toast('Cycle de facturation mis à jour.', 'success');
+    else toast(t('toastIntervalUpdated'), 'success');
   }
 
   /** A plan card's CTA was pressed — dispatch by transition kind. */
-  function onPlanAction(t: PlanTransition, plan: PlanKey) {
-    switch (t.kind) {
+  function onPlanAction(transition: PlanTransition, plan: PlanKey) {
+    switch (transition.kind) {
       case 'upgrade':
       case 'reactivate':
         goCheckout();
@@ -177,11 +187,15 @@ export function AbonnementScreen() {
         setDowngradeOpen(true);
         return;
       case 'contact':
-        window.location.href = salesMailto({
-          billing,
-          schoolName,
-          topic: plan === 'ENTERPRISE' ? 'enterprise' : 'support',
-        });
+        window.location.href = salesMailto(
+          {
+            billing,
+            schoolName,
+            topic: plan === 'ENTERPRISE' ? 'enterprise' : 'support',
+          },
+          tTransition,
+          tPlan,
+        );
         return;
       default:
         return;
@@ -193,28 +207,24 @@ export function AbonnementScreen() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">
-            Abonnement & Facturation
-          </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Gérez votre plan, suivez votre consommation et consultez vos factures.
-          </p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {live && days !== null && days >= 0 && (
             <span className="inline-flex items-center gap-1.5 rounded-md bg-warning px-3 py-[7px] text-xs font-semibold whitespace-nowrap text-warning-foreground">
               <Zap size={13} />
               {billing.cancelAtPeriodEnd
-                ? `Fin d’accès dans ${days} jour${days > 1 ? 's' : ''}`
+                ? t(days > 1 ? 'daysEndsAccess.other' : 'daysEndsAccess.one', { days })
                 : billing.status === 'TRIAL'
-                  ? `Fin d’essai dans ${days} jour${days > 1 ? 's' : ''}`
-                  : `Renouvellement dans ${days} jour${days > 1 ? 's' : ''}`}
+                  ? t(days > 1 ? 'daysEndsTrial.other' : 'daysEndsTrial.one', { days })
+                  : t(days > 1 ? 'daysRenewsIn.other' : 'daysRenewsIn.one', { days })}
             </span>
           )}
           {canManage && billing.plan === 'STARTER' && billing.stripeConfigured && !proSuspended && (
             <Button type="button" variant="gold" size="sm" className="w-fit" onClick={goCheckout}>
               <ArrowUpCircle size={14} />
-              Mettre à niveau
+              {t('upgradeCta')}
             </Button>
           )}
         </div>
@@ -223,30 +233,26 @@ export function AbonnementScreen() {
       {/* Alerts (informative, never blocking) */}
       {proSuspended && (
         <Alert tone="destructive">
-          {billing.managedByStripe ? (
-            <>
-              Abonnement {PLAN_LABELS.PRO} <strong>suspendu pour impayé</strong> — votre école est
-              repassée aux règles du plan gratuit (50 élèves). Mettez votre carte à jour pour
-              rétablir {PLAN_LABELS.PRO} immédiatement ; vos données n’ont pas bougé.
-            </>
-          ) : (
-            <>
-              Abonnement {PLAN_LABELS.PRO} <strong>suspendu</strong> par l’équipe Schoolgesti —
-              votre école applique les règles du plan gratuit. Contactez-nous pour le rétablir.
-            </>
-          )}
+          {billing.managedByStripe
+            ? t.rich('alertProSuspendedStripe', {
+                plan: proLabel,
+                b: (chunks) => <strong>{chunks}</strong>,
+              })
+            : t.rich('alertProSuspendedManual', {
+                plan: proLabel,
+                b: (chunks) => <strong>{chunks}</strong>,
+              })}
         </Alert>
       )}
       {billing.stripeStatus === 'past_due' && (
-        <Alert tone="warning">
-          Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement pour conserver le
-          plan {PLAN_LABELS[billing.plan]} — l’accès reste ouvert entre-temps.
-        </Alert>
+        <Alert tone="warning">{t('alertPastDue', { plan: planLabel(billing.plan, tPlan) })}</Alert>
       )}
       {billing.status === 'TRIAL' && billing.managedByStripe && !billing.cancelAtPeriodEnd && (
         <Alert tone="gold">
-          Essai gratuit en cours — première facturation le{' '}
-          <strong>{fmtDateLong(billing.trialEndsAt ?? billing.renewsAt)}</strong>.
+          {t.rich('alertTrial', {
+            date: fmtDateLong(billing.trialEndsAt ?? billing.renewsAt, bcp47),
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </Alert>
       )}
       {billing.cancelAtPeriodEnd && (
@@ -263,39 +269,46 @@ export function AbonnementScreen() {
                 loading={busy === 'patch'}
                 data-testid="cancel-downgrade"
               >
-                Annuler la rétrogradation
+                {t('cancelDowngrade')}
               </Button>
             ) : undefined
           }
         >
-          <strong>Rétrogradation vers Starter programmée le {fmtDateLong(billing.renewsAt)}</strong>{' '}
-          — {PLAN_LABELS.PRO} reste actif jusque-là, puis votre école repassera automatiquement au
-          plan gratuit (50 élèves). Aucune nouvelle facture ne sera émise.
+          {t.rich('alertDowngradeScheduled', {
+            date: fmtDateLong(billing.renewsAt, bcp47),
+            plan: proLabel,
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </Alert>
       )}
       {atHardLimit && (
         <Alert tone="destructive">
-          Vous avez atteint la limite de <strong>{billing.studentHardLimit} élèves</strong> du plan
-          gratuit. Passez au plan Établissement Pro pour en ajouter davantage.
+          {t.rich('alertAtHardLimit', {
+            limit: billing.studentHardLimit ?? 0,
+            plan: proLabel,
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </Alert>
       )}
       {nearHardLimit && (
         <Alert tone="warning">
-          {billing.studentCount} / {billing.studentHardLimit} élèves — votre plan gratuit approche
-          de sa limite. Pensez à passer à Établissement Pro pour continuer à inscrire.
+          {t('alertNearHardLimit', {
+            count: billing.studentCount,
+            limit: billing.studentHardLimit ?? 0,
+            plan: proLabel,
+          })}
         </Alert>
       )}
       {overSoftLimit && (
         <Alert tone="primary">
-          Vous gérez plus de <strong>{billing.studentSoftLimit} élèves</strong> — le plan Enterprise
-          (tarif dégressif, accompagnement dédié) est fait pour vous.
+          {t.rich('alertOverSoftLimit', {
+            limit: billing.studentSoftLimit ?? 0,
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </Alert>
       )}
       {!billing.stripeConfigured && billing.plan === 'STARTER' && (
-        <Alert tone="muted">
-          La facturation en ligne n’est pas encore activée sur cette plateforme — pour passer à
-          Établissement Pro, contactez-nous.
-        </Alert>
+        <Alert tone="muted">{t('alertStripeNotConfigured', { plan: proLabel })}</Alert>
       )}
 
       <CurrentPlanBanner
@@ -312,7 +325,7 @@ export function AbonnementScreen() {
               data-testid="banner-regularize"
             >
               <Settings2 size={11} />
-              Mettre à jour la carte
+              {t('bannerUpdateCard')}
             </Button>
           ) : canManage && live ? (
             <button
@@ -322,7 +335,7 @@ export function AbonnementScreen() {
               className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-2xs font-semibold text-primary hover:bg-secondary/80 disabled:opacity-60"
             >
               <Settings2 size={11} />
-              Gérer le plan
+              {t('bannerManagePlan')}
             </button>
           ) : canManage && billing.plan === 'STARTER' && billing.stripeConfigured ? (
             <Button
@@ -333,7 +346,7 @@ export function AbonnementScreen() {
               onClick={goCheckout}
             >
               <Sparkles size={11} />
-              Passer à Pro
+              {t('bannerUpgradeToPro')}
             </Button>
           ) : undefined
         }
@@ -356,11 +369,8 @@ export function AbonnementScreen() {
       {/* In-app subscription management (live Stripe subscription, OWNER) */}
       {canManage && live && (
         <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
-          <div className="text-caption font-bold text-foreground">Gérer votre abonnement</div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Changez de cycle ou rétrogradez directement ici. Le moyen de paiement et les factures se
-            gèrent dans l’espace sécurisé Stripe.
-          </p>
+          <div className="text-caption font-bold text-foreground">{t('manageTitle')}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{t('manageBody')}</p>
           <div className="mt-3.5 flex flex-wrap gap-2">
             <Button
               type="button"
@@ -370,7 +380,7 @@ export function AbonnementScreen() {
               onClick={openPortal}
               disabled={busy !== null}
             >
-              Moyen de paiement & factures
+              {t('managePaymentAndInvoices')}
             </Button>
             {billing.rates.annualAvailable &&
               !billing.cancelAtPeriodEnd &&
@@ -387,8 +397,8 @@ export function AbonnementScreen() {
                   disabled={busy !== null}
                 >
                   {billing.billingInterval === 'YEAR'
-                    ? 'Repasser au mensuel'
-                    : 'Passer à l’annuel (−10 %)'}
+                    ? t('manageSwitchMonthly')
+                    : t('manageSwitchAnnual')}
                 </Button>
               )}
             {billing.cancelAtPeriodEnd ? (
@@ -400,7 +410,7 @@ export function AbonnementScreen() {
                 onClick={() => setConfirm('resume')}
                 disabled={busy !== null}
               >
-                Reprendre {PLAN_LABELS.PRO}
+                {t('manageResume', { plan: proLabel })}
               </Button>
             ) : (
               <Button
@@ -412,24 +422,23 @@ export function AbonnementScreen() {
                 disabled={busy !== null}
                 data-testid="manage-downgrade"
               >
-                Rétrograder vers Starter
+                {t('manageDowngrade')}
               </Button>
             )}
           </div>
 
           {confirm && (
             <div className="mt-3.5 rounded-md border border-primary/20 bg-secondary p-3.5 text-caption text-primary">
-              {confirm === 'resume' && (
-                <p>
-                  Reprendre {PLAN_LABELS.PRO} ? La rétrogradation programmée sera annulée — aucune
-                  nouvelle facture, votre cycle continue normalement.
-                </p>
-              )}
+              {confirm === 'resume' && <p>{t('confirmResume', { plan: proLabel })}</p>}
               {confirm === 'interval' && (
                 <p>
-                  Confirmer le passage à la facturation{' '}
-                  <strong>{interval === 'YEAR' ? 'annuelle (−10 %)' : 'mensuelle'}</strong> ? Le
-                  changement est proratisé immédiatement par Stripe.
+                  {t.rich('confirmInterval', {
+                    cycle:
+                      interval === 'YEAR'
+                        ? t('confirmIntervalAnnual')
+                        : t('confirmIntervalMonthly'),
+                    b: (chunks) => <strong>{chunks}</strong>,
+                  })}
                 </p>
               )}
               <div className="mt-3 flex gap-2">
@@ -440,7 +449,7 @@ export function AbonnementScreen() {
                   onClick={runConfirm}
                   loading={busy === 'patch'}
                 >
-                  Confirmer
+                  {t('confirmBtn')}
                 </Button>
                 <Button
                   type="button"
@@ -450,7 +459,7 @@ export function AbonnementScreen() {
                   onClick={() => setConfirm(null)}
                   disabled={busy !== null}
                 >
-                  Retour
+                  {t('back')}
                 </Button>
               </div>
             </div>

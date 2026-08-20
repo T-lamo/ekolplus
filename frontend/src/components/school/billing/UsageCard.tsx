@@ -4,7 +4,9 @@
 // (label · used/total · 5px bar · hint). Only Élèves has a real cap (Starter
 // hard 50, Pro soft 1000) ; the other three are uncapped and read « Illimité »
 // with a full green bar, like the mockup's « Bulletins générés » cell.
-import { PLAN_LABELS, type BillingSummary } from '@/lib/billing-plans';
+import { useTranslations } from 'next-intl';
+import type { BillingSummary } from '@/lib/billing-plans';
+import { planLabel } from '@/lib/billing-plan-i18n';
 import { usagePct } from './billing-format';
 
 interface Cell {
@@ -16,32 +18,35 @@ interface Cell {
 }
 
 export function UsageCard({ billing }: { billing: BillingSummary }) {
+  const t = useTranslations('Abonnement.usageCard');
+  const tPlan = useTranslations('BillingPlans.label');
   const limit = billing.studentHardLimit ?? billing.studentSoftLimit;
   const cells: Cell[] = [
     {
-      label: 'Élèves',
+      label: t('cellStudents'),
       used: billing.usage.students,
       limit,
       soft: billing.studentHardLimit === null && billing.studentSoftLimit !== null,
     },
-    { label: 'Enseignants', used: billing.usage.teachers, limit: null },
-    { label: 'Classes', used: billing.usage.classes, limit: null },
-    { label: 'Administrateurs', used: billing.usage.admins, limit: null },
+    { label: t('cellTeachers'), used: billing.usage.teachers, limit: null },
+    { label: t('cellClasses'), used: billing.usage.classes, limit: null },
+    { label: t('cellAdmins'), used: billing.usage.admins, limit: null },
   ];
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-[18px] sm:py-[13px]">
         <div>
-          <div className="text-caption font-bold text-foreground">Utilisation du plan</div>
+          <div className="text-caption font-bold text-foreground">{t('title')}</div>
           <div className="mt-px text-xs text-muted-foreground">
-            Limites incluses dans le plan {PLAN_LABELS[billing.plan]}
+            {t('subtitle', { plan: planLabel(billing.plan, tPlan) })}
           </div>
         </div>
         {billing.billedSeats !== null && (
           <div className="text-2xs text-muted-foreground">
-            {billing.billedSeats} siège{billing.billedSeats > 1 ? 's' : ''} facturé
-            {billing.billedSeats > 1 ? 's' : ''}
+            {t(billing.billedSeats > 1 ? 'seatsBilled.other' : 'seatsBilled.one', {
+              count: billing.billedSeats,
+            })}
           </div>
         )}
       </div>
@@ -63,7 +68,7 @@ export function UsageCard({ billing }: { billing: BillingSummary }) {
                   {c.used}
                 </span>
                 <span className="text-caption font-medium text-muted-foreground">
-                  / {c.limit !== null ? c.limit : 'Illimité'}
+                  / {c.limit !== null ? c.limit : t('unlimited')}
                 </span>
               </div>
               <div className="h-[5px] overflow-hidden rounded-full bg-muted">
@@ -74,12 +79,15 @@ export function UsageCard({ billing }: { billing: BillingSummary }) {
               </div>
               <div className="mt-[5px] text-[10px] text-muted-foreground">
                 {c.limit === null
-                  ? 'Illimité inclus dans ce plan'
+                  ? t('unlimitedIncluded')
                   : c.soft
                     ? pct !== null && pct >= 100
-                      ? 'Palier Enterprise conseillé au-delà'
-                      : `${pct}% du palier conseillé`
-                    : `${pct}% utilisé · ${remaining} place${remaining === 1 ? '' : 's'} restante${remaining === 1 ? '' : 's'}`}
+                      ? t('enterpriseSuggested')
+                      : t('softPct', { pct: pct ?? 0 })
+                    : t(remaining === 1 ? 'usedPct.one' : 'usedPct.other', {
+                        pct: pct ?? 0,
+                        remaining: remaining ?? 0,
+                      })}
               </div>
             </div>
           );

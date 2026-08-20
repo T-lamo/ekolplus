@@ -2,12 +2,8 @@
 // so every edge case (cap reached, canceled Pro, past_due, trial…) is unit
 // tested without rendering. « Or = plan payant » : an upsell (Starter) is a
 // gold gradient card, a paid plan is a pale-gold status strip.
-import {
-  PLAN_LABELS,
-  PLAN_STUDENT_SOFT_LIMIT,
-  TRIAL_DAYS,
-  type PlanSnapshot,
-} from '@/lib/billing-plans';
+import { PLAN_STUDENT_SOFT_LIMIT, TRIAL_DAYS, type PlanSnapshot } from '@/lib/billing-plans';
+import { planLabel, type PlanLabelT } from '@/lib/billing-plan-i18n';
 import { fmtDateShort } from './billing-format';
 
 export const PLAN_PAGE_HREF = '/abonnement';
@@ -48,9 +44,18 @@ export type PlanCardT = {
  * loading / error) or a Starter school on a deployment without Stripe
  * (nothing to sell — the app stays exactly as before). `t` must be scoped
  * to the `SchoolPlanCard` namespace (`useTranslations('SchoolPlanCard')`
- * in the component; `createTranslator(...)` in tests).
+ * in the component; `createTranslator(...)` in tests). `tPlan` must be
+ * scoped to the `BillingPlans.label` namespace and `bcp47` is the app
+ * locale's `Intl` tag (`useLocale()` + `LOCALE_BCP47`) — both drive the
+ * plan name and renewal/trial dates so they stop leaking French into the
+ * other two locales.
  */
-export function planPresentation(s: PlanSnapshot | null, t: PlanCardT): PlanPresentation | null {
+export function planPresentation(
+  s: PlanSnapshot | null,
+  t: PlanCardT,
+  tPlan: PlanLabelT,
+  bcp47: string,
+): PlanPresentation | null {
   if (!s) return null;
 
   if (s.plan === 'STARTER') {
@@ -58,7 +63,7 @@ export function planPresentation(s: PlanSnapshot | null, t: PlanCardT): PlanPres
     const limit = s.studentHardLimit;
     const overCap = limit !== null && s.studentCount >= limit;
     const previouslyPaid = s.subscribedPlan !== null && s.subscribedPlan !== 'STARTER';
-    const plan = PLAN_LABELS.PRO;
+    const plan = planLabel('PRO', tPlan);
 
     if (previouslyPaid && s.status === 'SUSPENDED') {
       // Unpaid Pro (Stripe dunning exhausted) → the school is back on Starter
@@ -122,7 +127,7 @@ export function planPresentation(s: PlanSnapshot | null, t: PlanCardT): PlanPres
   }
 
   // Paid plan (PRO / ENTERPRISE).
-  const label = PLAN_LABELS[s.plan];
+  const label = planLabel(s.plan, tPlan);
   let subtitle: string;
   let tone: PlanPresentation['tone'] = 'gold';
   // Sidebar strip is ~150 px wide at 11 px: keep every line ≤ 25 chars —
@@ -136,11 +141,11 @@ export function planPresentation(s: PlanSnapshot | null, t: PlanCardT): PlanPres
   } else if (s.plan === 'ENTERPRISE' && !s.managedByStripe) {
     subtitle = t('enterpriseContract');
   } else if (s.cancelAtPeriodEnd) {
-    subtitle = t('activeUntil', { date: fmtDateShort(s.renewsAt) });
+    subtitle = t('activeUntil', { date: fmtDateShort(s.renewsAt, bcp47) });
   } else if (s.status === 'TRIAL' || s.stripeStatus === 'trialing') {
-    subtitle = t('trialUntil', { date: fmtDateShort(s.trialEndsAt ?? s.renewsAt) });
+    subtitle = t('trialUntil', { date: fmtDateShort(s.trialEndsAt ?? s.renewsAt, bcp47) });
   } else if (s.renewsAt) {
-    subtitle = t('renewalDate', { date: fmtDateShort(s.renewsAt) });
+    subtitle = t('renewalDate', { date: fmtDateShort(s.renewsAt, bcp47) });
   } else {
     subtitle = t('active');
   }

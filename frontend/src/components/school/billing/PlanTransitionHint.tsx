@@ -6,7 +6,9 @@
 // regularise), warning for a downgrade, neutral for the current plan, a quote
 // or a managed contract. `aria-live` so a keyboard user hears the change.
 import { AlertTriangle, ArrowDownCircle, Info, Mail, Sparkles } from 'lucide-react';
-import { PLAN_LABELS, type PlanKey } from '@/lib/billing-plans';
+import { useTranslations } from 'next-intl';
+import type { PlanKey } from '@/lib/billing-plans';
+import { planLabel } from '@/lib/billing-plan-i18n';
 import { cn } from '@/lib/utils';
 import type { PlanTransition } from './plan-transition';
 
@@ -17,6 +19,8 @@ export function PlanTransitionHint({
   plan: PlanKey;
   transition: PlanTransition;
 }) {
+  const tHint = useTranslations('Abonnement.planTransitionHint');
+  const tPlan = useTranslations('BillingPlans.label');
   const tone =
     t.kind === 'downgrade'
       ? 'warning'
@@ -47,22 +51,23 @@ export function PlanTransitionHint({
           : tone === 'primary'
             ? Mail
             : Info;
+  const planName = planLabel(plan, tPlan);
   const heading =
     t.kind === 'current'
-      ? `${PLAN_LABELS[plan]} — votre plan actuel`
+      ? tHint('current', { plan: planName })
       : t.kind === 'downgrade' || t.kind === 'downgrade-scheduled'
-        ? `Rétrogradation vers ${PLAN_LABELS.STARTER}`
+        ? tHint('downgrade', { plan: planLabel('STARTER', tPlan) })
         : t.kind === 'upgrade'
-          ? `Passage à ${PLAN_LABELS.PRO}`
+          ? tHint('upgrade', { plan: planLabel('PRO', tPlan) })
           : t.kind === 'reactivate'
-            ? `Réactivation de ${PLAN_LABELS.PRO}`
+            ? tHint('reactivate', { plan: planLabel('PRO', tPlan) })
             : t.kind === 'resume'
-              ? `Reprise de ${PLAN_LABELS.PRO}`
+              ? tHint('resume', { plan: planLabel('PRO', tPlan) })
               : t.kind === 'regularize'
-                ? 'Paiement à régulariser'
+                ? tHint('regularize')
                 : t.kind === 'contact'
-                  ? `${PLAN_LABELS[plan]} — sur devis`
-                  : `${PLAN_LABELS[plan]} — non disponible en libre-service`;
+                  ? tHint('contact', { plan: planName })
+                  : tHint('unavailable', { plan: planName });
 
   return (
     <div

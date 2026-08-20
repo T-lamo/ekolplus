@@ -5,6 +5,7 @@
 // Stripe » with « Modifier » → Customer Portal ; the two info strips
 // (secure via Stripe / dedicated secure page) are kept verbatim.
 import { CreditCard, ExternalLink, Info, Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { BillingSummary } from '@/lib/billing-plans';
 
 export function PaymentMethodCard({
@@ -18,11 +19,12 @@ export function PaymentMethodCard({
   onOpenPortal: () => void;
   busy?: boolean;
 }) {
+  const t = useTranslations('Abonnement.paymentMethodCard');
   const hasStripe = billing.hasStripeCustomer;
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-[18px] sm:py-[13px]">
-        <div className="text-caption font-bold text-foreground">Moyen de paiement</div>
+        <div className="text-caption font-bold text-foreground">{t('title')}</div>
         {hasStripe && canManage && (
           <button
             type="button"
@@ -31,7 +33,7 @@ export function PaymentMethodCard({
             className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-2xs font-semibold text-primary hover:bg-secondary/80 disabled:opacity-60"
           >
             <ExternalLink size={11} />
-            Factures & carte
+            {t('manageLink')}
           </button>
         )}
       </div>
@@ -42,16 +44,16 @@ export function PaymentMethodCard({
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-caption font-semibold text-foreground">
-            {hasStripe ? 'Carte bancaire · gérée par Stripe' : 'Aucun moyen de paiement'}
+            {hasStripe ? t('hasCard') : t('noCard')}
           </div>
           <div className="mt-px text-2xs text-muted-foreground">
             {hasStripe
               ? billing.managedByStripe
-                ? 'Par défaut · modifiable dans l’espace sécurisé Stripe'
-                : 'Client Stripe créé · aucun abonnement actif'
+                ? t('defaultEditable')
+                : t('clientNoSub')
               : billing.plan === 'STARTER'
-                ? 'Le plan Starter est gratuit — aucune carte requise'
-                : 'Abonnement géré manuellement par Schoolgesti'}
+                ? t('starterFreeNote')
+                : t('managedManually')}
           </div>
         </div>
         {hasStripe && canManage && (
@@ -61,7 +63,7 @@ export function PaymentMethodCard({
             disabled={busy}
             className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2.5 py-[5px] text-2xs font-medium text-foreground hover:bg-muted disabled:opacity-60"
           >
-            Modifier
+            {t('edit')}
           </button>
         )}
       </div>
@@ -69,18 +71,13 @@ export function PaymentMethodCard({
       <div className="border-t border-border px-4 py-3 sm:px-[18px]">
         <div className="flex items-center gap-[7px] rounded-md bg-success px-3 py-[9px]">
           <Shield size={13} className="shrink-0 text-success-foreground" />
-          <span className="text-2xs font-medium text-success-foreground">
-            Paiements sécurisés via Stripe (SSL 256-bit, PCI-DSS niveau 1)
-          </span>
+          <span className="text-2xs font-medium text-success-foreground">{t('secureNotice')}</span>
         </div>
       </div>
       <div className="px-4 pb-3.5 sm:px-[18px]">
         <div className="flex items-center gap-[7px] rounded-md border border-primary/30 bg-secondary px-3 py-[9px]">
           <Info size={13} className="shrink-0 text-primary" />
-          <span className="text-2xs font-medium text-primary">
-            Le paiement s’effectue via Stripe sur une page sécurisée dédiée — vos données bancaires
-            ne transitent jamais par nos serveurs.
-          </span>
+          <span className="text-2xs font-medium text-primary">{t('secureNotice2')}</span>
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import {
   AlertTriangle,
   BadgeCheck,
@@ -54,6 +55,7 @@ import { FormStepsBar } from '@/components/school/FormStepsBar';
 import { FormSectionCard } from '@/components/school/FormSectionCard';
 import { useBilling } from '@/components/school/billing/useBilling';
 import { fmtDateLong } from '@/components/school/billing/billing-format';
+import { LOCALE_BCP47 } from '@/lib/locales';
 import type { SchoolResponse } from '@/app/(school)/settings/types';
 
 /** Terms page linked from the récap — override per deployment (NEXT_PUBLIC_TERMS_URL). */
@@ -75,6 +77,8 @@ export default function PaiementPage() {
 
 function PaiementScreen() {
   const user = useUser();
+  const locale = useLocale();
+  const bcp47 = LOCALE_BCP47[locale];
   const params = useSearchParams();
   const { toast } = useToast();
   const isConfirmation = params.get('etape') === 'confirmation';
@@ -145,8 +149,8 @@ function PaiementScreen() {
   const alreadyPro =
     billing.managedByStripe && billing.plan === 'PRO' && !billing.cancelAtPeriodEnd;
   const rateLabel = annual
-    ? `${formatUsd(billing.rates.annualCents)} / élève / an`
-    : `${formatUsd(billing.rates.monthlyCents)} / élève / mois`;
+    ? `${formatUsd(billing.rates.annualCents, bcp47)} / élève / an`
+    : `${formatUsd(billing.rates.monthlyCents, bcp47)} / élève / mois`;
   const trialEnds = new Date(Date.now() + billing.rates.trialDays * 86_400_000).toISOString();
   const firstStripe = !billing.managedByStripe && billing.status !== 'CANCELED';
 
@@ -207,7 +211,7 @@ function PaiementScreen() {
             id="plan"
             icon={<Layers size={15} />}
             title="Sélectionner le plan"
-            subtitle={`Tarification à ${formatUsd(billing.rates.monthlyCents)} par élève / mois`}
+            subtitle={`Tarification à ${formatUsd(billing.rates.monthlyCents, bcp47)} par élève / mois`}
           >
             <div role="radiogroup" aria-label="Plan" className="flex flex-col gap-2">
               <PlanOption
@@ -250,13 +254,13 @@ function PaiementScreen() {
                 <div className="flex gap-2">
                   <CycleTile
                     label="Mensuel"
-                    sub={`${formatUsd(billing.rates.monthlyCents)} / élève / mois`}
+                    sub={`${formatUsd(billing.rates.monthlyCents, bcp47)} / élève / mois`}
                     active={!annual}
                     onClick={() => setInterval_('MONTH')}
                   />
                   <CycleTile
                     label="Annuel"
-                    sub={`${formatUsd(Math.round(billing.rates.annualCents / 12))} / élève / mois`}
+                    sub={`${formatUsd(Math.round(billing.rates.annualCents / 12), bcp47)} / élève / mois`}
                     active={annual}
                     badge={`Économisez ${Math.round(ANNUAL_DISCOUNT * 100)} %`}
                     onClick={() => setInterval_('YEAR')}
@@ -283,18 +287,19 @@ function PaiementScreen() {
                   <div className="mt-0.5 text-2xs text-secondary-foreground/80">
                     {totals.students} élève{totals.students > 1 ? 's' : ''} ×{' '}
                     {annual
-                      ? `${formatUsd(billing.rates.annualCents)} / an`
-                      : `${formatUsd(billing.rates.monthlyCents)} / mois`}
+                      ? `${formatUsd(billing.rates.annualCents, bcp47)} / an`
+                      : `${formatUsd(billing.rates.monthlyCents, bcp47)} / mois`}
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
                   <div className="text-[15px] font-extrabold whitespace-nowrap text-primary tabular-nums">
-                    {formatUsd(totals.due)} / {annual ? 'an' : 'mois'}
+                    {formatUsd(totals.due, bcp47)} / {annual ? 'an' : 'mois'}
                   </div>
                   <div className="text-2xs text-muted-foreground">
                     ≈{' '}
                     {formatUsd(
                       annual ? Math.round(totals.annualNet / 12) : totals.monthlyList * 12,
+                      bcp47,
                       { decimals: 0 },
                     )}{' '}
                     / {annual ? 'mois' : 'an'}
@@ -408,14 +413,14 @@ function PaiementScreen() {
               />
               <SummaryRow
                 label="Sous-total mensuel"
-                value={`${formatUsd(totals.monthlyList)} / mois`}
+                value={`${formatUsd(totals.monthlyList, bcp47)} / mois`}
               />
               {annual && (
                 <>
                   <SummaryRow label="Facturation annuelle" value="× 12 mois" />
                   <SummaryRow
                     label={`Remise annuelle (−${Math.round(ANNUAL_DISCOUNT * 100)} %)`}
-                    value={`−${formatUsd(totals.annualSaving)}`}
+                    value={`−${formatUsd(totals.annualSaving, bcp47)}`}
                     accent
                   />
                 </>
@@ -425,7 +430,7 @@ function PaiementScreen() {
                 <div className="text-sm font-bold text-foreground">Total à payer</div>
                 <div className="text-right">
                   <div className="text-xl font-extrabold text-primary tabular-nums">
-                    {formatUsd(totals.due)}
+                    {formatUsd(totals.due, bcp47)}
                   </div>
                   <div className="mt-0.5 text-2xs text-muted-foreground">
                     {annual ? 'par an' : 'par mois'} · TTC
@@ -436,7 +441,7 @@ function PaiementScreen() {
                 <div className="flex items-center gap-1.5 rounded-md bg-success px-2.5 py-2">
                   <PiggyBank size={13} className="shrink-0 text-success-foreground" />
                   <span className="text-2xs font-semibold text-success-foreground">
-                    Vous économisez {formatUsd(totals.annualSaving)} vs. mensuel
+                    Vous économisez {formatUsd(totals.annualSaving, bcp47)} vs. mensuel
                   </span>
                 </div>
               )}
@@ -445,7 +450,7 @@ function PaiementScreen() {
                   <Zap size={13} className="shrink-0 text-primary" />
                   <span className="text-2xs font-semibold text-primary">
                     Essai gratuit {billing.rates.trialDays} jours — premier prélèvement le{' '}
-                    {fmtDateLong(trialEnds)}
+                    {fmtDateLong(trialEnds, bcp47)}
                   </span>
                 </div>
               )}
@@ -472,7 +477,9 @@ function PaiementScreen() {
             disabled={!canManage || alreadyPro || !billing.stripeConfigured}
           >
             <Lock size={16} />
-            {firstStripe ? 'Démarrer l’essai gratuit' : `Payer ${formatUsd(totals.due)} maintenant`}
+            {firstStripe
+              ? 'Démarrer l’essai gratuit'
+              : `Payer ${formatUsd(totals.due, bcp47)} maintenant`}
           </Button>
           <p className="text-center text-2xs text-muted-foreground">
             En cliquant, vous acceptez nos{' '}

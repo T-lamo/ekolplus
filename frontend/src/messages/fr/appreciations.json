@@ -34,5 +34,17 @@
     "completionChartSub": "Pourcentage d'appréciations saisies par matière.",
     "completionChartEmpty": "Aucune matière configurée pour cette classe.",
     "completionChartAriaLabel": "Pourcentage d'appréciations saisies par matière"
+  },
+  "parMatiere": {
+    "emptyState": "Aucune matière configurée pour cette classe.",
+    "colSubject": "Matière",
+    "colTeacher": "Enseignant",
+    "colCoefficient": "Coeff.",
+    "colClassAverage": "Moyenne classe",
+    "colRecorded": "Appréciations saisies",
+    "colStatus": "Statut",
+    "statusComplete": "Complet",
+    "statusInProgress": "En cours",
+    "statusTodo": "À faire"
   }
 }

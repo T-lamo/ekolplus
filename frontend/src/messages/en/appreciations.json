@@ -34,5 +34,17 @@
     "completionChartSub": "Percentage of appreciations recorded per subject.",
     "completionChartEmpty": "No subject configured for this class.",
     "completionChartAriaLabel": "Percentage of appreciations recorded per subject"
+  },
+  "parMatiere": {
+    "emptyState": "No subject configured for this class.",
+    "colSubject": "Subject",
+    "colTeacher": "Teacher",
+    "colCoefficient": "Coeff.",
+    "colClassAverage": "Class average",
+    "colRecorded": "Appreciations recorded",
+    "colStatus": "Status",
+    "statusComplete": "Complete",
+    "statusInProgress": "In progress",
+    "statusTodo": "To do"
   }
 }

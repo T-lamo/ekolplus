@@ -8,29 +8,20 @@
 // route) — no separate fetch here.
 
 import { BookOpen } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
+import { fmtAverage, moyColor } from './format';
 import type { AppreciationsListData } from './types';
 
-function fmt(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1).replace('.', ',');
-}
-
-function moyColor(avg: number | null): string {
-  if (avg == null) return 'text-muted-foreground';
-  if (avg < 8) return 'text-destructive-foreground';
-  if (avg < 12) return 'text-warning-foreground';
-  if (avg < 16) return 'text-info-foreground';
-  return 'text-success-foreground';
-}
-
 export function ParMatiereTab({ data }: { data: AppreciationsListData }) {
+  const t = useTranslations('Appreciations.parMatiere');
+  const locale = useLocale();
+
   if (data.subjects.length === 0) {
     return (
       <Card className="items-center gap-2 p-10 text-center">
         <BookOpen size={28} className="text-muted-foreground" />
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Aucune matière configurée pour cette classe.
-        </p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t('emptyState')}</p>
       </Card>
     );
   }
@@ -42,22 +33,22 @@ export function ParMatiereTab({ data }: { data: AppreciationsListData }) {
           <thead>
             <tr className="border-b border-border">
               <th className="px-3.5 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Matière
+                {t('colSubject')}
               </th>
               <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Enseignant
+                {t('colTeacher')}
               </th>
               <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Coeff.
+                {t('colCoefficient')}
               </th>
               <th className="px-3 py-2.5 text-center text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Moyenne classe
+                {t('colClassAverage')}
               </th>
               <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Appréciations saisies
+                {t('colRecorded')}
               </th>
               <th className="px-3 py-2.5 text-left text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Statut
+                {t('colStatus')}
               </th>
             </tr>
           </thead>
@@ -82,7 +73,7 @@ export function ParMatiereTab({ data }: { data: AppreciationsListData }) {
                   </td>
                   <td className="px-3 py-2.5 text-center">
                     <span className={`text-sm font-bold ${moyColor(s.classAverage)}`}>
-                      {fmt(s.classAverage)}
+                      {fmtAverage(s.classAverage, locale)}
                     </span>
                   </td>
                   <td className="px-3 py-2.5">
@@ -93,15 +84,15 @@ export function ParMatiereTab({ data }: { data: AppreciationsListData }) {
                   <td className="px-3 py-2.5">
                     {complete ? (
                       <span className="inline-flex items-center rounded-full bg-success px-2 py-0.5 text-2xs font-semibold text-success-foreground">
-                        Complet
+                        {t('statusComplete')}
                       </span>
                     ) : started ? (
                       <span className="inline-flex items-center rounded-full bg-warning px-2 py-0.5 text-2xs font-semibold text-warning-foreground">
-                        En cours
+                        {t('statusInProgress')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-2xs font-semibold text-muted-foreground">
-                        À faire
+                        {t('statusTodo')}
                       </span>
                     )}
                   </td>

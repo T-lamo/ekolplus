@@ -35,5 +35,17 @@
     "completionChartSub": "Pousantaj apresyasyon ki antre pa matyè.",
     "completionChartEmpty": "Pa gen matyè konfigire pou klas sa a.",
     "completionChartAriaLabel": "Pousantaj apresyasyon ki antre pa matyè"
+  },
+  "parMatiere": {
+    "emptyState": "Pa gen matyè konfigire pou klas sa a.",
+    "colSubject": "Matyè",
+    "colTeacher": "Pwofesè",
+    "colCoefficient": "Koef.",
+    "colClassAverage": "Mwayèn klas",
+    "colRecorded": "Apresyasyon ki antre",
+    "colStatus": "Estati",
+    "statusComplete": "Konplè",
+    "statusInProgress": "An kou",
+    "statusTodo": "Pou fè"
   }
 }

@@ -44,5 +44,20 @@
   },
   "languagePicker": {
     "radiogroupLabel": "Lang aplikasyon an"
+  },
+  "wizardNav": {
+    "cancel": "Anile",
+    "previous": "Anvan",
+    "next": "Apre"
+  },
+  "formStepsBar": {
+    "stepCount": "Etap {current} sou {total}"
+  },
+  "confirm": {
+    "title": "Konfime",
+    "deleteTitle": "Konfime sipresyon an",
+    "cancel": "Anile",
+    "confirmAction": "Konfime",
+    "deleteAction": "Efase"
   }
 }

@@ -6,6 +6,7 @@
 // the last step) right.
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 
 export function WizardNav({
@@ -29,11 +30,12 @@ export function WizardNav({
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const t = useTranslations('Common.wizardNav');
   const last = stepIndex === stepCount - 1;
   return (
     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
       <Button type="button" variant="ghost" className="w-fit" onClick={onCancel}>
-        Annuler
+        {t('cancel')}
       </Button>
       <div className="flex items-center gap-1.5 sm:gap-2">
         {stepIndex > 0 && (
@@ -42,10 +44,10 @@ export function WizardNav({
             variant="outline"
             className="w-fit"
             onClick={onPrev}
-            aria-label="Précédent"
+            aria-label={t('previous')}
           >
             <ChevronLeft size={14} />
-            <span className="hidden sm:inline">Précédent</span>
+            <span className="hidden sm:inline">{t('previous')}</span>
           </Button>
         )}
         {last ? (
@@ -66,7 +68,7 @@ export function WizardNav({
               onNext();
             }}
           >
-            Suivant
+            {t('next')}
             <ChevronRight size={14} />
           </Button>
         )}

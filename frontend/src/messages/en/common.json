@@ -43,5 +43,20 @@
   },
   "languagePicker": {
     "radiogroupLabel": "Application language"
+  },
+  "wizardNav": {
+    "cancel": "Cancel",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "formStepsBar": {
+    "stepCount": "Step {current} of {total}"
+  },
+  "confirm": {
+    "title": "Confirm",
+    "deleteTitle": "Confirm deletion",
+    "cancel": "Cancel",
+    "confirmAction": "Confirm",
+    "deleteAction": "Delete"
   }
 }

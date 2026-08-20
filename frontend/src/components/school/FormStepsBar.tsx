@@ -6,6 +6,7 @@
 // current step ("Étape 2 sur 4") + a progress bar to keep the UI light.
 
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface FormStep {
   id: string;
@@ -24,6 +25,7 @@ export function FormStepsBar({
   maxReachedIndex: number;
   onStepSelect: (index: number) => void;
 }) {
+  const t = useTranslations('Common.formStepsBar');
   const active = steps[activeIndex];
   return (
     <div>
@@ -34,7 +36,7 @@ export function FormStepsBar({
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-2xs font-medium text-muted-foreground">
-            Étape {activeIndex + 1} sur {steps.length}
+            {t('stepCount', { current: activeIndex + 1, total: steps.length })}
           </div>
           <div className="truncate text-caption font-semibold text-foreground">{active?.label}</div>
         </div>

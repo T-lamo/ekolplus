@@ -6,6 +6,7 @@
 // app uses. Imperative API mirrors useToast()'s toast(): call confirm({...})
 // from an event handler, await the boolean.
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ const ConfirmContext = createContext<ConfirmFn>(async () => false);
 const DESTRUCTIVE_BTN = 'bg-destructive text-destructive-foreground hover:bg-destructive/90';
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
+  const t = useTranslations('Common.confirm');
   const [state, setState] = useState<ConfirmState | null>(null);
 
   const confirm = useCallback<ConfirmFn>((options) => {
@@ -48,13 +50,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       {state && (
         <Modal
-          title={state.title ?? (state.danger ? 'Confirmer la suppression' : 'Confirmer')}
+          title={state.title ?? (state.danger ? t('deleteTitle') : t('title'))}
           onClose={() => settle(false)}
         >
           <p className="text-sm whitespace-pre-line text-foreground">{state.message}</p>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="outline" className="w-fit" onClick={() => settle(false)}>
-              {state.cancelLabel ?? 'Annuler'}
+              {state.cancelLabel ?? t('cancel')}
             </Button>
             <Button
               type="button"
@@ -62,7 +64,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               onClick={() => settle(true)}
               autoFocus
             >
-              {state.confirmLabel ?? (state.danger ? 'Supprimer' : 'Confirmer')}
+              {state.confirmLabel ?? (state.danger ? t('deleteAction') : t('confirmAction'))}
             </Button>
           </div>
         </Modal>

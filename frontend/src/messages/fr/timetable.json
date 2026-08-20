@@ -24,5 +24,46 @@
       "one": "+{count} autre",
       "other": "+{count} autres"
     }
+  },
+  "toolbar": {
+    "title": "Emploi du temps",
+    "headerWithYear": "Année scolaire {label} — {view}",
+    "viewsAriaLabel": "Vue",
+    "views": {
+      "month": { "label": "Mois", "subtitle": "Vue mensuelle" },
+      "week": { "label": "Semaine", "subtitle": "Vue hebdomadaire" },
+      "day": { "label": "Jour", "subtitle": "Vue journalière" },
+      "agenda": { "label": "Agenda", "subtitle": "Agenda de la semaine" }
+    },
+    "addSession": "Ajouter un cours",
+    "prevPeriod": "Période précédente",
+    "nextPeriod": "Période suivante",
+    "today": "Aujourd'hui",
+    "filterClass": "Classe",
+    "filterTeacher": "Enseignant",
+    "filterRoom": "Salle",
+    "filterSubject": "Matière",
+    "allClasses": "Toutes les classes",
+    "allTeachers": "Tous les enseignants",
+    "allRooms": "Toutes les salles",
+    "allSubjects": "Toutes les matières",
+    "export": "Exporter",
+    "exportEmpty": "Aucune séance à exporter sur cette période.",
+    "noYearTitle": "Aucune année scolaire active",
+    "noYearHint": "Configurez d'abord une année scolaire dans Paramètres pour planifier des cours.",
+    "emptyRange": "Aucune séance sur cette période — cliquez sur un créneau ou sur « Ajouter un cours ».",
+    "networkError": "Erreur réseau. Réessayez."
+  },
+  "export": {
+    "date": "Date",
+    "day": "Jour",
+    "start": "Début",
+    "end": "Fin",
+    "class": "Classe",
+    "subject": "Matière",
+    "type": "Type",
+    "teacher": "Enseignant",
+    "room": "Salle",
+    "description": "Description"
   }
 }

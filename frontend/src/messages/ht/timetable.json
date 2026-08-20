@@ -25,5 +25,46 @@
       "one": "+{count} lòt",
       "other": "+{count} lòt"
     }
+  },
+  "toolbar": {
+    "title": "Orè",
+    "headerWithYear": "Ane eskolè {label} — {view}",
+    "viewsAriaLabel": "Vi",
+    "views": {
+      "month": { "label": "Mwa", "subtitle": "Vi mansyèl" },
+      "week": { "label": "Semèn", "subtitle": "Vi semanyèl" },
+      "day": { "label": "Jou", "subtitle": "Vi jounalye" },
+      "agenda": { "label": "Ajanda", "subtitle": "Ajanda semèn nan" }
+    },
+    "addSession": "Ajoute yon kou",
+    "prevPeriod": "Peryòd anvan",
+    "nextPeriod": "Peryòd apre",
+    "today": "Jodi a",
+    "filterClass": "Klas",
+    "filterTeacher": "Anseyan",
+    "filterRoom": "Sal",
+    "filterSubject": "Matyè",
+    "allClasses": "Tout klas yo",
+    "allTeachers": "Tout anseyan yo",
+    "allRooms": "Tout sal yo",
+    "allSubjects": "Tout matyè yo",
+    "export": "Ekspòte",
+    "exportEmpty": "Pa gen seyans pou ekspòte pou peryòd sa a.",
+    "noYearTitle": "Pa gen ane eskolè aktif",
+    "noYearHint": "Konfigire yon ane eskolè nan Paramèt anvan pou w ka planifye kou.",
+    "emptyRange": "Pa gen seyans pou peryòd sa a — klike sou yon plaj orè oswa sou « Ajoute yon kou ».",
+    "networkError": "Erè rezo. Tanpri eseye ankò."
+  },
+  "export": {
+    "date": "Dat",
+    "day": "Jou",
+    "start": "Kòmansman",
+    "end": "Fen",
+    "class": "Klas",
+    "subject": "Matyè",
+    "type": "Kalite",
+    "teacher": "Anseyan",
+    "room": "Sal",
+    "description": "Deskripsyon"
   }
 }

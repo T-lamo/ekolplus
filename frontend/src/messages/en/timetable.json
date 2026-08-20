@@ -24,5 +24,46 @@
       "one": "+{count} more",
       "other": "+{count} more"
     }
+  },
+  "toolbar": {
+    "title": "Timetable",
+    "headerWithYear": "{label} school year — {view}",
+    "viewsAriaLabel": "View",
+    "views": {
+      "month": { "label": "Month", "subtitle": "Monthly view" },
+      "week": { "label": "Week", "subtitle": "Weekly view" },
+      "day": { "label": "Day", "subtitle": "Daily view" },
+      "agenda": { "label": "Agenda", "subtitle": "Week agenda" }
+    },
+    "addSession": "Add a course",
+    "prevPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "today": "Today",
+    "filterClass": "Class",
+    "filterTeacher": "Teacher",
+    "filterRoom": "Room",
+    "filterSubject": "Subject",
+    "allClasses": "All classes",
+    "allTeachers": "All teachers",
+    "allRooms": "All rooms",
+    "allSubjects": "All subjects",
+    "export": "Export",
+    "exportEmpty": "No session to export for this period.",
+    "noYearTitle": "No active school year",
+    "noYearHint": "Set up a school year in Settings first to schedule courses.",
+    "emptyRange": "No session in this period — click a slot or the “Add a course” button.",
+    "networkError": "Network error. Please try again."
+  },
+  "export": {
+    "date": "Date",
+    "day": "Day",
+    "start": "Start",
+    "end": "End",
+    "class": "Class",
+    "subject": "Subject",
+    "type": "Type",
+    "teacher": "Teacher",
+    "room": "Room",
+    "description": "Description"
   }
 }

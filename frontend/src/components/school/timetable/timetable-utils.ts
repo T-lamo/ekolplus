@@ -319,18 +319,6 @@ export function weeklyVolume(
 }
 
 // ─── Export ────────────────────────────────────────────────────────────────
-export const CSV_HEADERS = [
-  'Date',
-  'Jour',
-  'Début',
-  'Fin',
-  'Classe',
-  'Matière',
-  'Type',
-  'Enseignant',
-  'Salle',
-  'Description',
-];
 export function csvRows(sessions: TimetableSession[], locale: LocaleKey): (string | number)[][] {
   return (
     [...sessions]

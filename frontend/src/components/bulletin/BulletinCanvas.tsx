@@ -6,6 +6,9 @@ import {
   type BlockId,
   type BulletinTemplateConfig,
 } from '@/app/(school)/configuration/modele-bulletin/types';
+import { getPageHeightPx } from './page-size';
+
+export { PAGE_PX_PER_IN, PAGE_SIZES_IN, getPageHeightPx, getPageWidthPx } from './page-size';
 
 // Shared by the template editor (illustrative sample data, interactive block
 // selection) and the bulletin viewer (real computed data, read-only) — the
@@ -41,32 +44,6 @@ export interface BulletinRenderData {
   generalAppreciation: string | null;
   absencesDays: number | null;
   retards: number | null;
-}
-
-// Real paper dimensions in CSS px at 96dpi (1in = 96px) — the same
-// convention the browser/Puppeteer use for `@page size: a4 | letter` when
-// generating the PDF. Exported so every caller that needs page geometry
-// (the editor's paper preview, this component's own min-height so
-// signatures can anchor near the bottom of a sparsely-filled page) shares
-// one source of truth instead of a second, driftable copy.
-export const PAGE_PX_PER_IN = 96;
-export const PAGE_SIZES_IN: Record<'A4' | 'LETTER', { w: number; h: number }> = {
-  A4: { w: 8.27, h: 11.69 },
-  LETTER: { w: 8.5, h: 11 },
-};
-export function getPageWidthPx(
-  config: Pick<BulletinTemplateConfig, 'pageFormat' | 'orientation'>,
-): number {
-  const dims = PAGE_SIZES_IN[config.pageFormat];
-  const inW = config.orientation === 'LANDSCAPE' ? dims.h : dims.w;
-  return Math.round(inW * PAGE_PX_PER_IN);
-}
-export function getPageHeightPx(
-  config: Pick<BulletinTemplateConfig, 'pageFormat' | 'orientation'>,
-): number {
-  const dims = PAGE_SIZES_IN[config.pageFormat];
-  const inH = config.orientation === 'LANDSCAPE' ? dims.w : dims.h;
-  return Math.round(inH * PAGE_PX_PER_IN);
 }
 
 function fmt(n: number | null): string {
@@ -123,6 +100,10 @@ export function BulletinCanvas({
   onDrop?: (id: BlockId) => void;
   onDragEnd?: () => void;
 }) {
+  // Fallback for templates saved before logoSize/signatureSize existed —
+  // DB rows aren't backfilled, so an old config's `layout` object simply
+  // lacks these keys until the school re-saves via the size sliders.
+  const logoSize = config.layout.logoSize ?? 52;
   const interactive = onSelect != null;
   const draggingEnabled = onDragStart != null && onDrop != null;
   const visible = (id: BlockId) => config.blocks.find((b) => b.id === id)?.visible ?? true;
@@ -424,6 +405,7 @@ export function BulletinCanvas({
               label="Signature du Directeur"
               color={config.primaryColor}
               imageUrl={data.directorSignatureUrl}
+              size={config.layout.signatureSize ?? 32}
             />
           )}
           {config.signatures.homeroom && (
@@ -439,116 +421,138 @@ export function BulletinCanvas({
 
   return (
     <div
-      className={`print-bulletin-canvas relative flex flex-col bg-white ${chrome ? 'overflow-hidden rounded-[2px] shadow-2xl' : ''}`}
+      className={`print-bulletin-canvas bulletin-print-root relative flex flex-col bg-white ${chrome ? 'overflow-hidden rounded-[2px] shadow-2xl' : ''}`}
       style={{ minHeight: getPageHeightPx(config) }}
     >
-      <div
-        className="h-1.5 shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
-        }}
-      />
-
-      {(visible('header') || visible('studentInfo')) && (
+      {/* A bulletin long enough to spill past one page (many subjects, all
+          optional blocks visible) genuinely paginates when printed — these
+          two `display:table*` roles make Chromium's print engine repeat
+          `.bulletin-print-header` at the top of every resulting page, the
+          same way an HTML <thead> repeats across a printed <table>, instead
+          of only showing the school/student header on page 1. Scoped to
+          `@media print` so the on-screen editor/viewer keep their ordinary
+          flex layout untouched. */}
+      <style>{`
+        @media print {
+          .bulletin-print-root { display: table; width: 100%; }
+          .bulletin-print-header { display: table-header-group; }
+          .bulletin-print-body { display: table-row-group; }
+        }
+      `}</style>
+      <div className="bulletin-print-header">
         <div
-          onClick={() => onSelect?.(visible('header') ? 'header' : 'studentInfo')}
-          className={`flex shrink-0 items-center gap-0 border-b-[1.5px] px-5 py-3.5 ${interactive ? 'cursor-pointer' : ''}`}
-          style={{ borderColor: `${config.primaryColor}30`, background: '#fdfcff' }}
-        >
-          {visible('header') && (
-            <>
-              {data.schoolLogoUrl ? (
-                <img
-                  src={data.schoolLogoUrl}
-                  alt={data.schoolName}
-                  className="h-13 w-13 shrink-0 rounded-md object-contain"
-                />
-              ) : (
-                <div
-                  className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border-[1.5px] border-dashed"
-                  style={{
-                    borderColor: `${config.primaryColor}80`,
-                    background: `${config.primaryColor}0d`,
-                  }}
-                >
-                  <LayoutTemplate size={18} style={{ color: `${config.primaryColor}80` }} />
-                </div>
-              )}
-              <div className="flex flex-1 flex-col items-center gap-0.5">
-                <div
-                  className="font-extrabold"
-                  style={{ color: config.primaryColor, fontSize: config.typography.schoolName }}
-                >
-                  {data.schoolName}
-                </div>
-                <div
-                  className="font-black tracking-widest text-[#1a1a2e] uppercase"
-                  style={{ fontSize: config.typography.title }}
-                >
-                  {config.content.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground">
-                  Année {data.academicYear} · {data.period}
-                </div>
-              </div>
-            </>
-          )}
-          {visible('studentInfo') && (
-            <div
-              className="min-w-[150px] rounded-md border p-2.5 text-right"
-              style={{
-                background: `${config.primaryColor}0d`,
-                borderColor: `${config.primaryColor}30`,
-              }}
-            >
-              <div className="text-xs font-extrabold text-[#1a1a2e] uppercase">
-                {data.studentName}
-              </div>
-              <div className="mt-0.5 text-[10px] text-[#6b6b8d]">
-                {data.className} · Effectif : {data.classSize}
-              </div>
-              <div className="text-[9px] text-muted-foreground">{data.studentNumber}</div>
-            </div>
-          )}
-        </div>
-      )}
+          className="h-1.5 shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
+          }}
+        />
 
-      <div className="flex flex-1 flex-col" style={{ padding: config.layout.pageMargin }}>
-        {(() => {
-          const visibleIds = config.blocks
-            .filter((b) => blockContent[b.id] != null && visible(b.id))
-            .map((b) => b.id);
-          const lastVisibleId = visibleIds[visibleIds.length - 1];
-          return config.blocks.map((b) => {
-            const renderer = blockContent[b.id];
-            if (!renderer) return null;
-            // Only anchor signatures near the bottom of a sparsely-filled
-            // page when it's actually the LAST visible block — if the
-            // school reordered content so something else trails it, an
-            // unconditional auto-margin here would still try to push
-            // signatures toward the bottom while the trailing blocks
-            // still render after it, opening up a large orphaned gap.
-            const pushToBottom = b.id === 'signatures' && b.id === lastVisibleId;
-            return wrap(b.id, renderer(), { pushToBottom });
-          });
-        })()}
-
-        {config.content.footerMessage && (
+        {(visible('header') || visible('studentInfo')) && (
           <div
-            className="shrink-0 text-center text-muted-foreground italic"
-            style={{ fontSize: config.typography.footer }}
+            onClick={() => onSelect?.(visible('header') ? 'header' : 'studentInfo')}
+            className={`flex shrink-0 items-center gap-0 border-b-[1.5px] px-5 py-3.5 ${interactive ? 'cursor-pointer' : ''}`}
+            style={{ borderColor: `${config.primaryColor}30`, background: '#fdfcff' }}
           >
-            {config.content.footerMessage}
+            {visible('header') && (
+              <>
+                {data.schoolLogoUrl ? (
+                  <img
+                    src={data.schoolLogoUrl}
+                    alt={data.schoolName}
+                    className="shrink-0 rounded-md object-contain"
+                    style={{ height: logoSize, width: logoSize }}
+                  />
+                ) : (
+                  <div
+                    className="flex shrink-0 items-center justify-center rounded-md border-[1.5px] border-dashed"
+                    style={{
+                      height: logoSize,
+                      width: logoSize,
+                      borderColor: `${config.primaryColor}80`,
+                      background: `${config.primaryColor}0d`,
+                    }}
+                  >
+                    <LayoutTemplate size={18} style={{ color: `${config.primaryColor}80` }} />
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col items-center gap-0.5">
+                  <div
+                    className="font-extrabold"
+                    style={{ color: config.primaryColor, fontSize: config.typography.schoolName }}
+                  >
+                    {data.schoolName}
+                  </div>
+                  <div
+                    className="font-black tracking-widest text-[#1a1a2e] uppercase"
+                    style={{ fontSize: config.typography.title }}
+                  >
+                    {config.content.title}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Année {data.academicYear} · {data.period}
+                  </div>
+                </div>
+              </>
+            )}
+            {visible('studentInfo') && (
+              <div
+                className="min-w-[150px] rounded-md border p-2.5 text-right"
+                style={{
+                  background: `${config.primaryColor}0d`,
+                  borderColor: `${config.primaryColor}30`,
+                }}
+              >
+                <div className="text-xs font-extrabold text-[#1a1a2e] uppercase">
+                  {data.studentName}
+                </div>
+                <div className="mt-0.5 text-[10px] text-[#6b6b8d]">
+                  {data.className} · Effectif : {data.classSize}
+                </div>
+                <div className="text-[9px] text-muted-foreground">{data.studentNumber}</div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      <div
-        className="h-1.5 shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
-        }}
-      />
+      <div className="bulletin-print-body flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col" style={{ padding: config.layout.pageMargin }}>
+          {(() => {
+            const visibleIds = config.blocks
+              .filter((b) => blockContent[b.id] != null && visible(b.id))
+              .map((b) => b.id);
+            const lastVisibleId = visibleIds[visibleIds.length - 1];
+            return config.blocks.map((b) => {
+              const renderer = blockContent[b.id];
+              if (!renderer) return null;
+              // Only anchor signatures near the bottom of a sparsely-filled
+              // page when it's actually the LAST visible block — if the
+              // school reordered content so something else trails it, an
+              // unconditional auto-margin here would still try to push
+              // signatures toward the bottom while the trailing blocks
+              // still render after it, opening up a large orphaned gap.
+              const pushToBottom = b.id === 'signatures' && b.id === lastVisibleId;
+              return wrap(b.id, renderer(), { pushToBottom });
+            });
+          })()}
+
+          {config.content.footerMessage && (
+            <div
+              className="shrink-0 text-center text-muted-foreground italic"
+              style={{ fontSize: config.typography.footer }}
+            >
+              {config.content.footerMessage}
+            </div>
+          )}
+        </div>
+
+        <div
+          className="h-1.5 shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -581,17 +585,30 @@ function SigBox({
   label,
   color,
   imageUrl,
+  size = 32,
 }: {
   label: string;
   color: string;
   imageUrl?: string | null;
+  /** Rendered signature image height in px (width follows aspect ratio).
+   * Also grows the box's min-height so a large signature doesn't overflow
+   * the dashed frame — 54px (the box's original fixed min-height, `min-h-13.5`)
+   * is the floor. */
+  size?: number;
 }) {
   return (
     <div
-      className="flex min-h-13.5 flex-1 flex-col items-center justify-end gap-1 rounded-md border-[1.5px] border-dashed p-2.5 pb-1.5"
-      style={{ borderColor: `${color}80` }}
+      className="flex flex-1 flex-col items-center justify-end gap-1 rounded-md border-[1.5px] border-dashed p-2.5 pb-1.5"
+      style={{ borderColor: `${color}80`, minHeight: Math.max(54, size + 22) }}
     >
-      {imageUrl && <img src={imageUrl} alt={label} className="mb-1 h-8 w-auto object-contain" />}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={label}
+          className="mb-1 w-auto object-contain"
+          style={{ height: size }}
+        />
+      )}
       <div className="text-center text-[9px] text-muted-foreground">{label}</div>
     </div>
   );

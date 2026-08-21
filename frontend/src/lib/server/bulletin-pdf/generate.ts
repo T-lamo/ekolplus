@@ -14,6 +14,7 @@ import puppeteer from 'puppeteer-core';
 import { createLogger } from '@/lib/server/logger';
 import { signPrintToken, signTemplatePreviewToken } from './print-token';
 import { resolvePrintBaseUrl } from './print-base-url';
+import { getPageWidthPx, getPageHeightPx } from '@/components/bulletin/page-size';
 import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
 
 const logger = createLogger();
@@ -93,6 +94,14 @@ async function renderPdfFromUrl(url: string, options: GeneratePdfOptions): Promi
 
   try {
     const page = await browser.newPage();
+    // Puppeteer's default viewport (800×600) has nothing to do with the
+    // paper size `@page`/preferCSSPageSize renders onto — without this, the
+    // bulletin's DOM is laid out squeezed into 800px wide, wrapping table
+    // cell text and inflating row heights, which pushed the tail of an
+    // otherwise one-page bulletin (signatures, closing bar) onto a genuine
+    // second PDF page even though the on-screen Viewer (which sizes its
+    // preview to the real page width) showed it fitting on one page.
+    await page.setViewport({ width: getPageWidthPx(options), height: getPageHeightPx(options) });
     await page.emulateMediaType('print');
     const response = await page.goto(url, { waitUntil: 'networkidle0', timeout: 30_000 });
     if (!response || !response.ok()) {

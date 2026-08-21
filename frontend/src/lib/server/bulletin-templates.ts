@@ -86,6 +86,12 @@ export const bulletinTemplateConfigSchema = z.object({
     cellPaddingY: z.number().min(0).max(16),
     tableLineHeight: z.number().min(1).max(2.4),
     showTableBackgrounds: z.boolean(),
+    // Optional: templates saved before this field existed still PATCH their
+    // full config on every save (see the editor's `save()`) — a required
+    // field here would reject that whole save for any pre-existing
+    // template. BulletinCanvas.tsx falls back to 52/32 when absent.
+    logoSize: z.number().min(32).max(96).optional(),
+    signatureSize: z.number().min(20).max(64).optional(),
   }),
 });
 
@@ -124,5 +130,7 @@ export const DEFAULT_BULLETIN_CONFIG: BulletinTemplateConfig = {
     cellPaddingY: 6,
     tableLineHeight: 1.4,
     showTableBackgrounds: false,
+    logoSize: 52,
+    signatureSize: 32,
   },
 };

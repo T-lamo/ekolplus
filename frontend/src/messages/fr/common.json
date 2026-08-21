@@ -20,6 +20,17 @@
     "uploadFailed": "L'envoi a échoué.",
     "serverUnreachable": "Impossible de contacter le serveur."
   },
+  "signaturePad": {
+    "placeholder": "Cliquer pour signer",
+    "tabDraw": "Dessiner",
+    "tabUpload": "Importer",
+    "drawHint": "Signez avec la souris, le doigt ou un stylet.",
+    "clear": "Effacer",
+    "save": "Valider",
+    "saving": "Envoi…",
+    "empty": "Dessinez une signature avant de valider.",
+    "uploadFailed": "L'envoi a échoué."
+  },
   "dateField": {
     "today": "Aujourd'hui",
     "clear": "Effacer",

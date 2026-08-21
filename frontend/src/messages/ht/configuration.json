@@ -950,9 +950,11 @@
       "content": {
         "logoTitle": "Logo etablisman an",
         "logoLabel": "Logo",
+        "logoSizeLabel": "Gwosè logo a",
         "imageHint": "PNG, JPG oswa WebP — 10 Mo maksimòm",
         "signatureTitle": "Siyati direktè a",
         "signatureLabel": "Siyati",
+        "signatureSizeLabel": "Gwosè siyati a",
         "textTitle": "Tèks bilten an",
         "titleLabel": "Tit bilten an",
         "footerLabel": "Mesaj pye paj",

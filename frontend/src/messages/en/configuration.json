@@ -949,9 +949,11 @@
       "content": {
         "logoTitle": "School logo",
         "logoLabel": "Logo",
+        "logoSizeLabel": "Logo size",
         "imageHint": "PNG, JPG or WebP — 10 MB max",
         "signatureTitle": "Principal's signature",
         "signatureLabel": "Signature",
+        "signatureSizeLabel": "Signature size",
         "textTitle": "Report card text",
         "titleLabel": "Report card title",
         "footerLabel": "Footer message",

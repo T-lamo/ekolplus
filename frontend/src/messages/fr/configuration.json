@@ -949,9 +949,11 @@
       "content": {
         "logoTitle": "Logo de l'établissement",
         "logoLabel": "Logo",
+        "logoSizeLabel": "Taille du logo",
         "imageHint": "PNG, JPG ou WebP — 10 Mo max",
         "signatureTitle": "Signature du directeur",
         "signatureLabel": "Signature",
+        "signatureSizeLabel": "Taille de la signature",
         "textTitle": "Texte du bulletin",
         "titleLabel": "Titre du bulletin",
         "footerLabel": "Message de pied de page",

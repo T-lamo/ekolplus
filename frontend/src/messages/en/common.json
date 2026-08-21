@@ -20,6 +20,17 @@
     "uploadFailed": "Upload failed.",
     "serverUnreachable": "Could not reach the server."
   },
+  "signaturePad": {
+    "placeholder": "Click to sign",
+    "tabDraw": "Draw",
+    "tabUpload": "Upload",
+    "drawHint": "Sign with your mouse, finger, or a stylus.",
+    "clear": "Clear",
+    "save": "Save",
+    "saving": "Uploading…",
+    "empty": "Draw a signature before saving.",
+    "uploadFailed": "Upload failed."
+  },
   "dateField": {
     "today": "Today",
     "clear": "Clear",

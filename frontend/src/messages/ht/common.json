@@ -21,6 +21,17 @@
     "uploadFailed": "Anvwa a echwe.",
     "serverUnreachable": "Nou pa t kapab kontakte sèvè a."
   },
+  "signaturePad": {
+    "placeholder": "Klike pou siyen",
+    "tabDraw": "Desine",
+    "tabUpload": "Enpòte",
+    "drawHint": "Siyen ak sourit la, dwèt ou, oswa yon estilo.",
+    "clear": "Efase",
+    "save": "Konfime",
+    "saving": "Ap voye…",
+    "empty": "Desine yon siyati anvan ou konfime.",
+    "uploadFailed": "Anvwa a echwe."
+  },
   "dateField": {
     "today": "Jodi a",
     "clear": "Efase",

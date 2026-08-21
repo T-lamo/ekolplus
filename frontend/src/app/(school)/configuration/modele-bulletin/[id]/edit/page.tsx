@@ -31,6 +31,7 @@ import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ImageUploader } from '@/components/ui/ImageUploader';
+import { SignaturePad } from '@/components/ui/SignaturePad';
 import {
   BulletinCanvas,
   getPageHeightPx,
@@ -778,14 +779,32 @@ export default function BulletinEditorPage() {
                       value={school?.logoUrl ?? null}
                       onChange={updateSchoolLogo}
                     />
+                    <PropSliderRow
+                      label={t('content.logoSizeLabel')}
+                      value={config.layout.logoSize ?? 52}
+                      min={32}
+                      max={96}
+                      suffix="px"
+                      onChange={(v) => patchConfig({ layout: { ...config.layout, logoSize: v } })}
+                    />
                   </PropSection>
 
                   <PropSection title={t('content.signatureTitle')}>
-                    <ImageUploader
+                    <SignaturePad
                       label={t('content.signatureLabel')}
                       hint={t('content.imageHint')}
                       value={school?.directorSignatureUrl ?? null}
                       onChange={updateSchoolSignature}
+                    />
+                    <PropSliderRow
+                      label={t('content.signatureSizeLabel')}
+                      value={config.layout.signatureSize ?? 32}
+                      min={20}
+                      max={64}
+                      suffix="px"
+                      onChange={(v) =>
+                        patchConfig({ layout: { ...config.layout, signatureSize: v } })
+                      }
                     />
                   </PropSection>
 

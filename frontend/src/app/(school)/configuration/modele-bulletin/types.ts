@@ -51,6 +51,11 @@ export interface BulletinTemplateConfig {
     cellPaddingY: number;
     tableLineHeight: number;
     showTableBackgrounds: boolean;
+    // Optional: absent on templates saved before this field existed. Typed
+    // with an explicit `| undefined` (not just `?:`) to match the zod-schema
+    // -inferred shape from bulletin-templates.ts under exactOptionalPropertyTypes.
+    logoSize?: number | undefined;
+    signatureSize?: number | undefined;
   };
 }
 

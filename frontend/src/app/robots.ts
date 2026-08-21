@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
-// The only real public content is the marketing landing (`/`) and `/login`
-// (no user data, worth being discoverable) — everything else is either the
+// The only real public content is the marketing landing (`/`), `/login`
+// (no user data, worth being discoverable), and the legal pages
+// (`/confidentialite`, `/cgu`) — everything else is either the
 // authenticated app (dashboard/configuration/pedagogie/eleves/enseignants/
 // scolarite/settings/bulletins), the back-office (/admin), the JSON API,
 // print-only renders meant for the PDF pipeline, or an auth flow that can

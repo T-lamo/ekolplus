@@ -1,27 +1,30 @@
 import Image from 'next/image';
 
+// Absolute-to-`/` (not bare `#anchor`): this footer also renders on
+// /confidentialite and /cgu (via LegalArticle) — see the same note in
+// landing-header.tsx.
 const COLUMNS = [
   {
     title: 'Produit',
     links: [
-      { label: 'Fonctionnalités', href: '#features' },
-      { label: 'Frais & paiements', href: '#frais-section' },
-      { label: 'Tarifs', href: '#pricing' },
+      { label: 'Fonctionnalités', href: '/#features' },
+      { label: 'Frais & paiements', href: '/#frais-section' },
+      { label: 'Tarifs', href: '/#pricing' },
     ],
   },
   {
     title: 'Entreprise',
     links: [
-      { label: 'Démo', href: '#contact-demo' },
-      { label: 'Contact', href: '#contact-demo' },
+      { label: 'Démo', href: '/#contact-demo' },
+      { label: 'Contact', href: '/#contact-demo' },
       { label: 'Support', href: '#' },
     ],
   },
   {
     title: 'Légal',
     links: [
-      { label: 'Confidentialité', href: '#' },
-      { label: 'CGU', href: '#' },
+      { label: 'Confidentialité', href: '/confidentialite' },
+      { label: 'CGU', href: '/cgu' },
     ],
   },
 ];

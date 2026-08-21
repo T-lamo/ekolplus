@@ -11,11 +11,16 @@ import { CtaLink } from './landing-ui';
 // record and the school career), not an LMS: the nav only points at what the
 // app really does. « Frais & paiements » = the in-app « Frais & Scolarité »
 // module (fee schedules, payments, reminders).
+// Absolute-to-`/` (not bare `#anchor`): this header also renders on
+// /confidentialite and /cgu (via LegalArticle), which don't have these
+// section ids — a bare hash would just sit on the current page doing
+// nothing. `/#anchor` always returns to the landing page and scrolls,
+// while staying a same-document scroll (no reload) when already on `/`.
 const NAV_LINKS: { href: string; label: string }[] = [
-  { href: '#features', label: 'Fonctionnalités' },
-  { href: '#frais-section', label: 'Frais & paiements' },
-  { href: '#roles', label: 'Pour qui ?' },
-  { href: '#pricing', label: 'Tarifs' },
+  { href: '/#features', label: 'Fonctionnalités' },
+  { href: '/#frais-section', label: 'Frais & paiements' },
+  { href: '/#roles', label: 'Pour qui ?' },
+  { href: '/#pricing', label: 'Tarifs' },
 ];
 
 /** Fixed floating glass-pill nav (Banani `#nav`/`#navShell`). Mobile-first: a
@@ -85,7 +90,7 @@ export function LandingHeader() {
               Connexion
             </Link>
             <span className="hidden sm:inline-block">
-              <CtaLink href="#contact-demo" className="px-4 py-2.5 text-[13px]">
+              <CtaLink href="/#contact-demo" className="px-4 py-2.5 text-[13px]">
                 Demander une démo
               </CtaLink>
             </span>
@@ -133,7 +138,7 @@ export function LandingHeader() {
                   Connexion
                 </Link>
                 <div className="py-3 sm:hidden">
-                  <CtaLink href="#contact-demo" className="w-full py-3.5 text-[15px]">
+                  <CtaLink href="/#contact-demo" className="w-full py-3.5 text-[15px]">
                     Demander une démo
                   </CtaLink>
                 </div>

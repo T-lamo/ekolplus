@@ -18,10 +18,11 @@ export default function CguPage() {
     <LegalArticle title={TITLE} updated="21 août 2026">
       <p className="text-[14px] leading-relaxed text-[#2c2138]">
         Les présentes conditions régissent l&apos;utilisation de Schoolgesti, la plateforme de
-        gestion scolaire éditée par [Raison sociale de l&apos;éditeur], [forme juridique], dont le
-        siège social est situé [adresse du siège social] (« Schoolgesti », « nous »). En créant un
-        compte ou en utilisant le service, l&apos;établissement scolaire (« l&apos;Établissement »,
-        « vous ») accepte ces conditions.
+        gestion scolaire éditée par SchoolGesti, société à responsabilité limitée (SARL),
+        représentée par Amos Dorceus, Directeur général (CEO), dont le siège social est situé 9 rue
+        Roquemaurel, 31300 Toulouse, France (« Schoolgesti », « nous »). En créant un compte ou en
+        utilisant le service, l&apos;établissement scolaire (« l&apos;Établissement », « vous »)
+        accepte ces conditions.
       </p>
 
       <LegalSection heading="1. Objet du service">
@@ -106,10 +107,10 @@ export default function CguPage() {
 
       <LegalSection heading="7. Propriété intellectuelle">
         <p>
-          Le logiciel, son code, son interface et sa marque restent la propriété de [Raison sociale
-          de l&apos;éditeur]. Les données saisies par l&apos;Établissement (dossiers élèves, notes,
-          documents) restent sa propriété ; nous ne nous en attribuons aucun droit au-delà de ce qui
-          est nécessaire pour faire fonctionner le service.
+          Le logiciel, son code, son interface et sa marque restent la propriété de SchoolGesti. Les
+          données saisies par l&apos;Établissement (dossiers élèves, notes, documents) restent sa
+          propriété ; nous ne nous en attribuons aucun droit au-delà de ce qui est nécessaire pour
+          faire fonctionner le service.
         </p>
       </LegalSection>
 
@@ -142,9 +143,9 @@ export default function CguPage() {
 
       <LegalSection heading="11. Droit applicable">
         <p>
-          Les présentes conditions sont soumises au droit [juridiction applicable]. Tout litige
-          relatif à leur interprétation ou leur exécution relève de la compétence [tribunal
-          compétent], sauf disposition légale impérative contraire.
+          Les présentes conditions sont soumises au droit français. Tout litige relatif à leur
+          interprétation ou leur exécution relève de la compétence du tribunal de commerce de
+          Toulouse, sauf disposition légale impérative contraire.
         </p>
       </LegalSection>
 

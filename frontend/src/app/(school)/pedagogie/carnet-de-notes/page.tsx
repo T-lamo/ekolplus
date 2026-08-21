@@ -10,7 +10,7 @@ import {
   TrendingDown,
   Calendar,
   Plus,
-  Download,
+  FileSpreadsheet,
   Eye,
   Star,
   History,
@@ -84,10 +84,14 @@ const KEBAB_W = 44;
 const RIGHT_RANG = KEBAB_W;
 const RIGHT_MOYENNE = KEBAB_W + RANG_W;
 
-const STICKY_LEFT = 'sticky z-10 border-r-2 border-border bg-card';
-const STICKY_KEBAB = 'sticky z-10 bg-card';
-const STICKY_RANG = 'sticky z-10 bg-card';
-const STICKY_MOYENNE = 'sticky z-10 border-l-2 border-border bg-card';
+// `[&_tr:not(:last-child)_&]`-style row dividers don't paint on sticky cells
+// under border-collapse (same issue STICKY_THEAD already works around — see
+// layout.ts) — an inset shadow substitutes for the <tr>'s border-b here too.
+const STICKY_ROW_DIVIDER = 'shadow-[inset_0_-1px_0_0_var(--color-border)]';
+const STICKY_LEFT = `sticky z-10 border-r-2 border-border bg-card ${STICKY_ROW_DIVIDER}`;
+const STICKY_KEBAB = `sticky z-10 bg-card ${STICKY_ROW_DIVIDER}`;
+const STICKY_RANG = `sticky z-10 bg-card ${STICKY_ROW_DIVIDER}`;
+const STICKY_MOYENNE = `sticky z-10 border-l-2 border-border bg-card ${STICKY_ROW_DIVIDER}`;
 const stickyLeftStyle = { left: 0 };
 const stickyKebabStyle = { right: 0 };
 const stickyRangStyle = { right: RIGHT_RANG };
@@ -181,6 +185,7 @@ function toUnifiedCombined(d: CombinedNotebookData): UnifiedNotebookData {
 
 export default function GradeNotebookPage() {
   const t = useTranslations('Gradebook.page');
+  const tEvalStatus = useTranslations('Gradebook.evaluationStatus');
   const user = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -337,7 +342,7 @@ export default function GradeNotebookPage() {
       {
         label: t('menuViewReportCard'),
         icon: <Eye size={14} />,
-        onClick: () => toast(t('menuViewReportCardToast'), 'info'),
+        onClick: () => router.push(`/bulletins/${student.studentId}/${termId}`),
       },
       ...(evalMenuItems.length > 0
         ? evalMenuItems
@@ -434,7 +439,7 @@ export default function GradeNotebookPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
           <Button
@@ -713,6 +718,11 @@ export default function GradeNotebookPage() {
                                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap text-muted-foreground">
                                   {t('colCoefficient', { n: ev.coefficient })}
                                 </span>
+                                {ev.status === 'DRAFT' && (
+                                  <span className="rounded-full bg-warning px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap text-warning-foreground">
+                                    {tEvalStatus('DRAFT')}
+                                  </span>
+                                )}
                               </div>
                             </th>
                           ))}
@@ -748,7 +758,10 @@ export default function GradeNotebookPage() {
                   </thead>
                   <tbody>
                     {pageStudents.map((s) => (
-                      <tr key={s.studentId} className="border-b border-border last:border-b-0">
+                      <tr
+                        key={s.studentId}
+                        className="border-b border-border last:border-b-0 last:[&>td]:shadow-none"
+                      >
                         <td style={stickyLeftStyle} className={`${STICKY_LEFT} px-3.5 py-2.5`}>
                           <div className="flex items-center gap-2.5">
                             <Avatar name={`${s.firstName} ${s.lastName}`} size={28} />

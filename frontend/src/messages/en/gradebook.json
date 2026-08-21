@@ -163,7 +163,6 @@
     "avgKindGeneral": "general",
     "avgKindClass": "class",
     "menuViewReportCard": "View report card",
-    "menuViewReportCardToast": "Available with Epic 7 (Report cards).",
     "menuEditGrades": "Edit grades",
     "menuEditGradesToast": "Create an evaluation first.",
     "menuHistory": "Grade history",

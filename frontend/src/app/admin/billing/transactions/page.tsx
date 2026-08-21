@@ -7,7 +7,7 @@
 // becomes the real method enum (Stripe / Manuel / Virement bancaire).
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { CalendarClock, Download, FileText, Plus, Receipt, Wallet } from 'lucide-react';
+import { CalendarClock, FileSpreadsheet, FileText, Plus, Receipt, Wallet } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_TRANSACTIONS as T } from '@/lib/constants';
@@ -168,7 +168,7 @@ export default function AdminTransactionsPage() {
         actions={
           <>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-              <Download size={14} />
+              <FileSpreadsheet size={14} />
               {T.exportCsv}
             </Button>
             <Button variant="outline" className="sm:w-auto" onClick={() => toast(T.stub)}>

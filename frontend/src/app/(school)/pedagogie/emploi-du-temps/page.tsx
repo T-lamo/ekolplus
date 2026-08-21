@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DoorOpen,
-  Download,
+  FileSpreadsheet,
   List,
   Plus,
   School,
@@ -446,7 +446,7 @@ export default function EmploiDuTempsPage() {
           </TimetableFilterSelect>
         </div>
         <Button variant="outline" size="sm" className="ml-auto w-fit" onClick={onExport}>
-          <Download size={13} />
+          <FileSpreadsheet size={13} />
           {t('export')}
         </Button>
       </div>

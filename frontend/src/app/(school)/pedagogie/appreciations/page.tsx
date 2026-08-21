@@ -10,7 +10,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Plus,
-  Download,
+  FileSpreadsheet,
   Eye,
   Pencil,
   Trash2,
@@ -204,7 +204,7 @@ export default function AppreciationsListPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
           <Button

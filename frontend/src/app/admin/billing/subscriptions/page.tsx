@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   CalendarClock,
   CreditCard,
-  Download,
+  FileSpreadsheet,
   Plus,
   Wallet,
   XCircle,
@@ -181,7 +181,7 @@ function SubscriptionsPage() {
         actions={
           <>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-              <Download size={14} />
+              <FileSpreadsheet size={14} />
               {T.export}
             </Button>
             <Button className="sm:w-auto" onClick={() => setModal({ kind: 'create' })}>

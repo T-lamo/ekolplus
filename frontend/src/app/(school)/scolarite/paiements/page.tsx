@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic';
 import {
   CalendarClock,
   CircleAlert,
-  Download,
   Eye,
+  FileSpreadsheet,
   MessageCircle,
   Printer,
   Settings2,
@@ -291,7 +291,7 @@ export default function FeeManagementPage() {
             {t('configureFees')}
           </Button>
           <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
         </div>

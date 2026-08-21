@@ -6,7 +6,7 @@ import {
   Pencil,
   Trash2,
   UserPlus,
-  Download,
+  FileSpreadsheet,
   Upload,
   Eye,
   Link as LinkIcon,
@@ -252,7 +252,7 @@ export default function TeachersPage() {
             {t('import')}
           </Button>
           <Button variant="outline" className="w-fit" onClick={onExport}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => setEditing('new')}>

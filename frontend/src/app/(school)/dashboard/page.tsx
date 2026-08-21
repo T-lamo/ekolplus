@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Download } from 'lucide-react';
+import { FileSpreadsheet } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
@@ -91,7 +91,7 @@ export default function DashboardPage() {
             </span>
           )}
           <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
         </div>

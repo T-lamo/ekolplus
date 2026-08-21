@@ -1,16 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import {
-  Bell,
-  CircleAlert,
-  Download,
-  Eye,
-  FileSpreadsheet,
-  Flag,
-  Send,
-  Wallet,
-} from 'lucide-react';
+import { Bell, CircleAlert, Eye, FileSpreadsheet, Flag, Send, Wallet } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -257,7 +248,7 @@ export default function OverdueFeesPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExportList} disabled={!data}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('exportList')}
           </Button>
           <Button className="w-fit" onClick={() => toast(tStub('stub'), 'info')}>

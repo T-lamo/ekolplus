@@ -9,8 +9,8 @@ import {
   Pencil,
   Trash2,
   Plus,
-  Download,
   Eye,
+  FileSpreadsheet,
   UserPlus,
   Link as LinkIcon,
   Percent,
@@ -247,7 +247,7 @@ export default function MatieresPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
           <Button className="w-fit" onClick={() => router.push('/configuration/matieres/nouvelle')}>

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
   Clock,
-  Download,
   Eye,
+  FileSpreadsheet,
   Pencil,
   ShieldCheck,
   Trash2,
@@ -344,7 +344,7 @@ export default function PresencesPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="w-fit" onClick={onExport}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {t('export')}
           </Button>
         </div>

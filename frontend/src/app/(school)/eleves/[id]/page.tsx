@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Pencil,
-  Download,
   FileText,
   Hash,
   School as SchoolIcon,
@@ -197,17 +196,6 @@ function StudentProfile() {
           {t('backToList')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Bulk PDF export is desktop paperwork, not a phone action — kept
-              off the mobile action row (user decision: hide secondary
-              actions rather than let 3 buttons overflow at 360px). */}
-          <Button
-            variant="outline"
-            className="hidden w-fit sm:inline-flex"
-            onClick={() => toast(t('exportFileSoon'), 'info')}
-          >
-            <Download size={14} />
-            {t('exportFile')}
-          </Button>
           {results?.resolvedTermId ? (
             <Link
               href={`/bulletins/${params.id}/${results.resolvedTermId}`}
@@ -233,15 +221,8 @@ function StudentProfile() {
         </div>
       </div>
 
-      <Card className="relative gap-4 overflow-hidden p-6">
-        <div
-          className="absolute inset-x-0 top-0 h-[72px]"
-          style={{
-            background:
-              'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-gradient-end) 100%)',
-          }}
-        />
-        <div className="relative z-10 flex flex-col gap-4 pt-7 sm:flex-row sm:items-end sm:justify-between">
+      <Card className="gap-4 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">
             <div className="relative shrink-0">
               <div className="rounded-full border-[3px] border-card shadow-lg">

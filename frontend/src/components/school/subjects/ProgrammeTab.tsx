@@ -17,7 +17,7 @@ import {
   ChevronDown,
   Clock,
   Copy,
-  Download,
+  FileSpreadsheet,
   GripVertical,
   Info,
   PlusCircle,
@@ -305,7 +305,7 @@ export function ProgrammeTab({
             onClick={exportCsv}
             disabled={sortedChapters.length === 0}
           >
-            <Download size={13} />
+            <FileSpreadsheet size={13} />
             {t('footer.export')}
           </Button>
           <Button className="w-fit" loading={saving} onClick={() => void saveAll()}>

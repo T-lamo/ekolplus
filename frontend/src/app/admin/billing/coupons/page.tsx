@@ -7,7 +7,7 @@
 // is deferred (the API accepts schoolId, no UI consumer yet).
 
 import { useCallback, useEffect, useState } from 'react';
-import { Copy, Download, Gift, Percent, Plus, Tag, Ticket, Wallet } from 'lucide-react';
+import { Copy, FileSpreadsheet, Gift, Percent, Plus, Tag, Ticket, Wallet } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_COUPONS as T, ADMIN_SAAS } from '@/lib/constants';
@@ -199,7 +199,7 @@ export default function AdminCouponsPage() {
         actions={
           <>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-              <Download size={14} />
+              <FileSpreadsheet size={14} />
               {T.export}
             </Button>
             <Button

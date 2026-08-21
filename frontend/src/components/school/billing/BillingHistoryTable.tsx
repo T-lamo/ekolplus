@@ -5,7 +5,7 @@
 // Statut · Date · Facture. « PDF » opens Stripe's hosted invoice (which
 // carries the PDF download) ; manual/back-office rows have no invoice link.
 // The table scrolls inside its own container on small screens.
-import { CheckCircle2, Download, XCircle } from 'lucide-react';
+import { CheckCircle2, Download, FileSpreadsheet, XCircle } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/Badge';
 import { formatUsd, type BillingSummary } from '@/lib/billing-plans';
@@ -75,7 +75,7 @@ export function BillingHistoryTable({ billing }: { billing: BillingSummary }) {
             onClick={exportCsv}
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-[5px] text-2xs font-medium text-foreground hover:bg-muted"
           >
-            <Download size={11} className="text-muted-foreground" />
+            <FileSpreadsheet size={11} className="text-muted-foreground" />
             {t('exportAll')}
           </button>
         )}

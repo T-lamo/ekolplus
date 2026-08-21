@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
-  Download,
+  FileSpreadsheet,
   GraduationCap,
   School as SchoolIcon,
   TrendingUp,
@@ -195,7 +195,7 @@ export default function AdminStatisticsPage() {
               ))}
             </div>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-              <Download size={14} />
+              <FileSpreadsheet size={14} />
               {T.export}
             </Button>
           </>

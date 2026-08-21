@@ -9,7 +9,7 @@ import {
   Minus,
   Target,
   AlertTriangle,
-  Download,
+  FileSpreadsheet,
   ListChecks,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -261,7 +261,7 @@ export function NotesResultatsTab({
                     onClick={exportCsv}
                     className="flex items-center gap-1 text-xs font-medium text-primary"
                   >
-                    <Download size={12} />
+                    <FileSpreadsheet size={12} />
                     {t('export')}
                   </button>
                 </div>

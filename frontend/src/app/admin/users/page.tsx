@@ -13,8 +13,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
   Activity,
-  Download,
   Eye,
+  FileSpreadsheet,
   KeyRound,
   LogIn,
   Pause,
@@ -230,7 +230,7 @@ export default function AdminUsersPage() {
         subtitle={T.subtitle}
         actions={
           <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-            <Download size={14} />
+            <FileSpreadsheet size={14} />
             {T.exportCsv}
           </Button>
         }

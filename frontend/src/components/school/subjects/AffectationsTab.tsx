@@ -16,7 +16,7 @@ import {
   Check,
   ChevronDown,
   CircleAlert,
-  Download,
+  FileSpreadsheet,
   Info,
   Layers,
   Link as LinkIcon,
@@ -208,7 +208,7 @@ export function AffectationsTab({
             onClick={exportCsv}
             disabled={rows.length === 0}
           >
-            <Download size={13} />
+            <FileSpreadsheet size={13} />
             {t('footer.export')}
           </Button>
           <Button className="w-fit" onClick={() => toast(t('toast.saved'), 'success')}>

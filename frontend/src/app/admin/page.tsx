@@ -7,7 +7,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Download, Plus, School, Users, Activity, CreditCard, Wallet } from 'lucide-react';
+import { FileSpreadsheet, Plus, School, Users, Activity, CreditCard, Wallet } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useApi } from '@/lib/useApi';
 import type { AdminOverviewResponse } from '@/lib/admin-types';
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
         actions={
           <>
             <Button variant="outline" className="sm:w-auto" onClick={onExport} disabled={!data}>
-              <Download size={14} />
+              <FileSpreadsheet size={14} />
               {tAdmin('exportReport')}
             </Button>
             <Button className="sm:w-auto" onClick={() => setShowCreateSchool(true)}>

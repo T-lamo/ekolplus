@@ -13,8 +13,10 @@ import {
 import { IconPlate, SectionHead } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
 
-const ROLE_PHOTO_IMG =
-  'https://storage.googleapis.com/banani-generated-images/generated-images/e032c74e-81f2-4751-97c4-29d861ec8d27.jpg';
+// Hosted locally (public/images/people.jpg) — see hero-section.tsx's
+// DASHBOARD_MOCKUP_IMG comment for why this moved off the Banani
+// storage.googleapis.com URL.
+const ROLE_PHOTO_IMG = '/images/people.jpg';
 
 interface Role {
   icon: LucideIcon;
@@ -121,7 +123,6 @@ export function RolesSection() {
                   fill
                   sizes="(min-width: 1024px) 560px, 90vw"
                   className="object-cover"
-                  unoptimized
                 />
               </div>
               <div className="absolute right-4 bottom-4 left-4 rounded-[22px] border border-white/20 bg-white/[0.16] p-3.5 backdrop-blur-xl sm:right-8 sm:bottom-6 sm:left-8">

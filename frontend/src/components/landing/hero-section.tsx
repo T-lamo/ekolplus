@@ -13,8 +13,14 @@ import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { CtaLink } from './landing-ui';
 import { fadeUp, staggerContainer } from './landing-motion';
 
-const DASHBOARD_MOCKUP_IMG =
-  'https://storage.googleapis.com/banani-generated-images/generated-images/8d83d9fb-d364-491e-84a5-a8cfea39539e.jpg';
+// Hosted locally (public/images/heroimage.jpg) — was the Banani-generated
+// storage.googleapis.com URL; moved in-repo so it's a same-origin asset the
+// service worker precaches like any other build output (a cross-origin
+// no-cors image fetch yields an opaque response the SW can't inspect the
+// status of, so a transient failure could get cached as if it had
+// succeeded — this sidesteps that, on top of no longer depending on an
+// external host staying up).
+const DASHBOARD_MOCKUP_IMG = '/images/heroimage.jpg';
 
 // Base perspective pose (Banani's static `rotateX(10deg) rotateY(-14deg)
 // rotateZ(-2deg)`) — desktop only. Mouse movement adds a further ±TILT_RANGE
@@ -131,7 +137,6 @@ function HeroMockup() {
           sizes="(min-width: 1024px) 640px, 90vw"
           className="object-cover"
           priority
-          unoptimized
         />
       </div>
     </motion.div>

@@ -52,7 +52,7 @@ const TAGS = [
   },
   {
     title: 'Simple et rassurant',
-    text: 'Une interface claire pour toute l’équipe — direction, secrétariat, enseignants et familles retrouvent l’information dont ils ont besoin, pensée pour les établissements haïtiens.',
+    text: 'Une interface claire pour toute l’équipe — direction, secrétariat, enseignants et familles retrouvent l’information dont ils ont besoin, pensée pour les établissements haïtiens, africains et européens.',
   },
 ];
 

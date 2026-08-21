@@ -14,7 +14,7 @@ import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
 const TITLE = 'Schoolgesti, le système d’information scolaire (SIS) tout-en-un';
 const DESCRIPTION =
-  'Dossiers élèves, inscriptions, notes et bulletins officiels, présences, emploi du temps, frais de scolarité et paiements : le SIS qui centralise l’administratif de votre école.';
+  'SchoolGesti est le logiciel de gestion scolaire tout-en-un pour les écoles en Haïti, en Afrique francophone et en Europe : dossiers élèves, inscriptions, notes et bulletins officiels, présences, emploi du temps, frais de scolarité et paiements centralisés dans un seul système d’information scolaire (SIS).';
 const OG_IMAGE = { url: '/images/hero-dashboard.jpg', width: 512, height: 286 };
 
 export const metadata: Metadata = {
@@ -23,12 +23,16 @@ export const metadata: Metadata = {
   keywords: [
     'gestion scolaire',
     'logiciel école',
+    'logiciel de gestion scolaire',
     'SIS',
     'système d’information scolaire',
     'bulletin scolaire',
     'gestion des notes',
     'frais de scolarité',
     'école Haïti',
+    'Afrique francophone',
+    'gestion scolaire Afrique',
+    'logiciel gestion scolaire Europe',
   ],
   // Public marketing page — the root layout defaults every other route to
   // noindex (auth flows with tokens, the authenticated app, back-office);

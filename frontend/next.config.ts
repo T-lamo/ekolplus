@@ -19,12 +19,20 @@ import createNextIntlPlugin from 'next-intl/plugin';
 // renders dynamically. A static script-src needs 'unsafe-inline' instead of
 // a nonce, because the App Router's own RSC hydration payload
 // (`self.__next_f.push(...)`) ships as inline <script> tags with no src.
+// Dev-only: Turbopack/React need `eval()` in `next dev` to reconstruct
+// stack traces and drive HMR — never in a production build (React itself
+// never calls eval() once built), so this stays scoped to NODE_ENV and
+// never weakens the production policy above.
+const isProd = process.env.NODE_ENV === 'production';
+
 const securityHeaders = [
   {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      isProd
+        ? "script-src 'self' 'unsafe-inline'"
+        : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       // Radix UI (@radix-ui/react-*, dropdowns/popovers/selects/tooltips)
       // positions its portals via inline style="" attributes.
       "style-src 'self' 'unsafe-inline'",

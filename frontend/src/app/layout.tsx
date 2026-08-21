@@ -47,6 +47,11 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  // Matches the landing page's own dark background (#landing-root in
+  // globals.css) — the first thing most visitors see, and independent of
+  // the authenticated app's per-user light theme, which has no single
+  // color to pick here anyway.
+  themeColor: '#1e1630',
 };
 
 export default async function RootLayout({

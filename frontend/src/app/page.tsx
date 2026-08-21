@@ -8,7 +8,9 @@ import { StepsSection } from '@/components/landing/steps-section';
 import { PricingSection } from '@/components/landing/pricing-section';
 import { DemoRequestSection } from '@/components/landing/demo-request-section';
 import { FaqSection } from '@/components/landing/faq-section';
+import { FAQS } from '@/components/landing/faq-data';
 import { LandingFooter } from '@/components/landing/landing-footer';
+import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 
 const TITLE = 'Schoolgesti, le système d’information scolaire (SIS) tout-en-un';
 const DESCRIPTION =
@@ -53,7 +55,7 @@ export const metadata: Metadata = {
 // SoftwareApplication structured data (Google rich results) — mirrors the
 // real plans in PricingSection; Enterprise is excluded, its price is "sur
 // mesure" (custom quote), not a fixed value structured data can express.
-const JSON_LD = {
+const SOFTWARE_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Schoolgesti',
@@ -78,6 +80,35 @@ const JSON_LD = {
   ],
 };
 
+// Organization structured data — brand identity for Google's Knowledge
+// Panel / sitelinks; no `sameAs` yet since the footer carries no social
+// links to point at (add them here the day it does, not before).
+const ORGANIZATION_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Schoolgesti',
+  url: resolvePrintBaseUrl(),
+  // Not the "-blanc" (white) variant used elsewhere on this dark page —
+  // Google renders this logo on a plain white background (Knowledge Panel,
+  // rich results), where a white-on-transparent mark would be invisible.
+  logo: `${resolvePrintBaseUrl()}/logos/schoolgesti-lockup.svg`,
+};
+
+// FAQPage structured data — Google can render these as an expandable rich
+// snippet directly in search results. Built from the SAME `FAQS` array the
+// visible accordion renders (imported, not duplicated) so the structured
+// data can never drift from what a visitor actually sees — a mismatch
+// between the two is a Google Search Console violation, not just untidy.
+const FAQ_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
 /**
  * Public marketing landing (route `/`). Rebuilt pixel-perfect from the
  * Banani "Lavande Douce" export (.planning/banani/landing-page.md) — a
@@ -94,11 +125,23 @@ export default function LandingPage() {
       id="landing-root"
       className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased"
     >
-      {/* Static, hardcoded object above — never user/DB input — but escape
+      {/* Static, hardcoded objects above — never user/DB input — but escape
           `<` anyway so a stray "</script>" can never break out of the tag. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, '\\u003c') }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(SOFTWARE_JSON_LD).replace(/</g, '\\u003c'),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(ORGANIZATION_JSON_LD).replace(/</g, '\\u003c'),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD).replace(/</g, '\\u003c') }}
       />
       <LandingHeader />
       <main>

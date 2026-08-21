@@ -24,7 +24,10 @@ interface Role {
   desc: string;
 }
 
-// `#rolesWrap` — verbatim Banani copy ("Une scène par rôle").
+// `#rolesWrap` — kicker kept from Banani ("Une scène par rôle"); the
+// section body text was Banani's own design rationale ("verre dépoli",
+// "scène humaine crédible") describing the visual treatment, not
+// user-facing copy — replaced with real content about the section.
 const ROLES: Role[] = [
   {
     icon: Building2,
@@ -68,7 +71,7 @@ export function RolesSection() {
               pour chaque rôle
             </>
           }
-          text="Une logique de verre dépoli au-dessus d’une scène humaine crédible pour créer une présence visuelle forte sans perdre la clarté d’un logiciel B2B."
+          text="Direction, secrétariat, enseignants, parents : chacun accède uniquement aux informations et outils utiles à son rôle, sans se perdre dans des fonctions qui ne le concernent pas."
         />
 
         <div className="mt-10 grid grid-cols-1 items-center gap-8 sm:mt-14 lg:grid-cols-2 lg:gap-11">

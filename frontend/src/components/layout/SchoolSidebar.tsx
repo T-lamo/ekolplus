@@ -48,15 +48,15 @@ export function useSchoolSections(): NavSection[] {
         label: t('pedagogy.label'),
         items: [
           {
-            label: t('pedagogy.gradebook'),
-            href: '/pedagogie/carnet-de-notes',
-            icon: NotebookPen,
-          },
-          { label: t('pedagogy.attendance'), href: '/pedagogie/presences', icon: CalendarCheck },
-          {
             label: t('pedagogy.timetable'),
             href: '/pedagogie/emploi-du-temps',
             icon: CalendarDays,
+          },
+          { label: t('pedagogy.attendance'), href: '/pedagogie/presences', icon: CalendarCheck },
+          {
+            label: t('pedagogy.gradebook'),
+            href: '/pedagogie/carnet-de-notes',
+            icon: NotebookPen,
           },
           { label: t('pedagogy.reportCards'), href: '/bulletins', icon: FileText },
           { label: t('pedagogy.assessments'), href: '/pedagogie/appreciations', icon: Star },
@@ -69,12 +69,12 @@ export function useSchoolSections(): NavSection[] {
       {
         label: t('configuration.label'),
         items: [
-          { label: t('configuration.classes'), href: '/configuration/classes', icon: SchoolIcon },
           {
             label: t('configuration.gradeLevels'),
             href: '/configuration/niveaux',
             icon: ListOrdered,
           },
+          { label: t('configuration.classes'), href: '/configuration/classes', icon: SchoolIcon },
           { label: t('configuration.rooms'), href: '/configuration/salles', icon: DoorOpen },
           { label: t('configuration.subjects'), href: '/configuration/matieres', icon: BookOpen },
           {

@@ -11,8 +11,6 @@
       "other": "{count} enseignants enregistrés"
     },
     "loadError": "Impossible de charger les enseignants.",
-    "import": "Importer",
-    "importSoon": "Import CSV — bientôt disponible.",
     "export": "Exporter",
     "addTeacher": "Ajouter un enseignant",
     "searchPlaceholder": "Rechercher un enseignant...",

@@ -11,8 +11,6 @@
       "other": "{count} teachers registered"
     },
     "loadError": "Unable to load teachers.",
-    "import": "Import",
-    "importSoon": "CSV import — coming soon.",
     "export": "Export",
     "addTeacher": "Add a teacher",
     "searchPlaceholder": "Search for a teacher...",

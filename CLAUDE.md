@@ -2,22 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> ⚠️ **Do NOT run `/init` on this project.** This CLAUDE.md is shipped with the starter and contains battle-tested invariants (runtime=nodejs enforcement, protected file list, OAuth refusal of `email_verified=false`, advisory-lock withdrawals, outbox pattern, raw-body HMAC ordering, …). Running `/init` would regenerate this file from the codebase and erase those invariants. Claude Code already loads this file automatically at session start — no command needed.
+> ⚠️ **Do NOT run `/init` on this project.** This CLAUDE.md documents battle-tested invariants for SchoolGesti (runtime=nodejs enforcement, protected file list, OAuth refusal of `email_verified=false`, advisory-lock withdrawals, outbox pattern, raw-body HMAC ordering, …). Running `/init` would regenerate this file from the codebase and erase those invariants. Claude Code already loads this file automatically at session start — no command needed.
 
 ## What this project is
 
-**A v1-shipped, headless Next.js 16 monolith starter.** Single full-stack app (App Router API Route Handlers + Server Actions + Prisma 5 + Neon + Upstash + Cloudinary + Resend + Bictorys + Sentry). There is no separate Express backend anymore — server logic lives under `frontend/src/app/api/*` and `frontend/src/lib/server/*`. The app **ships only logic** — no UI components — so each fork designs its own UX.
+**SchoolGesti** is a multi-school SIS (school information system): student records, enrollment, grades and official report cards (bulletins), attendance, timetabling, tuition/fees and payments, unified in one app. Built for schools in Haiti, francophone Africa, and Europe — see [README.md](README.md) for the full feature list. Single full-stack Next.js 16 app (App Router API Route Handlers + Server Actions + Prisma 5 + Neon + Upstash + Cloudinary + Resend + Stripe + Sentry) — no separate backend; server logic lives under `frontend/src/app/api/*` and `frontend/src/lib/server/*`.
 
-Origin: bootstrapped from `amadou-template` (the legacy monorepo predecessor) on 2026-05-07; the port to a single Next.js 16 app shipped through 7 phases (auth → OAuth/notifs → admin → uploads/withdrawals → webhooks/cron → docs/tests → final pass). 555/555 unit tests green (the storage swap dropped the now-obsolete `/api/files/[...key]` proxy tests).
+**Multi-tenant**: each school gets its own space (`School`, scoped by `resolveMySchool()`/`hasMinRole()` — see the domain model in `frontend/prisma/schema.prisma`), with a SUPERADMIN back-office ([frontend/src/app/admin/](frontend/src/app/admin/)) managing every client school, its subscription, and Stripe billing.
 
-**For an AI agent picking up this repo:** the architecture sections below describe what's already been built. Anything not listed under "Files Claude must NOT modify" is fair game to extend, refactor, or replace per your fork's needs — that's the point of a starter. The protected list is the small set of files where the invariants are subtle (refresh-token races, HMAC integrity, advisory locks…); everything else is the fork's surface area.
+**Two deployments**, each its own Vercel project with `frontend/` as root directory:
+- Production — branch `main` → schoolgesti.com
+- Test / staging — branch `develop` → testing.schoolgesti.com
 
-**Beginner workflow (vibe coding)** — clone, plug a Neon `DATABASE_URL`, open Claude Code, describe what you want, ship. See [WORKFLOW.md](WORKFLOW.md). The starter ships:
-- [.mcp.json](.mcp.json) — empty MCP server map by default. Banani is optional; if the user wants it, the `setup-kit` skill walks through pasting their MCP connection block.
+**Inherited-but-unused surfaces**: this codebase started from an internal generic SaaS starter, and a few of that starter's subsystems are still physically present but are **not wired into any SchoolGesti UI** — `/api/orders`, `/api/withdrawals`, `/api/admin/orders`, `/api/admin/withdrawals`, `/api/cron/order-expiration`, `/api/auth/withdrawal-pin`, and the Bictorys payment provider. SchoolGesti's real payment system is **Stripe** (school subscription billing — see `frontend/src/lib/billing-plans.ts`, `frontend/src/lib/server/billing/`, `frontend/src/app/api/cron/stripe-sync`). Don't extend the Bictorys/Withdrawals code path for new school-facing features; if you're asked to remove it, treat it as an optional feature and follow [PRUNING.md](PRUNING.md)'s protocol rather than deleting it ad hoc.
+
+- [.mcp.json](.mcp.json) — empty MCP server map by default. Banani is optional; paste your MCP connection block there if you use it.
 - [.planning/features.json](.planning/features.json) — machine-readable manifest of the optional surfaces (payments, oauth-google, uploads-cloudinary, email-resend, admin-backoffice, multi-tenancy, …) — declares what each surface needs so manual pruning per [PRUNING.md](PRUNING.md) stays safe.
-- GSD (`get-shit-done-cc`) is **not** a prerequisite. It's an optional level-up workflow surfaced after a beginner's first feature, not by default.
-
-Read [README.md](README.md) for the public-facing contract (endpoints, env vars, design swap, deploy) and [STATUS.md](STATUS.md) for the historical port roadmap. Reference pages live in [examples/frontend-pages/](examples/frontend-pages/) — copy/restyle freely, they all consume the same `/api/*` JSON contract.
 
 ## Commands
 
@@ -66,11 +66,13 @@ Integration tests are deferred (no formal harness in v1) — `pnpm smoke:auth` p
 
 **Withdrawals are race-free:** the route runs guards + PENDING insert inside a `Serializable` Prisma transaction guarded by `pg_advisory_xact_lock(hashtext(userId))` ([frontend/src/lib/server/withdrawals/lock.ts](frontend/src/lib/server/withdrawals/lock.ts)). Two concurrent attempts for the same user serialize on the lock, so the second one sees the first's PENDING reservation and is correctly rejected as `INSUFFICIENT_BALANCE`.
 
-**Payments are pluggable** behind the `PaymentProvider` interface ([frontend/src/lib/server/payments/](frontend/src/lib/server/payments/)). Bictorys is the default. A single in-memory `CircuitBreaker` guards charge calls. Webhook replay window defaults to 60s (`BICTORYS_WEBHOOK_REPLAY_WINDOW_MS` to override).
+**School subscription billing runs on Stripe** — plan rate in `frontend/src/lib/billing-plans.ts` (`PRO_RATE_CENTS`, single source of truth for the price shown in the app; landing-page copy and JSON-LD keep their own hardcoded duplicates, see that file's consumers), checkout/portal in `frontend/src/lib/server/billing/`, daily `stripe-sync` cron re-aligns billed seat quantity with live student count. Stripe Prices are immutable — changing the rate constant alone does **not** change what's actually charged; it also requires minting a new Stripe Price (`pnpm stripe:setup-prices`) and updating `STRIPE_PRICE_ID_PRO`/`STRIPE_PRICE_ID_PRO_ANNUAL`.
+
+**Payments are pluggable** behind the `PaymentProvider` interface ([frontend/src/lib/server/payments/](frontend/src/lib/server/payments/)), inherited from the starter (Bictorys implementation) but **not used by SchoolGesti's real payment flow** — see "Inherited-but-unused surfaces" above. A single in-memory `CircuitBreaker` guards charge calls. Webhook replay window defaults to 60s (`BICTORYS_WEBHOOK_REPLAY_WINDOW_MS` to override).
 
 **Cron strategy.** No `setInterval` loops — Next.js / Vercel doesn't keep long-lived processes. Background work runs as **Vercel Cron** routes under `app/api/cron/<name>/route.ts`, each gated by `Authorization: Bearer ${CRON_SECRET}`. Targets: `outbox-drain` (1m), `email-queue-drain` (1m), `verification-cleanup` (hourly), `order-expiration` (5m), `webhook-log-purge` (daily), `email-job-purge` (daily — purges SENT EmailJob rows older than `EMAIL_JOB_RETENTION_DAYS`, default 30), `fee-reminders` (daily 06:00), `stripe-sync` (daily 03:00 — re-syncs every Stripe-linked school subscription from Stripe and aligns the billed seat quantity with the student count; self-heals a missed webhook). Multi-instance coordination still uses [frontend/src/lib/server/leader-lease.ts](frontend/src/lib/server/leader-lease.ts) Redis leases where two crons could collide. The Bictorys charge `CircuitBreaker` is still in-memory single-instance — replace with a Redis-backed variant for multi-pod prod (documented limitation).
 
-**Google OAuth (Sign in with Google)** — [frontend/src/lib/server/oauth/google.ts](frontend/src/lib/server/oauth/google.ts) + Phase 2 route handlers under `frontend/src/app/api/auth/oauth/google/{start,callback}/route.ts`. Implemented with `arctic` (OAuth 2.0 + PKCE). `start` issues state + PKCE-verifier cookies (5min, path-scoped to `/api/auth/oauth`) and 302s to Google. `callback` validates state, exchanges code, decodes ID token, refuses unverified emails, find-or-create user with account linking by email, then issues our standard auth cookies. Frontend errors land on `/auth/error?code=…` (see [examples/frontend-pages/auth-error.tsx](examples/frontend-pages/auth-error.tsx)). Inert without `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI`.
+**Google OAuth (Sign in with Google)** — [frontend/src/lib/server/oauth/google.ts](frontend/src/lib/server/oauth/google.ts) + Phase 2 route handlers under `frontend/src/app/api/auth/oauth/google/{start,callback}/route.ts`. Implemented with `arctic` (OAuth 2.0 + PKCE). `start` issues state + PKCE-verifier cookies (5min, path-scoped to `/api/auth/oauth`) and 302s to Google. `callback` validates state, exchanges code, decodes ID token, refuses unverified emails, find-or-create user with account linking by email, then issues our standard auth cookies. Frontend errors land on `/auth/error?code=…` (see [frontend/src/app/auth/error/page.tsx](frontend/src/app/auth/error/page.tsx)). Inert without `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI`.
 
 **Multi-tenancy is opt-in.** [frontend/src/lib/server/middleware/require-org-role.ts](frontend/src/lib/server/middleware/require-org-role.ts) ships role types + rank helpers (`OWNER` > `ADMIN` > `MEMBER`). Default project surface stays user-owned (`Order.userId`, `Withdrawal.userId`). Apps that need orgs add `organizationId String?` on their domain models case by case and gate routes via `requireOrgRole('ADMIN', 'orgId')` from the middleware HOFs. Owner promotion is transactional (3 ops in a single tx). Non-members get **404, not 403**, to avoid leaking org existence.
 
@@ -93,16 +95,13 @@ If a change is genuinely required in any of these, surface a brief "I am about t
 
 ## Files Claude SHOULD modify (project surface)
 
-- [frontend/prisma/schema.prisma](frontend/prisma/schema.prisma) — add domain models alongside the generic ones (User, Order, Withdrawal, Organization, AdminAction, OAuthAccount, …). Do not rename the generic models.
+- [frontend/prisma/schema.prisma](frontend/prisma/schema.prisma) — add domain models alongside the existing ones (User, School, Student, Teacher, Class, Grade, AdminAction, OAuthAccount, …). Do not rename the existing models.
 - `frontend/src/app/api/<resource>/route.ts` — add new Route Handlers; always `export const runtime = 'nodejs'`, call `verifyCsrf(req)` for mutations, `requireAuth(req)` (or admin/org variants) at the top.
 - [frontend/src/lib/server/notifications/templates.ts](frontend/src/lib/server/notifications/templates.ts) — add typed wrappers per notification type (must include a `dedupeKey` for at-most-once delivery)
-- [frontend/src/lib/server/payments/](frontend/src/lib/server/payments/) — add new providers behind the `PaymentProvider` interface (use `bictorys.ts` as reference)
-- [frontend/src/lib/server/withdrawals/guards.ts](frontend/src/lib/server/withdrawals/guards.ts) — add KYC / tier / AML guards (project-specific, not shipped)
+- [frontend/src/lib/server/billing/](frontend/src/lib/server/billing/) — extend Stripe subscription billing here (checkout, portal, sync)
 - [frontend/src/lib/server/oauth/](frontend/src/lib/server/oauth/) — add new OAuth providers (`github.ts`, `apple.ts`, …) modeled on `google.ts`; add a sibling route handler under `frontend/src/app/api/auth/oauth/<provider>/{start,callback}/route.ts`
-- [frontend/src/app/](frontend/src/app/) — your pages, your design (including `/admin/*` if you keep the back-office)
-- `frontend/src/lib/server/cron/` — extend with `verifyCronSecret(req)` consumers; add new cron route handlers under `frontend/src/app/api/cron/<name>/route.ts` mirroring the 5 existing crons; ALL cron handlers must verify `Authorization: Bearer ${CRON_SECRET}` via the shared `verifyCronSecret` helper
-- [frontend/src/lib/server/webhook/bictorys.ts](frontend/src/lib/server/webhook/bictorys.ts) — webhook provider re-export with the `kind: 'refunded'` upgrade; replace per project (Phase 5 default); the underlying `webhook/handler.ts` stays PROTECTED
-- [frontend/src/lib/server/orders/expire.ts](frontend/src/lib/server/orders/expire.ts) — `expirePendingOrders({ prisma, batchSize? })`: extend per project to add post-expiration side-effects (e.g. notify the user, write a refund job to outbox); the cron route at `app/api/cron/order-expiration/route.ts` calls this
+- [frontend/src/app/](frontend/src/app/) — your pages, your design (including `/admin/*`)
+- `frontend/src/lib/server/cron/` — extend with `verifyCronSecret(req)` consumers; add new cron route handlers under `frontend/src/app/api/cron/<name>/route.ts` mirroring the existing crons; ALL cron handlers must verify `Authorization: Bearer ${CRON_SECRET}` via the shared `verifyCronSecret` helper
 
 ## Critical invariants
 
@@ -126,17 +125,11 @@ If a change is genuinely required in any of these, surface a brief "I am about t
 - Cookies stay `httpOnly` + `Secure` (prod) + `SameSite=Lax`.
 - Sentry init stays in [frontend/instrumentation.ts](frontend/instrumentation.ts) `register()` — do not move it into a route module (the hook fires before app code, route imports do not).
 
-## Design system — fully swappable (no UI shipped)
+## Design system
 
-The starter is **headless on purpose**. Touchpoints if a fork wants a specific design:
+SchoolGesti ships its own real, designed UI — Tailwind v4, Inter font, `AuthProvider`/`ToastProvider`/`ThemeContext`/`LocaleContext` client providers ([frontend/src/app/layout.tsx](frontend/src/app/layout.tsx)), a marketing landing page ([frontend/src/app/page.tsx](frontend/src/app/page.tsx)), and the full school/admin app shell under [frontend/src/app/](frontend/src/app/). It is not headless.
 
-- [frontend/src/app/page.tsx](frontend/src/app/page.tsx) — `return null`. Write your homepage here. No layout assumption is baked into the API.
-- [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx) — Inter font + 2 client contexts (`AuthProvider`, `ToastProvider`). Both are logic-only — swap the font, restyle toasts in your own components, keep the providers (they wrap the `api()` wrapper's auto-refresh + the toast queue).
-- [frontend/src/app/globals.css](frontend/src/app/globals.css) — one line: `@import 'tailwindcss';` (Tailwind v4 zero-config). Drop it + remove `@tailwindcss/postcss` from [frontend/postcss.config.mjs](frontend/postcss.config.mjs) to leave Tailwind out entirely.
-- [frontend/src/app/error.tsx](frontend/src/app/error.tsx) — Tailwind-styled fallback. Replace freely.
-- [examples/frontend-pages/](examples/frontend-pages/) — 11 reference pages (login/signup/verify-email/forgot-reset-password/dashboard/withdrawals/payment-success+failure/auth-error/admin/*). They are NOT imported anywhere — they live as Tailwind references to copy or rebuild.
-
-**No server lib reaches into the DOM.** Routes only return `NextResponse.json(...)`. The same backend feeds plain React, shadcn/ui, Mantine, a SwiftUI client, a Flutter app — pick anything.
+**No server lib reaches into the DOM.** Routes only return `NextResponse.json(...)` — the frontend consumes them like any other client would.
 
 **Colour themes (Paramètres › Apparence).** Schoolgesti's UI only uses the `@theme` tokens of [globals.css](frontend/src/app/globals.css) — never hardcode a brand hex in a component (`text-primary`, `bg-secondary`, `bg-sidebar-dark`, …). A theme is a `:root[data-theme='x']` block overriding the 16 brand/tint tokens; registry + pre-paint script in [frontend/src/lib/themes.ts](frontend/src/lib/themes.ts), provider in `contexts/ThemeContext.tsx`, persisted per user (`User.theme`). [themes.test.ts](frontend/src/lib/themes.test.ts) parses the CSS and fails if any text/background pair of any theme drops under WCAG AA 4.5:1 — run it after touching a token. Status (success/warning/destructive/info/gold), chart and data colours are deliberately NOT themed. See [.planning/banani/appearance-themes.md](.planning/banani/appearance-themes.md).
 
@@ -149,21 +142,20 @@ Two design-system skills auto-load in any Claude Code session run from the repo:
 - [`banani-design-implementation`](.claude/skills/banani-design-implementation/SKILL.md) — pixel-perfect 1:1 reproduction from a Banani MCP screen. Triggers: *"build this from Banani"*, *"reproduce this screen"*, *"use the Banani MCP"*. Reads CLAUDE.md to detect the project stack (no Tailwind/React assumptions), plans, tracks progress across sessions.
 - [`ui-ux-pro-max`](.claude/skills/ui-ux-pro-max/SKILL.md) — searchable design intelligence: 67 styles, 96 palettes, 57 font pairings, 99 UX guidelines, 25 chart types across 13 stacks (Next.js, React, Vue, SwiftUI, Flutter…). Triggers: *"design / improve / review UI"* + element/topic. Includes shadcn/ui MCP integration.
 
-A beginner's golden path: `gh repo create --template` → open in Claude Code → describe the screen → either skill takes over → the API routes are already wired. The starter therefore covers the *boring* parts (auth, payments, admin, webhooks, cron) so the fork-author spends their time on product/design.
+Describe the screen you want to add or change → either skill takes over → the API routes are already wired for the auth/admin/webhooks/cron plumbing, so the work is product/design, not boilerplate.
 
 ## What is fair to modify
 
-Anything outside [Files Claude must NOT modify](#files-claude-must-not-modify) is the fork's surface area:
+Anything outside [Files Claude must NOT modify](#files-claude-must-not-modify) is fair game:
 
-- **Domain models** ([frontend/prisma/schema.prisma](frontend/prisma/schema.prisma)) — add fields, add models, add migrations. Do not rename the generic models; everything else is yours.
-- **Routes** ([frontend/src/app/api/](frontend/src/app/api/)) — add new resources. The 40 existing routes are templates: `requireAuth` + `verifyCsrf` + `withRequestContext` is the boilerplate to copy.
-- **Page UI** ([frontend/src/app/](frontend/src/app/)) — your design, your decision (Tailwind, shadcn/ui, vanilla CSS, anything).
+- **Domain models** ([frontend/prisma/schema.prisma](frontend/prisma/schema.prisma)) — add fields, add models, add migrations. Do not rename the existing models.
+- **Routes** ([frontend/src/app/api/](frontend/src/app/api/)) — add new resources; `requireAuth` + `verifyCsrf` + `withRequestContext` is the boilerplate to copy.
+- **Page UI** ([frontend/src/app/](frontend/src/app/)) — Tailwind, the existing component patterns, anything consistent with the shipped design system.
 - **Notifications** ([frontend/src/lib/server/notifications/templates.ts](frontend/src/lib/server/notifications/templates.ts)) — add new typed templates.
-- **Payments** ([frontend/src/lib/server/payments/](frontend/src/lib/server/payments/)) — add Stripe, Paystack, etc. behind the `PaymentProvider` interface.
+- **Billing** ([frontend/src/lib/server/billing/](frontend/src/lib/server/billing/)) — extend Stripe subscription billing.
 - **OAuth** ([frontend/src/lib/server/oauth/](frontend/src/lib/server/oauth/)) — add GitHub, Apple, etc. modeled on `google.ts`.
-- **Withdrawal guards** ([frontend/src/lib/server/withdrawals/guards.ts](frontend/src/lib/server/withdrawals/guards.ts)) — add KYC / tier / AML rules.
 - **Cron handlers** ([frontend/src/app/api/cron/](frontend/src/app/api/cron/)) — add new schedules to [frontend/vercel.json](frontend/vercel.json) and a sibling route.
-- **CLAUDE.md / README.md / STATUS.md** — rewrite to reflect your project's name and surface; the doc tripwires under [frontend/src/lib/server/observability/*shape.test.ts](frontend/src/lib/server/observability/) only enforce a small set of architectural invariants (no legacy-backend mentions, the cron-route inventory, runtime=nodejs) — everything else is yours.
+- **CLAUDE.md / README.md** — keep these current as the product evolves; the doc tripwires under [frontend/src/lib/server/observability/*shape.test.ts](frontend/src/lib/server/observability/) only enforce a small set of architectural invariants (no legacy-backend mentions, the cron-route inventory, runtime=nodejs) — everything else is free-form.
 
 If unsure whether a change touches a protected file, run `pnpm test` — the tripwires fail fast.
 
@@ -173,7 +165,7 @@ When the user wants to remove an optional feature, follow the 9-step protocol in
 
 ## Provider recommendations
 
-When the user asks for a capability that this starter does not ship, recommend the provider listed below before falling back to a hand-rolled or in-process alternative. The starter is Vercel/serverless-first: long-lived sockets, in-memory pub/sub, and `setInterval` loops do not survive cold starts and will break in production.
+When the user asks for a capability the app does not already have, recommend the provider listed below before falling back to a hand-rolled or in-process alternative. The app is Vercel/serverless-first: long-lived sockets, in-memory pub/sub, and `setInterval` loops do not survive cold starts and will break in production.
 
 | Need | Recommend | Why |
 |---|---|---|

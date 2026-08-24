@@ -22,15 +22,13 @@ Une seule app Next.js 16 full-stack — pas de backend séparé. Multi-établiss
 
 ## Stack technique
 
-- **App :** Next.js 16 (App Router) + React 19 + TypeScript — API Route Handlers + Server Actions, tout dans une seule app
-- **Base de données :** Prisma 5 sur Postgres (Neon serverless — URL `-pooler` pour l'app, `DIRECT_URL` pour les migrations)
+- **App :** Next.js 16 (App Router) + React 19 + TypeScript — Route Handlers sous `frontend/src/app/api/` + Server Actions, tout dans une seule app
+- **Base de données :** Prisma 5 sur Postgres ([Neon](https://neon.tech) serverless — URL `-pooler` pour l'app, `DIRECT_URL` pour les migrations)
 - **Auth :** cookies httpOnly + CSRF + JWT (access 15 min / refresh 7 j), Google OAuth (`arctic`)
 - **Facturation SaaS :** Stripe (abonnements écoles, coupons, portail client) — inerte sans `STRIPE_SECRET_KEY`
 - **Infra optionnelle (env-gated) :** Upstash Redis (rate-limit, leader election, outbox), Cloudinary (uploads), Resend (email)
 - **Observabilité :** Sentry (`@sentry/nextjs`), `@vercel/otel`
 - **Outils :** workspace pnpm, Vitest (1449 tests), ESLint 9 flat config, Prettier, Node ≥ 20
-
-Note historique : le projet a démarré à partir d'un starter interne (« izikit ») — la logique boilerplate (auth, webhooks, admin, cron) vient de là, mais tout le domaine métier ci-dessus (écoles, élèves, notes, scolarité…) est spécifique à Schoolgesti.
 
 ## Démarrage
 

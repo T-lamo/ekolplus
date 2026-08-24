@@ -11,7 +11,7 @@ Take a brand-new user from **« Claude Code just installed, repo just cloned »*
 
 The kit is **cloud-only by design**. No Docker. No local Postgres. No MinIO. No Mailpit. The only mandatory dependency is a Postgres database — **Neon is the default provider** and the kit is **tuned for Neon's serverless behavior**: the webhook handler offloads side-effects to the outbox to fit Neon's 2s transaction ceiling, `/forgot-password` calibrates its timing-attack floor at 350ms based on Neon-pooler latency, and the `env-shape.test.ts` tripwire locks `.env.example` to the Neon `-pooler` hostname format. Alternatives (Supabase / Railway / Render / RDS / self-hosted) work — the SQL is standard — but **require user-side tuning** (timing floor, connection params); only propose them if the user explicitly insists. The 5 optional providers (Resend / Cloudinary / Bictorys / Google OAuth / Sentry / Upstash) are env-gated and inert when absent.
 
-This skill exists because [WORKFLOW.md](../../../WORKFLOW.md) lists ~8 pre-requisites (Claude Code itself, Node, pnpm, gh CLI, 4 Claude Code skills, Neon account, Banani account, .mcp.json edit, .env.local creation, secret generation) and a beginner cannot reliably execute that list without guidance. Deploys go through GitHub push (Vercel imports the repo), so no Vercel CLI install is required locally.
+This skill exists because a fresh setup has ~8 pre-requisites (Claude Code itself, Node, pnpm, gh CLI, 4 Claude Code skills, Neon account, Banani account, .mcp.json edit, .env.local creation, secret generation) and a beginner cannot reliably execute that list without guidance. Deploys go through GitHub push (Vercel imports the repo), so no Vercel CLI install is required locally.
 
 > **Not a magic button.** Several steps require human action (creating Neon + Banani accounts, copying API keys, pasting `/plugin` commands) — the AI cannot do them. The skill makes these gates **explicit, sequential, and unmissable**, instead of letting a beginner discover them via cryptic build errors.
 
@@ -244,7 +244,7 @@ Si tout vert : 🎉 imprime un récap félicitations + le hand-off vibe coding :
 >
 > *Si tu as connecté Banani en Phase 5 : sélectionne tes écrans et dis "reproduis ces écrans-là" — le skill `banani-design-implementation` prendra le relais.*
 >
-> *Pour déployer plus tard sur Vercel : dis-moi "déploie sur Vercel" quand tu es prêt. Voir [WORKFLOW.md](../../../WORKFLOW.md) — la section « Pour aller plus loin » y mentionne aussi GSD comme level-up optionnel quand le projet devient gros.*
+> *Pour déployer plus tard sur Vercel : dis-moi "déploie sur Vercel" quand tu es prêt. GSD (`get-shit-done-cc`) reste un level-up optionnel si le projet devient gros — pas requis pour shipper.*
 
 Si quelque chose rouge : stop, colle l'output qui échoue, explique en français simple, propose un fix. **Ne dis jamais « tout est prêt »** tant que les 3 commandes ne sont pas vertes.
 

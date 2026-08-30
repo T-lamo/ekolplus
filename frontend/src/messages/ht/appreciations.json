@@ -61,6 +61,11 @@
     "menuView": "Wè apresyasyon an",
     "menuEdit": "Modifye apresyasyon an",
     "menuDelete": "Efase apresyasyon an",
+    "help": {
+      "pageOverview": "Gade epi pibliye apresyasyon jeneral fen trimès chak elèv nan klas la. Chanje klas oswa trimès ak filtè yo, epi sèvi ak onglè yo pou wè vi pa matyè a oswa estatistik klas la.",
+      "positive": "Elèv ki gen mansyon « Trè byen » oswa « Byen » pou trimès sa a — total sa a konsène tout klas la, menm si gen yon rechèch oswa yon filtè aktif nan tablo ki anba a.",
+      "alert": "Elèv ki gen mansyon « Ensifizan » pou trimès sa a, ki merite yon atansyon patikilye — total sa a konsène tout klas la, kèlkeswa filtè tablo a anba a."
+    },
     "summary": {
       "totalStudents": "Total elèv",
       "totalStudentsSub": "{className} — {term}",

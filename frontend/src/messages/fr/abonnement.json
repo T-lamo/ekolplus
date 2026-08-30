@@ -272,7 +272,11 @@
     "toastDowngradeScheduled": "Rétrogradation programmée — {plan} reste actif jusqu’au {date}.",
     "toastIntervalUpdated": "Cycle de facturation mis à jour.",
     "loadErrorNoSchool": "Aucun établissement rattaché à ce compte.",
-    "loadErrorRestricted": "La facturation est réservée aux administrateurs de l’établissement."
+    "loadErrorRestricted": "La facturation est réservée aux administrateurs de l’établissement.",
+    "help": {
+      "pageOverview": "Gérez le plan de votre établissement, suivez votre consommation par rapport aux limites incluses dans le plan, et retrouvez vos factures — tout est mis à jour en direct depuis Stripe.",
+      "manageProration": "Changer de cycle de facturation est proratisé et facturé immédiatement par Stripe. Une rétrogradation, elle, ne prend effet qu’à la fin de la période déjà payée — sans remboursement, mais sans coupure d’accès avant cette date."
+    }
   },
   "errors": {
     "stripeNotConfigured": "La facturation en ligne n’est pas encore activée sur cette plateforme.",

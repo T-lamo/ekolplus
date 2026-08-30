@@ -60,6 +60,11 @@
     "menuView": "View appreciation",
     "menuEdit": "Edit appreciation",
     "menuDelete": "Delete appreciation",
+    "help": {
+      "pageOverview": "View and publish each student's general end-of-term appreciation for this class. Switch class or term with the filters, and use the tabs to see the by-subject view or the class statistics.",
+      "positive": "Students with an \"Excellent\" or \"Good\" mention for this term — this total covers the whole class, even if a search or filter is active in the table below.",
+      "alert": "Students with an \"Insufficient\" mention for this term, worth watching closely — this total covers the whole class, regardless of the table's filters below."
+    },
     "summary": {
       "totalStudents": "Total students",
       "totalStudentsSub": "{className} — {term}",

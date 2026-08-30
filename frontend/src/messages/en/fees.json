@@ -75,7 +75,12 @@
     },
     "printReceiptNoPayment": "No payment recorded for this student.",
     "printReceiptLoadError": "Unable to load the receipt.",
-    "remainingInline": "Remaining: {amount}"
+    "remainingInline": "Remaining: {amount}",
+    "help": {
+      "pageOverview": "Track tuition payments per student: search, filter by class or status, and see the total collected against what's expected. Use \"Plan setup\" to configure each class's installments.",
+      "overdueAlert": "This alert appears as soon as at least one installment is past its due date and still unpaid; it disappears automatically once all overdue balances are settled.",
+      "statusColumn": "Calculated from the student's installments and payments: \"Overdue\" as soon as a due date has passed, \"Up to date\" once everything is paid, \"Partial\" after a first payment, \"Unpaid\" until any payment is recorded."
+    }
   },
   "stub": "This feature is coming soon.",
   "overdue": {
@@ -132,7 +137,12 @@
     "reminderChannelWhatsappDesc": "Paid (Meta fees) — otherwise sent by email, free",
     "byClassTitle": "Overdue by class",
     "quickActionsTitle": "Quick actions",
-    "exportExcel": "Export to Excel"
+    "exportExcel": "Export to Excel",
+    "help": {
+      "pageOverview": "Lists every overdue installment, one row per student and installment: filter by class, search by name, and check rows to send a bulk reminder.",
+      "automationPanel": "These settings control automatic reminders sent to guardians. If \"Automatic reminders\" is turned off in Configuration, none of these will go out, even if enabled here.",
+      "statusColumn": "Severity is based on how many days overdue: \"Recent\" up to 14 days, \"Overdue\" from 15 to 30 days, \"Critical\" beyond 30 days."
+    }
   },
   "disputeModal": {
     "title": "Mark as disputed",
@@ -210,7 +220,12 @@
     "trancheLatePenaltyField": "Late penalty (optional)",
     "trancheGraceDaysField": "Grace period (days)",
     "noLatePenalty": "No penalty",
-    "saveTranche": "Save"
+    "saveTranche": "Save",
+    "help": {
+      "pageOverview": "Pick a class, then set its total amount and payment installments for the academic year. The currency and automatic reminders set here apply to the whole school.",
+      "autoRemindersToggle": "Master switch for reminders: when off, no automatic reminder goes out, even if the cadences are enabled on Reminders & Overdue.",
+      "latePenaltyToggle": "Once enabled, the percentage and grace period set on each installment apply automatically as soon as a due date passes, no manual action needed."
+    }
   },
   "registerPayment": {
     "title": "Register a payment",

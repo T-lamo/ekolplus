@@ -46,6 +46,10 @@
     "emptyFiltered": "No results.",
     "noClass": "No class",
     "birthPrefix": "Born",
+    "help": {
+      "pageOverview": "Find every student enrolled at the school here. Search by name, filter by class or status, and use \"Add a student\" to create a new record or \"Export\" to download the list as CSV.",
+      "statusColumn": "This status is set manually from the student's profile (the \"Edit\" action) — it isn't calculated automatically from the attendance recorded in the Attendance module."
+    },
     "table": {
       "student": "Student",
       "class": "Class",

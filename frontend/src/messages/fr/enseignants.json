@@ -25,6 +25,10 @@
     "noSubject": "Aucune matière",
     "noSubjectShort": "Aucune",
     "noClassLabel": "Aucune classe",
+    "help": {
+      "pageOverview": "Retrouvez ici tous les enseignants de l'établissement. Recherchez par nom, filtrez par matière ou par statut, et utilisez « Ajouter un enseignant » pour créer une nouvelle fiche ou « Exporter » pour télécharger la liste en CSV.",
+      "weeklyHoursColumn": "Ce total est calculé automatiquement à partir des matières et classes assignées à l'enseignant (page « Matières ») — il ne correspond pas aux heures de contrat saisies dans sa fiche."
+    },
     "table": {
       "teacher": "Enseignant",
       "subjects": "Matière(s)",

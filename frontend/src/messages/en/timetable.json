@@ -27,6 +27,11 @@
   },
   "toolbar": {
     "title": "Timetable",
+    "help": {
+      "pageOverview": "View and manage the school's timetable. Switch views (Month, Week, Day, Agenda) and filter by class, teacher, room, or subject to narrow down what's shown.",
+      "createSession": "You can also click directly on an empty slot in the grid to create a session pre-filled with that day and time, or click an existing session to edit it.",
+      "exportScope": "The CSV export only includes sessions from the period currently shown (month, week, or day) and follows the active class, teacher, room, and subject filters."
+    },
     "headerWithYear": "{label} school year — {view}",
     "viewsAriaLabel": "View",
     "views": {

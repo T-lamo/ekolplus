@@ -176,6 +176,11 @@
     "clearGradesConfirm": "Efase tout nòt {name} pou peryòd sa a?",
     "gradesDeletedToast": "Nòt yo efase.",
     "deleteErrorToast": "Erè pandan n ap efase.",
+    "help": {
+      "pageOverview": "Antre epi gade nòt elèv yo, klas pa klas ak matyè pa matyè. Chanje ant vi Tablo a, Estatistik yo ak Pa evalyasyon an selon sa ou vle analize.",
+      "averageComputation": "Mwayèn nan sèlman konte evalyasyon ki pibliye e ki make « pran an kont nan mwayèn nan », pondere selon kowefisyan yo epi ranmennen sou 20. Yon elèv ki absan pou yon evalyasyon pa antre nan kalkil sa a, li pa jwenn 0.",
+      "insufficientThreshold": "Yo konte yon elèv isit la depi mwayèn jeneral li pase anba 8/20."
+    },
     "csv": {
       "colNumber": "Nimewo",
       "colGeneralAverage": "Mwayèn jeneral",

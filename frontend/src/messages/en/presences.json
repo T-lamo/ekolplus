@@ -13,6 +13,12 @@
   },
   "statusFilterExcused": "Excused absence",
   "notRecorded": "Not recorded",
+  "help": {
+    "pageOverview": "Track attendance by class and period. Use the filters to switch class, week/month, or status, and click \"Export\" to download a report.",
+    "attendanceRate": "Percentage of students present across all recorded days this quarter.",
+    "lateThisMonth": "Number of late arrivals recorded since the start of the current month, compared with the same number of days last month.",
+    "markAttendance": "Click a cell in the table to mark or change a student's attendance for that day."
+  },
   "summary": {
     "totalStudents": "Total students",
     "presentToday": "Present today",

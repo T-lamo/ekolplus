@@ -175,6 +175,11 @@
     "clearGradesConfirm": "Supprimer toutes les notes de {name} pour cette période ?",
     "gradesDeletedToast": "Notes supprimées.",
     "deleteErrorToast": "Erreur lors de la suppression.",
+    "help": {
+      "pageOverview": "Saisissez et consultez les notes des élèves, classe par classe et matière par matière. Basculez entre les vues Tableau, Statistiques et Par évaluation selon ce que vous voulez analyser.",
+      "averageComputation": "La moyenne ne compte que les évaluations publiées cochées « prise en compte dans la moyenne », pondérées par leur coefficient et ramenées sur 20. Un élève absent à une évaluation est exclu de son calcul, il n'est pas noté à 0.",
+      "insufficientThreshold": "Un élève est comptabilisé ici dès que sa moyenne générale passe sous la barre de 8/20."
+    },
     "csv": {
       "colNumber": "N°",
       "colGeneralAverage": "Moyenne générale",

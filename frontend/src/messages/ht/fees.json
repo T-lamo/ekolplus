@@ -76,7 +76,12 @@
     },
     "printReceiptNoPayment": "Pa gen peman anrejistre pou elèv sa a.",
     "printReceiptLoadError": "Nou pa ka chaje resi a.",
-    "remainingInline": "Rès pou peye : {amount}"
+    "remainingInline": "Rès pou peye : {amount}",
+    "help": {
+      "pageOverview": "Swiv peman eskolarite yo pou chak elèv : chèche, filtre pa klas oswa pa estati, epi gade total ki kolekte parapò ak total ki dwe antre. Sèvi ak « Konfigirasyon plan yo » pou konfigire vèsman chak klas.",
+      "overdueAlert": "Alèt sa a parèt kou omwen yon vèsman pase dat echeyans li san li pa peye ; li disparèt otomatikman lè tout reta yo regle.",
+      "statusColumn": "Kalkile apati vèsman ak peman elèv la : « An reta » kou yon echeyans pase, « Ajou » lè tout bagay peye, « Pasyèl » apre yon premye vèsman, « Pa peye » toutotan pa gen okenn peman ki anrejistre."
+    }
   },
   "stub": "Fonksyonalite sa a ap vini byento.",
   "overdue": {
@@ -133,7 +138,12 @@
     "reminderChannelWhatsappDesc": "Peye (frè Meta) — otreman voye pa imèl, gratis",
     "byClassTitle": "Reta pa klas",
     "quickActionsTitle": "Aksyon rapid",
-    "exportExcel": "Ekspòte Excel"
+    "exportExcel": "Ekspòte Excel",
+    "help": {
+      "pageOverview": "Montre chak vèsman ki an reta, yon liy pou chak elèv ak chak vèsman : filtre pa klas, chèche pa non, epi koche liy yo pou voye yon rapèl an gwoup.",
+      "automationPanel": "Reglaj sa yo kontwole voye otomatik rapèl bay responsab yo. Si « Rapèl otomatik » dezaktive nan Konfigirasyon, okenn rapèl p ap voye, menm si yo aktive isit la.",
+      "statusColumn": "Gravite a kalkile dapre kantite jou reta a : « Resan » jiska 14 jou, « An reta » ant 15 ak 30 jou, « Kritik » pase 30 jou."
+    }
   },
   "disputeModal": {
     "title": "Make kòm kontestasyon",
@@ -211,7 +221,12 @@
     "trancheLatePenaltyField": "Penalite reta (opsyonèl)",
     "trancheGraceDaysField": "Delè gras (jou)",
     "noLatePenalty": "Pa gen penalite",
-    "saveTranche": "Anrejistre"
+    "saveTranche": "Anrejistre",
+    "help": {
+      "pageOverview": "Chwazi yon klas, epi defini montan total li ak vèsman peman pou ane akademik la. Lajan ak rapèl otomatik ou konfigire isit la aplike pou tout lekòl la.",
+      "autoRemindersToggle": "Prensipal boutwon rapèl yo : lè li dezaktive, okenn rapèl otomatik pa voye, menm si kadans yo aktive nan Rapèl & Enpeye.",
+      "latePenaltyToggle": "Yon fwa li aktive, pousantaj ak delè gras ki defini sou chak vèsman aplike otomatikman kou yon echeyans pase, san okenn aksyon manyèl."
+    }
   },
   "registerPayment": {
     "title": "Anrejistre yon peman",

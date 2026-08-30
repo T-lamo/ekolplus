@@ -28,6 +28,9 @@
       "invalidSet": "La liste des niveaux a changé — rechargez la page et réessayez.",
       "orgRoleInsufficient": "Vous n'avez pas les droits pour modifier les niveaux.",
       "validationFailed": "Nom invalide (1 à 40 caractères)."
+    },
+    "help": {
+      "pageOverview": "Glissez une ligne pour réordonner les niveaux, du premier au dernier. Cet ordre sert à suggérer automatiquement les promotions lors du passage à l'année scolaire suivante."
     }
   },
   "classes": {
@@ -93,6 +96,9 @@
         "unassigned": "Non affecté",
         "places": "places",
         "active": "Active"
+      },
+      "help": {
+        "pageOverview": "Recherchez et filtrez les classes par niveau, puis basculez entre vue grille et vue tableau. Les cartes ci-dessus résument le nombre de classes, de niveaux, de professeurs principaux affectés et la moyenne de matières par classe."
       }
     },
     "pageShell": {
@@ -342,6 +348,10 @@
         "classes": "Classes",
         "evaluationCount": "Nb. évaluations",
         "status": "Statut"
+      },
+      "help": {
+        "pageOverview": "Recherchez et filtrez les matières par domaine ou par statut (active, non affectée, archivée), puis basculez entre vue grille et vue tableau.",
+        "coefficientColumn": "Les coefficients et les enseignants affectés se configurent maintenant par classe, directement depuis la fiche de la matière ou le tableau « Détail des matières » de chaque classe — les anciens écrans dédiés Coefficients et Affectations redirigent ici."
       }
     },
     "status": {
@@ -836,6 +846,9 @@
         "capacityRange": "Nombre entier entre 1 et 5000.",
         "nameTaken": "Une salle porte déjà ce nom."
       }
+    },
+    "help": {
+      "pageOverview": "Recherchez et filtrez les salles par type ou par statut, puis basculez entre vue grille et vue tableau. Les salles actives alimentent le champ Salle de la fiche classe et la modale de séance de l'emploi du temps ; une salle désactivée n'y est plus proposée."
     }
   },
   "modeleBulletin": {
@@ -877,6 +890,10 @@
       "personal": "Personnel"
     },
     "editLink": "Éditer",
+    "help": {
+      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre — les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être actif à la fois.",
+      "activeTemplate": "Le modèle actif est celui utilisé pour générer les bulletins officiels de vos élèves. Pour en activer un autre, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme actif »."
+    },
     "block": {
       "header": "En-tête",
       "studentInfo": "Infos élève",

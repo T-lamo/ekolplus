@@ -74,6 +74,13 @@ export async function POST(
         expiresInMs: INVITE_TTL_MS,
         createOrgMembership: false, // already has one from the first invite
         linkExisting: async () => {}, // already linked
+        // Resolve the target User by the id we already know (Teacher.userId)
+        // rather than by `email` — an admin may have edited the teacher's
+        // email between the first invite and this resend, and that PATCH
+        // does not keep the linked User.email in sync (see PATCH handler in
+        // ../route.ts). Looking up by email here would miss the real user
+        // and create an orphaned, membership-less account instead.
+        existingUserId: teacher.userId,
       });
       if (!result.ok) {
         return NextResponse.json(

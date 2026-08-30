@@ -93,6 +93,9 @@ describe('POST /api/school/teachers/[id]/invite', () => {
         createOrgMembership: true,
       }),
     );
+    // Fresh invite (no Teacher.userId yet): must NOT pass existingUserId —
+    // the email-based lookup is correct here since there's no user yet.
+    expect(mockCreatePortalInvite.mock.calls[0]![0]).not.toHaveProperty('existingUserId');
     // The linkExisting callback passed to createPortalInvite must set Teacher.userId.
     const callback = mockCreatePortalInvite.mock.calls[0]![0].linkExisting;
     await callback(prismaMock as never, 'user_new');
@@ -119,6 +122,12 @@ describe('POST /api/school/teachers/[id]/invite', () => {
       where: { userId: 'user_existing', type: 'TEACHER_INVITE', usedAt: null },
       data: { usedAt: expect.any(Date) },
     });
+    // Must resolve the target User by id (Teacher.userId), not by email —
+    // an admin may have edited the teacher's email since the first invite,
+    // and that PATCH does not keep the linked User.email in sync.
+    expect(mockCreatePortalInvite).toHaveBeenCalledWith(
+      expect.objectContaining({ existingUserId: 'user_existing' }),
+    );
   });
 
   it('surfaces EMAIL_ALREADY_IN_USE from createPortalInvite', async () => {

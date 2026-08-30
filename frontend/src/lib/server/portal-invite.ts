@@ -24,6 +24,14 @@ export interface CreatePortalInviteParams {
    * Student Portal spec. Teacher accounts need one (role MEMBER). */
   createOrgMembership: boolean;
   linkExisting: (tx: Prisma.TransactionClient, userId: string) => Promise<void>;
+  /** Resend path: the caller already knows which User this invite targets
+   * (e.g. Teacher.userId) — resolve by id instead of by `email`. Without
+   * this, resending after an admin edits the linked entity's email (which
+   * does NOT keep the underlying User.email in sync) would look up the
+   * wrong/no user by the new email and silently create an orphaned,
+   * membership-less User. When set, the email-based `existing` lookup
+   * below is skipped entirely. */
+  existingUserId?: string;
 }
 
 export type CreatePortalInviteResult =
@@ -33,10 +41,15 @@ export type CreatePortalInviteResult =
 export async function createPortalInvite(
   params: CreatePortalInviteParams,
 ): Promise<CreatePortalInviteResult> {
-  const existing = await prisma.user.findUnique({
-    where: { email: params.email },
-    select: { id: true, passwordHash: true },
-  });
+  const existing = params.existingUserId
+    ? await prisma.user.findUnique({
+        where: { id: params.existingUserId },
+        select: { id: true, passwordHash: true },
+      })
+    : await prisma.user.findUnique({
+        where: { email: params.email },
+        select: { id: true, passwordHash: true },
+      });
   if (existing) {
     // Only a membership in a DIFFERENT org blocks the invite — that's the
     // real hostile-takeover/enumeration concern this check exists for. A

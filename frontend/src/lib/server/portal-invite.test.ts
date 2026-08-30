@@ -133,6 +133,33 @@ describe('createPortalInvite', () => {
     expect(linkExisting).toHaveBeenCalledWith(expect.anything(), 'user_existing');
   });
 
+  it('existingUserId provided: looks up the User by id, not by email', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_existing',
+      passwordHash: null,
+    } as never);
+    prismaMock.organizationMember.findFirst.mockResolvedValue(null as never);
+    const linkExisting = vi.fn().mockResolvedValue(undefined);
+
+    const result = await createPortalInvite({
+      ...baseParams,
+      existingUserId: 'user_existing',
+      linkExisting,
+    });
+
+    expect(result).toEqual({ ok: true, userId: 'user_existing' });
+    // Resolved by id — the email-based lookup path must not run at all.
+    expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'user_existing' },
+      select: { id: true, passwordHash: true },
+    });
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: baseParams.email } }),
+    );
+    expect(linkExisting).toHaveBeenCalledWith(expect.anything(), 'user_existing');
+  });
+
   it('remaps a P2002 unique-constraint race on the transaction to EMAIL_ALREADY_IN_USE', async () => {
     // Two concurrent invites for the same brand-new email: both pass the
     // pre-check (findUnique resolves null for both), but the @@unique on

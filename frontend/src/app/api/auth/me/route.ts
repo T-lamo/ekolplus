@@ -28,7 +28,11 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchoolIncludingTeacher, resolveMyTeacherProfile } from '@/lib/server/school';
+import {
+  resolveMySchoolIncludingTeacher,
+  resolveMyTeacherProfile,
+  resolveMyStudentProfile,
+} from '@/lib/server/school';
 import { zPhone } from '@/lib/server/zod-helpers';
 import { THEME_KEYS, isThemeKey } from '@/lib/themes';
 import { LOCALE_KEYS, isLocaleKey } from '@/lib/locales';
@@ -80,6 +84,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
         : null;
     const isTeacherOnly = mySchool?.role === 'MEMBER' && teacherProfile !== null;
+    const studentProfile = await resolveMyStudentProfile(auth.user.sub);
+    const isStudentOnly = studentProfile !== null;
 
     const user = {
       // Keep `sub` for back-compat with the AuthContext payload contract
@@ -112,6 +118,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         : null,
       hasPassword: !!dbUser?.passwordHash,
       isTeacherOnly,
+      isStudentOnly,
       passwordChangedAt: dbUser?.passwordChangedAt
         ? dbUser.passwordChangedAt instanceof Date
           ? dbUser.passwordChangedAt.toISOString()

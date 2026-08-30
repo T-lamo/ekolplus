@@ -20,16 +20,22 @@ vi.mock('@/lib/server/school', async () => {
     ...actual,
     resolveMySchoolIncludingTeacher: vi.fn(),
     resolveMyTeacherProfile: vi.fn(),
+    resolveMyStudentProfile: vi.fn(),
   };
 });
 
 import { verifyToken } from '@/lib/server/auth';
-import { resolveMySchoolIncludingTeacher, resolveMyTeacherProfile } from '@/lib/server/school';
+import {
+  resolveMySchoolIncludingTeacher,
+  resolveMyTeacherProfile,
+  resolveMyStudentProfile,
+} from '@/lib/server/school';
 import { GET, PATCH } from './route';
 import { NextRequest } from 'next/server';
 
 const mockResolveMySchoolIncludingTeacher = vi.mocked(resolveMySchoolIncludingTeacher);
 const mockResolveMyTeacherProfile = vi.mocked(resolveMyTeacherProfile);
+const mockResolveMyStudentProfile = vi.mocked(resolveMyStudentProfile);
 
 function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequest {
   const headers: Record<string, string> = {};
@@ -186,6 +192,50 @@ describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () =>
     mockResolveMyTeacherProfile.mockResolvedValue(null);
     const res = await GET(reqWithAuthHeader());
     expect((await res.json()).user.isTeacherOnly).toBe(false);
+  });
+});
+
+describe('GET /api/auth/me — isStudentOnly (Espace Élève Phase 1)', () => {
+  beforeEach(() => {
+    // Same rationale as the isTeacherOnly describe above: this mock is
+    // module-scoped and never reset by the file-level beforeEach, so clear
+    // call history only (each test below sets its own .mockResolvedValue).
+    mockResolveMyStudentProfile.mockClear();
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: 'user_1',
+      email: 'student@school.test',
+      tokenVersion: 0,
+    });
+    // requireAuth()'s internal tokenVersion re-check — the route handler's
+    // own richer `dbUser` query is the *second* call to the same mock and
+    // falls through to whatever a given test below configures.
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      id: 'user_1',
+      email: 'student@school.test',
+      tokenVersion: 0,
+    } as never);
+  });
+
+  it('reports isStudentOnly=true for a student-linked account', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'student@school.test',
+      role: 'USER',
+    } as never);
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(true);
+  });
+
+  it('reports isStudentOnly=false for a plain staff account', async () => {
+    mockResolveMyStudentProfile.mockResolvedValue(null);
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
   });
 });
 

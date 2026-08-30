@@ -29,6 +29,13 @@ export interface User {
   /** UI language key (src/lib/locales.ts) chosen in Paramètres › Langue;
    * null = never chosen (default: French). Applied by LocaleProvider. */
   locale: string | null;
+  /** true for a purely teacher-linked account (MEMBER role + a linked
+   * TeacherProfile) — mirrors GET /api/auth/me's deny-by-default check in
+   * lib/server/school.ts. false for an admin who happens to also be
+   * teacher-linked, so their normal school-admin experience is untouched.
+   * Drives the login-time redirect (login/page.tsx) and the
+   * belt-and-suspenders guard in (school)/layout.tsx. */
+  isTeacherOnly?: boolean;
 }
 
 interface AuthContextValue {

@@ -67,6 +67,7 @@ model User {
   oauthAccounts       OAuthAccount[]
   adminActions        AdminAction[]
   appreciations       Appreciation[]
+  teacherProfile      Teacher?
   attendanceMarks     Attendance[]
   recordedFeePayments FeePayment[]
   openedFeeDisputes   FeeDispute[]
@@ -432,6 +433,9 @@ model Teacher {
   responsibleSubjects Subject[]      @relation("SubjectResponsible")
 
   timetableSessions TimetableSession[]
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
 }

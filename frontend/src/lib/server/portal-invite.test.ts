@@ -37,9 +37,10 @@ describe('createPortalInvite', () => {
         data: expect.objectContaining({ email: 'teacher@school.test', passwordHash: null }),
       }),
     );
-    expect(prismaMock.organizationMember.create).toHaveBeenCalledWith(
+    expect(prismaMock.organizationMember.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ organizationId: 'org_1', role: 'MEMBER' }),
+        where: { organizationId_userId: { organizationId: 'org_1', userId: 'user_new' } },
+        create: expect.objectContaining({ organizationId: 'org_1', role: 'MEMBER' }),
       }),
     );
     expect(linkExisting).toHaveBeenCalledWith(expect.anything(), 'user_new');
@@ -61,7 +62,7 @@ describe('createPortalInvite', () => {
       linkExisting: vi.fn().mockResolvedValue(undefined),
     });
 
-    expect(prismaMock.organizationMember.create).not.toHaveBeenCalled();
+    expect(prismaMock.organizationMember.upsert).not.toHaveBeenCalled();
   });
 
   it('reuses an existing passwordless, membership-less User instead of creating a duplicate', async () => {

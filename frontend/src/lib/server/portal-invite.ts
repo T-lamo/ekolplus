@@ -64,8 +64,12 @@ export async function createPortalInvite(
         }));
 
       if (params.createOrgMembership) {
-        await tx.organizationMember.create({
-          data: { userId: user.id, organizationId: params.organizationId, role: 'MEMBER' },
+        await tx.organizationMember.upsert({
+          where: {
+            organizationId_userId: { organizationId: params.organizationId, userId: user.id },
+          },
+          create: { organizationId: params.organizationId, userId: user.id, role: 'MEMBER' },
+          update: {},
         });
       }
 

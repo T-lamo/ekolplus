@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, AlertTriangle, Save, Check, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -24,57 +25,64 @@ export default function EditEvaluationPage() {
   const confirm = useConfirm();
   const params = useParams<{ evaluationId: string }>();
   const [value, setValue] = useState<EvaluationConfig | null>(null);
-  const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
-  const [terms, setTerms] = useState<TermOption[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const { data: evaluationData } = useApi<{
+    evaluation: {
+      id: string;
+      classSubjectId: string;
+      termId: string;
+      label: string;
+      type: EvaluationConfig['type'];
+      maxScore: number;
+      coefficient: number;
+      countsTowardAverage: boolean;
+      notes: string | null;
+      date: string | null;
+    };
+  }>(`/api/school/evaluations/${params.evaluationId}`, {
+    skip: !user,
+    onError: (err) => {
+      setLoadError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
+      return true;
+    },
+  });
+  const { data: classSubjectsData, error: classSubjectsErr } = useApi<{
+    classSubjects: ClassSubjectOption[];
+  }>('/api/school/class-subjects', { skip: !user });
+  const { data: schoolData, error: schoolErr } = useApi<{
+    academicYear: { terms: TermOption[] } | null;
+  }>('/api/school', { skip: !user });
+  const classSubjects = classSubjectsData?.classSubjects ?? [];
+  const terms = schoolData?.academicYear?.terms ?? [];
+  const error = loadError ?? (classSubjectsErr || schoolErr ? t('loadError') : null);
+
+  const seededForId = useRef<string | null>(null);
   useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{
-        evaluation: {
-          id: string;
-          classSubjectId: string;
-          termId: string;
-          label: string;
-          type: EvaluationConfig['type'];
-          maxScore: number;
-          coefficient: number;
-          countsTowardAverage: boolean;
-          notes: string | null;
-          date: string | null;
-        };
-      }>(`/api/school/evaluations/${params.evaluationId}`),
-      api<{ classSubjects: ClassSubjectOption[] }>('/api/school/class-subjects'),
-      api<{ academicYear: { terms: TermOption[] } | null }>('/api/school'),
-    ])
-      .then(([ev, cs, school]) => {
-        setValue({
-          id: ev.evaluation.id,
-          classSubjectId: ev.evaluation.classSubjectId,
-          termId: ev.evaluation.termId,
-          label: ev.evaluation.label,
-          type: ev.evaluation.type,
-          maxScore: ev.evaluation.maxScore,
-          coefficient: ev.evaluation.coefficient,
-          countsTowardAverage: ev.evaluation.countsTowardAverage,
-          notes: ev.evaluation.notes,
-          date: ev.evaluation.date ? ev.evaluation.date.slice(0, 10) : null,
-        });
-        setClassSubjects(cs.classSubjects);
-        setTerms(school.academicYear?.terms ?? []);
-      })
-      .catch((err) => {
-        setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
+    if (evaluationData && seededForId.current !== params.evaluationId) {
+      seededForId.current = params.evaluationId;
+      const ev = evaluationData.evaluation;
+      setValue({
+        id: ev.id,
+        classSubjectId: ev.classSubjectId,
+        termId: ev.termId,
+        label: ev.label,
+        type: ev.type,
+        maxScore: ev.maxScore,
+        coefficient: ev.coefficient,
+        countsTowardAverage: ev.countsTowardAverage,
+        notes: ev.notes,
+        date: ev.date ? ev.date.slice(0, 10) : null,
       });
-  }, [user, params.evaluationId, t]);
+    }
+  }, [evaluationData, params.evaluationId]);
 
   async function onSave() {
     if (!value) return;
     setSaving(true);
-    setError(null);
+    setLoadError(null);
     try {
       await api(`/api/school/evaluations/${value.id}`, {
         method: 'PATCH',
@@ -93,7 +101,7 @@ export default function EditEvaluationPage() {
       toast(t('updatedToast'), 'success');
       router.push(`/pedagogie/carnet-de-notes/${value.id}/saisie`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
+      setLoadError(err instanceof ApiError ? err.message : tCommon('errors.network'));
     } finally {
       setSaving(false);
     }
@@ -114,7 +122,7 @@ export default function EditEvaluationPage() {
       toast(t('deletedToast'), 'success');
       router.push('/pedagogie/carnet-de-notes');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
+      setLoadError(err instanceof ApiError ? err.message : tCommon('errors.network'));
       setDeleting(false);
     }
   }

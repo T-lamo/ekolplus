@@ -8,9 +8,10 @@
 // mode deferred. Mutations SUPERADMIN-only — plain ADMIN gets a read-only
 // banner and disabled controls.
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { CreditCard, Database, Lock, RotateCcw, Save, ShieldAlert } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_SETTINGS as T, APPEARANCE } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
@@ -119,32 +120,32 @@ function SettingsSection({
 
 export default function SystemSettingsPage() {
   const { toast } = useToast();
-  const [data, setData] = useState<SettingsResponse | null>(null);
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<SettingsResponse>('/api/admin/system/settings');
+  const error = dataErr ? T.loadError : null;
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [initial, setInitial] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    setError(null);
-    try {
-      const d = await api<SettingsResponse>('/api/admin/system/settings');
-      setData(d);
-      const f = toForm(d);
+  // Seed the draft form once per fetch — never on a background
+  // revalidation of the same data, which would otherwise silently discard
+  // an in-progress unsaved edit. `onSave` resets this ref right before its
+  // own explicit `load()` call so the post-save server truth (e.g. rounded
+  // prices) re-syncs the draft and `dirty` correctly clears.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (!seededRef.current && data) {
+      seededRef.current = true;
+      const f = toForm(data);
       setForm(f);
       setInitial(JSON.stringify(f));
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  }, [data]);
 
   const dirty = useMemo(() => form !== null && JSON.stringify(form) !== initial, [form, initial]);
   const readOnly = data ? !data.isSuperadmin : true;
@@ -192,6 +193,7 @@ export default function SystemSettingsPage() {
         },
       });
       toast(T.saved, 'success');
+      seededRef.current = false;
       await load();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : T.loadError, 'error');

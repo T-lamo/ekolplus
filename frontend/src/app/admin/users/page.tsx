@@ -10,7 +10,7 @@
 // (PII edit, email flow and impersonation are deliberately not wired — see
 // plan's Open questions).
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   Activity,
   Eye,
@@ -26,6 +26,7 @@ import {
   UserX,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_SAAS, ADMIN_USERS as T } from '@/lib/constants';
@@ -99,9 +100,6 @@ export default function AdminUsersPage() {
   // cursors[i] = cursor that loads page i+1 (cursors[0] = null → first page).
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<UsersResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   useEffect(() => {
@@ -111,36 +109,31 @@ export default function AdminUsersPage() {
 
   const effectiveStatus = tab === 'all' ? status : tab;
 
-  const load = useCallback(async () => {
-    setError(null);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('q', debouncedSearch);
-    if (effectiveStatus) params.set('status', effectiveStatus);
-    if (org) params.set('org', org);
-    if (orgRole) params.set('orgRole', orgRole);
-    params.set('limit', String(PAGE_SIZE));
-    const cursor = cursors[page - 1];
-    if (cursor) params.set('cursor', cursor);
-    try {
-      const res = await api<UsersResponse>(`/api/admin/users?${params.toString()}`);
-      setData(res);
-      setCursors((prev) => {
-        if (prev.length === page && res.nextCursor) return [...prev, res.nextCursor];
-        return prev;
-      });
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, effectiveStatus, org, orgRole, page, cursors]);
+  const usersParams = new URLSearchParams();
+  if (debouncedSearch) usersParams.set('q', debouncedSearch);
+  if (effectiveStatus) usersParams.set('status', effectiveStatus);
+  if (org) usersParams.set('org', org);
+  if (orgRole) usersParams.set('orgRole', orgRole);
+  usersParams.set('limit', String(PAGE_SIZE));
+  const cursor = cursors[page - 1];
+  if (cursor) usersParams.set('cursor', cursor);
+  const usersPath = `/api/admin/users?${usersParams.toString()}`;
+  const { data, loading, error: dataErr, refresh: load } = useApi<UsersResponse>(usersPath);
+  const error = dataErr ? T.loadError : null;
 
-  // `cursors` is deliberately not an effect trigger: it only ever grows with
-  // the nextCursor of the page just loaded — re-running on that append would
-  // double-fetch every page.
+  // Append the next page's cursor once `data` is CONFIRMED fresh for the
+  // CURRENT `usersPath` (matches the cache entry useApi just wrote for this
+  // exact path/page/cursor combo) — `cursors`/`page` are local state, not
+  // URL params, so this component never remounts on page change, and
+  // useApi's `data` can still hold the PREVIOUS page's response for one
+  // render while the new fetch is in flight. Appending from that stale
+  // value would corrupt the cursor stack (duplicate/misaligned cursors).
   useEffect(() => {
-    void load();
-  }, [debouncedSearch, effectiveStatus, org, orgRole, page]);
+    if (data && getCache(usersPath) === data && cursors.length === page && data.nextCursor) {
+      const nextCursor = data.nextCursor;
+      setCursors((prev) => [...prev, nextCursor]);
+    }
+  }, [data, usersPath, cursors.length, page]);
 
   // Any filter change restarts pagination from scratch.
   useEffect(() => {

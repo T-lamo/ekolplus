@@ -7,7 +7,7 @@
 // from the mockup has no backing table — replaced by the real "Notes
 // saisies" + "Appréciations rédigées" counters (plan's open question).
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   FileSpreadsheet,
   GraduationCap,
@@ -16,7 +16,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { ADMIN_STATS as T } from '@/lib/constants';
 import { fmtUsd, fmtUsdRound } from '@/lib/admin-format';
 import { exportToCsv } from '@/lib/csv-export';
@@ -115,25 +115,13 @@ function GrowthTile({
 
 export default function AdminStatisticsPage() {
   const [period, setPeriod] = useState('12m');
-  const [data, setData] = useState<StatsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      setData(await api<StatsResponse>(`/api/admin/stats/detailed?period=${period}`));
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [period]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<StatsResponse>(`/api/admin/stats/detailed?period=${period}`);
+  const error = dataErr ? T.loadError : null;
 
   function onExport() {
     if (!data) return;

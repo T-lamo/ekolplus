@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,7 +20,8 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi, getCache } from '@/lib/useApi';
 import { submitOrQueue } from '@/lib/offline-queue';
 import { OFFLINE_SYNC } from '@/lib/constants';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -106,8 +107,6 @@ export default function SaisirAppreciationPage() {
   const params = useParams<{ studentId: string }>();
   const searchParams = useSearchParams();
 
-  const [data, setData] = useState<StudentAppreciationData | null>(null);
-  const [roster, setRoster] = useState<AppreciationsListData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [termId, setTermId] = useState(searchParams.get('termId') ?? '');
@@ -119,34 +118,44 @@ export default function SaisirAppreciationPage() {
   const [assiduite, setAssiduite] = useState('');
   const [subjectRows, setSubjectRows] = useState<Record<string, SubjectRowState>>({});
 
+  const dataQs = termId ? `?termId=${termId}` : '';
+  const dataPath = `/api/school/students/${params.studentId}/appreciations${dataQs}`;
+  const { data } = useApi<StudentAppreciationData>(dataPath, {
+    skip: !user,
+    onError: (err) => {
+      setError(
+        err instanceof ApiError && err.status === 404 ? t('studentNotFound') : t('loadError'),
+      );
+      return true;
+    },
+  });
+
+  const seededRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!user) return;
-    const qs = termId ? `?termId=${termId}` : '';
-    api<StudentAppreciationData>(`/api/school/students/${params.studentId}/appreciations${qs}`)
-      .then((d) => {
-        setData(d);
-        setTermId(d.resolvedTermId ?? '');
-        setMention(d.general?.mention ?? suggestMention(d.overallAverage));
-        setText(d.general?.text ?? '');
-        setComportement(d.general?.comportement ?? '');
-        setInvestissement(d.general?.investissement ?? '');
-        setAssiduite(d.general?.assiduite ?? '');
-        const rows: Record<string, SubjectRowState> = {};
-        for (const s of d.subjects) rows[s.subjectId] = { text: s.text ?? '' };
-        setSubjectRows(rows);
-        return api<AppreciationsListData>(
-          `/api/school/classes/${d.classId}/appreciations?termId=${d.resolvedTermId}`,
-        );
-      })
-      .then(setRoster)
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('studentNotFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, params.studentId, termId, t]);
+    if (data && getCache(dataPath) === data && seededRef.current !== dataPath) {
+      seededRef.current = dataPath;
+      setTermId(data.resolvedTermId ?? '');
+      setMention(data.general?.mention ?? suggestMention(data.overallAverage));
+      setText(data.general?.text ?? '');
+      setComportement(data.general?.comportement ?? '');
+      setInvestissement(data.general?.investissement ?? '');
+      setAssiduite(data.general?.assiduite ?? '');
+      const rows: Record<string, SubjectRowState> = {};
+      for (const s of data.subjects) rows[s.subjectId] = { text: s.text ?? '' };
+      setSubjectRows(rows);
+    }
+  }, [data, dataPath]);
+
+  const rosterPath = data
+    ? `/api/school/classes/${data.classId}/appreciations?termId=${data.resolvedTermId}`
+    : '';
+  const { data: roster } = useApi<AppreciationsListData>(rosterPath, {
+    skip: !data,
+    onError: () => {
+      setError(t('loadError'));
+      return true;
+    },
+  });
 
   const filledSubjects = useMemo(
     () => Object.values(subjectRows).filter((r) => r.text.trim() !== '').length,

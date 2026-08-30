@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -39,16 +40,18 @@ export function NotificationsTab() {
   const t = useTranslations('Settings.notifications');
   const tCommon = useTranslations('Common');
   const { toast } = useToast();
-  const [prefs, setPrefs] = useState<Prefs | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: prefsData,
+    loading,
+    mutate,
+  } = useApi<{ prefs: Prefs }>('/api/notifications/prefs', {
+    onError: () => {
+      mutate({ prefs: {} });
+      return true;
+    },
+  });
+  const prefs = prefsData?.prefs ?? null;
   const [savingKey, setSavingKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    api<{ prefs: Prefs }>('/api/notifications/prefs')
-      .then((res) => setPrefs(res.prefs))
-      .catch(() => setPrefs({}))
-      .finally(() => setLoading(false));
-  }, []);
 
   async function toggle(eventType: string, channel: Channel, next: boolean) {
     if (!prefs) return;
@@ -58,16 +61,16 @@ export function NotificationsTab() {
       ...prefs,
       [eventType]: { ...prefs[eventType], [channel]: next },
     };
-    setPrefs(optimistic);
+    mutate({ prefs: optimistic });
     setSavingKey(savingId);
     try {
       const res = await api<{ prefs: Prefs }>('/api/notifications/prefs', {
         method: 'PATCH',
         body: { prefs: { [eventType]: { [channel]: next } } },
       });
-      setPrefs(res.prefs);
+      mutate({ prefs: res.prefs });
     } catch (err) {
-      setPrefs(previous);
+      mutate({ prefs: previous });
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setSavingKey(null);

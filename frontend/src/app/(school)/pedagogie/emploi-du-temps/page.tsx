@@ -6,7 +6,7 @@
 // Aujourd'hui, Classe / Enseignant / Salle / Matière, Exporter CSV), the
 // grid (or agenda / month), the legend. Data: GET /api/school/timetable for
 // the visible range; filters apply client-side (a week is ~150 rows at most).
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   BookOpen,
@@ -22,13 +22,15 @@ import {
   School,
   UserCheck,
 } from 'lucide-react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { invalidateCachePrefix, useApi } from '@/lib/useApi';
 import { exportToCsv } from '@/lib/csv-export';
 import type { RoomRow } from '@/lib/rooms';
 import { cn } from '@/lib/utils';
 import { LIST_PAGE } from '@/lib/layout';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { SelectItem } from '@/components/ui/Select';
 import { TimetableFilterSelect } from '@/components/school/timetable/TimetableFilterSelect';
@@ -104,16 +106,13 @@ export default function EmploiDuTempsPage() {
     if (window.innerWidth < 1024) setView('day');
   }, []);
   const [filters, setFilters] = useState<TimetableFilters>(EMPTY_FILTERS);
-  const [meta, setMeta] = useState<Meta | null>(null);
-  const [data, setData] = useState<TimetableResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  // Ranges already fetched (cleared after every mutation) — switching views
-  // or stepping back to a week already seen is instant, and the previous
-  // grid stays on screen while a new range loads instead of a skeleton.
-  const cache = useRef(new Map<string, TimetableResponse>());
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [modal, setModal] = useState<SessionFormInitial | null>(null);
+
+  function handleLoadError(err: unknown) {
+    setLoadError(err instanceof ApiError ? err.message : t('networkError'));
+    return true;
+  }
 
   // Visible range — the whole month grid, the week (Mon–Sun) or the day.
   const range = useMemo(() => {
@@ -126,97 +125,86 @@ export default function EmploiDuTempsPage() {
     return { from: monday, to: addDays(monday, 6) };
   }, [view, anchor]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [school, classes, teachers, subjects, links, roomCatalog] = await Promise.all([
-          api<{
-            academicYear: { id: string; label: string; startDate: string; endDate: string } | null;
-          }>('/api/school'),
-          api<{ classes: ClassOption[] }>('/api/school/classes'),
-          api<{ teachers: TeacherOption[] }>('/api/school/teachers'),
-          api<{ subjects: SubjectOption[] }>('/api/school/subjects'),
-          api<{ classSubjects: ClassSubjectLink[] }>('/api/school/class-subjects'),
-          api<{ rooms: RoomRow[] }>('/api/school/rooms'),
-        ]);
-        if (cancelled) return;
-        setMeta({
-          academicYear: school.academicYear
-            ? {
-                id: school.academicYear.id,
-                label: school.academicYear.label,
-                startDate: school.academicYear.startDate.slice(0, 10),
-                endDate: school.academicYear.endDate.slice(0, 10),
-              }
-            : null,
-          classes: classes.classes.map((c) => ({
-            id: c.id,
-            name: c.name,
-            color: c.color ?? null,
-            room: c.room ?? null,
-            roomId: c.roomId ?? null,
-          })),
-          teachers: teachers.teachers.map((teacher) => ({
-            id: teacher.id,
-            name: teacher.name,
-            photoUrl: teacher.photoUrl ?? null,
-          })),
-          subjects: subjects.subjects.map((s) => ({
-            id: s.id,
-            name: s.name,
-            abbreviation: s.abbreviation ?? null,
-            color: s.color ?? null,
-          })),
-          links: links.classSubjects.map((l) => ({
-            classId: l.classId,
-            subjectId: l.subjectId,
-            teacherId: l.teacherId ?? null,
-            weeklyHours: l.weeklyHours ?? null,
-          })),
-          rooms: roomCatalog.rooms,
-        });
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : t('networkError'));
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: schoolData } = useApi<{
+    academicYear: { id: string; label: string; startDate: string; endDate: string } | null;
+  }>('/api/school', { onError: handleLoadError });
+  const { data: classesData } = useApi<{ classes: ClassOption[] }>('/api/school/classes', {
+    onError: handleLoadError,
+  });
+  const { data: teachersData } = useApi<{ teachers: TeacherOption[] }>('/api/school/teachers', {
+    onError: handleLoadError,
+  });
+  const { data: subjectsData } = useApi<{ subjects: SubjectOption[] }>('/api/school/subjects', {
+    onError: handleLoadError,
+  });
+  const { data: linksData } = useApi<{ classSubjects: ClassSubjectLink[] }>(
+    '/api/school/class-subjects',
+    { onError: handleLoadError },
+  );
+  const { data: roomCatalogData } = useApi<{ rooms: RoomRow[] }>('/api/school/rooms', {
+    onError: handleLoadError,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    const key = `${range.from}_${range.to}`;
-    const hit = cache.current.get(key);
-    if (hit) {
-      setData(hit);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    api<TimetableResponse>(`/api/school/timetable?from=${range.from}&to=${range.to}`)
-      .then((res) => {
-        cache.current.set(key, res);
-        if (!cancelled) {
-          setData(res);
-          setError(null);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : t('networkError'));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
+  const meta: Meta | null = useMemo(() => {
+    if (
+      !schoolData ||
+      !classesData ||
+      !teachersData ||
+      !subjectsData ||
+      !linksData ||
+      !roomCatalogData
+    )
+      return null;
+    return {
+      academicYear: schoolData.academicYear
+        ? {
+            id: schoolData.academicYear.id,
+            label: schoolData.academicYear.label,
+            startDate: schoolData.academicYear.startDate.slice(0, 10),
+            endDate: schoolData.academicYear.endDate.slice(0, 10),
+          }
+        : null,
+      classes: classesData.classes.map((c) => ({
+        id: c.id,
+        name: c.name,
+        color: c.color ?? null,
+        room: c.room ?? null,
+        roomId: c.roomId ?? null,
+      })),
+      teachers: teachersData.teachers.map((teacher) => ({
+        id: teacher.id,
+        name: teacher.name,
+        photoUrl: teacher.photoUrl ?? null,
+      })),
+      subjects: subjectsData.subjects.map((s) => ({
+        id: s.id,
+        name: s.name,
+        abbreviation: s.abbreviation ?? null,
+        color: s.color ?? null,
+      })),
+      links: linksData.classSubjects.map((l) => ({
+        classId: l.classId,
+        subjectId: l.subjectId,
+        teacherId: l.teacherId ?? null,
+        weeklyHours: l.weeklyHours ?? null,
+      })),
+      rooms: roomCatalogData.rooms,
     };
-  }, [range.from, range.to, refreshKey]);
+  }, [schoolData, classesData, teachersData, subjectsData, linksData, roomCatalogData]);
+
+  // Ranges already fetched are cached by useApi itself (keyed by the exact
+  // `from`/`to` query string) — switching views or stepping back to a week
+  // already seen is instant, and the previous grid stays on screen while a
+  // new range loads instead of a skeleton (useApi doesn't clear `data` on a
+  // path change with no cache hit, which is exactly the effect wanted here).
+  const {
+    data,
+    loading,
+    refresh: refreshTimetable,
+  } = useApi<TimetableResponse>(`/api/school/timetable?from=${range.from}&to=${range.to}`, {
+    onError: handleLoadError,
+  });
+  const error = loadError;
 
   const filtered = useMemo<TimetableSession[]>(() => {
     if (!data) return [];
@@ -304,7 +292,10 @@ export default function EmploiDuTempsPage() {
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {meta?.academicYear
               ? t('headerWithYear', { label: meta.academicYear.label, view: subtitleView })
@@ -340,6 +331,7 @@ export default function EmploiDuTempsPage() {
             <Plus size={14} />
             {t('addSession')}
           </Button>
+          <HelpTooltip label={t('help.createSession')} />
         </div>
       </div>
 
@@ -445,10 +437,13 @@ export default function EmploiDuTempsPage() {
             ))}
           </TimetableFilterSelect>
         </div>
-        <Button variant="outline" size="sm" className="ml-auto w-fit" onClick={onExport}>
-          <FileSpreadsheet size={13} />
-          {t('export')}
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="outline" size="sm" className="w-fit" onClick={onExport}>
+            <FileSpreadsheet size={13} />
+            {t('export')}
+          </Button>
+          <HelpTooltip label={t('help.exportScope')} />
+        </div>
       </div>
 
       {/* ── Body ───────────────────────────────────────────────── */}
@@ -534,8 +529,8 @@ export default function EmploiDuTempsPage() {
           onSaved={(message) => {
             setModal(null);
             toast(message);
-            cache.current.clear();
-            setRefreshKey((k) => k + 1);
+            invalidateCachePrefix('/api/school/timetable');
+            void refreshTimetable();
           }}
         />
       )}

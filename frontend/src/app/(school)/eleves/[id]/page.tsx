@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import {
   ArrowLeft,
   Pencil,
@@ -16,7 +16,8 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -79,17 +80,36 @@ function StudentProfile() {
   const tOrdinal = useTranslations('Eleves.ordinal');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [student, setStudent] = useState<StudentDetail | null>(null);
-  const [results, setResults] = useState<StudentResults | null>(null);
-  const [attendance, setAttendance] = useState<StudentAttendanceResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<(typeof TAB_KEYS)[number]>(
     initialTab && TAB_KEYS.some((k) => k === initialTab)
       ? (initialTab as (typeof TAB_KEYS)[number])
       : 'info',
   );
   const [editing, setEditing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  function handleLoadError(err: unknown) {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+    setLoadError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
+    return true;
+  }
+  const { data: studentData, refresh: refreshStudent } = useApi<{ student: StudentDetail }>(
+    `/api/school/students/${params.id}`,
+    { skip: !user, onError: handleLoadError },
+  );
+  const student = studentData?.student ?? null;
+  const { data: results, refresh: refreshResults } = useApi<StudentResults>(
+    `/api/school/students/${params.id}/results`,
+    { skip: !user, onError: handleLoadError },
+  );
+  const { data: attendance, refresh: refreshAttendance } = useApi<StudentAttendanceResponse>(
+    `/api/school/students/${params.id}/attendance`,
+    { skip: !user, onError: handleLoadError },
+  );
+  const error = loadError;
 
   const TABS = [
     { key: 'info' as const, label: t('tabs.info'), icon: UserCheck },
@@ -98,31 +118,6 @@ function StudentProfile() {
     { key: 'appreciations' as const, label: t('tabs.appreciations'), icon: Star },
     { key: 'bulletins' as const, label: t('tabs.bulletins'), icon: FileText },
   ];
-
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ student: StudentDetail }>(`/api/school/students/${params.id}`),
-      api<StudentResults>(`/api/school/students/${params.id}/results`),
-      api<StudentAttendanceResponse>(`/api/school/students/${params.id}/attendance`),
-    ])
-      .then(([s, r, a]) => {
-        setStudent(s.student);
-        setResults(r);
-        setAttendance(a);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('notFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, params.id, refreshKey, t]);
 
   if (!user || (student === null && !error)) {
     return (
@@ -402,7 +397,11 @@ function StudentProfile() {
         <StudentFormModal
           studentId={student.id}
           onClose={() => setEditing(false)}
-          onSaved={() => setRefreshKey((k) => k + 1)}
+          onSaved={() => {
+            void refreshStudent();
+            void refreshResults();
+            void refreshAttendance();
+          }}
         />
       )}
     </div>

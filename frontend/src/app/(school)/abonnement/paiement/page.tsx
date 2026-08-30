@@ -35,7 +35,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -87,17 +87,11 @@ function PaiementScreen() {
   const isConfirmation = params.get('etape') === 'confirmation';
   const canceled = params.get('annule') === '1';
   const { data, loading, error, busy, redirectTo, reload } = useBilling(Boolean(user));
-  const [school, setSchool] = useState<SchoolResponse['school'] | null>(null);
+  const { data: schoolData } = useApi<SchoolResponse>('/api/school', { skip: !user });
+  const school = schoolData?.school ?? null;
   const [interval, setInterval_] = useState<BillingIntervalKey>(
     params.get('cycle') === 'YEAR' ? 'YEAR' : 'MONTH',
   );
-
-  useEffect(() => {
-    if (!user) return;
-    api<SchoolResponse>('/api/school')
-      .then((r) => setSchool(r.school))
-      .catch(() => setSchool(null));
-  }, [user]);
 
   // Annual toggle only if the annual Price is configured server-side.
   useEffect(() => {

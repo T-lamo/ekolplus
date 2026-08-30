@@ -6,9 +6,10 @@
 // server-derived so they can't drift. The mockup's school-restriction select
 // is deferred (the API accepts schoolId, no UI consumer yet).
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Copy, FileSpreadsheet, Gift, Percent, Plus, Tag, Ticket, Wallet } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_COUPONS as T, ADMIN_SAAS } from '@/lib/constants';
 import { couponDiscountLabel, fmtDateMed, fmtUsdRound } from '@/lib/admin-format';
@@ -82,9 +83,6 @@ export default function AdminCouponsPage() {
   const [type, setType] = useState('');
   const [plan, setPlan] = useState('');
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<CouponsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   useEffect(() => {
@@ -92,25 +90,18 @@ export default function AdminCouponsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('q', debouncedSearch);
-    if (type) params.set('type', type);
-    if (plan) params.set('plan', plan);
-    params.set('page', String(page));
-    try {
-      setData(await api<CouponsResponse>(`/api/admin/billing/coupons?${params.toString()}`));
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, type, plan, page]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const couponsParams = new URLSearchParams();
+  if (debouncedSearch) couponsParams.set('q', debouncedSearch);
+  if (type) couponsParams.set('type', type);
+  if (plan) couponsParams.set('plan', plan);
+  couponsParams.set('page', String(page));
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<CouponsResponse>(`/api/admin/billing/coupons?${couponsParams.toString()}`);
+  const error = dataErr ? T.loadError : null;
 
   useEffect(() => {
     setPage(1);

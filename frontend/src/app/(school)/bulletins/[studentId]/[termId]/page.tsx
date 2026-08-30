@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { ASIDE_GRID } from '@/lib/layout';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
@@ -32,23 +33,25 @@ import type { StudentBulletinData } from '../../types';
 export default function BulletinViewerPage() {
   const user = useUser();
   const params = useParams<{ studentId: string; termId: string }>();
-  const [data, setData] = useState<StudentBulletinData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    const qs = params.termId ? `?termId=${params.termId}` : '';
-    api<StudentBulletinData>(`/api/school/students/${params.studentId}/bulletin${qs}`)
-      .then(setData)
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) {
-          setError('Élève introuvable.');
-          return;
-        }
-        setError('Impossible de charger le bulletin.');
-      });
-  }, [user, params.studentId, params.termId]);
+  const qs = params.termId ? `?termId=${params.termId}` : '';
+  const { data } = useApi<StudentBulletinData>(
+    `/api/school/students/${params.studentId}/bulletin${qs}`,
+    {
+      skip: !user,
+      onError: (err) => {
+        setLoadError(
+          err instanceof ApiError && err.status === 404
+            ? 'Élève introuvable.'
+            : 'Impossible de charger le bulletin.',
+        );
+        return true;
+      },
+    },
+  );
+  const error = loadError;
 
   if (!user || (!data && !error)) {
     return (

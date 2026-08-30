@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { Tabs } from '@/components/ui/Tabs';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -62,23 +63,18 @@ function SettingsForm() {
     setTab(next);
     router.replace(next === 'profil' ? '/settings' : `/settings?tab=${next}`, { scroll: false });
   }
-  const [data, setData] = useState<SchoolResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    api<SchoolResponse>('/api/school')
-      .then(setData)
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      })
-      .finally(() => setLoading(false));
-  }, [user, router, t]);
+  const { data, loading, mutate } = useApi<SchoolResponse>('/api/school', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+      setError(t('loadError'));
+      return true;
+    },
+  });
 
   if (!user) {
     return (
@@ -125,7 +121,7 @@ function SettingsForm() {
               <EtablissementTab
                 school={data.school}
                 members={data.members}
-                onUpdated={(school) => setData((d) => (d ? { ...d, school } : d))}
+                onUpdated={(school) => mutate({ ...data, school })}
               />
               {myRole === 'OWNER' && <ZoneDangereuseSection schoolName={data.school.name} />}
             </div>
@@ -134,39 +130,36 @@ function SettingsForm() {
             <AnneeScolaireTab
               academicYear={data?.academicYear ?? null}
               role={myRole}
-              onTermAdded={(term: TermData) =>
-                setData((d) => {
-                  if (!d) return d;
-                  if (d.academicYear) {
-                    return {
-                      ...d,
-                      academicYear: { ...d.academicYear, terms: [...d.academicYear.terms, term] },
-                    };
-                  }
-                  // First term ever added — refetch to pick up the
-                  // auto-created AcademicYear rather than guessing its shape.
-                  void api<SchoolResponse>('/api/school').then(setData);
-                  return d;
-                })
-              }
-              onTermUpdated={(term: TermData) =>
-                setData((d) => {
-                  if (!d?.academicYear) return d;
-                  return {
-                    ...d,
+              onTermAdded={(term: TermData) => {
+                if (!data) return;
+                if (data.academicYear) {
+                  mutate({
+                    ...data,
                     academicYear: {
-                      ...d.academicYear,
-                      terms: d.academicYear.terms.map((t) => (t.id === term.id ? term : t)),
+                      ...data.academicYear,
+                      terms: [...data.academicYear.terms, term],
                     },
-                  };
-                })
-              }
-              onGradingScaleUpdated={(gradingScale: string | null) =>
-                setData((d) => {
-                  if (!d?.academicYear) return d;
-                  return { ...d, academicYear: { ...d.academicYear, gradingScale } };
-                })
-              }
+                  });
+                  return;
+                }
+                // First term ever added — refetch to pick up the
+                // auto-created AcademicYear rather than guessing its shape.
+                void api<SchoolResponse>('/api/school').then((res) => mutate(res));
+              }}
+              onTermUpdated={(term: TermData) => {
+                if (!data?.academicYear) return;
+                mutate({
+                  ...data,
+                  academicYear: {
+                    ...data.academicYear,
+                    terms: data.academicYear.terms.map((t) => (t.id === term.id ? term : t)),
+                  },
+                });
+              }}
+              onGradingScaleUpdated={(gradingScale: string | null) => {
+                if (!data?.academicYear) return;
+                mutate({ ...data, academicYear: { ...data.academicYear, gradingScale } });
+              }}
             />
           )}
           {tab === 'admins' && data && <AdministrateursTab members={data.members} />}

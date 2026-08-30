@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useApi } from '@/lib/useApi';
 import {
   Pencil,
   Trash2,
@@ -30,6 +31,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { ViewToggle } from '@/components/ui/ViewToggle';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { GRID_SCROLL, LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
@@ -71,35 +73,35 @@ export default function StudentsPage() {
   const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [students, setStudents] = useState<StudentListItem[] | null>(null);
-  const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [status, setStatus] = useState<'' | StudentStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ students: StudentListItem[] }>('/api/school/students'),
-      api<{ classes: ClassOption[] }>('/api/school/classes'),
-    ])
-      .then(([s, c]) => {
-        setStudents(s.students);
-        setClasses(c.classes);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, refreshKey, t]);
+  const onNoSchool = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+  };
+  const {
+    data: studentsData,
+    error: studentsErr,
+    refresh: refreshStudents,
+    mutate: mutateStudents,
+  } = useApi<{ students: StudentListItem[] }>('/api/school/students', {
+    skip: !user,
+    onError: onNoSchool,
+  });
+  const { data: classesData, error: classesErr } = useApi<{ classes: ClassOption[] }>(
+    '/api/school/classes',
+    { skip: !user, onError: onNoSchool },
+  );
+  const students = studentsData?.students ?? null;
+  const classes = classesData?.classes ?? [];
+  const error = studentsErr || classesErr ? t('loadError') : null;
 
   const filtered = useMemo(() => {
     return (students ?? []).filter((s) => {
@@ -127,7 +129,9 @@ export default function StudentsPage() {
       return;
     try {
       await api(`/api/school/students/${s.id}`, { method: 'DELETE' });
-      setStudents((prev) => (prev ? prev.filter((x) => x.id !== s.id) : prev));
+      mutateStudents((prev) =>
+        prev ? { students: prev.students.filter((x) => x.id !== s.id) } : { students: [] },
+      );
       toast(t('toasts.deleted'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -137,8 +141,14 @@ export default function StudentsPage() {
   async function onSuspend(s: StudentListItem) {
     try {
       await api(`/api/school/students/${s.id}`, { method: 'PATCH', body: { status: 'SUSPENDED' } });
-      setStudents((prev) =>
-        prev ? prev.map((x) => (x.id === s.id ? { ...x, status: 'SUSPENDED' } : x)) : prev,
+      mutateStudents((prev) =>
+        prev
+          ? {
+              students: prev.students.map((x) =>
+                x.id === s.id ? { ...x, status: 'SUSPENDED' } : x,
+              ),
+            }
+          : { students: [] },
       );
       toast(t('toasts.suspended'), 'success');
     } catch (err) {
@@ -209,7 +219,10 @@ export default function StudentsPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           {students ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
               {t(students.length > 1 ? 'countEnrolled.other' : 'countEnrolled.one', {
@@ -335,7 +348,12 @@ export default function StudentsPage() {
                       <Th>{t('table.student')}</Th>
                       <Th>{t('table.class')}</Th>
                       <Th>{t('table.dateOfBirth')}</Th>
-                      <Th>{t('table.status')}</Th>
+                      <Th>
+                        <span className="inline-flex items-center gap-1">
+                          {t('table.status')}
+                          <HelpTooltip label={t('help.statusColumn')} />
+                        </span>
+                      </Th>
                       <Th>{t('table.average')}</Th>
                       <Th>{t('table.attendance')}</Th>
                       <Th className="w-[70px]" />
@@ -409,7 +427,7 @@ export default function StudentsPage() {
         <StudentFormModal
           studentId={editing === 'new' ? null : editing}
           onClose={() => setEditing(null)}
-          onSaved={() => setRefreshKey((k) => k + 1)}
+          onSaved={() => refreshStudents()}
         />
       )}
     </div>

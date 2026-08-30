@@ -27,6 +27,7 @@ import type { ComponentType } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -85,9 +86,8 @@ export default function BulletinEditorPage() {
   const t = useTranslations('Configuration.modeleBulletin.editor');
   const tBlock = useTranslations('Configuration.modeleBulletin.block');
   const tBadge = useTranslations('Configuration.modeleBulletin.badge');
-  const [data, setData] = useState<TemplateDetail | null>(null);
   const [config, setConfig] = useState<BulletinTemplateConfig | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [selected, setSelected] = useState<BlockId>('header');
@@ -96,10 +96,37 @@ export default function BulletinEditorPage() {
   const [nameInput, setNameInput] = useState('');
   const [zoom, setZoom] = useState(100);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [school, setSchool] = useState<{
-    logoUrl: string | null;
-    directorSignatureUrl: string | null;
-  } | null>(null);
+
+  const { data, mutate: mutateData } = useApi<TemplateDetail>(
+    `/api/school/bulletin-templates/${params.id}`,
+    {
+      skip: !user,
+      onError: (err) => {
+        setDetailError(
+          err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'),
+        );
+        return true;
+      },
+    },
+  );
+  const error = detailError;
+  const { data: schoolData, mutate: mutateSchoolData } = useApi<{
+    school: { logoUrl: string | null; directorSignatureUrl: string | null };
+  }>('/api/school', { skip: !user });
+  const school = schoolData?.school ?? null;
+
+  // `config`/`nameInput` are a working copy the user actively edits before
+  // Save — seeded once per template id, never resynced from a later
+  // background revalidation of the cached read (which would otherwise
+  // silently overwrite in-progress unsaved edits).
+  const seededForId = useRef<string | null>(null);
+  useEffect(() => {
+    if (data && seededForId.current !== params.id) {
+      setConfig(data.config);
+      setNameInput(data.name);
+      seededForId.current = params.id;
+    }
+  }, [data, params.id]);
 
   // Zoom level that shows the whole page inside the visible canvas area —
   // recomputed whenever the page format/orientation changes so the user
@@ -126,32 +153,6 @@ export default function BulletinEditorPage() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [config?.pageFormat, config?.orientation, computeFitZoom]);
-
-  useEffect(() => {
-    if (!user) return;
-    api<TemplateDetail>(`/api/school/bulletin-templates/${params.id}`)
-      .then((d) => {
-        setData(d);
-        setConfig(d.config);
-        setNameInput(d.name);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('notFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, params.id, t]);
-
-  useEffect(() => {
-    if (!user) return;
-    api<{ school: { logoUrl: string | null; directorSignatureUrl: string | null } }>('/api/school')
-      .then((d) => setSchool(d.school))
-      .catch(() => {
-        // Non-fatal — the logo/signature panels just show the empty state.
-      });
-  }, [user]);
 
   function patchConfig(patch: Partial<BulletinTemplateConfig>) {
     setConfig((c) => (c ? { ...c, ...patch } : c));
@@ -251,7 +252,7 @@ export default function BulletinEditorPage() {
         body: { isActive: true },
       });
       toast(t('toast.activated'), 'success');
-      setData((d) => (d ? { ...d, isActive: true } : d));
+      mutateData({ ...data, isActive: true });
     } catch {
       toast(t('toast.activateError'), 'error');
     }
@@ -264,7 +265,7 @@ export default function BulletinEditorPage() {
       return;
     }
     if (trimmed === data.name) return;
-    setData((d) => (d ? { ...d, name: trimmed } : d));
+    mutateData({ ...data, name: trimmed });
     setNameInput(trimmed);
     try {
       await api(`/api/school/bulletin-templates/${params.id}`, {
@@ -277,7 +278,7 @@ export default function BulletinEditorPage() {
   }
 
   async function updateSchoolLogo(url: string | null) {
-    setSchool((s) => (s ? { ...s, logoUrl: url } : s));
+    if (school) mutateSchoolData({ school: { ...school, logoUrl: url } });
     try {
       await api('/api/school', { method: 'PUT', body: { logoUrl: url } });
     } catch {
@@ -286,7 +287,7 @@ export default function BulletinEditorPage() {
   }
 
   async function updateSchoolSignature(url: string | null) {
-    setSchool((s) => (s ? { ...s, directorSignatureUrl: url } : s));
+    if (school) mutateSchoolData({ school: { ...school, directorSignatureUrl: url } });
     try {
       await api('/api/school', { method: 'PUT', body: { directorSignatureUrl: url } });
     } catch {

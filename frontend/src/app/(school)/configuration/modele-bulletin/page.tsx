@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   LayoutTemplate,
   CheckCircle2,
@@ -16,10 +16,12 @@ import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { LOCALE_BCP47 } from '@/lib/locales';
@@ -62,22 +64,22 @@ export default function BulletinTemplatesPage() {
   const t = useTranslations('Configuration.modeleBulletin');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [data, setData] = useState<TemplateListData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'personal' | 'global'>('personal');
 
-  useEffect(() => {
-    if (!user) return;
-    api<TemplateListData>('/api/school/bulletin-templates')
-      .then(setData)
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const {
+    data,
+    error: dataErr,
+    mutate: setData,
+  } = useApi<TemplateListData>('/api/school/bulletin-templates', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const error = dataErr ? t('loadError') : null;
 
   async function fork(id: string) {
     try {
@@ -99,9 +101,10 @@ export default function BulletinTemplatesPage() {
         body: { isActive: true },
       });
       toast(t('toast.activated'), 'success');
-      setData((d) =>
-        d ? { ...d, personal: d.personal.map((tpl) => ({ ...tpl, isActive: tpl.id === id })) } : d,
-      );
+      setData((d) => ({
+        personal: (d?.personal ?? []).map((tpl) => ({ ...tpl, isActive: tpl.id === id })),
+        global: d?.global ?? [],
+      }));
     } catch {
       toast(t('toast.activateError'), 'error');
     }
@@ -112,7 +115,10 @@ export default function BulletinTemplatesPage() {
     try {
       await api(`/api/school/bulletin-templates/${id}`, { method: 'DELETE' });
       toast(t('toast.deleted'), 'success');
-      setData((d) => (d ? { ...d, personal: d.personal.filter((tpl) => tpl.id !== id) } : d));
+      setData((d) => ({
+        personal: (d?.personal ?? []).filter((tpl) => tpl.id !== id),
+        global: d?.global ?? [],
+      }));
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_FAILED') {
         toast(err.message, 'error');
@@ -168,7 +174,10 @@ export default function BulletinTemplatesPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
+          <HelpTooltip label={t('help.pageOverview')} />
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
@@ -176,8 +185,11 @@ export default function BulletinTemplatesPage() {
         <Card className="flex-row items-center gap-3 bg-secondary p-4">
           <CheckCircle2 size={20} className="shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
-            <div className="text-caption font-semibold text-primary">
-              {t('activeCard.label', { name: active.name })}
+            <div className="flex items-center gap-1.5">
+              <div className="text-caption font-semibold text-primary">
+                {t('activeCard.label', { name: active.name })}
+              </div>
+              <HelpTooltip label={t('help.activeTemplate')} />
             </div>
             <div className="mt-0.5 text-xs text-secondary-foreground opacity-85">
               {t('activeCard.description', {

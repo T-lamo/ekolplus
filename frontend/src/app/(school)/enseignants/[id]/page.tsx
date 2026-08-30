@@ -6,7 +6,7 @@
 // grid of InfoRow cards. Stats and the Matières & Classes tab are real,
 // derived from ClassSubject assignments — never fabricated numbers.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   BookOpen,
@@ -22,7 +22,8 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -55,8 +56,6 @@ export default function TeacherProfilePage() {
   const tStatus = useTranslations('Enseignants.status');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'info' | 'assignments'>('info');
   const [editing, setEditing] = useState(false);
 
@@ -65,26 +64,25 @@ export default function TeacherProfilePage() {
     { key: 'assignments' as const, label: t('tabs.assignments'), icon: BookOpen },
   ];
 
-  const load = useCallback(() => {
-    api<{ teacher: TeacherDetail }>(`/api/school/teachers/${params.id}`)
-      .then(({ teacher: teacherData }) => setTeacher(teacherData))
-      .catch((err) => {
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: teacherData, refresh: load } = useApi<{ teacher: TeacherDetail }>(
+    `/api/school/teachers/${params.id}`,
+    {
+      skip: !user,
+      onError: (err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
           router.replace('/');
-          return;
+          return true;
         }
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('notFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [params.id, router, t]);
-
-  useEffect(() => {
-    if (!user) return;
-    load();
-  }, [user, load]);
+        setLoadError(
+          err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'),
+        );
+        return true;
+      },
+    },
+  );
+  const teacher = teacherData?.teacher ?? null;
+  const error = loadError;
 
   if (!user || (teacher === null && !error)) {
     return (
@@ -384,7 +382,11 @@ export default function TeacherProfilePage() {
       )}
 
       {editing && (
-        <TeacherFormModal teacherId={teacher.id} onClose={() => setEditing(false)} onSaved={load} />
+        <TeacherFormModal
+          teacherId={teacher.id}
+          onClose={() => setEditing(false)}
+          onSaved={() => void load()}
+        />
       )}
     </div>
   );

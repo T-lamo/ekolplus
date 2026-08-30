@@ -1,14 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Bell, CircleAlert, Eye, FileSpreadsheet, Flag, Send, Wallet } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -84,8 +86,6 @@ export default function OverdueFeesPage() {
   const tStub = useTranslations('Fees');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [data, setData] = useState<OverdueResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -96,28 +96,34 @@ export default function OverdueFeesPage() {
   } | null>(null);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
   const [disputing, setDisputing] = useState<{ studentId: string; trancheId: string } | null>(null);
-  const [automation, setAutomation] = useState<AutomationSettings | null>(null);
 
-  const load = useCallback(() => {
-    const params = new URLSearchParams();
-    if (search.trim()) params.set('search', search.trim());
-    if (classFilter) params.set('classId', classFilter);
-    params.set('page', String(page));
-    api<OverdueResponse>(`/api/school/fees/overdue?${params.toString()}`)
-      .then((res) => {
-        setData(res);
-        setSelected(new Set());
-      })
-      .catch(() => setError(t('loadError')));
-  }, [search, classFilter, page, t]);
+  const overdueParams = new URLSearchParams();
+  if (search.trim()) overdueParams.set('search', search.trim());
+  if (classFilter) overdueParams.set('classId', classFilter);
+  overdueParams.set('page', String(page));
+  const overduePath = `/api/school/fees/overdue?${overdueParams.toString()}`;
+  const {
+    data,
+    error: dataErr,
+    refresh: load,
+  } = useApi<OverdueResponse>(overduePath, { skip: !user });
+  const error = dataErr ? t('loadError') : null;
 
+  // Clear the row-selection set only when the query itself changes
+  // (filters/page) — not on a background revalidation of the SAME query,
+  // which would otherwise silently wipe an in-progress selection.
+  const overdueKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!user) return;
-    load();
-    api<{ settings: AutomationSettings }>('/api/school/fees/automation-settings')
-      .then((res) => setAutomation(res.settings))
-      .catch(() => {});
-  }, [user, load]);
+    if (overdueKeyRef.current !== overduePath) {
+      overdueKeyRef.current = overduePath;
+      setSelected(new Set());
+    }
+  }, [overduePath]);
+
+  const { data: automationData, mutate: mutateAutomation } = useApi<{
+    settings: AutomationSettings;
+  }>('/api/school/fees/automation-settings', { skip: !user });
+  const automation = automationData?.settings ?? null;
 
   function updateSearch(value: string) {
     setPage(1);
@@ -148,11 +154,11 @@ export default function OverdueFeesPage() {
   async function patchAutomation(patch: Partial<AutomationSettings>) {
     if (!automation) return;
     const next = { ...automation, ...patch };
-    setAutomation(next);
+    mutateAutomation({ settings: next });
     try {
       await api('/api/school/fees/automation-settings', { method: 'PATCH', body: patch });
     } catch (err) {
-      setAutomation(automation);
+      mutateAutomation({ settings: automation });
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
   }
@@ -243,7 +249,10 @@ export default function OverdueFeesPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -355,7 +364,12 @@ export default function OverdueFeesPage() {
                           <Th>{t('columns.tranche')}</Th>
                           <Th>{t('columns.amountDue')}</Th>
                           <Th>{t('columns.overdue')}</Th>
-                          <Th>{t('columns.status')}</Th>
+                          <Th>
+                            <span className="inline-flex items-center gap-1">
+                              {t('columns.status')}
+                              <HelpTooltip label={t('help.statusColumn')} />
+                            </span>
+                          </Th>
                           <Th>{t('columns.lastReminder')}</Th>
                           <Th className="w-[70px]" />
                         </tr>
@@ -484,7 +498,10 @@ export default function OverdueFeesPage() {
             <div className="flex flex-col gap-5">
               <Card className="gap-3.5 p-4">
                 <div>
-                  <h2 className="text-sm font-bold text-foreground">{t('automationTitle')}</h2>
+                  <div className="flex items-center gap-1.5">
+                    <h2 className="text-sm font-bold text-foreground">{t('automationTitle')}</h2>
+                    <HelpTooltip label={t('help.automationPanel')} />
+                  </div>
                   <p className="text-xs text-muted-foreground">{t('automationSubtitle')}</p>
                 </div>
                 {!automation ? (
@@ -560,7 +577,7 @@ export default function OverdueFeesPage() {
           studentId={registeringFor.studentId}
           preselectedTrancheId={registeringFor.trancheId}
           onClose={() => setRegisteringFor(null)}
-          onSaved={load}
+          onSaved={() => void load()}
         />
       )}
       {historyFor && <FeeHistoryModal studentId={historyFor} onClose={() => setHistoryFor(null)} />}
@@ -569,7 +586,7 @@ export default function OverdueFeesPage() {
           studentId={disputing.studentId}
           feeTrancheId={disputing.trancheId}
           onClose={() => setDisputing(null)}
-          onSaved={load}
+          onSaved={() => void load()}
         />
       )}
     </div>

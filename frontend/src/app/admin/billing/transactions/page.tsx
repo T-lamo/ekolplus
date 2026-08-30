@@ -6,9 +6,10 @@
 // plan review. "Rapport PDF" is an honest stub. The mockup's PayPal split
 // becomes the real method enum (Stripe / Manuel / Virement bancaire).
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { CalendarClock, FileSpreadsheet, FileText, Plus, Receipt, Wallet } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_TRANSACTIONS as T } from '@/lib/constants';
 import { fmtDateMed, fmtMonthYear, fmtUsd, fmtUsdRound } from '@/lib/admin-format';
@@ -95,9 +96,6 @@ export default function AdminTransactionsPage() {
   const [status, setStatus] = useState('');
   const [method, setMethod] = useState('');
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<TxResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   useEffect(() => {
@@ -105,26 +103,19 @@ export default function AdminTransactionsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('q', debouncedSearch);
-    if (month) params.set('month', month);
-    if (status) params.set('status', status);
-    if (method) params.set('method', method);
-    params.set('page', String(page));
-    try {
-      setData(await api<TxResponse>(`/api/admin/billing/transactions?${params.toString()}`));
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, month, status, method, page]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const txParams = new URLSearchParams();
+  if (debouncedSearch) txParams.set('q', debouncedSearch);
+  if (month) txParams.set('month', month);
+  if (status) txParams.set('status', status);
+  if (method) txParams.set('method', method);
+  txParams.set('page', String(page));
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<TxResponse>(`/api/admin/billing/transactions?${txParams.toString()}`);
+  const error = dataErr ? T.loadError : null;
 
   useEffect(() => {
     setPage(1);

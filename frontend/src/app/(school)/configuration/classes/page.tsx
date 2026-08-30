@@ -19,12 +19,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -56,32 +58,28 @@ export default function ClassesPage() {
   const confirm = useConfirm();
   const t = useTranslations('Configuration.classes.list');
   const tCommon = useTranslations('Common');
-  const [classes, setClasses] = useState<ClassData[] | null>(null);
-  const [school, setSchool] = useState<SchoolInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ classes: ClassData[] }>('/api/school/classes'),
-      api<SchoolInfo>('/api/school'),
-    ])
-      .then(([c, s]) => {
-        setClasses(c.classes);
-        setSchool(s);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const onNoSchool = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+  };
+  const {
+    data: classesData,
+    error: classesErr,
+    mutate: mutateClasses,
+  } = useApi<{ classes: ClassData[] }>('/api/school/classes', { skip: !user, onError: onNoSchool });
+  const { data: school, error: schoolErr } = useApi<SchoolInfo>('/api/school', {
+    skip: !user,
+    onError: onNoSchool,
+  });
+  const classes = classesData?.classes ?? null;
+  const error = classesErr || schoolErr ? t('loadError') : null;
 
   const levels = useMemo(() => [...new Set((classes ?? []).map((c) => c.level))], [classes]);
 
@@ -117,7 +115,9 @@ export default function ClassesPage() {
     if (!(await confirm({ message: t('deleteConfirm', { name: cls.name }), danger: true }))) return;
     try {
       await api(`/api/school/classes/${cls.id}`, { method: 'DELETE' });
-      setClasses((prev) => (prev ? prev.filter((c) => c.id !== cls.id) : prev));
+      mutateClasses((prev) =>
+        prev ? { classes: prev.classes.filter((c) => c.id !== cls.id) } : { classes: [] },
+      );
       toast(t('classDeleted'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -200,7 +200,10 @@ export default function ClassesPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

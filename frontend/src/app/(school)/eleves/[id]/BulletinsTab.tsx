@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Download, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -23,20 +22,11 @@ function fmt(n: number | null): string {
 
 export function BulletinsTab({ studentId }: { studentId: string }) {
   const t = useTranslations('Eleves.bulletins');
-  const [rows, setRows] = useState<TermBulletinSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api<{ terms: TermBulletinSummary[] }>(`/api/school/students/${studentId}/bulletins`)
-      .then((res) => {
-        if (!cancelled) setRows([...res.terms].sort((a, b) => a.order - b.order));
-      })
-      .catch(() => !cancelled && setError(t('loadError')));
-    return () => {
-      cancelled = true;
-    };
-  }, [studentId, t]);
+  const { data, error: dataErr } = useApi<{ terms: TermBulletinSummary[] }>(
+    `/api/school/students/${studentId}/bulletins`,
+  );
+  const rows = data ? [...data.terms].sort((a, b) => a.order - b.order) : null;
+  const error = dataErr ? t('loadError') : null;
 
   if (error) {
     return (

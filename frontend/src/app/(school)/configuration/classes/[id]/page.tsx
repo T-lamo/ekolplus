@@ -7,7 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Save } from 'lucide-react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -32,26 +33,26 @@ export default function ClassDetailPage() {
   const t = useTranslations('Configuration.classes.detail');
   const tCommon = useTranslations('Common');
   const { options, error: optionsError, noSchool } = useClassFormData(!!user);
-  const [cls, setCls] = useState<ClassDetail | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadDetail = useCallback(async () => {
-    try {
-      const res = await api<{ class: ClassDetail }>(`/api/school/classes/${classId}`);
-      setCls(res.class);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 404) {
-        setError(t('notFound'));
-        return;
-      }
-      setError(err instanceof ApiError ? err.message : tCommon('errors.network'));
-    }
-  }, [classId, t, tCommon]);
-
-  useEffect(() => {
-    if (!user) return;
-    void loadDetail();
-  }, [user, loadDetail]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const {
+    data: clsData,
+    mutate,
+    refresh: loadDetail,
+  } = useApi<{ class: ClassDetail }>(`/api/school/classes/${classId}`, {
+    skip: !user,
+    onError: (err) => {
+      setLoadError(
+        err instanceof ApiError && err.status === 404
+          ? t('notFound')
+          : err instanceof ApiError
+            ? err.message
+            : tCommon('errors.network'),
+      );
+      return true;
+    },
+  });
+  const cls = clsData?.class ?? null;
+  const error = loadError;
 
   useEffect(() => {
     if (noSchool) router.replace('/');
@@ -60,12 +61,12 @@ export default function ClassDetailPage() {
   const onSaved = useCallback(
     (saved: ClassData) => {
       toast(t('updated'), 'success');
-      setCls((prev) =>
-        prev ? { ...prev, ...saved, homeroomTeacher: prev.homeroomTeacher } : prev,
-      );
+      if (cls) {
+        mutate({ class: { ...cls, ...saved, homeroomTeacher: cls.homeroomTeacher } });
+      }
       void loadDetail();
     },
-    [toast, loadDetail, t],
+    [toast, loadDetail, t, cls, mutate],
   );
 
   const roomIds = useMemo(() => (options?.rooms ?? []).map((r) => r.id), [options?.rooms]);

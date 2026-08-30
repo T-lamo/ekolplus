@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Star,
@@ -21,6 +21,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -32,12 +33,13 @@ import { FilterSelect } from '@/components/ui/FilterSelect';
 import { SelectItem } from '@/components/ui/Select';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 import { fmtAverage, mentionClass, moyColor } from './format';
-import { MENTIONS, type AppreciationsListData, type TermOption } from './types';
+import { MENTIONS, type AppreciationsListData } from './types';
 // Code-split: only mounted once the user switches to that tab (default is
 // "Par élève") — same reasoning as the StudentFormModal split in eleves/page.tsx.
 const ParMatiereTab = dynamic(() => import('./ParMatiereTab').then((m) => m.ParMatiereTab), {
@@ -60,45 +62,59 @@ export default function AppreciationsListPage() {
   // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
   // the classes that happen to have subject affectations — a brand-new class
   // must show up here immediately, and archived-year classes never.
-  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
-  const [terms, setTerms] = useState<TermOption[]>([]);
-  const [data, setData] = useState<AppreciationsListData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [mentionFilter, setMentionFilter] = useState('');
   const [tab, setTab] = useState<'eleve' | 'matiere' | 'stats' | 'attente'>('eleve');
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes')
-      .then((res) => {
-        setClasses(res.classes.map((c) => ({ id: c.id, name: c.name })));
-        if (res.classes[0]) setClassId(res.classes[0].id);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const { data: classesData, error: classesErr } = useApi<{
+    classes: Array<{ id: string; name: string }>;
+  }>('/api/school/classes', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const classes = classesData?.classes ?? [];
 
+  const initialClassDone = useRef(false);
   useEffect(() => {
-    if (!classId) return;
-    const qs = termId ? `?termId=${termId}` : '';
-    api<AppreciationsListData>(`/api/school/classes/${classId}/appreciations${qs}`)
-      .then((d) => {
-        setData(d);
-        setTerms(d.terms);
-        setTermId(d.resolvedTermId ?? '');
-        setPage(1);
-      })
-      .catch(() => setError(t('loadError')));
-  }, [classId, termId, t]);
+    if (!initialClassDone.current && classes.length > 0) {
+      initialClassDone.current = true;
+      setClassId(classes[0]!.id);
+    }
+  }, [classes]);
+
+  const qs = termId ? `?termId=${termId}` : '';
+  const notebookPath = `/api/school/classes/${classId}/appreciations${qs}`;
+  const { data, mutate: mutateData } = useApi<AppreciationsListData>(notebookPath, {
+    skip: !classId,
+    onError: () => setLoadError(t('loadError')),
+  });
+  const terms = data?.terms ?? [];
+  const error = loadError || classesErr ? t('loadError') : null;
+
+  // `classId` (and therefore `notebookPath`) is local state, not a URL
+  // param, so this component never remounts on selection change — useApi's
+  // `data` can still hold the PREVIOUS class's response for one render
+  // while the new fetch is in flight. Gate on `getCache(...) === data` (only
+  // true once the cache entry actually written for THIS path matches what
+  // we're holding) so this effect can't fire early on stale data and
+  // permanently skip the real update once it lands.
+  const notebookKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (data && getCache(notebookPath) === data && notebookKeyRef.current !== notebookPath) {
+      notebookKeyRef.current = notebookPath;
+      setTermId(data.resolvedTermId ?? '');
+      setPage(1);
+    }
+  }, [data, notebookPath]);
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];
@@ -114,23 +130,20 @@ export default function AppreciationsListPage() {
   const enAttenteCount = data ? data.students.filter((s) => s.status !== 'PUBLISHED').length : 0;
 
   async function deleteAppreciation(studentId: string, name: string) {
+    if (!data) return;
     if (!(await confirm({ message: t('deleteConfirm', { name }), danger: true }))) return;
     try {
       await api(`/api/school/students/${studentId}/appreciations?termId=${termId}`, {
         method: 'DELETE',
       });
-      setData((prev) =>
-        prev
-          ? {
-              ...prev,
-              students: prev.students.map((s) =>
-                s.studentId === studentId
-                  ? { ...s, mention: null, text: null, status: 'NONE', authorName: null }
-                  : s,
-              ),
-            }
-          : prev,
-      );
+      mutateData({
+        ...data,
+        students: data.students.map((s) =>
+          s.studentId === studentId
+            ? { ...s, mention: null, text: null, status: 'NONE', authorName: null }
+            : s,
+        ),
+      });
       toast(t('deletedToast'), 'success');
     } catch {
       toast(t('deleteErrorToast'), 'error');
@@ -197,7 +210,10 @@ export default function AppreciationsListPage() {
     <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="text-sm text-muted-foreground">
             {t('subtitle', { year: terms[0]?.label ?? '' })}
           </p>
@@ -271,6 +287,7 @@ export default function AppreciationsListPage() {
                 label={t('summary.positive')}
                 value={`${data.positiveCount}`}
                 sub={t('summary.positiveSub')}
+                help={t('help.positive')}
               />
               <SummaryCard
                 icon={AlertTriangle}
@@ -278,6 +295,7 @@ export default function AppreciationsListPage() {
                 label={t('summary.alert')}
                 value={`${data.alertCount}`}
                 sub={t('summary.alertSub')}
+                help={t('help.alert')}
               />
             </div>
           )}
@@ -589,12 +607,14 @@ function SummaryCard({
   label,
   value,
   sub,
+  help,
 }: {
   icon: typeof Users;
   tone: 'secondary' | 'success' | 'warning' | 'destructive';
   label: string;
   value: string;
   sub: string;
+  help?: string;
 }) {
   const iconBg: Record<string, string> = {
     secondary: 'bg-secondary text-primary',
@@ -614,7 +634,10 @@ function SummaryCard({
         <Icon size={18} />
       </div>
       <div className="min-w-0">
-        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
+        <div className="flex items-center gap-1 text-2xs font-medium text-muted-foreground">
+          {label}
+          {help && <HelpTooltip label={help} />}
+        </div>
         <div className={`text-lg font-bold ${valueColor[t]}`}>{value}</div>
         {sub && <div className="truncate text-2xs text-muted-foreground">{sub}</div>}
       </div>

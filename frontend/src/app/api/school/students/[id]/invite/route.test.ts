@@ -153,6 +153,9 @@ describe('POST /api/school/students/[id]/invite', () => {
       where: { userId: 'user_existing', type: 'STUDENT_INVITE', usedAt: null },
       data: { usedAt: expect.any(Date) },
     });
+    expect(mockCreatePortalInvite).toHaveBeenCalledWith(
+      expect.objectContaining({ existingUserId: 'user_existing' }),
+    );
   });
 
   it('surfaces EMAIL_ALREADY_IN_USE from createPortalInvite', async () => {

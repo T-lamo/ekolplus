@@ -17,6 +17,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AlertTriangle, ArrowUpCircle, Settings2, ShieldAlert, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { useToast } from '@/contexts/ToastContext';
 import { useApi } from '@/lib/useApi';
 import { isPlanKey, type BillingIntervalKey, type PlanKey } from '@/lib/billing-plans';
@@ -207,7 +208,10 @@ export function AbonnementScreen() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -369,7 +373,10 @@ export function AbonnementScreen() {
       {/* In-app subscription management (live Stripe subscription, OWNER) */}
       {canManage && live && (
         <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
-          <div className="text-caption font-bold text-foreground">{t('manageTitle')}</div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-caption font-bold text-foreground">{t('manageTitle')}</div>
+            <HelpTooltip label={t('help.manageProration')} />
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">{t('manageBody')}</p>
           <div className="mt-3.5 flex flex-wrap gap-2">
             <Button

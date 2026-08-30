@@ -1,5 +1,6 @@
 {
   "title": "Espace enseignant",
   "welcome": "Bienvenue, {name}",
-  "comingSoon": "Vos classes, notes et appréciations arrivent bientôt ici."
+  "comingSoon": "Vos classes, notes et appréciations arrivent bientôt ici.",
+  "logout": "Se déconnecter"
 }

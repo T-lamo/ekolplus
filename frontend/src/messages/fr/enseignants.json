@@ -127,8 +127,7 @@
     "access": {
       "title": "Accès à la plateforme",
       "subtitle": "Compte utilisateur et permissions",
-      "body": "Les comptes de connexion pour les enseignants arrivent dans une prochaine version.",
-      "soon": "Bientôt disponible"
+      "body": "Vous pouvez inviter cet enseignant à se connecter depuis sa fiche, une fois son profil enregistré."
     }
   },
   "profile": {

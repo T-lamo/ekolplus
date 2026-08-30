@@ -41,13 +41,17 @@ const STATUS_DOT: Record<TeacherStatus, string> = {
   INACTIVE: '#9CA3AF',
 };
 
-// GET /api/school/teachers/[id] also returns these three fields (Espace
+// GET /api/school/teachers/[id] also returns these fields (Espace
 // Enseignant invite state) alongside everything TeacherDetail already
 // declares — kept as a page-local extension rather than touching the
 // shared types.ts, since this profile page is the only current consumer.
+// `userCreatedAt` (the linked User's own createdAt, not Teacher.updatedAt)
+// is the "pending since" date — Teacher.updatedAt changes on any
+// unrelated profile edit and does NOT change on an invite resend.
 type TeacherWithAccess = TeacherDetail & {
   userId: string | null;
   emailVerifiedAt: string | null;
+  userCreatedAt: string | null;
   updatedAt: string;
 };
 
@@ -370,7 +374,9 @@ export default function TeacherProfilePage() {
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs text-muted-foreground">
-                    {tInvite('pendingSince', { date: fmtDate(teacher.updatedAt, bcp47) })}
+                    {tInvite('pendingSince', {
+                      date: fmtDate(teacher.userCreatedAt ?? teacher.updatedAt, bcp47),
+                    })}
                   </span>
                   <Button
                     size="sm"

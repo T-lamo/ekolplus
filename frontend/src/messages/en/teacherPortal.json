@@ -1,5 +1,6 @@
 {
   "title": "Teacher space",
   "welcome": "Welcome, {name}",
-  "comingSoon": "Your classes, grades and appreciations are coming here soon."
+  "comingSoon": "Your classes, grades and appreciations are coming here soon.",
+  "logout": "Log out"
 }

@@ -113,6 +113,13 @@ describe('GET /api/auth/me', () => {
 
 describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () => {
   beforeEach(() => {
+    // These two mocks are module-scoped (created once by vi.mock() above)
+    // and are never reset by the file-level beforeEach, so a prior test's
+    // call history would otherwise leak into this describe's
+    // not.toHaveBeenCalled() assertion — clear call history only (each
+    // test below sets its own .mockResolvedValue after this runs).
+    mockResolveMySchoolIncludingTeacher.mockClear();
+    mockResolveMyTeacherProfile.mockClear();
     vi.mocked(verifyToken).mockResolvedValue({
       sub: 'user_1',
       email: 'teach@school.test',
@@ -163,6 +170,11 @@ describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () =>
     });
     const res = await GET(reqWithAuthHeader());
     expect((await res.json()).user.isTeacherOnly).toBe(false);
+    // Perf short-circuit: the `mySchool?.role === 'MEMBER' ? ... : null`
+    // guard in route.ts must skip the Teacher lookup entirely for a
+    // non-MEMBER role — regression-guards against it being reverted to an
+    // unconditional call.
+    expect(mockResolveMyTeacherProfile).not.toHaveBeenCalled();
   });
 
   it('reports isTeacherOnly=false for a plain staff account', async () => {

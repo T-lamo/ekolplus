@@ -35,6 +35,12 @@ describe('resolveMySchool', () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue(membershipRow() as never);
     prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
     expect(await resolveMySchool('user_1')).toBeNull();
+    // isPortalOnlyAccount's Teacher lookup MUST be scoped to this school —
+    // dropping schoolId would let a Teacher row in a DIFFERENT school
+    // match and wrongly deny (or, for the inverse bug, wrongly allow).
+    expect(prismaMock.teacher.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'user_1', schoolId: 'school_1' } }),
+    );
   });
 
   it('never rejects an ADMIN account even if also teacher-linked', async () => {
@@ -76,5 +82,10 @@ describe('resolveMyTeacherProfile', () => {
       classSubjectIds: ['cs_1', 'cs_2'],
       homeroomClassIds: ['class_1'],
     });
+    // Must be scoped to this school — dropping schoolId would let a
+    // Teacher row in a DIFFERENT school match this userId.
+    expect(prismaMock.teacher.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'user_1', schoolId: 'school_1' } }),
+    );
   });
 });

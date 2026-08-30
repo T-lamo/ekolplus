@@ -26,8 +26,6 @@
       "other": "{count} students enrolled"
     },
     "loadError": "Unable to load students.",
-    "import": "Import",
-    "importSoon": "CSV import — coming soon.",
     "export": "Export",
     "addStudent": "Add a student",
     "searchPlaceholder": "Search for a student...",

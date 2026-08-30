@@ -27,8 +27,6 @@
       "other": "{count} elèv enskri"
     },
     "loadError": "Nou pa ka chaje elèv yo.",
-    "import": "Enpòte",
-    "importSoon": "Enpòtasyon CSV — pral disponib byento.",
     "export": "Ekspòte",
     "addStudent": "Ajoute yon elèv",
     "searchPlaceholder": "Chèche yon elèv...",

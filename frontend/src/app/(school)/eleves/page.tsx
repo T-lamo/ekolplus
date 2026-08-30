@@ -7,7 +7,6 @@ import {
   Trash2,
   UserPlus,
   FileSpreadsheet,
-  Upload,
   Eye,
   FileText,
   CalendarCheck,
@@ -234,14 +233,6 @@ export default function StudentsPage() {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            className="w-fit"
-            onClick={() => toast(t('importSoon'), 'info')}
-          >
-            <Upload size={14} />
-            {t('import')}
-          </Button>
           <Button variant="outline" className="w-fit" onClick={onExport}>
             <FileSpreadsheet size={14} />
             {t('export')}

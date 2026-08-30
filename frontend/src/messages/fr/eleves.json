@@ -26,8 +26,6 @@
       "other": "{count} élèves inscrits"
     },
     "loadError": "Impossible de charger les élèves.",
-    "import": "Importer",
-    "importSoon": "Import CSV — bientôt disponible.",
     "export": "Exporter",
     "addStudent": "Ajouter un élève",
     "searchPlaceholder": "Rechercher un élève...",

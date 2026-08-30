@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/AuthContext';
@@ -14,21 +15,29 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 // Basic auth gate here (any logged-in user) — school-membership itself is
 // checked by individual pages that need it (e.g. /settings via GET
-// /api/school's NO_SCHOOL response), not the shell. See
-// .planning/banani/school-settings.md.
+// /api/school's NO_SCHOOL response), not the shell.
 //
-// No teacher-linked auto-redirect here: it unconditionally bounced ANY
-// account with teacherId set, with no exemption for a school admin who is
-// also a teacher and no self-service way back. The one-time redirect at
-// login (see login/page.tsx) already sends pure-teacher accounts to
-// /enseignant; this shell intentionally does not re-enforce it.
+// A purely teacher-linked account (isTeacherOnly) is bounced to
+// /espace-enseignant — belt-and-suspenders on top of the login-time
+// redirect (login/page.tsx), so a stale bookmark/tab can't land on the
+// admin shell. An admin who is ALSO teacher-linked is never redirected
+// here (isTeacherOnly is false for them) — see resolveMySchool()'s
+// deny-by-default check in lib/server/school.ts, which the client mirrors
+// via GET /api/auth/me's isTeacherOnly field.
 export default function SchoolLayout({ children }: { children: ReactNode }) {
   const t = useTranslations('Shell');
   const user = useUser();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, toggleCollapsed] = useSidebarCollapse();
 
-  if (!user) {
+  useEffect(() => {
+    if (user?.isTeacherOnly) {
+      router.replace('/espace-enseignant');
+    }
+  }, [user, router]);
+
+  if (!user || user.isTeacherOnly) {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <Skeleton className="h-10 w-10 rounded-full" />

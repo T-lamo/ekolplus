@@ -127,8 +127,7 @@
     "access": {
       "title": "Platform access",
       "subtitle": "User account and permissions",
-      "body": "Login accounts for teachers are coming in a future release.",
-      "soon": "Coming soon"
+      "body": "You can invite this teacher to sign in from their profile page, once it's saved."
     }
   },
   "profile": {
@@ -174,5 +173,15 @@
       "weeklyHours": "Hours / week",
       "coefficient": "Coefficient"
     }
+  },
+  "invite": {
+    "button": "Invite to log in",
+    "buttonDisabledNoEmail": "Add an email to invite this teacher",
+    "resendButton": "Resend invitation",
+    "pendingSince": "Invitation sent on {date}",
+    "activeSince": "Account active since {date}",
+    "sentToast": "Invitation sent.",
+    "resentToast": "Invitation resent.",
+    "errorEmailInUse": "This email is already used by another account."
   }
 }

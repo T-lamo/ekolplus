@@ -22,9 +22,10 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import { ApiError } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -38,6 +39,20 @@ const STATUS_DOT: Record<TeacherStatus, string> = {
   ACTIVE: '#16A34A',
   ON_LEAVE: '#F59E0B',
   INACTIVE: '#9CA3AF',
+};
+
+// GET /api/school/teachers/[id] also returns these fields (Espace
+// Enseignant invite state) alongside everything TeacherDetail already
+// declares — kept as a page-local extension rather than touching the
+// shared types.ts, since this profile page is the only current consumer.
+// `userCreatedAt` (the linked User's own createdAt, not Teacher.updatedAt)
+// is the "pending since" date — Teacher.updatedAt changes on any
+// unrelated profile edit and does NOT change on an invite resend.
+type TeacherWithAccess = TeacherDetail & {
+  userId: string | null;
+  emailVerifiedAt: string | null;
+  userCreatedAt: string | null;
+  updatedAt: string;
 };
 
 function fmtDate(d: string, locale: string): string {
@@ -54,10 +69,14 @@ export default function TeacherProfilePage() {
   const params = useParams<{ id: string }>();
   const t = useTranslations('Enseignants.profile');
   const tStatus = useTranslations('Enseignants.status');
+  const tInvite = useTranslations('Enseignants.invite');
+  const tCommon = useTranslations('Common');
+  const { toast } = useToast();
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [tab, setTab] = useState<'info' | 'assignments'>('info');
   const [editing, setEditing] = useState(false);
+  const [inviteSending, setInviteSending] = useState(false);
 
   const TABS = [
     { key: 'info' as const, label: t('tabs.info'), icon: UserCheck },
@@ -65,7 +84,7 @@ export default function TeacherProfilePage() {
   ];
 
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { data: teacherData, refresh: load } = useApi<{ teacher: TeacherDetail }>(
+  const { data: teacherData, refresh: load } = useApi<{ teacher: TeacherWithAccess }>(
     `/api/school/teachers/${params.id}`,
     {
       skip: !user,
@@ -319,6 +338,74 @@ export default function TeacherProfilePage() {
               value={teacher.weeklyHoursTarget !== null ? `${teacher.weeklyHoursTarget} h` : '—'}
               last
             />
+
+            <div className="mt-3.5 border-t border-border pt-3.5">
+              {teacher.userId === null ? (
+                <Button
+                  size="sm"
+                  className="w-fit"
+                  disabled={!teacher.email}
+                  title={!teacher.email ? tInvite('buttonDisabledNoEmail') : undefined}
+                  loading={inviteSending}
+                  onClick={async () => {
+                    setInviteSending(true);
+                    try {
+                      await api(`/api/school/teachers/${teacher.id}/invite`, { method: 'POST' });
+                      toast(tInvite('sentToast'), 'success');
+                      void load();
+                    } catch (err) {
+                      toast(
+                        err instanceof ApiError && err.code === 'EMAIL_ALREADY_IN_USE'
+                          ? tInvite('errorEmailInUse')
+                          : tCommon('errors.network'),
+                        'error',
+                      );
+                    } finally {
+                      setInviteSending(false);
+                    }
+                  }}
+                >
+                  {tInvite('button')}
+                </Button>
+              ) : teacher.emailVerifiedAt ? (
+                <span className="text-xs text-muted-foreground">
+                  {tInvite('activeSince', { date: fmtDate(teacher.emailVerifiedAt, bcp47) })}
+                </span>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {tInvite('pendingSince', {
+                      date: fmtDate(teacher.userCreatedAt ?? teacher.updatedAt, bcp47),
+                    })}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-fit"
+                    loading={inviteSending}
+                    onClick={async () => {
+                      setInviteSending(true);
+                      try {
+                        await api(`/api/school/teachers/${teacher.id}/invite`, { method: 'POST' });
+                        toast(tInvite('resentToast'), 'success');
+                        void load();
+                      } catch (err) {
+                        toast(
+                          err instanceof ApiError && err.code === 'EMAIL_ALREADY_IN_USE'
+                            ? tInvite('errorEmailInUse')
+                            : tCommon('errors.network'),
+                          'error',
+                        );
+                      } finally {
+                        setInviteSending(false);
+                      }
+                    }}
+                  >
+                    {tInvite('resendButton')}
+                  </Button>
+                </div>
+              )}
+            </div>
           </Card>
         </div>
       )}

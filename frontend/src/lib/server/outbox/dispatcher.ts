@@ -166,6 +166,17 @@ async function dispatchEvent(deps: OutboxDispatcherDeps, event: OutboxEvent): Pr
       await deps.emailQueue.enqueue({ to, subject: tpl.subject, html: tpl.html });
       return;
     }
+    case 'email.portal_invite': {
+      // 2026-08-30 — generic invite email shared by the Teacher and
+      // (future) Student portals. See email.verification_code above for
+      // the same import-on-dispatch shape.
+      if (!deps.emailQueue) throw new Error('email queue not configured');
+      const { portalInviteEmail } = await import('../auth/email-templates');
+      const { to, code, expiresAt, portalLabel } = event.payload;
+      const tpl = portalInviteEmail({ code, email: to, expiresAt, portalLabel });
+      await deps.emailQueue.enqueue({ to, subject: tpl.subject, html: tpl.html });
+      return;
+    }
     default: {
       // Exhaustive check — TS will yell if we add a new variant and forget it.
       const _exhaustive: never = event;

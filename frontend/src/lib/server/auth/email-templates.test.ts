@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { verificationEmail, resetPasswordEmail } from './email-templates';
+import { verificationEmail, resetPasswordEmail, portalInviteEmail } from './email-templates';
 
 describe('verificationEmail', () => {
   it('returns { subject, html, text } all non-empty', () => {
@@ -82,5 +82,29 @@ describe('resetPasswordEmail', () => {
     const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString();
     const t = resetPasswordEmail({ code: 'WXYZ9876', email: 'a@b.com', expiresAt });
     expect(t.text).toMatch(/in 1[45] minutes/);
+  });
+});
+
+describe('portalInviteEmail', () => {
+  it('renders subject/html/text with the portal label and a working link', () => {
+    const tpl = portalInviteEmail({
+      code: 'ABCD2345',
+      email: 'teacher@school.test',
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      portalLabel: 'espace enseignant',
+    });
+    expect(tpl.subject).toContain('espace enseignant');
+    expect(tpl.html).toContain('ABCD2345');
+    expect(tpl.html).toContain('/definir-mot-de-passe');
+    expect(tpl.text).toContain('ABCD2345');
+  });
+
+  it('escapes the portalLabel in html output', () => {
+    const tpl = portalInviteEmail({
+      code: 'ABCD2345',
+      email: 'x@test.local',
+      portalLabel: '<script>alert(1)</script>',
+    });
+    expect(tpl.html).not.toContain('<script>');
   });
 });

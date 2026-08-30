@@ -528,18 +528,18 @@ export function TeacherFormModal({
                 </div>
               </FormSectionCard>
 
-              {/* Accès plateforme — deferred honestly (no teacher accounts yet). */}
+              {/* Accès plateforme — Espace Enseignant login shipped in Task 7;
+                  the actual "Inviter à se connecter" action lives on the
+                  teacher's fiche page (once the profile is saved), not in
+                  this create/edit modal. */}
               <FormSectionCard
                 id="acces"
                 icon={<Shield size={15} />}
                 title={t('access.title')}
                 subtitle={t('access.subtitle')}
               >
-                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3.5 py-3">
+                <div className="rounded-lg border border-border bg-background px-3.5 py-3">
                   <p className="text-caption text-muted-foreground">{t('access.body')}</p>
-                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-2xs font-semibold text-muted-foreground">
-                    {t('access.soon')}
-                  </span>
                 </div>
               </FormSectionCard>
             </>

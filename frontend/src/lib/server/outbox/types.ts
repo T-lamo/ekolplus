@@ -13,7 +13,8 @@ export type OutboxEvent =
   | NotificationPaymentReceivedEvent
   | EmailPaymentConfirmationEvent
   | EmailVerificationCodeEvent
-  | EmailPasswordResetEvent;
+  | EmailPasswordResetEvent
+  | EmailPortalInviteEvent;
 
 export interface NotificationPaymentReceivedEvent {
   kind: 'notification.payment_received';
@@ -58,6 +59,22 @@ export interface EmailPasswordResetEvent {
     to: string;
     code: string;
     expiresAt: string;
+  };
+}
+
+/**
+ * Generic invite email for any portal-account type (teacher today, student
+ * later) — `portalLabel` carries the human-readable destination ("espace
+ * enseignant") so one template/dispatcher case serves every portal type.
+ * Emitted by createPortalInvite() (lib/server/portal-invite.ts).
+ */
+export interface EmailPortalInviteEvent {
+  kind: 'email.portal_invite';
+  payload: {
+    to: string;
+    code: string;
+    expiresAt: string;
+    portalLabel: string;
   };
 }
 

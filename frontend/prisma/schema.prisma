@@ -68,6 +68,7 @@ model User {
   adminActions        AdminAction[]
   appreciations       Appreciation[]
   teacherProfile      Teacher?
+  studentProfile      Student?
   attendanceMarks     Attendance[]
   recordedFeePayments FeePayment[]
   openedFeeDisputes   FeeDispute[]
@@ -562,6 +563,8 @@ model Student {
   feePayments     FeePayment[]
   feeDisputes     FeeDispute[]
   feeReminderLogs FeeReminderLog[]
+  userId          String? @unique
+  user            User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
 }

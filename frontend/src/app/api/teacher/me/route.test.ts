@@ -84,6 +84,11 @@ describe('GET /api/teacher/me', () => {
     expect((await GET(req())).status).toBe(404);
   });
 
+  it('404s an account with no school membership at all', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(null);
+    expect((await GET(req())).status).toBe(404);
+  });
+
   it('returns identity, homeroom classes, taught class-subjects and academic year', async () => {
     const res = await GET(req());
     expect(res.status).toBe(200);

@@ -150,6 +150,11 @@ describe('drain', () => {
 
   it('drops a permanently-failing entry (real 4xx) and keeps draining the rest', async () => {
     await enqueue({ path: '/bad', method: 'PUT', label: 'Bad', userId: 'u1' });
+    // createdAt has millisecond precision and listPending() sorts by it — without
+    // this gap the two enqueue() calls can land in the same millisecond and come
+    // back in either order, flipping which entry gets the mocked 404 (flaky ~50%
+    // of runs; see the same gap already used at lines 102 and 172 of this file).
+    await new Promise((r) => setTimeout(r, 2));
     await enqueue({ path: '/good', method: 'PATCH', label: 'Good', userId: 'u1' });
     mockApi.mockRejectedValueOnce(new ApiError(404, 'not found')).mockResolvedValueOnce({});
 

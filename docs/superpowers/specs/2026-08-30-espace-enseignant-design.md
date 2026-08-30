@@ -77,6 +77,23 @@ from.
    why this ends up being a small, centralized change rather than a
    file-by-file sweep.
 
+## Relationship to `feat/teacher-self-checkin` (superseded)
+
+A prior, fully-implemented feature branch — `feat/teacher-self-checkin`
+(12 commits, 2026-08-18, pushed to origin, never merged, now 185 commits
+behind `develop`) — built a narrower "teacher signs their own presence per
+timetable session" feature with its own `Teacher.userId` +
+`TeacherInvite` (token-based, not `VerificationCode`-based) + `/enseignant`
+portal. Per user decision, this branch is **not** merged or built upon —
+too much drift (185 commits: i18n rollout, the `useApi` migration, etc.)
+makes reconciling it riskier than rebuilding. This spec's `Teacher.userId`
+and invite mechanism are a fresh addition, independent of that branch's
+migration. The self-check-in *feature itself* (a "Je suis présent" button
+per session) remains a good candidate **future module** of Espace
+Enseignant once this foundation ships — it would reuse this spec's
+`Teacher.userId`/invite/portal shell rather than the old branch's
+parallel versions of the same things. Not part of this plan.
+
 ## Shared foundation with the future Student Portal
 
 A parallel session is designing a Student Portal (student-linked accounts,
@@ -93,11 +110,18 @@ top of it later without re-touching the same files:
   `portalInviteEmail({ code, email, expiresAt, portalLabel })`, not a
   teacher-specific template.
 - A new, reusable `createPortalInvite()` helper (new file, not protected)
-  does the "create pending User + OrganizationMember + generate
-  VerificationCode + enqueue the invite email" sequence generically, taking
-  a caller-supplied linking callback. The Teacher invite route calls it
-  with a callback that sets `Teacher.userId`; a future Student invite route
-  calls the same helper unchanged with its own callback.
+  does the "create pending User + optionally an OrganizationMember +
+  generate VerificationCode + enqueue the invite email" sequence
+  generically, taking a caller-supplied linking callback and a
+  `createOrgMembership: boolean` flag. The Teacher invite route calls it
+  with `createOrgMembership: true` (a teacher needs `OrgRole = MEMBER` for
+  Phases 2-4's `resolveMySchoolIncludingTeacher()` opt-ins to resolve a
+  school at all) and a callback that sets `Teacher.userId`. The Student
+  Portal's design deliberately gives student accounts no
+  `OrganizationMember` row at all (so every existing route already
+  rejects them for free, no lockdown needed on that side) — its invite
+  route calls the same helper with `createOrgMembership: false` and its
+  own `Student.userId`-setting callback.
 - `resolveMySchool()`'s deny-by-default check is written as a small,
   clearly-named `isPortalOnlyAccount(userId, schoolId)` check that today
   only queries `Teacher` — commented to note that the Student Portal adds
@@ -163,8 +187,10 @@ profile must survive account removal. Re-inviting later re-links a
    invite is a different use case (a teacher may not open the email for
    days) so this introduces its own longer, hardcoded constant rather than
    reusing `VERIFICATION_TTL_MIN`. The email itself renders via the shared
-   `portalInviteEmail()` template (must set a `dedupeKey` on the outbox
-   event per the outbox convention).
+   `portalInviteEmail()` template, dispatched through `enqueueOutbox()`
+   inside the same transaction (no `dedupeKey` on outbox events — that
+   field belongs to the separate `createNotification()`/in-app-notification
+   convention, not to outbox events).
 4. New public page `frontend/src/app/(auth)/definir-mot-de-passe/page.tsx`
    (modeled on the existing `/reset-password` page/route pair): takes the
    code, sets `User.passwordHash`, stamps `emailVerifiedAt`, marks the

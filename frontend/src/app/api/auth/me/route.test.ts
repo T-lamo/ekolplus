@@ -14,10 +14,22 @@ vi.mock('@/lib/server/auth', async () => {
     verifyToken: vi.fn(),
   };
 });
+vi.mock('@/lib/server/school', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
+  return {
+    ...actual,
+    resolveMySchoolIncludingTeacher: vi.fn(),
+    resolveMyTeacherProfile: vi.fn(),
+  };
+});
 
 import { verifyToken } from '@/lib/server/auth';
+import { resolveMySchoolIncludingTeacher, resolveMyTeacherProfile } from '@/lib/server/school';
 import { GET, PATCH } from './route';
 import { NextRequest } from 'next/server';
+
+const mockResolveMySchoolIncludingTeacher = vi.mocked(resolveMySchoolIncludingTeacher);
+const mockResolveMyTeacherProfile = vi.mocked(resolveMyTeacherProfile);
 
 function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequest {
   const headers: Record<string, string> = {};
@@ -26,6 +38,11 @@ function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequ
     method: 'GET',
     headers,
   });
+}
+
+// Bearer-header pattern already used by the other GET tests in this file.
+function reqWithAuthHeader(): NextRequest {
+  return makeReq({ bearer: 'valid-access-token' });
 }
 
 beforeEach(() => {
@@ -91,6 +108,72 @@ describe('GET /api/auth/me', () => {
 
     const res = await GET(makeReq({ bearer: 'orphan-jwt' }));
     expect(res.status).toBe(401);
+  });
+});
+
+describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () => {
+  beforeEach(() => {
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: 'user_1',
+      email: 'teach@school.test',
+      tokenVersion: 0,
+    });
+    // requireAuth() re-reads the user via prisma.user.findUnique to check
+    // tokenVersion — this "once" satisfies THAT call. The route handler's
+    // own richer `dbUser` query is the *second* call to the same mock and
+    // falls through to whatever `.mockResolvedValue` a given test below
+    // configures (or stays unconfigured — isTeacherOnly never reads dbUser).
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      id: 'user_1',
+      email: 'teach@school.test',
+      tokenVersion: 0,
+    } as never);
+  });
+
+  it('reports isTeacherOnly=true for a MEMBER-role teacher-linked account', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'teach@school.test',
+      role: 'USER',
+    } as never);
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'MEMBER',
+    });
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 't1',
+      classSubjectIds: [],
+      homeroomClassIds: [],
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isTeacherOnly).toBe(true);
+  });
+
+  it('reports isTeacherOnly=false for an admin who is also teacher-linked', async () => {
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'ADMIN',
+    });
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 't1',
+      classSubjectIds: [],
+      homeroomClassIds: [],
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isTeacherOnly).toBe(false);
+  });
+
+  it('reports isTeacherOnly=false for a plain staff account', async () => {
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'MEMBER',
+    });
+    mockResolveMyTeacherProfile.mockResolvedValue(null);
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isTeacherOnly).toBe(false);
   });
 });
 

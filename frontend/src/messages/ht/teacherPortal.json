@@ -1,7 +1,19 @@
 {
-  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman.",
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
   "title": "Espas anseyan",
   "welcome": "Byenveni, {name}",
-  "comingSoon": "Klas, nòt ak apresyasyon w yo ap vini isit la byento.",
-  "logout": "Dekonekte"
+  "logout": "Dekonekte",
+  "loadError": "Nou pa t kapab chaje enfòmasyon w yo kounye a.",
+  "nav": {
+    "ariaLabel": "Navigasyon prensipal",
+    "home": "Akèy",
+    "classes": "Klas",
+    "timetable": "Orè"
+  },
+  "home": {
+    "thisWeek": "Semèn sa a",
+    "noSessions": "Pa gen kou pwograme semèn sa a.",
+    "myClasses": "Klas mwen yo",
+    "viewTimetable": "Gade orè a"
+  }
 }

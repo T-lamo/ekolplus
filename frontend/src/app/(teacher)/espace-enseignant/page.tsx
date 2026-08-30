@@ -12,7 +12,7 @@ export default function EspaceEnseignantHomePage() {
       <p className="text-sm text-foreground">
         {t('welcome', { name: user?.name ?? user?.email ?? '' })}
       </p>
-      <p className="text-sm text-muted-foreground">{t('comingSoon')}</p>
+      <p className="text-sm text-muted-foreground">{t('loadError')}</p>
     </div>
   );
 }

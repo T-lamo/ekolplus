@@ -1,6 +1,18 @@
 {
   "title": "Espace enseignant",
   "welcome": "Bienvenue, {name}",
-  "comingSoon": "Vos classes, notes et appréciations arrivent bientôt ici.",
-  "logout": "Se déconnecter"
+  "logout": "Se déconnecter",
+  "loadError": "Impossible de charger vos informations pour le moment.",
+  "nav": {
+    "ariaLabel": "Navigation principale",
+    "home": "Accueil",
+    "classes": "Classes",
+    "timetable": "Emploi du temps"
+  },
+  "home": {
+    "thisWeek": "Cette semaine",
+    "noSessions": "Aucun cours prévu cette semaine.",
+    "myClasses": "Mes classes",
+    "viewTimetable": "Voir l'emploi du temps"
+  }
 }

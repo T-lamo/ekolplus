@@ -71,6 +71,8 @@ export const MESSAGE_NAMESPACES = [
   'timetable',
   'setPassword',
   'teacherPortal',
+  'teacherClasses',
+  'teacherTimetable',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

@@ -1,6 +1,18 @@
 {
   "title": "Teacher space",
   "welcome": "Welcome, {name}",
-  "comingSoon": "Your classes, grades and appreciations are coming here soon.",
-  "logout": "Log out"
+  "logout": "Log out",
+  "loadError": "We could not load your information right now.",
+  "nav": {
+    "ariaLabel": "Main navigation",
+    "home": "Home",
+    "classes": "Classes",
+    "timetable": "Timetable"
+  },
+  "home": {
+    "thisWeek": "This week",
+    "noSessions": "No classes scheduled this week.",
+    "myClasses": "My classes",
+    "viewTimetable": "View timetable"
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "title": "Emploi du temps",
+  "previousWeek": "Semaine précédente",
+  "nextWeek": "Semaine suivante",
+  "today": "Aujourd'hui",
+  "noSessions": "Aucun cours ce jour.",
+  "room": "Salle : {room}",
+  "noRoom": "Salle non précisée"
+}

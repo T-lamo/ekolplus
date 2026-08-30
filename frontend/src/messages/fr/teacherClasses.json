@@ -1,0 +1,18 @@
+{
+  "title": "Mes classes",
+  "mySubjects": "Mes matières",
+  "myHomerooms": "Classe dont je suis titulaire",
+  "noSubjects": "Aucune matière ne vous est encore assignée.",
+  "noHomerooms": "Vous n'êtes titulaire d'aucune classe.",
+  "plural": {
+    "students": {
+      "one": "{count} élève",
+      "other": "{count} élèves"
+    }
+  },
+  "roster": {
+    "back": "Retour à mes classes",
+    "noStudents": "Aucun élève inscrit dans cette classe.",
+    "studentNumber": "N° {number}"
+  }
+}

@@ -52,15 +52,24 @@ beforeEach(() => {
 });
 
 describe('GET /api/teacher/classes/[classSubjectId]', () => {
+  it('404s an account with no school membership at all', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(null);
+    const res = await GET(new NextRequest('http://localhost/x'), params('cs_1'));
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
+  });
+
   it("404s a class-subject that is not this teacher's own", async () => {
     const res = await GET(new NextRequest('http://localhost/x'), params('cs_OTHER'));
     expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
   });
 
   it('404s a non-teacher account', async () => {
     mockResolveMyTeacherProfile.mockResolvedValue(null);
     const res = await GET(new NextRequest('http://localhost/x'), params('cs_1'));
     expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
   });
 
   it("returns the class-subject header and roster for the caller's own class-subject", async () => {

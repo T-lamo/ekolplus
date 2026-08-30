@@ -48,15 +48,24 @@ beforeEach(() => {
 });
 
 describe('GET /api/teacher/classes/homeroom/[classId]', () => {
+  it('404s an account with no school membership at all', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(null);
+    const res = await GET(new NextRequest('http://localhost/x'), params('cls_1'));
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
+  });
+
   it("404s a class that is not this teacher's own homeroom", async () => {
     const res = await GET(new NextRequest('http://localhost/x'), params('cls_OTHER'));
     expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
   });
 
   it('404s a non-teacher account', async () => {
     mockResolveMyTeacherProfile.mockResolvedValue(null);
     const res = await GET(new NextRequest('http://localhost/x'), params('cls_1'));
     expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'NOT_FOUND', message: 'Not found' });
   });
 
   it("returns the class header and roster for the caller's own homeroom class", async () => {
@@ -67,5 +76,7 @@ describe('GET /api/teacher/classes/homeroom/[classId]', () => {
     expect(json.students).toEqual([
       { id: 'stu_1', firstName: 'Jean', lastName: 'Baptiste', studentNumber: 'EL-2024-001' },
     ]);
+    const where = prismaMock.enrollment.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ classId: 'cls_1', academicYearId: 'year_1' });
   });
 });

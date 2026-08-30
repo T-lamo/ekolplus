@@ -52,6 +52,7 @@ export async function GET(
           },
           take: 1,
         },
+        user: { select: { emailVerifiedAt: true } },
       },
     });
     if (!student || student.schoolId !== mySchool.schoolId) {
@@ -67,6 +68,8 @@ export async function GET(
         student: {
           id: student.id,
           studentNumber: student.studentNumber,
+          userId: student.userId,
+          userEmailVerifiedAt: student.user?.emailVerifiedAt ?? null,
           firstName: student.firstName,
           lastName: student.lastName,
           photoUrl: student.photoUrl,

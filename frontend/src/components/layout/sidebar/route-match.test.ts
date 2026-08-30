@@ -44,6 +44,11 @@ describe('isActiveRoute', () => {
     expect(isActiveRoute('/dashboard', '/dashboard')).toBe(true);
     expect(isActiveRoute('/dashboard/foo', '/dashboard')).toBe(false);
   });
+
+  it('treats /espace-enseignant as exact-match only (not a prefix of its own subpages)', () => {
+    expect(isActiveRoute('/espace-enseignant', '/espace-enseignant')).toBe(true);
+    expect(isActiveRoute('/espace-enseignant/classes', '/espace-enseignant')).toBe(false);
+  });
 });
 
 describe('findActiveItem', () => {

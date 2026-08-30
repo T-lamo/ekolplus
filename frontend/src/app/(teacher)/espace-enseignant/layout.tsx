@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
+import { TeacherBottomNav } from '@/components/layout/teacher/TeacherBottomNav';
 
 // Mobile-first shell for the teacher-facing portal — deliberately NOT the
 // admin (school)/layout.tsx (no SchoolSidebar/SchoolTopbar). Phase 1 ships
@@ -32,7 +33,7 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-lg px-4 py-6">
+    <div className="mx-auto min-h-screen max-w-lg px-4 py-6 pb-24">
       <header className="mb-4 flex items-center justify-end">
         <Button
           type="button"
@@ -49,6 +50,7 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
         </Button>
       </header>
       {children}
+      <TeacherBottomNav />
     </div>
   );
 }

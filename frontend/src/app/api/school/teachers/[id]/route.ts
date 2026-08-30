@@ -71,6 +71,11 @@ export async function GET(
             class: { select: { id: true, name: true } },
           },
         },
+        // Linked portal account (Espace Enseignant invite) — `userId` is
+        // already a scalar Teacher column and flows through via `...fields`
+        // below; `emailVerifiedAt` lives on User so it needs this include.
+        // The teacher fiche's invite/resend/active UI branches on both.
+        user: { select: { emailVerifiedAt: true } },
       },
     });
     if (!teacher || teacher.schoolId !== mySchool.schoolId) {
@@ -80,11 +85,12 @@ export async function GET(
       );
     }
 
-    const { classSubjects, ...fields } = teacher;
+    const { classSubjects, user, ...fields } = teacher;
     return NextResponse.json(
       {
         teacher: {
           ...fields,
+          emailVerifiedAt: user?.emailVerifiedAt ?? null,
           subjects: [...new Map(classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
           classes: [...new Map(classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
           weeklyHours: classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),

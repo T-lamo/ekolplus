@@ -174,5 +174,15 @@
       "weeklyHours": "Hours / week",
       "coefficient": "Coefficient"
     }
+  },
+  "invite": {
+    "button": "Invite to log in",
+    "buttonDisabledNoEmail": "Add an email to invite this teacher",
+    "resendButton": "Resend invitation",
+    "pendingSince": "Invitation sent on {date}",
+    "activeSince": "Account active since {date}",
+    "sentToast": "Invitation sent.",
+    "resentToast": "Invitation resent.",
+    "errorEmailInUse": "This email is already used by another account."
   }
 }

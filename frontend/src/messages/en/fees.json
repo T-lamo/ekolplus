@@ -42,8 +42,8 @@
     "configureFees": "Plan setup",
     "loadError": "Unable to load tuition fees.",
     "alertBanner": {
-      "one": "{n} student overdue — {tranche} was due {dueDate}",
-      "other": "{n} students overdue — {tranche} was due {dueDate}"
+      "one": "{n} student overdue: {tranche} was due {dueDate}",
+      "other": "{n} students overdue: {tranche} was due {dueDate}"
     },
     "alertBannerSub": "Total unpaid amount: {amount}",
     "kpiTotalCollected": "Total Collected",
@@ -134,7 +134,7 @@
     "reminderCritical": "Critical alert",
     "reminderCriticalDesc": "Overdue more than 30 days",
     "reminderChannelWhatsapp": "Reminders via WhatsApp",
-    "reminderChannelWhatsappDesc": "Paid (Meta fees) — otherwise sent by email, free",
+    "reminderChannelWhatsappDesc": "Paid (Meta fees): otherwise sent by email, free",
     "byClassTitle": "Overdue by class",
     "quickActionsTitle": "Quick actions",
     "exportExcel": "Export to Excel",
@@ -162,11 +162,11 @@
     "autoRemindersToggleDesc": "Notify before the due date",
     "currencyLabel": "Main currency",
     "currencyOptions": {
-      "HTG": "HTG — Haitian Gourde",
-      "USD": "USD — US Dollar",
-      "XOF": "XOF — CFA Franc (UEMOA)",
-      "XAF": "XAF — CFA Franc (CEMAC)",
-      "EUR": "EUR — Euro"
+      "HTG": "HTG · Haitian Gourde",
+      "USD": "USD · US Dollar",
+      "XOF": "XOF · CFA Franc (UEMOA)",
+      "XAF": "XAF · CFA Franc (CEMAC)",
+      "EUR": "EUR · Euro"
     },
     "selectClassPrompt": "Select a class.",
     "editorConfigured": "Configured",
@@ -188,8 +188,8 @@
     "addTranche": "Add an installment",
     "editTranche": "Edit installment",
     "deleteTrancheAria": "Delete installment",
-    "emptyClassPrompt": "Not configured yet — set the total amount to get started.",
-    "configHeadingPrefix": "Configuration — {className}",
+    "emptyClassPrompt": "Not configured yet: set the total amount to get started.",
+    "configHeadingPrefix": "Configuration · {className}",
     "studentCountBadge": {
       "one": "{n} student",
       "other": "{n} students"

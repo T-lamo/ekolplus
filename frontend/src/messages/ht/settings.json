@@ -24,8 +24,8 @@
     "activeYearLabel": "Ane eskolè aktif",
     "gradingScaleLabel": "Sistèm notasyon",
     "gradingScaleUndefined": "Pa defini",
-    "noTermsConfigured": "Pa gen peryòd konfigire pou kounye a — ajoute premye a avèk « Nouvo peryòd ».",
-    "noYearConfigured": "Pa gen ane eskolè konfigire — kreye premye peryòd la avèk « Nouvo peryòd ».",
+    "noTermsConfigured": "Pa gen peryòd konfigire pou kounye a : ajoute premye a avèk « Nouvo peryòd ».",
+    "noYearConfigured": "Pa gen ane eskolè konfigire : kreye premye peryòd la avèk « Nouvo peryòd ».",
     "statusLabel": {
       "DONE": "Fini",
       "CURRENT": "An kou",
@@ -101,8 +101,8 @@
     "subtitle": "Chwazi evènman ou vle yo notifye w pou yo, pa imèl oswa nan aplikasyon an.",
     "channelEmail": "Imèl",
     "channelApp": "App",
-    "emailAriaLabel": "{label} — imèl",
-    "appAriaLabel": "{label} — nan aplikasyon an",
+    "emailAriaLabel": "{label} · imèl",
+    "appAriaLabel": "{label} · nan aplikasyon an",
     "events": {
       "BULLETIN_GENERATED": {
         "label": "Bilten jenere",
@@ -172,7 +172,7 @@
         "invalidCredentials": "Modpas aktyèl la pa kòrèk.",
         "passwordBanned": "Modpas sa a twò komen.",
         "passwordTooShort": "Modpas la twò kout.",
-        "passwordPwned": "Modpas sa a fuit — chwazi yon lòt.",
+        "passwordPwned": "Modpas sa a fuit : chwazi yon lòt.",
         "passwordAlreadySet": "Gen yon modpas ki deja defini. Itilize « chanje modpas ».",
         "validationFailed": "Chan yo pa valid."
       },

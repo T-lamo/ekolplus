@@ -1,19 +1,19 @@
 {
   "suspendedTitle": "{plan} suspendu",
-  "paymentFailedRegularize": "Paiement en échec — régulariser",
+  "paymentFailedRegularize": "Paiement en échec · régulariser",
   "suspendedContactUs": "Suspendu · contactez-nous",
   "regularizeShortLabel": "{plan} · À régulariser",
   "regularizeCta": "Régulariser",
   "contactUsCta": "Nous contacter",
   "reactivateTitle": "Réactivez {plan}",
-  "overCapBlocked": "{count} élèves pour {limit} places — inscriptions bloquées",
+  "overCapBlocked": "{count} élèves pour {limit} places · inscriptions bloquées",
   "dataKept": "Vos données sont conservées · reprise en 1 clic",
   "reactivateShortLabel": "Réactiver {plan}",
   "reactivateCta": "Réactiver",
-  "capReached": "Plafond atteint ({count}/{limit}) — inscriptions bloquées",
+  "capReached": "Plafond atteint ({count}/{limit}) · inscriptions bloquées",
   "nearCap": {
-    "one": "{count}/{limit} élèves — plus que {left} place",
-    "other": "{count}/{limit} élèves — plus que {left} places"
+    "one": "{count}/{limit} élèves · plus que {left} place",
+    "other": "{count}/{limit} élèves · plus que {left} places"
   },
   "genericPitch": "Jusqu'à {limit} élèves · essai {trialDays} j offert",
   "upsellTitle": "Passez à {plan}",

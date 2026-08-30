@@ -1,12 +1,12 @@
 {
   "title": "Tableau de bord",
-  "subtitle": "Bienvenue, {name} — voici l'aperçu de l'établissement",
+  "subtitle": "Bienvenue, {name} : voici l'aperçu de l'établissement",
   "export": "Export",
   "csvIndicator": "Indicateur",
   "csvValue": "Valeur",
   "academicYearBadge": "Année {label}",
   "loadError": "Impossible de charger le tableau de bord.",
-  "emptyYear": "Aucune année scolaire active — configure d'abord l'année scolaire dans « Paramètres ».",
+  "emptyYear": "Aucune année scolaire active : configure d'abord l'année scolaire dans « Paramètres ».",
   "help": {
     "pageOverview": "Vue d'ensemble de l'établissement : effectifs, présence, moyennes, frais de scolarité et activité récente. Exportez les indicateurs clés en CSV avec le bouton « Export ».",
     "academicYearScope": "Tous les indicateurs de ce tableau de bord (élèves, présence, moyennes, frais) portent sur cette année scolaire."
@@ -58,7 +58,7 @@
   },
   "attendanceByClass": {
     "title": "Taux de présence",
-    "subtitle": "Par classe — ce mois",
+    "subtitle": "Par classe · ce mois",
     "details": "Détails →",
     "empty": "Aucune classe configurée."
   },
@@ -106,8 +106,8 @@
     },
     "loadError": "Impossible de charger l'activité.",
     "help": {
-      "pageOverview": "Historique chronologique de tous les évènements de l'établissement — notes publiées, absences saisies, paiements encaissés et élèves inscrits. Filtrez par type pour retrouver rapidement un évènement précis.",
-      "feedGeneration": "Chaque ligne est ajoutée automatiquement dès qu'une action est enregistrée ailleurs dans l'application (une note publiée, une absence saisie, un paiement encaissé…) — rien à saisir ici."
+      "pageOverview": "Historique chronologique de tous les évènements de l'établissement : notes publiées, absences saisies, paiements encaissés et élèves inscrits. Filtrez par type pour retrouver rapidement un évènement précis.",
+      "feedGeneration": "Chaque ligne est ajoutée automatiquement dès qu'une action est enregistrée ailleurs dans l'application (une note publiée, une absence saisie, un paiement encaissé…) : rien à saisir ici."
     }
   }
 }

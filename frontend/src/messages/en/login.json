@@ -25,7 +25,7 @@
   "submitting": "Signing in…",
   "noAccount": "Don't have an account yet?",
   "contactAdmin": "Contact the administrator",
-  "securityNote": "Secure connection — your data is encrypted",
+  "securityNote": "Secure connection: your data is encrypted",
   "errors": {
     "TOO_MANY_LOGIN_ATTEMPTS": "Too many attempts. Try again in a few minutes.",
     "LOCKED_OUT": "Account temporarily locked after several failed attempts. Try again in a few minutes.",

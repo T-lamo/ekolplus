@@ -21,14 +21,14 @@
       "one": "{count} rezilta",
       "other": "{count} rezilta"
     },
-    "emptyNone": "Pa gen pwofesè — ajoute premye a.",
+    "emptyNone": "Pa gen pwofesè : ajoute premye a.",
     "emptyFiltered": "Pa gen rezilta.",
     "noSubject": "Pa gen matyè",
     "noSubjectShort": "Okenn",
     "noClassLabel": "Pa gen klas",
     "help": {
       "pageOverview": "Isit la ou jwenn tout pwofesè lekòl la. Chèche pa non, filtre pa matyè oswa estati, epi itilize « Ajoute yon pwofesè » pou kreye yon nouvo fich oswa « Ekspòte » pou telechaje lis la an CSV.",
-      "weeklyHoursColumn": "Total sa a kalkile otomatikman apati matyè ak klas ki asiyen a pwofesè a (paj « Matyè ») — li pa reprezante èdtan kontra ki antre nan fich li."
+      "weeklyHoursColumn": "Total sa a kalkile otomatikman apati matyè ak klas ki asiyen a pwofesè a (paj « Matyè ») : li pa reprezante èdtan kontra ki antre nan fich li."
     },
     "table": {
       "teacher": "Pwofesè",
@@ -88,7 +88,7 @@
       "title": "Idantite & Foto",
       "subtitle": "Enfòmasyon idantifikasyon pwofesè a",
       "photoLabel": "Foto pwofil",
-      "photoHint": "PNG, JPG oswa WebP — fòma kare rekòmande",
+      "photoHint": "PNG, JPG oswa WebP · fòma kare rekòmande",
       "civility": "Sivilite",
       "firstName": "Prenon",
       "firstNamePlaceholder": "egz: Jean-Pierre",
@@ -153,7 +153,7 @@
     "edit": "Modifye",
     "assignedSubjectsClasses": "Matyè & Klas asiyen",
     "manage": "Jere",
-    "noAssignments": "Pa gen afektasyon pou kounye a — yo konfigire nan paj <link>Matyè</link>.",
+    "noAssignments": "Pa gen afektasyon pou kounye a : yo konfigire nan paj <link>Matyè</link>.",
     "fields": {
       "fullName": "Non konplè",
       "dateOfBirth": "Dat nesans",

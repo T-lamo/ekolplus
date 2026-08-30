@@ -50,7 +50,7 @@
   },
   "list": {
     "title": "Apresyasyon",
-    "subtitle": "Antre ak jesyon apresyasyon yo — Ane eskolè {year}",
+    "subtitle": "Antre ak jesyon apresyasyon yo · Ane eskolè {year}",
     "export": "Ekspòte",
     "newEntry": "Antre apresyasyon",
     "loadError": "Nou pa t kapab chaje apresyasyon yo.",
@@ -63,12 +63,12 @@
     "menuDelete": "Efase apresyasyon an",
     "help": {
       "pageOverview": "Gade epi pibliye apresyasyon jeneral fen trimès chak elèv nan klas la. Chanje klas oswa trimès ak filtè yo, epi sèvi ak onglè yo pou wè vi pa matyè a oswa estatistik klas la.",
-      "positive": "Elèv ki gen mansyon « Trè byen » oswa « Byen » pou trimès sa a — total sa a konsène tout klas la, menm si gen yon rechèch oswa yon filtè aktif nan tablo ki anba a.",
-      "alert": "Elèv ki gen mansyon « Ensifizan » pou trimès sa a, ki merite yon atansyon patikilye — total sa a konsène tout klas la, kèlkeswa filtè tablo a anba a."
+      "positive": "Elèv ki gen mansyon « Trè byen » oswa « Byen » pou trimès sa a : total sa a konsène tout klas la, menm si gen yon rechèch oswa yon filtè aktif nan tablo ki anba a.",
+      "alert": "Elèv ki gen mansyon « Ensifizan » pou trimès sa a, ki merite yon atansyon patikilye : total sa a konsène tout klas la, kèlkeswa filtè tablo a anba a."
     },
     "summary": {
       "totalStudents": "Total elèv",
-      "totalStudentsSub": "{className} — {term}",
+      "totalStudentsSub": "{className} · {term}",
       "recorded": "Apresyasyon ki antre",
       "recordedSub": {
         "one": "sou {count} elèv",
@@ -106,7 +106,7 @@
     "noAppreciation": "Pa gen apresyasyon antre pou elèv sa a.",
     "statusRecorded": "Antre",
     "statusPending": "An atant",
-    "paginationRange": "N ap montre {from} rive {to} sou {total} elèv —",
+    "paginationRange": "N ap montre {from} rive {to} sou {total} elèv ·",
     "paginationRecorded": "{count} apresyasyon ki antre",
     "paginationPending": ", {count} an atant",
     "csv": {
@@ -129,8 +129,8 @@
     "deleteConfirm": "Efase apresyasyon jeneral elèv sa a?",
     "deletedToast": "Apresyasyon efase.",
     "deleteErrorToast": "Erè pandan efasman an.",
-    "position": "Elèv {index} sou {total} — {className} · {term}",
-    "messagingSoon": "Mesajri — l ap disponib byento.",
+    "position": "Elèv {index} sou {total} · {className} · {term}",
+    "messagingSoon": "Mesajri · l ap disponib byento.",
     "reportCardsSoon": "Disponib ak Bilten yo (Epic 7).",
     "classCouncilSoon": "Disponib ak Konsèy klas la (k ap vini).",
     "auditHistorySoon": "Istorik detaye a ap vini ak modil odit la (k ap vini).",
@@ -153,7 +153,7 @@
       "teacher": "Pwofesè"
     },
     "overallAverage": "Mwayèn jeneral",
-    "rankLine": "— Ran : {rank} / {rankedCount}",
+    "rankLine": "· Ran : {rank} / {rankedCount}",
     "classCouncilTitle": "Desizyon konsèy klas la",
     "statsTitle": "Estatistik trimès la",
     "stats": {

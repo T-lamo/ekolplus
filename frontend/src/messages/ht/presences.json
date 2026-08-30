@@ -2,10 +2,10 @@
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
   "title": "Prezans",
   "subtitle": "Swivi absans ak reta",
-  "yearSuffix": " — Ane eskolè {year}",
+  "yearSuffix": " · Ane eskolè {year}",
   "export": "Ekspòte",
   "loadError": "Nou pa ka chaje prezans yo.",
-  "emptyClasses": "Pa gen klas konfigire — kreye yon klas dabò nan « Klas ».",
+  "emptyClasses": "Pa gen klas konfigire : kreye yon klas dabò nan « Klas ».",
   "status": {
     "PRESENT": "Prezan",
     "ABSENT": "Absan",
@@ -60,9 +60,9 @@
     "absences": "Absans",
     "noStudentsInClass": "Pa gen elèv nan klas sa a.",
     "noResults": "Pa gen rezilta.",
-    "paginationSummary": "N ap montre {from} rive {to} sou {total} elèv — To mwayèn prezans : {rate}",
-    "dayFuture": "Jou k ap vini — pa ka modifye",
-    "dayClickToChange": "{status} — klike pou chanje"
+    "paginationSummary": "N ap montre {from} rive {to} sou {total} elèv · To mwayèn prezans : {rate}",
+    "dayFuture": "Jou k ap vini · pa ka modifye",
+    "dayClickToChange": "{status} · klike pou chanje"
   },
   "actions": {
     "viewDetail": "Wè detay",
@@ -85,7 +85,7 @@
     "absences": "Absans"
   },
   "offline": {
-    "label": "Prezans — {name} ({day})",
+    "label": "Prezans · {name} ({day})",
     "labelFallback": "Prezans"
   },
   "stats": {
@@ -107,7 +107,7 @@
       "one": "{count} elèv pou siveye",
       "other": "{count} elèv pou siveye"
     },
-    "thresholdSubtitle": "— to pi ba pase {rate}% oswa {absences}+ absans trimès sa a",
+    "thresholdSubtitle": "· to pi ba pase {rate}% oswa {absences}+ absans trimès sa a",
     "student": "Elèv",
     "reason": "Rezon",
     "rate": "To",

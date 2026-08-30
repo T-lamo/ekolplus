@@ -42,7 +42,7 @@
     "nextYears": "12 next years",
     "previousYear": "Previous year",
     "nextYear": "Next year",
-    "invalidDate": "Invalid date — use the dd/mm/yyyy format",
+    "invalidDate": "Invalid date: use the dd/mm/yyyy format",
     "invalidDateRange": "(between {min} and {max})"
   },
   "phoneInput": {

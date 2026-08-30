@@ -68,7 +68,7 @@ describe('planTransition — same plan selected', () => {
     const tr = planTransition({ selected: 'STARTER', billing: sum(), ...owner }, t, tPlan, bcp47);
     expect(tr.kind).toBe('current');
     expect(tr.label).toBeNull();
-    expect(tr.hint).toMatch(/plan gratuit Starter — jusqu’à 50 élèves/);
+    expect(tr.hint).toMatch(/plan gratuit Starter : jusqu’à 50 élèves/);
   });
   it('Pro on Pro (active): current with seats + renewal date', () => {
     const tr = planTransition({ selected: 'PRO', billing: pro(), ...owner }, t, tPlan, bcp47);
@@ -151,7 +151,7 @@ describe('planTransition — Starter → Pro', () => {
     const tr = planTransition({ selected: 'PRO', billing: sum(), ...owner }, t, tPlan, bcp47);
     expect(tr).toMatchObject({
       kind: 'upgrade',
-      label: 'Passer à Pro — essai 30 j',
+      label: 'Passer à Pro · essai 30 j',
       tone: 'gold',
       disabledReason: null,
     });
@@ -359,7 +359,7 @@ describe('planTransition — Pro → Starter (downgrade)', () => {
     );
     expect(tr).toMatchObject({
       kind: 'managed',
-      disabledReason: 'Plan géré manuellement — contactez-nous',
+      disabledReason: 'Plan géré manuellement : contactez-nous',
     });
   });
   it('ADMIN: downgrade shown but disabled (owner-only)', () => {
@@ -424,7 +424,7 @@ describe('salesMailto', () => {
     );
     expect(href.startsWith('mailto:contact@schoolgesti.com?subject=')).toBe(true);
     const url = new URL(href);
-    expect(url.searchParams.get('subject')).toBe('Demande de devis Enterprise — Lycée Test');
+    expect(url.searchParams.get('subject')).toBe('Demande de devis Enterprise · Lycée Test');
     const body = url.searchParams.get('body') ?? '';
     expect(body).toMatch(/Établissement : Lycée Test/);
     expect(body).toMatch(/Plan actuel : Établissement Pro/);
@@ -442,7 +442,7 @@ describe('salesMailto', () => {
     );
     const url = new URL(href);
     expect(url.searchParams.get('subject')).toBe(
-      'Abonnement Établissement Pro — notre établissement',
+      'Abonnement Établissement Pro · notre établissement',
     );
     expect(url.searchParams.get('body')).toMatch(
       /Plan actuel : Starter \(abonnement Établissement Pro suspended\)/,

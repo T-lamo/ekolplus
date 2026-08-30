@@ -49,7 +49,7 @@
   },
   "list": {
     "title": "Appréciations",
-    "subtitle": "Saisie et gestion des appréciations — Année scolaire {year}",
+    "subtitle": "Saisie et gestion des appréciations · Année scolaire {year}",
     "export": "Exporter",
     "newEntry": "Saisir appréciations",
     "loadError": "Impossible de charger les appréciations.",
@@ -62,12 +62,12 @@
     "menuDelete": "Supprimer l'appréciation",
     "help": {
       "pageOverview": "Consultez et publiez l'appréciation générale de fin de trimestre de chaque élève de la classe. Changez de classe ou de trimestre avec les filtres, et utilisez les onglets pour voir la vue par matière ou les statistiques de la classe.",
-      "positive": "Élèves ayant la mention « Très bien » ou « Bien » pour ce trimestre — ce total porte sur toute la classe, même si une recherche ou un filtre est actif dans le tableau ci-dessous.",
-      "alert": "Élèves ayant la mention « Insuffisant » pour ce trimestre, à surveiller en priorité — ce total porte sur toute la classe, quels que soient les filtres du tableau ci-dessous."
+      "positive": "Élèves ayant la mention « Très bien » ou « Bien » pour ce trimestre : ce total porte sur toute la classe, même si une recherche ou un filtre est actif dans le tableau ci-dessous.",
+      "alert": "Élèves ayant la mention « Insuffisant » pour ce trimestre, à surveiller en priorité : ce total porte sur toute la classe, quels que soient les filtres du tableau ci-dessous."
     },
     "summary": {
       "totalStudents": "Total élèves",
-      "totalStudentsSub": "{className} — {term}",
+      "totalStudentsSub": "{className} · {term}",
       "recorded": "Appréciations saisies",
       "recordedSub": {
         "one": "sur {count} élève",
@@ -105,7 +105,7 @@
     "noAppreciation": "Aucune appréciation saisie pour cet élève.",
     "statusRecorded": "Saisie",
     "statusPending": "En attente",
-    "paginationRange": "Affichage de {from} à {to} sur {total} élèves —",
+    "paginationRange": "Affichage de {from} à {to} sur {total} élèves ·",
     "paginationRecorded": "{count} appréciations saisies",
     "paginationPending": ", {count} en attente",
     "csv": {
@@ -128,8 +128,8 @@
     "deleteConfirm": "Supprimer l'appréciation générale de cet élève ?",
     "deletedToast": "Appréciation supprimée.",
     "deleteErrorToast": "Erreur lors de la suppression.",
-    "position": "Élève {index} sur {total} — {className} · {term}",
-    "messagingSoon": "Messagerie — bientôt disponible.",
+    "position": "Élève {index} sur {total} · {className} · {term}",
+    "messagingSoon": "Messagerie · bientôt disponible.",
     "reportCardsSoon": "Disponible avec les Bulletins (Epic 7).",
     "classCouncilSoon": "Disponible avec le Conseil de classe (à venir).",
     "auditHistorySoon": "L'historique détaillé arrive avec le module d'audit (à venir).",
@@ -152,7 +152,7 @@
       "teacher": "Enseignant"
     },
     "overallAverage": "Moyenne générale",
-    "rankLine": "— Rang : {rank} / {rankedCount}",
+    "rankLine": "· Rang : {rank} / {rankedCount}",
     "classCouncilTitle": "Décision du conseil de classe",
     "statsTitle": "Statistiques du trimestre",
     "stats": {

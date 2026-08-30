@@ -4,10 +4,10 @@
   },
   "niveaux": {
     "title": "Niveaux",
-    "subtitle": "Ordre des niveaux scolaires, du premier au dernier — glisse une ligne pour réordonner. Utilisé pour suggérer les promotions lors du passage à l'année suivante.",
+    "subtitle": "Ordre des niveaux scolaires, du premier au dernier : glisse une ligne pour réordonner. Utilisé pour suggérer les promotions lors du passage à l'année suivante.",
     "addLevel": "Ajouter un niveau",
     "loadError": "Impossible de charger les niveaux.",
-    "empty": "Aucun niveau configuré — ajoute ton premier niveau avec le bouton ci-dessus.",
+    "empty": "Aucun niveau configuré : ajoute ton premier niveau avec le bouton ci-dessus.",
     "reorderAria": "Réordonner {name}",
     "renameAria": "Renommer {name}",
     "deleteAria": "Supprimer {name}",
@@ -25,7 +25,7 @@
     "cancel": "Annuler",
     "errors": {
       "nameTaken": "Ce niveau existe déjà.",
-      "invalidSet": "La liste des niveaux a changé — rechargez la page et réessayez.",
+      "invalidSet": "La liste des niveaux a changé : rechargez la page et réessayez.",
       "orgRoleInsufficient": "Vous n'avez pas les droits pour modifier les niveaux.",
       "validationFailed": "Nom invalide (1 à 40 caractères)."
     },
@@ -69,13 +69,13 @@
       },
       "searchPlaceholder": "Rechercher une classe...",
       "allLevels": "Tous niveaux",
-      "multiYearComingSoon": "Sélecteur multi-année à venir — une seule année scolaire active pour l'instant",
+      "multiYearComingSoon": "Sélecteur multi-année à venir : une seule année scolaire active pour l'instant",
       "noActiveYear": "Aucune année active",
       "resultCount": {
         "one": "{count} classe",
         "other": "{count} classes"
       },
-      "emptyNoClasses": "Aucune classe — ajoute la première.",
+      "emptyNoClasses": "Aucune classe : ajoute la première.",
       "emptyNoResults": "Aucun résultat.",
       "roomUnset": "Salle non renseignée",
       "homeroomSuffix": "· Prof. principal",
@@ -113,7 +113,7 @@
     },
     "create": {
       "meta": "Nouvelle classe",
-      "metaWithYear": "Nouvelle classe — Année scolaire {year}",
+      "metaWithYear": "Nouvelle classe · Année scolaire {year}",
       "cancel": "Annuler",
       "save": "Enregistrer la classe",
       "created": "Classe créée."
@@ -141,15 +141,15 @@
         "levelOtherPlaceholder": "Saisir le niveau",
         "levelOtherAria": "Niveau (autre)",
         "levelFreePlaceholder": "3ème",
-        "noLevelCatalog": "Aucun catalogue de niveaux —",
+        "noLevelCatalog": "Aucun catalogue de niveaux :",
         "noLevelCatalogLink": "définir les niveaux de l'école",
         "roomLabel": "Salle de cours",
         "roomNone": "Aucune salle attitrée",
         "roomOther": "Autre lieu…",
         "roomOtherPlaceholder": "Saisir le lieu (ex. Préau, Salle paroissiale)",
         "roomOtherAria": "Salle (autre lieu)",
-        "roomFreePlaceholder": "Salle 12 — Bât. B",
-        "noRoomCatalog": "Aucun catalogue de salles —",
+        "roomFreePlaceholder": "Salle 12 · Bât. B",
+        "noRoomCatalog": "Aucun catalogue de salles :",
         "noRoomCatalogLink": "définir les salles de l'école",
         "placesSuffix": "places",
         "roomTooSmall": "Cette salle n'a que {roomCapacity} places pour {classCapacity} élèves.",
@@ -160,7 +160,7 @@
         "trackLabel": "Filière / Série",
         "trackPlaceholder": "Sciences, Lettres, NS…",
         "yearLabel": "Année scolaire",
-        "yearHint": "Année active — modifiable dans Paramètres › Année scolaire",
+        "yearHint": "Année active : modifiable dans Paramètres › Année scolaire",
         "noActiveYear": "Aucune année active",
         "errors": {
           "nameRequired": "Le nom est requis.",
@@ -176,7 +176,7 @@
         "teacherLabel": "Professeur principal",
         "teacherHint": "Ce professeur recevra les bulletins et rapports de la classe",
         "teacherPlaceholder": "Rechercher un enseignant…",
-        "teacherNone": "— Aucun —",
+        "teacherNone": "Aucun",
         "subjectsLabel": "Matières enseignées",
         "subjectsHint": "d'après ses affectations",
         "chooseTeacherHint": "Choisissez un enseignant pour voir ses matières"
@@ -185,8 +185,8 @@
         "title": "Matières de la classe",
         "subtitle": "Sélectionner les matières enseignées dans cette classe.",
         "coefficientHint": "Coef. {coefficient}",
-        "lockedHint": "Des notes existent — la matière ne peut plus être retirée",
-        "noSubjectsPlaceholder": "Aucune matière active — crée d'abord les matières de l'école",
+        "lockedHint": "Des notes existent : la matière ne peut plus être retirée",
+        "noSubjectsPlaceholder": "Aucune matière active : crée d'abord les matières de l'école",
         "placeholder": "Choisir les matières de la classe…",
         "searchPlaceholder": "Rechercher une matière…",
         "emptyLabel": "Aucune matière trouvée",
@@ -206,8 +206,8 @@
           "coefficient": "Coef.",
           "weeklyHours": "h / sem",
           "lockAria": "Verrou",
-          "teacherNone": "— Aucun —",
-          "teacherPlaceholderMobile": "Enseignant — Aucun",
+          "teacherNone": "Aucun",
+          "teacherPlaceholderMobile": "Enseignant · Aucun",
           "coefficientAria": "Coefficient de {subject}",
           "weeklyHoursAria": "Heures hebdomadaires de {subject}",
           "lockedAria": "Des notes existent pour cette matière",
@@ -217,7 +217,7 @@
       },
       "notes": {
         "title": "Configuration des notes",
-        "subtitle": "Paramètres d'évaluation hérités de l'établissement — identiques pour toutes les classes.",
+        "subtitle": "Paramètres d'évaluation hérités de l'établissement : identiques pour toutes les classes.",
         "scale": "Barème",
         "scaleDefault": "Sur 20",
         "periods": "Périodes",
@@ -302,7 +302,7 @@
       "subjectDeleted": "Matière supprimée.",
       "unarchived": "Matière désarchivée.",
       "archived": "Matière archivée.",
-      "duplicateComingSoon": "Duplication de matière — bientôt disponible.",
+      "duplicateComingSoon": "Duplication de matière · bientôt disponible.",
       "csv": {
         "subject": "Matière",
         "code": "Code",
@@ -336,7 +336,7 @@
         "one": "{count} matière",
         "other": "{count} matières"
       },
-      "emptyNoSubjects": "Aucune matière — ajoute la première.",
+      "emptyNoSubjects": "Aucune matière : ajoute la première.",
       "emptyNoResults": "Aucun résultat.",
       "noClasses": "Aucune classe",
       "unassignedLabel": "Non assigné",
@@ -351,7 +351,7 @@
       },
       "help": {
         "pageOverview": "Recherchez et filtrez les matières par domaine ou par statut (active, non affectée, archivée), puis basculez entre vue grille et vue tableau.",
-        "coefficientColumn": "Les coefficients et les enseignants affectés se configurent maintenant par classe, directement depuis la fiche de la matière ou le tableau « Détail des matières » de chaque classe — les anciens écrans dédiés Coefficients et Affectations redirigent ici."
+        "coefficientColumn": "Les coefficients et les enseignants affectés se configurent maintenant par classe, directement depuis la fiche de la matière ou le tableau « Détail des matières » de chaque classe : les anciens écrans dédiés Coefficients et Affectations redirigent ici."
       }
     },
     "status": {
@@ -371,7 +371,7 @@
     "pageShell": {
       "addTitle": "Ajouter une matière",
       "createMeta": "Nouvelle matière",
-      "createMetaWithYear": "Nouvelle matière — Année scolaire {year}",
+      "createMetaWithYear": "Nouvelle matière · Année scolaire {year}",
       "coeffPrefix": "Coeff. {coefficient}",
       "yearPrefix": "Année {year}",
       "disabledHint": "Enregistrez la matière pour continuer"
@@ -468,11 +468,11 @@
         "teacherLabel": "Enseignant responsable",
         "teacherHint": "L'enseignant doit être créé dans la liste des enseignants",
         "teacherPlaceholder": "Sélectionner un enseignant",
-        "teacherNone": "— Aucun —",
+        "teacherNone": "Aucun",
         "roomLabel": "Salle / Type de local requis",
         "roomHint": "Ex : Amphithéâtre, Laboratoire, Salle informatique",
         "roomPlaceholder": "Salle de cours standard",
-        "roomNone": "— Non précisé —",
+        "roomNone": "Non précisé",
         "prerequisitesLabel": "Prérequis",
         "prerequisitesHint": "Matières devant être validées au préalable (ex. avoir validé MAT-001 pour MATH202)"
       },
@@ -507,7 +507,7 @@
       },
       "classesCard": {
         "title": "Classes concernées",
-        "subtitle": "Sélection rapide — détails dans l'onglet Affectations.",
+        "subtitle": "Sélection rapide : détails dans l'onglet Affectations.",
         "empty": "Aucune classe dans l'année scolaire active.",
         "studentCount": {
           "one": "{count} élève",
@@ -685,9 +685,9 @@
         "title": "Programme par trimestre",
         "description": "Rédigez les chapitres et objectifs de chaque trimestre. Glissez-déposez pour réordonner.",
         "import": "Importer",
-        "importToast": "Import de programme — bientôt disponible.",
+        "importToast": "Import de programme · bientôt disponible.",
         "duplicate": "Dupliquer de l'an passé",
-        "duplicateToast": "Duplication depuis l'année précédente — bientôt disponible."
+        "duplicateToast": "Duplication depuis l'année précédente · bientôt disponible."
       },
       "empty": {
         "title": "Aucune période scolaire",
@@ -777,7 +777,7 @@
       "inactive": "Inactives"
     },
     "empty": {
-      "noRooms": "Aucune salle — ajoutez la première pour la proposer aux classes et à l'emploi du temps.",
+      "noRooms": "Aucune salle : ajoutez la première pour la proposer aux classes et à l'emploi du temps.",
       "noResults": "Aucun résultat."
     },
     "card": {
@@ -856,7 +856,7 @@
     "subtitle": "Sélectionnez un modèle à utiliser ou à personnaliser pour vos bulletins scolaires",
     "loadError": "Impossible de charger les modèles de bulletin.",
     "toast": {
-      "forked": "Modèle dupliqué — vous pouvez maintenant le personnaliser.",
+      "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
       "forkError": "Erreur lors de la duplication du modèle.",
       "activated": "Modèle défini comme actif.",
       "activateError": "Erreur lors de l'activation du modèle.",
@@ -873,9 +873,9 @@
       "personal": "Mes modèles",
       "global": "Modèles globaux"
     },
-    "globalHint": "Dupliquez un modèle pour le personnaliser — les modèles globaux ne sont pas modifiables directement.",
+    "globalHint": "Dupliquez un modèle pour le personnaliser : les modèles globaux ne sont pas modifiables directement.",
     "empty": {
-      "personal": "Vous n'avez pas encore de modèle personnalisé — dupliquez un modèle global pour commencer.",
+      "personal": "Vous n'avez pas encore de modèle personnalisé : dupliquez un modèle global pour commencer.",
       "global": "Aucun modèle global disponible."
     },
     "menu": {
@@ -891,7 +891,7 @@
     },
     "editLink": "Éditer",
     "help": {
-      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre — les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être actif à la fois.",
+      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre : les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être actif à la fois.",
       "activeTemplate": "Le modèle actif est celui utilisé pour générer les bulletins officiels de vos élèves. Pour en activer un autre, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme actif »."
     },
     "block": {
@@ -910,7 +910,7 @@
         "saved": "Modèle enregistré.",
         "saveError": "Erreur lors de l'enregistrement.",
         "exportError": "Erreur lors de l'export PDF.",
-        "forked": "Modèle dupliqué — vous pouvez maintenant le personnaliser.",
+        "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
         "forkError": "Erreur lors de la duplication du modèle.",
         "activated": "Modèle défini comme actif.",
         "activateError": "Erreur lors de l'activation du modèle.",
@@ -920,12 +920,12 @@
       },
       "mobileGate": {
         "title": "Éditeur disponible sur grand écran",
-        "description": "La mise en page du modèle de bulletin se prépare sur ordinateur ou tablette — revenez ici depuis un écran plus large.",
+        "description": "La mise en page du modèle de bulletin se prépare sur ordinateur ou tablette : revenez ici depuis un écran plus large.",
         "back": "Retour aux modèles"
       },
       "back": "Retour",
       "nameAria": "Nom du modèle",
-      "readOnlyBadge": "Lecture seule — modèle global",
+      "readOnlyBadge": "Lecture seule · modèle global",
       "orientation": {
         "landscape": "Paysage",
         "portrait": "Portrait"
@@ -967,14 +967,14 @@
         "logoTitle": "Logo de l'établissement",
         "logoLabel": "Logo",
         "logoSizeLabel": "Taille du logo",
-        "imageHint": "PNG, JPG ou WebP — 10 Mo max",
+        "imageHint": "PNG, JPG ou WebP · 10 Mo max",
         "signatureTitle": "Signature du directeur",
         "signatureLabel": "Signature",
         "signatureSizeLabel": "Taille de la signature",
         "textTitle": "Texte du bulletin",
         "titleLabel": "Titre du bulletin",
         "footerLabel": "Message de pied de page",
-        "footerPlaceholder": "Optionnel — ex. « Ensemble vers la réussite »",
+        "footerPlaceholder": "Optionnel · ex. « Ensemble vers la réussite »",
         "signaturesTitle": "Signatures",
         "signatureDirector": "Directeur",
         "signatureHomeroom": "Titulaire de classe",

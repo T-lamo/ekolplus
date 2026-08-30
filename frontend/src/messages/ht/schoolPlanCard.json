@@ -1,20 +1,20 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
   "suspendedTitle": "{plan} sispann",
-  "paymentFailedRegularize": "Peman echwe — regilarize",
+  "paymentFailedRegularize": "Peman echwe · regilarize",
   "suspendedContactUs": "Sispann · kontakte nou",
   "regularizeShortLabel": "{plan} · Pou regilarize",
   "regularizeCta": "Regilarize",
   "contactUsCta": "Kontakte nou",
   "reactivateTitle": "Reyaktive {plan}",
-  "overCapBlocked": "{count} elèv pou {limit} plas — enskripsyon bloke",
+  "overCapBlocked": "{count} elèv pou {limit} plas · enskripsyon bloke",
   "dataKept": "Done ou yo konsève · repran nan 1 klik",
   "reactivateShortLabel": "Reyaktive {plan}",
   "reactivateCta": "Reyaktive",
-  "capReached": "Plafon atenn ({count}/{limit}) — enskripsyon bloke",
+  "capReached": "Plafon atenn ({count}/{limit}) · enskripsyon bloke",
   "nearCap": {
-    "one": "{count}/{limit} elèv — rete {left} plas",
-    "other": "{count}/{limit} elèv — rete {left} plas"
+    "one": "{count}/{limit} elèv · rete {left} plas",
+    "other": "{count}/{limit} elèv · rete {left} plas"
   },
   "genericPitch": "Jiska {limit} elèv · esè {trialDays} jou gratis",
   "upsellTitle": "Pase nan {plan}",

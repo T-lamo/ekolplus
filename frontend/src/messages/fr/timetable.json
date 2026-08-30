@@ -32,13 +32,25 @@
       "createSession": "Vous pouvez aussi cliquer directement sur un créneau libre de la grille pour créer un cours pré-rempli à ce jour et cette heure, ou sur un cours existant pour le modifier.",
       "exportScope": "L'export CSV ne contient que les cours de la période actuellement affichée (mois, semaine ou jour) et respecte les filtres de classe, enseignant, salle et matière en cours."
     },
-    "headerWithYear": "Année scolaire {label} — {view}",
+    "headerWithYear": "Année scolaire {label} · {view}",
     "viewsAriaLabel": "Vue",
     "views": {
-      "month": { "label": "Mois", "subtitle": "Vue mensuelle" },
-      "week": { "label": "Semaine", "subtitle": "Vue hebdomadaire" },
-      "day": { "label": "Jour", "subtitle": "Vue journalière" },
-      "agenda": { "label": "Agenda", "subtitle": "Agenda de la semaine" }
+      "month": {
+        "label": "Mois",
+        "subtitle": "Vue mensuelle"
+      },
+      "week": {
+        "label": "Semaine",
+        "subtitle": "Vue hebdomadaire"
+      },
+      "day": {
+        "label": "Jour",
+        "subtitle": "Vue journalière"
+      },
+      "agenda": {
+        "label": "Agenda",
+        "subtitle": "Agenda de la semaine"
+      }
     },
     "addSession": "Ajouter un cours",
     "prevPeriod": "Période précédente",
@@ -56,7 +68,7 @@
     "exportEmpty": "Aucune séance à exporter sur cette période.",
     "noYearTitle": "Aucune année scolaire active",
     "noYearHint": "Configurez d'abord une année scolaire dans Paramètres pour planifier des cours.",
-    "emptyRange": "Aucune séance sur cette période — cliquez sur un créneau ou sur « Ajouter un cours ».",
+    "emptyRange": "Aucune séance sur cette période : cliquez sur un créneau ou sur « Ajouter un cours ».",
     "networkError": "Erreur réseau. Réessayez."
   },
   "export": {
@@ -118,7 +130,7 @@
       "label": "Couleur de la séance",
       "groupAriaLabel": "Couleur",
       "reset": "Reprendre la couleur de la matière",
-      "hint": "Couleur de la matière — identifie rapidement le cours sur la grille"
+      "hint": "Couleur de la matière : identifie rapidement le cours sur la grille"
     },
     "rooms": {
       "capacity": {
@@ -126,13 +138,20 @@
         "other": "{count} pl."
       },
       "inactive": "inactive",
-      "noCatalogue": "Aucun catalogue de salles — <link>définir les salles de l'école</link>"
+      "noCatalogue": "Aucun catalogue de salles : <link>définir les salles de l'école</link>"
     },
     "recurrence": {
       "toggleLabel": "Répétition du cours",
       "toggleHint": "Définir une récurrence hebdomadaire",
       "daysLabel": "Jours de répétition",
-      "dayShort": { "1": "L", "2": "Ma", "3": "Me", "4": "J", "5": "V", "6": "Sa" },
+      "dayShort": {
+        "1": "L",
+        "2": "Ma",
+        "3": "Me",
+        "4": "J",
+        "5": "V",
+        "6": "Sa"
+      },
       "dayPlural": {
         "1": "lundis",
         "2": "mardis",
@@ -145,8 +164,8 @@
       "hint": "Le cours se répètera chaque semaine les jours sélectionnés",
       "untilLabel": "Fin de la récurrence",
       "untilHint": "Correspond à la fin de l'année scolaire {label}",
-      "summary": "Tous les <b>{days}</b> de {start} à {end} — <b>{occurrences}</b>",
-      "summaryUntil": "Tous les <b>{days}</b> de {start} à {end} · jusqu'au {until} — <b>{occurrences}</b>",
+      "summary": "Tous les <b>{days}</b> de {start} à {end} · <b>{occurrences}</b>",
+      "summaryUntil": "Tous les <b>{days}</b> de {start} à {end} · jusqu'au {until} · <b>{occurrences}</b>",
       "occurrenceCount": {
         "one": "{count} occurrence",
         "other": "{count} occurrences"
@@ -154,7 +173,7 @@
     },
     "series": {
       "toggleLabel": "Appliquer à toute la série",
-      "hint": "Cette séance fait partie d'une série de {count} séances — la date reste propre à chaque occurrence."
+      "hint": "Cette séance fait partie d'une série de {count} séances : la date reste propre à chaque occurrence."
     },
     "delete": {
       "trigger": "Supprimer",

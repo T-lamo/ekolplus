@@ -4,10 +4,10 @@
   },
   "niveaux": {
     "title": "Grade levels",
-    "subtitle": "Order of school grade levels, first to last — drag a row to reorder. Used to suggest promotions when moving to the next school year.",
+    "subtitle": "Order of school grade levels, first to last: drag a row to reorder. Used to suggest promotions when moving to the next school year.",
     "addLevel": "Add a grade level",
     "loadError": "Could not load grade levels.",
-    "empty": "No grade levels configured — add your first one with the button above.",
+    "empty": "No grade levels configured: add your first one with the button above.",
     "reorderAria": "Reorder {name}",
     "renameAria": "Rename {name}",
     "deleteAria": "Delete {name}",
@@ -25,7 +25,7 @@
     "cancel": "Cancel",
     "errors": {
       "nameTaken": "This grade level already exists.",
-      "invalidSet": "The grade level list has changed — reload the page and try again.",
+      "invalidSet": "The grade level list has changed: reload the page and try again.",
       "orgRoleInsufficient": "You don't have permission to edit grade levels.",
       "validationFailed": "Invalid name (1 to 40 characters)."
     },
@@ -69,13 +69,13 @@
       },
       "searchPlaceholder": "Search a class...",
       "allLevels": "All grade levels",
-      "multiYearComingSoon": "Multi-year selector coming soon — only one active school year for now",
+      "multiYearComingSoon": "Multi-year selector coming soon: only one active school year for now",
       "noActiveYear": "No active year",
       "resultCount": {
         "one": "{count} class",
         "other": "{count} classes"
       },
-      "emptyNoClasses": "No classes — add the first one.",
+      "emptyNoClasses": "No classes: add the first one.",
       "emptyNoResults": "No results.",
       "roomUnset": "No room set",
       "homeroomSuffix": "· Homeroom teacher",
@@ -113,7 +113,7 @@
     },
     "create": {
       "meta": "New class",
-      "metaWithYear": "New class — School year {year}",
+      "metaWithYear": "New class · School year {year}",
       "cancel": "Cancel",
       "save": "Save class",
       "created": "Class created."
@@ -141,15 +141,15 @@
         "levelOtherPlaceholder": "Enter the grade level",
         "levelOtherAria": "Grade level (other)",
         "levelFreePlaceholder": "Grade 9",
-        "noLevelCatalog": "No grade-level catalog —",
+        "noLevelCatalog": "No grade-level catalog:",
         "noLevelCatalogLink": "set the school's grade levels",
         "roomLabel": "Classroom",
         "roomNone": "No room assigned",
         "roomOther": "Other place…",
         "roomOtherPlaceholder": "Enter the place (e.g. Courtyard, Parish hall)",
         "roomOtherAria": "Room (other place)",
-        "roomFreePlaceholder": "Room 12 — Bldg. B",
-        "noRoomCatalog": "No room catalog —",
+        "roomFreePlaceholder": "Room 12 · Bldg. B",
+        "noRoomCatalog": "No room catalog:",
         "noRoomCatalogLink": "set the school's rooms",
         "placesSuffix": "seats",
         "roomTooSmall": "This room only has {roomCapacity} seats for {classCapacity} students.",
@@ -160,7 +160,7 @@
         "trackLabel": "Track / Stream",
         "trackPlaceholder": "Sciences, Arts, NS…",
         "yearLabel": "School year",
-        "yearHint": "Active year — editable in Settings › School year",
+        "yearHint": "Active year: editable in Settings › School year",
         "noActiveYear": "No active year",
         "errors": {
           "nameRequired": "Name is required.",
@@ -176,7 +176,7 @@
         "teacherLabel": "Homeroom teacher",
         "teacherHint": "This teacher will receive the class's report cards and reports",
         "teacherPlaceholder": "Search for a teacher…",
-        "teacherNone": "— None —",
+        "teacherNone": "None",
         "subjectsLabel": "Subjects taught",
         "subjectsHint": "based on their assignments",
         "chooseTeacherHint": "Choose a teacher to see their subjects"
@@ -185,8 +185,8 @@
         "title": "Class subjects",
         "subtitle": "Select the subjects taught in this class.",
         "coefficientHint": "Coef. {coefficient}",
-        "lockedHint": "Grades already exist — the subject can no longer be removed",
-        "noSubjectsPlaceholder": "No active subjects — create the school's subjects first",
+        "lockedHint": "Grades already exist: the subject can no longer be removed",
+        "noSubjectsPlaceholder": "No active subjects: create the school's subjects first",
         "placeholder": "Choose the class's subjects…",
         "searchPlaceholder": "Search a subject…",
         "emptyLabel": "No subjects found",
@@ -206,8 +206,8 @@
           "coefficient": "Coef.",
           "weeklyHours": "h / wk",
           "lockAria": "Lock",
-          "teacherNone": "— None —",
-          "teacherPlaceholderMobile": "Teacher — None",
+          "teacherNone": "None",
+          "teacherPlaceholderMobile": "Teacher · None",
           "coefficientAria": "Coefficient for {subject}",
           "weeklyHoursAria": "Weekly hours for {subject}",
           "lockedAria": "Grades already exist for this subject",
@@ -217,7 +217,7 @@
       },
       "notes": {
         "title": "Grading configuration",
-        "subtitle": "Assessment settings inherited from the school — identical for every class.",
+        "subtitle": "Assessment settings inherited from the school: identical for every class.",
         "scale": "Scale",
         "scaleDefault": "Out of 20",
         "periods": "Periods",
@@ -302,7 +302,7 @@
       "subjectDeleted": "Subject deleted.",
       "unarchived": "Subject unarchived.",
       "archived": "Subject archived.",
-      "duplicateComingSoon": "Subject duplication — coming soon.",
+      "duplicateComingSoon": "Subject duplication · coming soon.",
       "csv": {
         "subject": "Subject",
         "code": "Code",
@@ -336,7 +336,7 @@
         "one": "{count} subject",
         "other": "{count} subjects"
       },
-      "emptyNoSubjects": "No subjects — add the first one.",
+      "emptyNoSubjects": "No subjects: add the first one.",
       "emptyNoResults": "No results.",
       "noClasses": "No classes",
       "unassignedLabel": "Unassigned",
@@ -351,7 +351,7 @@
       },
       "help": {
         "pageOverview": "Search and filter subjects by domain or status (active, unassigned, archived), then switch between grid and table view.",
-        "coefficientColumn": "Coefficients and assigned teachers are now configured per class, directly from the subject's own record or from each class's \"Subject detail\" table — the old standalone Coefficients and Assignments screens now redirect here."
+        "coefficientColumn": "Coefficients and assigned teachers are now configured per class, directly from the subject's own record or from each class's \"Subject detail\" table: the old standalone Coefficients and Assignments screens now redirect here."
       }
     },
     "status": {
@@ -371,7 +371,7 @@
     "pageShell": {
       "addTitle": "Add a subject",
       "createMeta": "New subject",
-      "createMetaWithYear": "New subject — School year {year}",
+      "createMetaWithYear": "New subject · School year {year}",
       "coeffPrefix": "Coeff. {coefficient}",
       "yearPrefix": "Year {year}",
       "disabledHint": "Save the subject to continue"
@@ -468,11 +468,11 @@
         "teacherLabel": "Lead teacher",
         "teacherHint": "The teacher must already exist in the teacher list",
         "teacherPlaceholder": "Select a teacher",
-        "teacherNone": "— None —",
+        "teacherNone": "None",
         "roomLabel": "Room / Required room type",
         "roomHint": "E.g.: Lecture hall, Lab, Computer room",
         "roomPlaceholder": "Standard classroom",
-        "roomNone": "— Not specified —",
+        "roomNone": "Not specified",
         "prerequisitesLabel": "Prerequisites",
         "prerequisitesHint": "Subjects that must be validated beforehand (e.g. having passed MAT-001 for MATH202)"
       },
@@ -507,7 +507,7 @@
       },
       "classesCard": {
         "title": "Classes involved",
-        "subtitle": "Quick selection — details in the Assignments tab.",
+        "subtitle": "Quick selection: details in the Assignments tab.",
         "empty": "No classes in the active school year.",
         "studentCount": {
           "one": "{count} student",
@@ -685,9 +685,9 @@
         "title": "Program by term",
         "description": "Write each term's chapters and objectives. Drag and drop to reorder.",
         "import": "Import",
-        "importToast": "Program import — coming soon.",
+        "importToast": "Program import · coming soon.",
         "duplicate": "Duplicate from last year",
-        "duplicateToast": "Duplication from the previous year — coming soon."
+        "duplicateToast": "Duplication from the previous year · coming soon."
       },
       "empty": {
         "title": "No school term",
@@ -777,7 +777,7 @@
       "inactive": "Inactive"
     },
     "empty": {
-      "noRooms": "No rooms yet — add the first one to offer it to classes and the timetable.",
+      "noRooms": "No rooms yet: add the first one to offer it to classes and the timetable.",
       "noResults": "No results."
     },
     "card": {
@@ -856,7 +856,7 @@
     "subtitle": "Select a template to use or customize for your report cards",
     "loadError": "Unable to load report card templates.",
     "toast": {
-      "forked": "Template duplicated — you can now customize it.",
+      "forked": "Template duplicated: you can now customize it.",
       "forkError": "Error duplicating the template.",
       "activated": "Template set as active.",
       "activateError": "Error activating the template.",
@@ -873,9 +873,9 @@
       "personal": "My templates",
       "global": "Global templates"
     },
-    "globalHint": "Duplicate a template to customize it — global templates cannot be edited directly.",
+    "globalHint": "Duplicate a template to customize it: global templates cannot be edited directly.",
     "empty": {
-      "personal": "You don't have a custom template yet — duplicate a global template to get started.",
+      "personal": "You don't have a custom template yet: duplicate a global template to get started.",
       "global": "No global template available."
     },
     "menu": {
@@ -891,7 +891,7 @@
     },
     "editLink": "Edit",
     "help": {
-      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own — global templates can't be edited directly. Only one personal template can be active at a time.",
+      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own: global templates can't be edited directly. Only one personal template can be active at a time.",
       "activeTemplate": "The active template is the one used to generate your students' official report cards. To activate a different one, open a personal template's menu and choose \"Set as active\"."
     },
     "block": {
@@ -910,7 +910,7 @@
         "saved": "Template saved.",
         "saveError": "Error while saving.",
         "exportError": "Error exporting the PDF.",
-        "forked": "Template duplicated — you can now customize it.",
+        "forked": "Template duplicated: you can now customize it.",
         "forkError": "Error duplicating the template.",
         "activated": "Template set as active.",
         "activateError": "Error activating the template.",
@@ -920,12 +920,12 @@
       },
       "mobileGate": {
         "title": "Editor available on larger screens",
-        "description": "Designing a report card template works on a computer or tablet — come back here from a wider screen.",
+        "description": "Designing a report card template works on a computer or tablet: come back here from a wider screen.",
         "back": "Back to templates"
       },
       "back": "Back",
       "nameAria": "Template name",
-      "readOnlyBadge": "Read-only — global template",
+      "readOnlyBadge": "Read-only · global template",
       "orientation": {
         "landscape": "Landscape",
         "portrait": "Portrait"
@@ -967,14 +967,14 @@
         "logoTitle": "School logo",
         "logoLabel": "Logo",
         "logoSizeLabel": "Logo size",
-        "imageHint": "PNG, JPG or WebP — 10 MB max",
+        "imageHint": "PNG, JPG or WebP · 10 MB max",
         "signatureTitle": "Principal's signature",
         "signatureLabel": "Signature",
         "signatureSizeLabel": "Signature size",
         "textTitle": "Report card text",
         "titleLabel": "Report card title",
         "footerLabel": "Footer message",
-        "footerPlaceholder": "Optional — e.g. \"Together towards success\"",
+        "footerPlaceholder": "Optional · e.g. \"Together towards success\"",
         "signaturesTitle": "Signatures",
         "signatureDirector": "Principal",
         "signatureHomeroom": "Homeroom teacher",

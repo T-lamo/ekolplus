@@ -42,8 +42,8 @@
     "configureFees": "Paramétrage des plans",
     "loadError": "Impossible de charger les frais de scolarité.",
     "alertBanner": {
-      "one": "{n} élève en retard de paiement — {tranche} échue le {dueDate}",
-      "other": "{n} élèves en retard de paiement — {tranche} échue le {dueDate}"
+      "one": "{n} élève en retard de paiement : {tranche} échue le {dueDate}",
+      "other": "{n} élèves en retard de paiement : {tranche} échue le {dueDate}"
     },
     "alertBannerSub": "Montant total impayé : {amount}",
     "kpiTotalCollected": "Total Recouvré",
@@ -134,7 +134,7 @@
     "reminderCritical": "Alerte critique",
     "reminderCriticalDesc": "Retard > 30 jours",
     "reminderChannelWhatsapp": "Rappels via WhatsApp",
-    "reminderChannelWhatsappDesc": "Payant (frais Meta) — sinon envoyés par email, gratuit",
+    "reminderChannelWhatsappDesc": "Payant (frais Meta) : sinon envoyés par email, gratuit",
     "byClassTitle": "Retards par classe",
     "quickActionsTitle": "Actions rapides",
     "exportExcel": "Exporter Excel",
@@ -162,11 +162,11 @@
     "autoRemindersToggleDesc": "Notifications avant l'échéance",
     "currencyLabel": "Devise principale",
     "currencyOptions": {
-      "HTG": "HTG — Gourde haïtienne",
-      "USD": "USD — Dollar américain",
-      "XOF": "XOF — Franc CFA (UEMOA)",
-      "XAF": "XAF — Franc CFA (CEMAC)",
-      "EUR": "EUR — Euro"
+      "HTG": "HTG · Gourde haïtienne",
+      "USD": "USD · Dollar américain",
+      "XOF": "XOF · Franc CFA (UEMOA)",
+      "XAF": "XAF · Franc CFA (CEMAC)",
+      "EUR": "EUR · Euro"
     },
     "selectClassPrompt": "Sélectionnez une classe.",
     "editorConfigured": "Configuré",
@@ -188,8 +188,8 @@
     "addTranche": "Ajouter une tranche",
     "editTranche": "Modifier la tranche",
     "deleteTrancheAria": "Supprimer la tranche",
-    "emptyClassPrompt": "Aucune configuration — définissez le montant total pour commencer.",
-    "configHeadingPrefix": "Configuration — {className}",
+    "emptyClassPrompt": "Aucune configuration : définissez le montant total pour commencer.",
+    "configHeadingPrefix": "Configuration · {className}",
     "studentCountBadge": {
       "one": "{n} élève",
       "other": "{n} élèves"

@@ -40,13 +40,13 @@
       "one": "{count} result",
       "other": "{count} results"
     },
-    "emptyNone": "No student yet — add the first one.",
+    "emptyNone": "No student yet: add the first one.",
     "emptyFiltered": "No results.",
     "noClass": "No class",
     "birthPrefix": "Born",
     "help": {
       "pageOverview": "Find every student enrolled at the school here. Search by name, filter by class or status, and use \"Add a student\" to create a new record or \"Export\" to download the list as CSV.",
-      "statusColumn": "This status is set manually from the student's profile (the \"Edit\" action) — it isn't calculated automatically from the attendance recorded in the Attendance module."
+      "statusColumn": "This status is set manually from the student's profile (the \"Edit\" action): it isn't calculated automatically from the attendance recorded in the Attendance module."
     },
     "table": {
       "student": "Student",
@@ -85,9 +85,15 @@
       "options": "Options"
     },
     "statusOptions": {
-      "ENROLLED": { "desc": "Active student in the system" },
-      "REPEATED_ABSENCES": { "desc": "Attendance to monitor" },
-      "SUSPENDED": { "desc": "Temporarily restricted access" }
+      "ENROLLED": {
+        "desc": "Active student in the system"
+      },
+      "REPEATED_ABSENCES": {
+        "desc": "Attendance to monitor"
+      },
+      "SUSPENDED": {
+        "desc": "Temporarily restricted access"
+      }
     },
     "editTitle": "Edit profile",
     "addTitle": "Add a student",
@@ -104,7 +110,7 @@
       "title": "Personal information",
       "subtitle": "Student's identity and contact details",
       "photoLabel": "Student's photo",
-      "photoHint": "JPG, PNG, or WebP — max 10 MB",
+      "photoHint": "JPG, PNG, or WebP · max 10 MB",
       "firstName": "First name",
       "lastName": "Last name",
       "dateOfBirth": "Date of birth",
@@ -262,7 +268,7 @@
       "good": "Good (12+)",
       "max": "Max: 20 pts"
     },
-    "ranking": "Ranking — {className}",
+    "ranking": "Ranking · {className}",
     "noRanking": "No ranking available.",
     "youAreViewing": "You're viewing",
     "classAverageShort": "Class avg.",
@@ -275,7 +281,7 @@
         "other": "{count} subjects below average (8/20). Extra support recommended for {names}."
       }
     },
-    "goals": "Goals — {term}",
+    "goals": "Goals · {term}",
     "defineGoal": "Set",
     "noGoals": "No goals set.",
     "current": "Current: {value}"
@@ -302,7 +308,7 @@
       "teacher": "Teacher"
     },
     "overallAverage": "Overall average",
-    "rank": "— Rank: {rank} / {rankedCount}"
+    "rank": "· Rank: {rank} / {rankedCount}"
   },
   "attendanceTab": {
     "journal": "Attendance log",
@@ -315,7 +321,7 @@
   },
   "bulletins": {
     "loadError": "Unable to load report cards.",
-    "empty": "No school term configured yet — report cards will appear once the school year is set up.",
+    "empty": "No school term configured yet: report cards will appear once the school year is set up.",
     "generated": "Generated",
     "pending": "Pending",
     "summary": "Average {average}/20 · Rank {rank}/{rankedCount}",

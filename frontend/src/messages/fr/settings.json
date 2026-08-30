@@ -23,8 +23,8 @@
     "activeYearLabel": "Année scolaire active",
     "gradingScaleLabel": "Système de notation",
     "gradingScaleUndefined": "Non défini",
-    "noTermsConfigured": "Aucune période configurée pour l'instant — ajoutez la première avec « Nouvelle période ».",
-    "noYearConfigured": "Aucune année scolaire configurée — créez la première période avec « Nouvelle période ».",
+    "noTermsConfigured": "Aucune période configurée pour l'instant : ajoutez la première avec « Nouvelle période ».",
+    "noYearConfigured": "Aucune année scolaire configurée : créez la première période avec « Nouvelle période ».",
     "statusLabel": {
       "DONE": "Terminé",
       "CURRENT": "En cours",
@@ -100,8 +100,8 @@
     "subtitle": "Choisissez les événements pour lesquels vous souhaitez être notifié·e, par courriel ou dans l'application.",
     "channelEmail": "Courriel",
     "channelApp": "App",
-    "emailAriaLabel": "{label} — courriel",
-    "appAriaLabel": "{label} — dans l'application",
+    "emailAriaLabel": "{label} · courriel",
+    "appAriaLabel": "{label} · dans l'application",
     "events": {
       "BULLETIN_GENERATED": {
         "label": "Bulletins générés",
@@ -171,7 +171,7 @@
         "invalidCredentials": "Mot de passe actuel incorrect.",
         "passwordBanned": "Ce mot de passe est trop courant.",
         "passwordTooShort": "Mot de passe trop court.",
-        "passwordPwned": "Ce mot de passe a fuité — choisissez-en un autre.",
+        "passwordPwned": "Ce mot de passe a fuité : choisissez-en un autre.",
         "passwordAlreadySet": "Un mot de passe est déjà défini. Utilisez « changer le mot de passe ».",
         "validationFailed": "Champs invalides."
       },

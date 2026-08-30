@@ -1,13 +1,13 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
   "title": "Tablo debò",
-  "subtitle": "Byenveni, {name} — men apèsi sou lekòl la",
+  "subtitle": "Byenveni, {name} : men apèsi sou lekòl la",
   "export": "Ekspòte",
   "csvIndicator": "Endikatè",
   "csvValue": "Valè",
   "academicYearBadge": "Ane {label}",
   "loadError": "Nou pa ka chaje tablo debò a.",
-  "emptyYear": "Pa gen ane eskolè aktif — konfigire ane eskolè a dabò nan « Paramèt ».",
+  "emptyYear": "Pa gen ane eskolè aktif : konfigire ane eskolè a dabò nan « Paramèt ».",
   "help": {
     "pageOverview": "Yon apèsi jeneral sou lekòl la : efektif, prezans, mwayèn, frè eskolarite ak dènye aktivite. Ekspòte chif kle yo an CSV ak bouton « Export » la.",
     "academicYearScope": "Tout chif ki nan tablo bò sa a (elèv, prezans, mwayèn, frè) konsène ane eskolè sa a."
@@ -59,7 +59,7 @@
   },
   "attendanceByClass": {
     "title": "To presans",
-    "subtitle": "Pa klas — mwa sa a",
+    "subtitle": "Pa klas · mwa sa a",
     "details": "Detay →",
     "empty": "Pa gen klas konfigire."
   },
@@ -107,8 +107,8 @@
     },
     "loadError": "Nou pa ka chaje aktivite a.",
     "help": {
-      "pageOverview": "Istorik kwonolojik tout evènman nan lekòl la — nòt pibliye, absans anrejistre, peman ki antre ak elèv enskri. Filtre pa kalite pou jwenn yon evènman presi vit.",
-      "feedGeneration": "Chak liy ajoute otomatikman depi yon aksyon fèt yon lòt kote nan aplikasyon an (yon nòt pibliye, yon absans anrejistre, yon peman antre…) — pa gen anyen pou antre isit la."
+      "pageOverview": "Istorik kwonolojik tout evènman nan lekòl la : nòt pibliye, absans anrejistre, peman ki antre ak elèv enskri. Filtre pa kalite pou jwenn yon evènman presi vit.",
+      "feedGeneration": "Chak liy ajoute otomatikman depi yon aksyon fèt yon lòt kote nan aplikasyon an (yon nòt pibliye, yon absans anrejistre, yon peman antre…) : pa gen anyen pou antre isit la."
     }
   }
 }

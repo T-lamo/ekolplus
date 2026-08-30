@@ -49,7 +49,7 @@
   },
   "list": {
     "title": "Appreciations",
-    "subtitle": "Recording and managing appreciations — School year {year}",
+    "subtitle": "Recording and managing appreciations · School year {year}",
     "export": "Export",
     "newEntry": "Enter appreciations",
     "loadError": "Unable to load the appreciations.",
@@ -62,12 +62,12 @@
     "menuDelete": "Delete appreciation",
     "help": {
       "pageOverview": "View and publish each student's general end-of-term appreciation for this class. Switch class or term with the filters, and use the tabs to see the by-subject view or the class statistics.",
-      "positive": "Students with an \"Excellent\" or \"Good\" mention for this term — this total covers the whole class, even if a search or filter is active in the table below.",
-      "alert": "Students with an \"Insufficient\" mention for this term, worth watching closely — this total covers the whole class, regardless of the table's filters below."
+      "positive": "Students with an \"Excellent\" or \"Good\" mention for this term: this total covers the whole class, even if a search or filter is active in the table below.",
+      "alert": "Students with an \"Insufficient\" mention for this term, worth watching closely: this total covers the whole class, regardless of the table's filters below."
     },
     "summary": {
       "totalStudents": "Total students",
-      "totalStudentsSub": "{className} — {term}",
+      "totalStudentsSub": "{className} · {term}",
       "recorded": "Appreciations recorded",
       "recordedSub": {
         "one": "of {count} student",
@@ -105,7 +105,7 @@
     "noAppreciation": "No appreciation recorded for this student.",
     "statusRecorded": "Recorded",
     "statusPending": "Pending",
-    "paginationRange": "Showing {from} to {to} of {total} students —",
+    "paginationRange": "Showing {from} to {to} of {total} students ·",
     "paginationRecorded": "{count} appreciations recorded",
     "paginationPending": ", {count} pending",
     "csv": {
@@ -128,8 +128,8 @@
     "deleteConfirm": "Delete this student's general appreciation?",
     "deletedToast": "Appreciation deleted.",
     "deleteErrorToast": "Deletion failed.",
-    "position": "Student {index} of {total} — {className} · {term}",
-    "messagingSoon": "Messaging — coming soon.",
+    "position": "Student {index} of {total} · {className} · {term}",
+    "messagingSoon": "Messaging · coming soon.",
     "reportCardsSoon": "Available with Report cards (Epic 7).",
     "classCouncilSoon": "Available with the Class council (coming soon).",
     "auditHistorySoon": "The detailed history arrives with the audit module (coming soon).",
@@ -152,7 +152,7 @@
       "teacher": "Teacher"
     },
     "overallAverage": "Overall average",
-    "rankLine": "— Rank: {rank} / {rankedCount}",
+    "rankLine": "· Rank: {rank} / {rankedCount}",
     "classCouncilTitle": "Class council decision",
     "statsTitle": "Term statistics",
     "stats": {

@@ -4,27 +4,27 @@
   "previewAlt": "Preview of the {label} theme",
   "applied": "Theme \"{label}\" applied.",
   "saveError": "Theme applied on this device, but couldn't save it to your account.",
-  "contrastNote": "All palettes meet WCAG AA contrast (text ≥ 4.5:1) — status colours (success, warning, error) and subject colours stay identical.",
+  "contrastNote": "All palettes meet WCAG AA contrast (text ≥ 4.5:1): status colours (success, warning, error) and subject colours stay identical.",
   "themes": {
     "lavande": {
       "label": "Lavender",
-      "description": "Schoolgesti's original theme — deep purple, lilac-grey backgrounds."
+      "description": "Schoolgesti's original theme · deep purple, lilac-grey backgrounds."
     },
     "ocean": {
       "label": "Ocean",
-      "description": "Calm navy blue, blue-grey backgrounds — understated and institutional."
+      "description": "Calm navy blue, blue-grey backgrounds · understated and institutional."
     },
     "foret": {
       "label": "Forest",
-      "description": "Emerald green, grey-green backgrounds — calm and natural."
+      "description": "Emerald green, grey-green backgrounds · calm and natural."
     },
     "ardoise": {
       "label": "Slate",
-      "description": "Neutral blue-grey — discreet, ideal for long sessions."
+      "description": "Neutral blue-grey · discreet, ideal for long sessions."
     },
     "terracotta": {
       "label": "Terracotta",
-      "description": "Burnt orange, sand backgrounds — warm and high-contrast."
+      "description": "Burnt orange, sand backgrounds · warm and high-contrast."
     }
   }
 }

@@ -20,14 +20,14 @@
       "one": "{count} result",
       "other": "{count} results"
     },
-    "emptyNone": "No teacher yet — add the first one.",
+    "emptyNone": "No teacher yet: add the first one.",
     "emptyFiltered": "No results.",
     "noSubject": "No subject",
     "noSubjectShort": "None",
     "noClassLabel": "No class",
     "help": {
       "pageOverview": "Find every teacher at the school here. Search by name, filter by subject or status, and use \"Add a teacher\" to create a new record or \"Export\" to download the list as CSV.",
-      "weeklyHoursColumn": "This total is calculated automatically from the subjects and classes assigned to the teacher (the \"Subjects\" page) — it doesn't reflect the contracted hours entered on their profile."
+      "weeklyHoursColumn": "This total is calculated automatically from the subjects and classes assigned to the teacher (the \"Subjects\" page): it doesn't reflect the contracted hours entered on their profile."
     },
     "table": {
       "teacher": "Teacher",
@@ -87,7 +87,7 @@
       "title": "Identity & Photo",
       "subtitle": "Teacher's identifying information",
       "photoLabel": "Profile photo",
-      "photoHint": "PNG, JPG or WebP — square format recommended",
+      "photoHint": "PNG, JPG or WebP · square format recommended",
       "civility": "Title",
       "firstName": "First name",
       "firstNamePlaceholder": "e.g. Jean-Pierre",
@@ -152,7 +152,7 @@
     "edit": "Edit",
     "assignedSubjectsClasses": "Assigned subjects & classes",
     "manage": "Manage",
-    "noAssignments": "No assignments yet — they're configured from the <link>Subjects</link> page.",
+    "noAssignments": "No assignments yet: they're configured from the <link>Subjects</link> page.",
     "fields": {
       "fullName": "Full name",
       "dateOfBirth": "Date of birth",

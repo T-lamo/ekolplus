@@ -23,8 +23,8 @@
     "activeYearLabel": "Active school year",
     "gradingScaleLabel": "Grading system",
     "gradingScaleUndefined": "Not set",
-    "noTermsConfigured": "No period configured yet — add the first one with \"New period\".",
-    "noYearConfigured": "No school year configured — create the first period with \"New period\".",
+    "noTermsConfigured": "No period configured yet: add the first one with \"New period\".",
+    "noYearConfigured": "No school year configured: create the first period with \"New period\".",
     "statusLabel": {
       "DONE": "Done",
       "CURRENT": "In progress",
@@ -100,8 +100,8 @@
     "subtitle": "Choose which events you want to be notified about, by email or in the app.",
     "channelEmail": "Email",
     "channelApp": "App",
-    "emailAriaLabel": "{label} — email",
-    "appAriaLabel": "{label} — in the app",
+    "emailAriaLabel": "{label} · email",
+    "appAriaLabel": "{label} · in the app",
     "events": {
       "BULLETIN_GENERATED": {
         "label": "Report cards generated",
@@ -171,7 +171,7 @@
         "invalidCredentials": "Current password is incorrect.",
         "passwordBanned": "This password is too common.",
         "passwordTooShort": "Password too short.",
-        "passwordPwned": "This password has leaked — choose another one.",
+        "passwordPwned": "This password has leaked: choose another one.",
         "passwordAlreadySet": "A password is already set. Use \"change password\" instead.",
         "validationFailed": "Invalid fields."
       },
@@ -203,7 +203,7 @@
     },
     "deleteSchool": {
       "title": "Delete the school account",
-      "desc": "This action will permanently delete all data — students, teachers, report cards, and settings. No recovery is possible.",
+      "desc": "This action will permanently delete all data: students, teachers, report cards, and settings. No recovery is possible.",
       "action": "Delete",
       "modalTitle": "Delete the school",
       "warning": "The school and all its data (students, teachers, classes, grades, report cards...) will be permanently deleted. Your user account will stay active but will lose access to this school. This action is irreversible.",

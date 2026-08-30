@@ -32,13 +32,25 @@
       "createSession": "You can also click directly on an empty slot in the grid to create a session pre-filled with that day and time, or click an existing session to edit it.",
       "exportScope": "The CSV export only includes sessions from the period currently shown (month, week, or day) and follows the active class, teacher, room, and subject filters."
     },
-    "headerWithYear": "{label} school year — {view}",
+    "headerWithYear": "{label} school year · {view}",
     "viewsAriaLabel": "View",
     "views": {
-      "month": { "label": "Month", "subtitle": "Monthly view" },
-      "week": { "label": "Week", "subtitle": "Weekly view" },
-      "day": { "label": "Day", "subtitle": "Daily view" },
-      "agenda": { "label": "Agenda", "subtitle": "Week agenda" }
+      "month": {
+        "label": "Month",
+        "subtitle": "Monthly view"
+      },
+      "week": {
+        "label": "Week",
+        "subtitle": "Weekly view"
+      },
+      "day": {
+        "label": "Day",
+        "subtitle": "Daily view"
+      },
+      "agenda": {
+        "label": "Agenda",
+        "subtitle": "Week agenda"
+      }
     },
     "addSession": "Add a course",
     "prevPeriod": "Previous period",
@@ -56,7 +68,7 @@
     "exportEmpty": "No session to export for this period.",
     "noYearTitle": "No active school year",
     "noYearHint": "Set up a school year in Settings first to schedule courses.",
-    "emptyRange": "No session in this period — click a slot or the “Add a course” button.",
+    "emptyRange": "No session in this period: click a slot or the “Add a course” button.",
     "networkError": "Network error. Please try again."
   },
   "export": {
@@ -118,7 +130,7 @@
       "label": "Session color",
       "groupAriaLabel": "Color",
       "reset": "Use the subject color again",
-      "hint": "The subject color — identifies the course quickly on the grid"
+      "hint": "The subject color: identifies the course quickly on the grid"
     },
     "rooms": {
       "capacity": {
@@ -126,13 +138,20 @@
         "other": "{count} seats"
       },
       "inactive": "inactive",
-      "noCatalogue": "No room catalogue — <link>set up the school's rooms</link>"
+      "noCatalogue": "No room catalogue: <link>set up the school's rooms</link>"
     },
     "recurrence": {
       "toggleLabel": "Course repetition",
       "toggleHint": "Set a weekly recurrence",
       "daysLabel": "Repeat days",
-      "dayShort": { "1": "M", "2": "Tu", "3": "W", "4": "Th", "5": "F", "6": "Sa" },
+      "dayShort": {
+        "1": "M",
+        "2": "Tu",
+        "3": "W",
+        "4": "Th",
+        "5": "F",
+        "6": "Sa"
+      },
       "dayPlural": {
         "1": "Mondays",
         "2": "Tuesdays",
@@ -145,8 +164,8 @@
       "hint": "The course will repeat every week on the selected days",
       "untilLabel": "End of recurrence",
       "untilHint": "Matches the end of the {label} school year",
-      "summary": "Every <b>{days}</b> from {start} to {end} — <b>{occurrences}</b>",
-      "summaryUntil": "Every <b>{days}</b> from {start} to {end} · until {until} — <b>{occurrences}</b>",
+      "summary": "Every <b>{days}</b> from {start} to {end} · <b>{occurrences}</b>",
+      "summaryUntil": "Every <b>{days}</b> from {start} to {end} · until {until} · <b>{occurrences}</b>",
       "occurrenceCount": {
         "one": "{count} occurrence",
         "other": "{count} occurrences"
@@ -154,7 +173,7 @@
     },
     "series": {
       "toggleLabel": "Apply to the whole series",
-      "hint": "This session is part of a series of {count} sessions — the date stays specific to each occurrence."
+      "hint": "This session is part of a series of {count} sessions: the date stays specific to each occurrence."
     },
     "delete": {
       "trigger": "Delete",

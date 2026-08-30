@@ -11,7 +11,7 @@
     "sslBadge": "256-bit SSL connection"
   },
   "banners": {
-    "canceled": "Payment canceled — no amount was charged. You can resume whenever you like.",
+    "canceled": "Payment canceled: no amount was charged. You can resume whenever you like.",
     "alreadyPro": "This school is already subscribed to the {plan} plan. Manage the cycle, card, and invoices from the <link>Subscription</link> page.",
     "notOwner": "Only the school owner can subscribe to a plan."
   },
@@ -20,7 +20,7 @@
     "subtitle": "Priced at {amount} per student / month",
     "ariaLabel": "Plan",
     "starterName": "Starter",
-    "starterDescCurrent": "Up to 50 students · free forever — your current plan",
+    "starterDescCurrent": "Up to 50 students · free forever · your current plan",
     "starterDescOther": "Up to 50 students · fallback plan after a downgrade",
     "starterPrice": "$0",
     "starterDisabledCurrent": "You’re already on Starter",
@@ -39,7 +39,7 @@
     },
     "estimateAnnual": "Annual estimate",
     "estimateMonthly": "Monthly estimate",
-    "seatsHint": "Billed seats automatically track your headcount (daily sync, no surprise proration) — no need to adjust it by hand.",
+    "seatsHint": "Billed seats automatically track your headcount (daily sync, no surprise proration): no need to adjust it by hand.",
     "unitPerYear": "/ year",
     "unitPerMonth": "/ month"
   },
@@ -84,7 +84,7 @@
     "perMonth": "per month",
     "taxIncluded": "tax incl.",
     "savingBanner": "You save {amount} vs. monthly",
-    "trialBanner": "Free {days}-day trial — first charge on {date}",
+    "trialBanner": "Free {days}-day trial: first charge on {date}",
     "includedInPlan": "Included in the plan"
   },
   "cta": {
@@ -111,7 +111,7 @@
     "activatedTitle": "Subscription activated",
     "confirmedTitle": "Payment confirmed",
     "activatedBody": "Your school is now on the {plan} plan. A receipt was sent to you by Stripe.",
-    "pollingBody": "Thank you! Stripe confirms your subscription — activation in progress, a few seconds…",
+    "pollingBody": "Thank you! Stripe confirms your subscription: activation in progress, a few seconds…",
     "timeoutBody": "The payment is recorded with Stripe; activation will show shortly (automatic sync).",
     "viewSubscription": "View my subscription"
   },

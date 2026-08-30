@@ -71,9 +71,11 @@ from.
 6. **Defense-in-depth lockdown is in scope**: teacher-linked accounts must be
    rejected at the API layer (not just hidden in the UI) from school-wide
    admin data (élèves list, enseignants list, scolarité/finances,
-   configuration, dashboard, `/admin/*`). This is the single largest,
-   though mostly mechanical, chunk of implementation work in this project —
-   confirmed with the user as in-scope despite the size.
+   configuration, dashboard, `/admin/*`). Confirmed with the user as
+   in-scope. Mapping the actual route count during plan-writing found 65
+   files under `/api/school/*` alone — see "Authorization model" below for
+   why this ends up being a small, centralized change rather than a
+   file-by-file sweep.
 
 ## Data model changes
 
@@ -164,8 +166,46 @@ restriction is an orthogonal, additional narrowing checked by callers, the
 same way `hasMinRole` is checked today. This keeps the protected
 `require-org-role.ts` file untouched.
 
-**Per-route pattern** (mirrors the existing `hasMinRole(mySchool.role,
-'ADMIN')` check already present in these files):
+**Lockdown is centralized, not a per-file sweep.** `resolveMySchool()`
+itself changes to reject teacher-only accounts by default — every one of
+the 65 `/api/school/*` routes (plus `/api/admin/*`, which already requires
+`ADMIN`+ separately) calls this function today with an unchanged call
+signature and return shape, so **none of them need to be touched**. A
+`MEMBER`-role account that is also `Teacher.userId`-linked now gets the
+same `null` (→ 404, matching the existing "non-members get 404, not 403"
+convention) that a non-member gets today. An `ADMIN`/`OWNER` account that
+happens to also be teacher-linked (a director who teaches) is never
+affected — the new check only applies to plain `MEMBER` accounts.
+
+```ts
+export async function resolveMySchool(userId: string): Promise<MySchool | null> {
+  const membership = await /* existing query, unchanged */;
+  if (!membership || !membership.organization.school) return null;
+  const schoolId = membership.organization.school.id;
+  if (membership.role === 'MEMBER') {
+    const teacher = await prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } });
+    if (teacher) return null; // teacher-linked accounts get nothing by default
+  }
+  return { organizationId: membership.organizationId, schoolId, role: membership.role as OrgRole };
+}
+```
+
+A new sibling, `resolveMySchoolIncludingTeacher(userId)`, runs the same
+query **without** the teacher-rejection branch. Only routes that must
+stay reachable by teachers import this instead — and only when that
+route's own phase actually builds teacher support for it. Per this design,
+zero pédagogie routes are switched over during Phase 1: Evaluations,
+Grades, Appréciations, Attendance and Timetable all keep calling the
+strict `resolveMySchool()` for now, so a fresh teacher account is locked
+out of literally everything except the one new home page until Phases 2-4
+each deliberately open their own route. This makes Phase 1 secure by
+construction (deny-by-default) rather than needing the lockdown and the
+feature work to land in lockstep.
+
+**Per-screen pattern for Phases 2-4** (mirrors the existing
+`hasMinRole(mySchool.role, 'ADMIN')` check already present in these
+files): the route switches its import to `resolveMySchoolIncludingTeacher`,
+then applies the relevant rule:
 
 | Area | Rule |
 |---|---|
@@ -173,12 +213,7 @@ same way `hasMinRole` is checked today. This keeps the protected
 | Appréciation (subjectId set) | same, via the subject's `ClassSubject` for that student's class |
 | Appréciation générale (subjectId null) | allow if admin, else `classId ∈ myTeacher.homeroomClassIds` |
 | Attendance | write allowed if admin or homeroom; read-only otherwise for that class |
-| Timetable | read-only, results filtered to `teacherId === myTeacher.teacherId` when the caller is teacher-linked |
-| Élèves / Enseignants (lists), Scolarité, Configuration, Dashboard, `/admin/*` | **reject outright** (404, matching the existing org-membership-leak convention: "non-members get 404, not 403") when `resolveMyTeacherProfile` is non-null and the account has no `ADMIN`+ org role |
-
-A director who is both `ADMIN`/`OWNER` **and** `Teacher.userId`-linked is
-never subject to the last row's rejection — the checks above only apply
-when the account's org role is `MEMBER` (i.e., not also an admin).
+| Timetable | read-only, results forced to `teacherId === myTeacher.teacherId` when the caller is teacher-linked (ignoring any `?teacherId=` query override) |
 
 **Aggregate endpoint for the teacher home screen**: `GET /api/teacher/me` —
 one round trip returning the teacher's identity, homeroom classes, taught
@@ -245,10 +280,11 @@ locales (fr/en/ht), matching `locales.test.ts`'s key-parity enforcement.
 Ordered so the security boundary lands **before** any teacher accounts can
 exist unprotected, not as a final cleanup step:
 
-1. **Foundation + lockdown**: schema change, invite/accept flow, bare
-   `/espace-enseignant` home page (enough for the post-login redirect to land
-   somewhere real), and the full defense-in-depth rejection of admin-only
-   routes for teacher-linked accounts.
+1. **Foundation + lockdown**: schema change, `resolveMyTeacherProfile()` +
+   the `resolveMySchool()` deny-by-default change (this alone locks every
+   existing route, per "Authorization model" above), invite/accept flow,
+   and a bare `/espace-enseignant` home page (enough for the post-login
+   redirect to land somewhere real).
 2. **Read-only views**: Mes classes (roster), Emploi du temps.
 3. **Notes**: scoped grade entry.
 4. **Appréciations + Présences**: subject appréciations, appréciation

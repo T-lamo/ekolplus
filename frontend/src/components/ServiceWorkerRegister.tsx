@@ -18,9 +18,15 @@ export function ServiceWorkerRegister() {
     // whichever future reload happens to land after the handoff finished —
     // in practice, a manual Ctrl+F5. Reloading once on `controllerchange`
     // makes every open tab pick up the new deploy immediately, automatically.
+    //
+    // clientsClaim() also fires `controllerchange` the very first time a
+    // brand-new visitor's tab gets claimed (no previous controller at all),
+    // not just on a version handoff — without the `hadController` guard
+    // below, every first-ever visit force-reloads mid-load.
+    const hadController = Boolean(navigator.serviceWorker.controller);
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
+      if (!hadController || reloading) return;
       reloading = true;
       window.location.reload();
     });

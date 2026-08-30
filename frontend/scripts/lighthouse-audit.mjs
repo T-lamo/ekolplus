@@ -83,6 +83,14 @@ try {
   const browser = await puppeteer.connect({ browserURL: `http://localhost:${chrome.port}` });
   const page = await browser.newPage();
 
+  // ServiceWorkerRegister (src/components/ServiceWorkerRegister.tsx) reloads
+  // the tab the moment a service worker first claims control — on this fresh
+  // profile that fires on the very first navigation, destroying whatever
+  // execution context puppeteer is mid-use of. Burn that one-off reload on a
+  // throwaway visit to the origin before navigating to /login for real.
+  await page.goto(BASE, { waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 }).catch(() => {});
+
   // Real login through the form so cookies + localStorage land in the
   // profile that Lighthouse's own navigation (same Chrome, same port) reuses.
   await page.goto(`${BASE}/login`, { waitUntil: 'networkidle0' });

@@ -293,7 +293,8 @@ describe('requireStudent', () => {
     mockRequireAuth.mockResolvedValue({ user: { sub: 'user_1', email: 'x@test.local' } } as never);
     mockResolveMyStudentProfile.mockResolvedValue(null);
     const result = await requireStudent(req());
-    expect(result).not.toBeInstanceOf(Object); // placeholder replaced below
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(404);
   });
 
   it('returns the student context when linked', async () => {
@@ -316,18 +317,6 @@ describe('requireStudent', () => {
     });
   });
 });
-```
-
-Fix the second test's placeholder assertion before running it — replace with a real check:
-
-```ts
-  it('returns 404 when the account has no linked Student', async () => {
-    mockRequireAuth.mockResolvedValue({ user: { sub: 'user_1', email: 'x@test.local' } } as never);
-    mockResolveMyStudentProfile.mockResolvedValue(null);
-    const result = await requireStudent(req());
-    expect(result).toBeInstanceOf(NextResponse);
-    expect((result as NextResponse).status).toBe(404);
-  });
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -735,6 +724,13 @@ export async function POST(
         portalLabel: 'espace élève',
         expiresInMs: INVITE_TTL_MS,
         createOrgMembership: false,
+        // Resend: resolve the existing account by id, not by the freshly
+        // re-resolved target email. Student.email/Guardian.email can drift
+        // after the first invite without User.email being kept in sync —
+        // looking up by the new email would miss the linked User and
+        // silently create an orphaned second account (the same bug fixed
+        // in the teacher-portal plan, commit 0692b7c).
+        existingUserId: student.userId,
         linkExisting: async () => {}, // already linked
       });
       if (!result.ok) {

@@ -26,8 +26,6 @@
       "other": "{count} élèves inscrits"
     },
     "loadError": "Impossible de charger les élèves.",
-    "import": "Importer",
-    "importSoon": "Import CSV — bientôt disponible.",
     "export": "Exporter",
     "addStudent": "Ajouter un élève",
     "searchPlaceholder": "Rechercher un élève...",
@@ -46,6 +44,10 @@
     "emptyFiltered": "Aucun résultat.",
     "noClass": "Sans classe",
     "birthPrefix": "Naissance",
+    "help": {
+      "pageOverview": "Retrouvez ici tous les élèves inscrits dans l'établissement. Recherchez par nom, filtrez par classe ou par statut, et utilisez « Ajouter un élève » pour créer une nouvelle fiche ou « Exporter » pour télécharger la liste en CSV.",
+      "statusColumn": "Ce statut est défini manuellement depuis la fiche de l'élève (bouton « Modifier ») — il n'est pas calculé automatiquement à partir des présences enregistrées dans le module Présences."
+    },
     "table": {
       "student": "Élève",
       "class": "Classe",

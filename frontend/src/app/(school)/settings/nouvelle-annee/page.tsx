@@ -7,11 +7,12 @@
 // autosaving each step's data into the single per-school
 // AcademicYearRolloverDraft as the user progresses.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { useUser } from '@/contexts/AuthContext';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
 import { FormStepsBar, type FormStep } from '@/components/school/FormStepsBar';
@@ -105,7 +106,6 @@ export default function AcademicYearWizardPage() {
 
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadError, setLoadError] = useState('');
-  const [schoolData, setSchoolData] = useState<SchoolResponse | null>(null);
   const [activeYear, setActiveYear] = useState<{ id: string; label: string } | null>(null);
   const [classes, setClasses] = useState<ClassForPromotion[]>([]);
   const [students, setStudents] = useState<StudentForPromotion[]>([]);
@@ -136,59 +136,60 @@ export default function AcademicYearWizardPage() {
     setStudentExceptions(payload.studentExceptions);
   }, []);
 
+  const { data: schoolData } = useApi<SchoolResponse>('/api/school', {
+    skip: !user,
+    onError: (err) => {
+      setLoadError(err instanceof Error ? err.message : ACADEMIC_YEAR_ROLLOVER.error);
+      setLoadState('error');
+      return true;
+    },
+  });
+
+  // OWNER-only gate — mirrors ZoneDangereuseSection's rendering rule in
+  // settings/page.tsx. Redirect instead of letting the rollover API's own
+  // 404 surface, for a cleaner UX (no flash of error).
+  const myRole =
+    user && schoolData
+      ? (schoolData.members.find((m) => m.userId === user.id)?.role ?? null)
+      : null;
+  const isOwner = myRole === 'OWNER';
+
   useEffect(() => {
-    if (!user) return;
-    // Captured as a plain string so the async closure below doesn't rely on
-    // TS narrowing `user` across the function boundary (it can't — `user`
-    // stays typed `User | null` inside `load()`).
-    const userId = user.id;
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const school = await api<SchoolResponse>('/api/school');
-        if (cancelled) return;
-
-        // OWNER-only gate — mirrors ZoneDangereuseSection's rendering rule
-        // in settings/page.tsx. Redirect instead of letting the rollover
-        // API's own 404 surface, for a cleaner UX (no flash of error).
-        const myRole = school.members.find((m) => m.userId === userId)?.role ?? null;
-        if (myRole !== 'OWNER') {
-          router.replace('/settings');
-          return;
-        }
-        setSchoolData(school);
-
-        const rollover = await api<RolloverGetResponse>('/api/school/academic-year-rollover');
-        if (cancelled) return;
-
-        setActiveYear(rollover.activeYear);
-        setClasses(rollover.classes);
-        setStudents(rollover.students);
-        setGradeLevels(rollover.gradeLevels ?? []);
-        if (rollover.draft) {
-          // A draft already exists — resume at step 1 regardless of prior
-          // progress. There's no persisted "current step" field on the
-          // draft, so this is the simplest correct behavior.
-          applyDraft(rollover.draft, school.school.id);
-        }
-        setLoadState('ready');
-      } catch (err) {
-        if (cancelled) return;
-        if (err instanceof ApiError && err.status === 424) {
-          setLoadState('noActiveYear');
-        } else {
-          setLoadError(err instanceof Error ? err.message : ACADEMIC_YEAR_ROLLOVER.error);
-          setLoadState('error');
-        }
-      }
+    if (schoolData && myRole !== null && !isOwner) {
+      router.replace('/settings');
     }
+  }, [schoolData, myRole, isOwner, router]);
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user, router, applyDraft]);
+  const { data: rolloverData } = useApi<RolloverGetResponse>('/api/school/academic-year-rollover', {
+    skip: !schoolData || !isOwner,
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 424) {
+        setLoadState('noActiveYear');
+      } else {
+        setLoadError(err instanceof Error ? err.message : ACADEMIC_YEAR_ROLLOVER.error);
+        setLoadState('error');
+      }
+      return true;
+    },
+  });
+
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (rolloverData && schoolData && !seededRef.current) {
+      seededRef.current = true;
+      setActiveYear(rolloverData.activeYear);
+      setClasses(rolloverData.classes);
+      setStudents(rolloverData.students);
+      setGradeLevels(rolloverData.gradeLevels ?? []);
+      if (rolloverData.draft) {
+        // A draft already exists — resume at step 1 regardless of prior
+        // progress. There's no persisted "current step" field on the
+        // draft, so this is the simplest correct behavior.
+        applyDraft(rolloverData.draft, schoolData.school.id);
+      }
+      setLoadState('ready');
+    }
+  }, [rolloverData, schoolData, applyDraft]);
 
   const summaryStudents = useMemo(
     () => deriveSummaryStudents(students, classMapping, studentExceptions, classes),

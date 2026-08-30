@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -17,7 +17,8 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -92,43 +93,50 @@ export default function GradeEntryPage() {
   const router = useRouter();
   const { toast } = useToast();
   const params = useParams<{ evaluationId: string }>();
-  const [evaluation, setEvaluation] = useState<EvaluationDetail | null>(null);
-  const [notebook, setNotebook] = useState<NotebookResponse | null>(null);
   const [rows, setRows] = useState<Record<string, RowState>>({});
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
 
+  const { data: evalData } = useApi<{ evaluation: EvaluationDetail }>(
+    `/api/school/evaluations/${params.evaluationId}`,
+    {
+      skip: !user,
+      onError: (err) => {
+        setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
+        return true;
+      },
+    },
+  );
+  const evaluation = evalData?.evaluation ?? null;
+
+  const notebookPath = evaluation
+    ? `/api/school/class-subjects/${evaluation.classSubjectId}/notebook?termId=${evaluation.termId}`
+    : '';
+  const { data: notebook } = useApi<NotebookResponse>(notebookPath, {
+    skip: !evaluation,
+    onError: () => {
+      setError(t('loadError'));
+      return true;
+    },
+  });
+
+  const seededRef = useRef(false);
   useEffect(() => {
-    if (!user) return;
-    api<{ evaluation: EvaluationDetail }>(`/api/school/evaluations/${params.evaluationId}`)
-      .then((res) => {
-        setEvaluation(res.evaluation);
-        return api<NotebookResponse>(
-          `/api/school/class-subjects/${res.evaluation.classSubjectId}/notebook?termId=${res.evaluation.termId}`,
-        );
-      })
-      .then((nb) => {
-        setNotebook(nb);
-        const initial: Record<string, RowState> = {};
-        for (const s of nb.students) {
-          const cell = s.grades.find((g) => g.evaluationId === params.evaluationId);
-          initial[s.studentId] = {
-            score: cell?.score != null ? String(cell.score) : '',
-            absent: cell?.absent ?? false,
-            comment: cell?.comment ?? '',
-          };
-        }
-        setRows(initial);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('notFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, params.evaluationId, t]);
+    if (notebook && !seededRef.current) {
+      seededRef.current = true;
+      const initial: Record<string, RowState> = {};
+      for (const s of notebook.students) {
+        const cell = s.grades.find((g) => g.evaluationId === params.evaluationId);
+        initial[s.studentId] = {
+          score: cell?.score != null ? String(cell.score) : '',
+          absent: cell?.absent ?? false,
+          comment: cell?.comment ?? '',
+        };
+      }
+      setRows(initial);
+    }
+  }, [notebook, params.evaluationId]);
 
   function previewAverage(studentId: string): number | null {
     if (!notebook || !evaluation) return null;

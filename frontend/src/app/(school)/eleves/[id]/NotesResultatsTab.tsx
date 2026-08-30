@@ -13,7 +13,7 @@ import {
   ListChecks,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { api } from '@/lib/api';
+import { getCache, setCache, useApi } from '@/lib/useApi';
 import { ASIDE_GRID } from '@/lib/layout';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
@@ -86,33 +86,38 @@ export function NotesResultatsTab({
   const bcp47 = LOCALE_BCP47[locale];
   const [yearId, setYearId] = useState(initial.resolvedAcademicYearId ?? '');
   const [termSel, setTermSel] = useState(initial.resolvedTermId ?? 'all');
-  const [data, setData] = useState(initial);
-  const [loading, setLoading] = useState(false);
   const [goalModal, setGoalModal] = useState(false);
-  const isFirst = useRef(true);
 
+  const resultsQs = new URLSearchParams();
+  if (yearId) resultsQs.set('academicYearId', yearId);
+  if (termSel) resultsQs.set('termId', termSel);
+  const resultsPath = `/api/school/students/${studentId}/results?${resultsQs.toString()}`;
+
+  // The parent page already fetched this exact combo (server-resolved
+  // defaults) moments ago and handed it down as `initial` — pre-warm the
+  // shared cache under the SAME path so useApi serves it instantly below
+  // instead of firing a redundant duplicate request on mount.
+  useState(() => {
+    setCache(resultsPath, initial);
+    return true;
+  });
+
+  const { data: fetchedData, loading, mutate } = useApi<StudentResults>(resultsPath);
+  const data = fetchedData ?? initial;
+
+  // Re-sync `yearId`/`termSel` to the server-resolved values only once the
+  // cache entry for the CURRENT `resultsPath` is confirmed to match
+  // `fetchedData` (never from a stale sibling combo's leftover response) —
+  // e.g. after `onYearChange` clears `termSel` to let the server pick the
+  // new year's current term.
+  const keyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isFirst.current) {
-      isFirst.current = false;
-      return;
+    if (fetchedData && getCache(resultsPath) === fetchedData && keyRef.current !== resultsPath) {
+      keyRef.current = resultsPath;
+      setYearId(fetchedData.resolvedAcademicYearId ?? '');
+      setTermSel(fetchedData.resolvedTermId ?? (fetchedData.termMode === 'ALL' ? 'all' : ''));
     }
-    let cancelled = false;
-    setLoading(true);
-    const qs = new URLSearchParams();
-    if (yearId) qs.set('academicYearId', yearId);
-    if (termSel) qs.set('termId', termSel);
-    api<StudentResults>(`/api/school/students/${studentId}/results?${qs.toString()}`)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setYearId(d.resolvedAcademicYearId ?? '');
-        setTermSel(d.resolvedTermId ?? (d.termMode === 'ALL' ? 'all' : ''));
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [yearId, termSel, studentId]);
+  }, [fetchedData, resultsPath]);
 
   function onYearChange(id: string) {
     setYearId(id);
@@ -120,10 +125,12 @@ export function NotesResultatsTab({
   }
 
   function onGoalSaved(goal: GoalRow) {
-    setData((d) => ({
-      ...d,
-      goals: d.goals ? [...d.goals.filter((g) => g.subjectId !== goal.subjectId), goal] : [goal],
-    }));
+    mutate({
+      ...data,
+      goals: data.goals
+        ? [...data.goals.filter((g) => g.subjectId !== goal.subjectId), goal]
+        : [goal],
+    });
   }
 
   function exportCsv() {

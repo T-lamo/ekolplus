@@ -16,6 +16,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -29,6 +30,7 @@ import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { OverflowTags } from '@/components/ui/OverflowTags';
 import { ViewToggle } from '@/components/ui/ViewToggle';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Pager } from '@/components/ui/Pager';
 import { exportToCsv } from '@/lib/csv-export';
 import { CardGrid } from '@/components/school/CardGrid';
@@ -64,35 +66,35 @@ export default function TeachersPage() {
   const t = useTranslations('Enseignants.list');
   const tStatus = useTranslations('Enseignants.status');
   const tCommon = useTranslations('Common');
-  const [teachers, setTeachers] = useState<TeacherListItem[] | null>(null);
-  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
   const [status, setStatus] = useState<'' | TeacherStatus>('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ teachers: TeacherListItem[] }>('/api/school/teachers?scope=all'),
-      api<{ subjects: SubjectOption[] }>('/api/school/subjects'),
-    ])
-      .then(([t, s]) => {
-        setTeachers(t.teachers);
-        setSubjects(s.subjects);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, refreshKey, t]);
+  const onNoSchool = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+  };
+  const {
+    data: teachersData,
+    error: teachersErr,
+    refresh: refreshTeachers,
+    mutate: mutateTeachers,
+  } = useApi<{ teachers: TeacherListItem[] }>('/api/school/teachers?scope=all', {
+    skip: !user,
+    onError: onNoSchool,
+  });
+  const { data: subjectsData, error: subjectsErr } = useApi<{ subjects: SubjectOption[] }>(
+    '/api/school/subjects',
+    { skip: !user, onError: onNoSchool },
+  );
+  const teachers = teachersData?.teachers ?? null;
+  const subjects = subjectsData?.subjects ?? [];
+  const error = teachersErr || subjectsErr ? t('loadError') : null;
 
   const filtered = useMemo(() => {
     return (teachers ?? []).filter((t) => {
@@ -113,7 +115,9 @@ export default function TeachersPage() {
     if (!(await confirm({ message: t('deleteConfirm', { name: row.name }), danger: true }))) return;
     try {
       await api(`/api/school/teachers/${row.id}`, { method: 'DELETE' });
-      setTeachers((prev) => (prev ? prev.filter((x) => x.id !== row.id) : prev));
+      mutateTeachers((prev) =>
+        prev ? { teachers: prev.teachers.filter((x) => x.id !== row.id) } : { teachers: [] },
+      );
       toast(t('toasts.deleted'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -126,8 +130,14 @@ export default function TeachersPage() {
         method: 'PATCH',
         body: { status: 'INACTIVE' },
       });
-      setTeachers((prev) =>
-        prev ? prev.map((x) => (x.id === row.id ? { ...x, status: 'INACTIVE' } : x)) : prev,
+      mutateTeachers((prev) =>
+        prev
+          ? {
+              teachers: prev.teachers.map((x) =>
+                x.id === row.id ? { ...x, status: 'INACTIVE' } : x,
+              ),
+            }
+          : { teachers: [] },
       );
       toast(t('toasts.deactivated'), 'success');
     } catch (err) {
@@ -230,7 +240,10 @@ export default function TeachersPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           {teachers ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
               {t(teachers.length > 1 ? 'countRegistered.other' : 'countRegistered.one', {
@@ -363,7 +376,12 @@ export default function TeachersPage() {
                       <Th>{t('table.subjects')}</Th>
                       <Th>{t('table.classes')}</Th>
                       <Th>{t('table.status')}</Th>
-                      <Th>{t('table.weeklyHours')}</Th>
+                      <Th>
+                        <span className="inline-flex items-center gap-1">
+                          {t('table.weeklyHours')}
+                          <HelpTooltip label={t('help.weeklyHoursColumn')} />
+                        </span>
+                      </Th>
                       <Th>{t('table.contact')}</Th>
                       <Th className="w-[70px]" />
                     </tr>
@@ -449,7 +467,7 @@ export default function TeachersPage() {
         <TeacherFormModal
           teacherId={editing === 'new' ? null : editing}
           onClose={() => setEditing(null)}
-          onSaved={() => setRefreshKey((k) => k + 1)}
+          onSaved={() => refreshTeachers()}
         />
       )}
     </div>

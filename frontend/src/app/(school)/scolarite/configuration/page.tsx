@@ -1,13 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Copy, Pencil, Plus, Save, Split, Trash2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Field } from '@/components/ui/Field';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
@@ -86,57 +88,78 @@ export default function PaymentConfigurationPage() {
   const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [classes, setClasses] = useState<FeeClassOption[] | null>(null);
   const [filter, setFilter] = useState<ClassFilter>('all');
-  const [academicYearLabel, setAcademicYearLabel] = useState<string | null>(null);
-  const [automation, setAutomation] = useState<AutomationSettings | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [structure, setStructure] = useState<StructureResponse | null>(null);
   const [totalAmount, setTotalAmount] = useState('0');
   const [registrationFee, setRegistrationFee] = useState('0');
   const [tranches, setTranches] = useState<DraftTranche[]>([]);
   const [copyPickerOpen, setCopyPickerOpen] = useState(false);
   const [copySourceId, setCopySourceId] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [copying, setCopying] = useState(false);
   const [trancheModalOpen, setTrancheModalOpen] = useState(false);
   const [editingTrancheIndex, setEditingTrancheIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ classes: FeeClassOption[]; academicYearLabel: string | null }>(
-      '/api/school/fees/structures',
-    )
-      .then((res) => {
-        setClasses(res.classes);
-        setAcademicYearLabel(res.academicYearLabel);
-        if (res.classes[0]) setSelectedId(res.classes[0].id);
-      })
-      .catch(() => setError(t('loadClassesError')));
-    api<{ settings: AutomationSettings }>('/api/school/fees/automation-settings')
-      .then((res) => setAutomation(res.settings))
-      .catch(() => {});
-  }, [user, t]);
+  const { data: classesData, refresh: refreshClassesList } = useApi<{
+    classes: FeeClassOption[];
+    academicYearLabel: string | null;
+  }>('/api/school/fees/structures', {
+    skip: !user,
+    onError: () => setLoadError(t('loadClassesError')),
+  });
+  const classes = classesData?.classes ?? null;
+  const academicYearLabel = classesData?.academicYearLabel ?? null;
+  const error = loadError;
 
-  const loadStructure = useCallback(
-    (classId: string) => {
-      setStructure(null);
-      api<StructureResponse>(`/api/school/fees/structures/${classId}`)
-        .then((res) => {
-          setStructure(res);
-          setTotalAmount(String(res.feeStructure?.totalAmount ?? 0));
-          setRegistrationFee(String(res.feeStructure?.registrationFee ?? 0));
-          setTranches(res.feeStructure ? toDraft(res.feeStructure.tranches) : []);
-        })
-        .catch(() => toast(t('loadStructureError'), 'error'));
+  const { data: automationData, mutate: mutateAutomation } = useApi<{
+    settings: AutomationSettings;
+  }>('/api/school/fees/automation-settings', { skip: !user });
+  const automation = automationData?.settings ?? null;
+
+  // Seed the initial class selection once, the first time the class list
+  // loads — never again (a later `refreshClassesList()` after Save/Copy
+  // must not silently jump the editor to a different class).
+  const initialSelectionDone = useRef(false);
+  useEffect(() => {
+    if (!initialSelectionDone.current && classes && classes.length > 0) {
+      initialSelectionDone.current = true;
+      setSelectedId(classes[0]!.id);
+    }
+  }, [classes]);
+
+  const structurePath = selectedId ? `/api/school/fees/structures/${selectedId}` : null;
+  const { data: structure, refresh: refreshStructure } = useApi<StructureResponse>(
+    structurePath ?? '',
+    {
+      skip: !structurePath,
+      onError: () => toast(t('loadStructureError'), 'error'),
     },
-    [toast, t],
   );
+  function loadStructure(_classId: string) {
+    void refreshStructure();
+  }
 
+  // `selectedId` is local state, not a URL param, so this component never
+  // remounts when the user picks a different class — useApi's `data` can
+  // still hold the PREVIOUS class's structure for one render while the new
+  // fetch is in flight. Gate on `getCache(...) === structure` (only true
+  // once the cache entry actually written for THIS path matches what we're
+  // holding) so the draft fields never get seeded from another class's data.
+  const seededForId = useRef<string | null>(null);
   useEffect(() => {
-    if (selectedId) loadStructure(selectedId);
-  }, [selectedId, loadStructure]);
+    if (
+      structure &&
+      structurePath &&
+      getCache(structurePath) === structure &&
+      seededForId.current !== selectedId
+    ) {
+      seededForId.current = selectedId;
+      setTotalAmount(String(structure.feeStructure?.totalAmount ?? 0));
+      setRegistrationFee(String(structure.feeStructure?.registrationFee ?? 0));
+      setTranches(structure.feeStructure ? toDraft(structure.feeStructure.tranches) : []);
+    }
+  }, [structure, structurePath, selectedId]);
 
   const totalAmountNum = Number(totalAmount) || 0;
   const allocated = tranches.reduce((sum, tr) => sum + (Number(tr.amount) || 0), 0);
@@ -173,24 +196,13 @@ export default function PaymentConfigurationPage() {
   async function patchAutomation(patch: Partial<AutomationSettings>) {
     if (!automation) return;
     const next = { ...automation, ...patch };
-    setAutomation(next);
+    mutateAutomation({ settings: next });
     try {
       await api('/api/school/fees/automation-settings', { method: 'PATCH', body: patch });
     } catch (err) {
-      setAutomation(automation);
+      mutateAutomation({ settings: automation });
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     }
-  }
-
-  function refreshClassesList() {
-    api<{ classes: FeeClassOption[]; academicYearLabel: string | null }>(
-      '/api/school/fees/structures',
-    )
-      .then((res) => {
-        setClasses(res.classes);
-        setAcademicYearLabel(res.academicYearLabel);
-      })
-      .catch(() => {});
   }
 
   async function onSave() {
@@ -273,7 +285,10 @@ export default function PaymentConfigurationPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <HelpTooltip label={t('help.pageOverview')} />
+        </div>
         <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
       </div>
 
@@ -318,8 +333,11 @@ export default function PaymentConfigurationPage() {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {t('latePenaltyToggle')}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">
+                          {t('latePenaltyToggle')}
+                        </span>
+                        <HelpTooltip label={t('help.latePenaltyToggle')} />
                       </div>
                       <div className="text-2xs text-muted-foreground">
                         {t('latePenaltyToggleDesc')}
@@ -333,8 +351,11 @@ export default function PaymentConfigurationPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {t('autoRemindersToggle')}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">
+                          {t('autoRemindersToggle')}
+                        </span>
+                        <HelpTooltip label={t('help.autoRemindersToggle')} />
                       </div>
                       <div className="text-2xs text-muted-foreground">
                         {t('autoRemindersToggleDesc')}

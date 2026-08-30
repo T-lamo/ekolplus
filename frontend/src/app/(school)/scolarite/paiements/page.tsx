@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import {
   CalendarClock,
@@ -16,11 +16,13 @@ import {
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -99,38 +101,32 @@ export default function FeeManagementPage() {
   const tMethod = useTranslations('Fees.paymentMethod');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [data, setData] = useState<OverviewResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'' | StudentFeeStatus>('');
   const [page, setPage] = useState(1);
   const [registeringFor, setRegisteringFor] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
-  const [currency, setCurrency] = useState<string>('HTG');
 
-  const load = useCallback(() => {
-    const params = new URLSearchParams();
-    if (search.trim()) params.set('search', search.trim());
-    if (classFilter) params.set('classId', classFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    params.set('page', String(page));
-    api<OverviewResponse>(`/api/school/fees/overview?${params.toString()}`)
-      .then(setData)
-      .catch(() => setError(t('loadError')));
-  }, [search, classFilter, statusFilter, page, t]);
+  const overviewParams = new URLSearchParams();
+  if (search.trim()) overviewParams.set('search', search.trim());
+  if (classFilter) overviewParams.set('classId', classFilter);
+  if (statusFilter) overviewParams.set('status', statusFilter);
+  overviewParams.set('page', String(page));
+  const {
+    data,
+    error: dataErr,
+    refresh: load,
+  } = useApi<OverviewResponse>(`/api/school/fees/overview?${overviewParams.toString()}`, {
+    skip: !user,
+  });
+  const error = dataErr ? t('loadError') : null;
 
-  useEffect(() => {
-    if (!user) return;
-    load();
-  }, [user, load]);
-
-  useEffect(() => {
-    if (!user) return;
-    api<{ settings: { currency: string } }>('/api/school/fees/automation-settings')
-      .then((res) => setCurrency(res.settings.currency))
-      .catch(() => {});
-  }, [user]);
+  const { data: settingsData } = useApi<{ settings: { currency: string } }>(
+    '/api/school/fees/automation-settings',
+    { skip: !user },
+  );
+  const currency = settingsData?.settings.currency ?? 'HTG';
 
   function updateSearch(value: string) {
     setPage(1);
@@ -278,7 +274,10 @@ export default function FeeManagementPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -333,6 +332,7 @@ export default function FeeManagementPage() {
                   })}
                 </p>
               </div>
+              <HelpTooltip label={t('help.overdueAlert')} />
             </Card>
           )}
 
@@ -422,7 +422,12 @@ export default function FeeManagementPage() {
                       <Th>{t('columns.totalDue')}</Th>
                       <Th>{t('columns.paid')}</Th>
                       <Th>{t('columns.remaining')}</Th>
-                      <Th>{t('columns.status')}</Th>
+                      <Th>
+                        <span className="inline-flex items-center gap-1">
+                          {t('columns.status')}
+                          <HelpTooltip label={t('help.statusColumn')} />
+                        </span>
+                      </Th>
                       <Th>{t('columns.tranches')}</Th>
                       <Th className="w-[70px]" />
                     </tr>
@@ -513,7 +518,7 @@ export default function FeeManagementPage() {
         <PaymentRegistrationModal
           studentId={registeringFor}
           onClose={() => setRegisteringFor(null)}
-          onSaved={load}
+          onSaved={() => void load()}
         />
       )}
       {historyFor && <FeeHistoryModal studentId={historyFor} onClose={() => setHistoryFor(null)} />}

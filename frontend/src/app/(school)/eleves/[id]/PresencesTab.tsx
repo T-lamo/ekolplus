@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalendarCheck, CalendarX, Clock, ShieldCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { api } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonTable } from '@/components/ui/Skeleton';
@@ -35,24 +35,22 @@ export function PresencesTab({ studentId }: { studentId: string }) {
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
-  const [data, setData] = useState<StudentAttendanceResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const qs = termId ? `?termId=${termId}` : '';
+  const attendancePath = `/api/school/students/${studentId}/attendance${qs}`;
+  const { data, loading } = useApi<StudentAttendanceResponse>(attendancePath);
 
+  // `termId` is local state, not a URL param, so this component never
+  // remounts on term change — gate the auto-seed on `getCache(...) === data`
+  // (only true once the cache entry actually written for THIS path matches
+  // what we're holding) so a stale sibling term's data can't seed the wrong
+  // resolvedTermId.
+  const keyRef = useRef<string | null>(null);
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    const qs = termId ? `?termId=${termId}` : '';
-    api<StudentAttendanceResponse>(`/api/school/students/${studentId}/attendance${qs}`)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setTermId(d.resolvedTermId ?? '');
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [studentId, termId]);
+    if (data && getCache(attendancePath) === data && keyRef.current !== attendancePath) {
+      keyRef.current = attendancePath;
+      setTermId(data.resolvedTermId ?? '');
+    }
+  }, [data, attendancePath]);
 
   if (!data) {
     return (

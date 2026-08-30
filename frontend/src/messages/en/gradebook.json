@@ -175,6 +175,11 @@
     "clearGradesConfirm": "Delete all of {name}'s grades for this period?",
     "gradesDeletedToast": "Grades deleted.",
     "deleteErrorToast": "Error while deleting.",
+    "help": {
+      "pageOverview": "Enter and review student grades, class by class and subject by subject. Switch between the Table, Statistics and By evaluation views depending on what you want to analyze.",
+      "averageComputation": "The average only counts published evaluations checked to count toward the average, weighted by their coefficient and rescaled to 20. A student absent from an evaluation is excluded from that calculation, not scored as 0.",
+      "insufficientThreshold": "A student is counted here as soon as their general average falls below 8/20."
+    },
     "csv": {
       "colNumber": "No.",
       "colGeneralAverage": "General average",

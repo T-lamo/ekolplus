@@ -1,15 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Pager } from '@/components/ui/Pager';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { LIST_PAGE, TABLE_SCROLL } from '@/lib/layout';
 import { ACTIVITY_TYPE_META, relativeTime } from '../activity-shared';
 
@@ -30,27 +31,20 @@ interface ActivityResponse {
 
 export default function ActivityLogPage() {
   const user = useUser();
-  const [data, setData] = useState<ActivityResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<'' | ActivityType>('');
   const [page, setPage] = useState(1);
   const t = useTranslations('Dashboard.activityLog');
   const tRelative = useTranslations('Dashboard.activity.relativeTime');
   const locale = useLocale();
 
-  const load = useCallback(() => {
-    const params = new URLSearchParams();
-    if (type) params.set('type', type);
-    params.set('page', String(page));
-    api<ActivityResponse>(`/api/school/activity?${params.toString()}`)
-      .then(setData)
-      .catch(() => setError(t('loadError')));
-  }, [type, page, t]);
-
-  useEffect(() => {
-    if (!user) return;
-    load();
-  }, [user, load]);
+  const activityParams = new URLSearchParams();
+  if (type) activityParams.set('type', type);
+  activityParams.set('page', String(page));
+  const { data, error: dataErr } = useApi<ActivityResponse>(
+    `/api/school/activity?${activityParams.toString()}`,
+    { skip: !user },
+  );
+  const error = dataErr ? t('loadError') : null;
 
   function updateType(value: string) {
     setPage(1);
@@ -76,7 +70,10 @@ export default function ActivityLogPage() {
           {t('back')}
         </Link>
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
       </div>
@@ -110,6 +107,7 @@ export default function ActivityLogPage() {
             <span className="text-sm text-muted-foreground">
               {t(data.total > 1 ? 'resultCount.other' : 'resultCount.one', { n: data.total })}
             </span>
+            <HelpTooltip label={t('help.feedGeneration')} />
           </div>
 
           {data.items.length === 0 ? (

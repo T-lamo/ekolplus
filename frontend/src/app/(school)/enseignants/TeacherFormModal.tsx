@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Briefcase, Link as LinkIcon, Phone, Shield, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
@@ -141,7 +142,6 @@ export function TeacherFormModal({
   const tCommon = useTranslations('Common');
   const isEdit = teacherId !== null;
 
-  const [detail, setDetail] = useState<TeacherDetail | null>(null);
   const [form, setForm] = useState<FormState | null>(isEdit ? null : EMPTY_FORM);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -156,26 +156,30 @@ export function TeacherFormModal({
     { id: 'poste', label: t('steps.poste') },
   ];
 
+  const { data: detailData } = useApi<{ teacher: TeacherDetail }>(
+    `/api/school/teachers/${teacherId}`,
+    {
+      skip: !teacherId,
+      onError: (err) => {
+        setLoadError(
+          err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
+        );
+        return true;
+      },
+    },
+  );
+  const detail = detailData?.teacher ?? null;
+
+  // This modal remounts fresh every time it's opened (the parent page only
+  // renders it conditionally), so a plain "seed once per mount" ref is
+  // enough — no risk of a background revalidation clobbering the form the
+  // user is actively editing.
+  const seededRef = useRef(false);
   useEffect(() => {
-    if (!teacherId) return;
-    let cancelled = false;
-    api<{ teacher: TeacherDetail }>(`/api/school/teachers/${teacherId}`)
-      .then(({ teacher }) => {
-        if (cancelled) return;
-        setDetail(teacher);
-        setForm(toForm(teacher));
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setLoadError(
-            err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
-          );
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [teacherId, t]);
+    if (seededRef.current || !detail) return;
+    seededRef.current = true;
+    setForm(toForm(detail));
+  }, [detail]);
 
   function patch(p: Partial<FormState>) {
     setForm((f) => (f ? { ...f, ...p } : f));

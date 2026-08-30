@@ -1,7 +1,6 @@
 'use client';
 
 import * as Accordion from '@radix-ui/react-accordion';
-import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import type { NavSection } from './types';
@@ -49,13 +48,13 @@ export function SidebarSection({
           }`}
         >
           {section.label}
-          <motion.span
-            className="inline-flex items-center"
-            animate={{ rotate: open ? 90 : 0 }}
-            transition={{ duration: 0.15 }}
+          <span
+            className={`inline-flex items-center transition-transform duration-150 ${
+              open ? 'rotate-90' : 'rotate-0'
+            }`}
           >
             <ChevronRight size={12} />
-          </motion.span>
+          </span>
         </Accordion.Trigger>
       </Accordion.Header>
       <Accordion.Content className="accordion-content overflow-hidden">

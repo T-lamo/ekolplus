@@ -28,6 +28,11 @@
   },
   "toolbar": {
     "title": "Orè",
+    "help": {
+      "pageOverview": "Gade epi jere orè lekòl la. Chanje vi (Mwa, Semèn, Jou, Ajanda) epi filtre pa klas, anseyan, sal oswa matyè pou redwi sa k ap parèt la.",
+      "createSession": "Ou ka klike tou dirèkteman sou yon plaj orè vid nan griy la pou kreye yon kou ki deja ranpli ak jou ak lè sa a, oswa sou yon kou ki egziste deja pou modifye li.",
+      "exportScope": "Ekspòtasyon CSV a gen sèlman kou ki nan peryòd k ap afiche kounye a (mwa, semèn oswa jou) e li respekte filtè klas, anseyan, sal ak matyè ki aktif yo."
+    },
     "headerWithYear": "Ane eskolè {label} — {view}",
     "viewsAriaLabel": "Vi",
     "views": {

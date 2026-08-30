@@ -272,7 +272,11 @@
     "toastDowngradeScheduled": "Desann pwograme — {plan} rete aktif jiska {date}.",
     "toastIntervalUpdated": "Sik fakti mete ajou.",
     "loadErrorNoSchool": "Pa gen okenn etablisman ki lye ak kont sa a.",
-    "loadErrorRestricted": "Fakti a rezève pou administratè etablisman an."
+    "loadErrorRestricted": "Fakti a rezève pou administratè etablisman an.",
+    "help": {
+      "pageOverview": "Jere plan etablisman ou, swiv itilizasyon ou parapò ak limit ki enkli nan plan an, epi jwenn fakti ou yo — tout bagay mete ajou an dirèk soti nan Stripe.",
+      "manageProration": "Chanje sik fakti ou pworata e fakti imedyatman pa Stripe. Yon desann, li menm, pran efè sèlman nan fen peryòd ou deja peye a — pa gen ranbousman, men pa gen koupi aksè anvan dat sa a."
+    }
   },
   "errors": {
     "stripeNotConfigured": "Fakti sou entènèt poko aktive sou platfòm sa a.",

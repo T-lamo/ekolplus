@@ -7,6 +7,10 @@
   "academicYearBadge": "Year {label}",
   "loadError": "Unable to load the dashboard.",
   "emptyYear": "No active school year — set up the school year first in \"Settings\".",
+  "help": {
+    "pageOverview": "An overview of the school: enrollment, attendance, averages, tuition fees and recent activity. Export the key figures to CSV with the \"Export\" button.",
+    "academicYearScope": "Every figure on this dashboard (students, attendance, averages, fees) is scoped to this academic year."
+  },
   "kpis": {
     "students": "Enrolled students",
     "teachers": "Teachers",
@@ -100,6 +104,10 @@
       "one": "{n} event",
       "other": "{n} events"
     },
-    "loadError": "Unable to load the activity."
+    "loadError": "Unable to load the activity.",
+    "help": {
+      "pageOverview": "A chronological history of every event in the school — published grades, recorded absences, collected payments, and student enrollments. Filter by type to quickly find a specific event.",
+      "feedGeneration": "Each line is added automatically as soon as an action happens elsewhere in the app (a grade published, an absence recorded, a payment collected…) — there's nothing to enter here."
+    }
   }
 }

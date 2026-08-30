@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   NotebookPen,
@@ -23,11 +23,13 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Avatar } from '@/components/ui/Avatar';
@@ -190,69 +192,94 @@ export default function GradeNotebookPage() {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const [classSubjects, setClassSubjects] = useState<ClassSubjectOption[]>([]);
-  // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
-  // just the classes that have subject affectations — a brand-new class must
-  // show up here immediately (its notebook is simply empty until subjects
-  // are assigned), and archived-year classes never.
-  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
-  const [terms, setTerms] = useState<TermOption[]>([]);
   const [classId, setClassId] = useState('');
   const [subjectValue, setSubjectValue] = useState(''); // classSubjectId, or 'ALL' for combined view
   const [termId, setTermId] = useState('');
   const [unified, setUnified] = useState<UnifiedNotebookData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showNew, setShowNew] = useState(false);
   const [view, setView] = useState<'table' | 'stats' | 'byEval'>('table');
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes'),
-      api<{ classSubjects: ClassSubjectOption[] }>('/api/school/class-subjects'),
-      api<{ academicYear: { terms: TermOption[] } | null }>('/api/school'),
-    ])
-      .then(([cl, cs, school]) => {
-        setClasses(cl.classes.map((c) => ({ id: c.id, name: c.name })));
-        setClassSubjects(cs.classSubjects);
-        setTerms(school.academicYear?.terms ?? []);
-        const firstClass = cl.classes[0];
-        if (firstClass) {
-          setClassId(firstClass.id);
-          const firstSubject = cs.classSubjects.find((x) => x.classId === firstClass.id);
-          setSubjectValue(firstSubject ? firstSubject.id : 'ALL');
-        }
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const onNoSchool = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+    setLoadError(t('loadError'));
+    return true;
+  };
+  const { data: classesData, error: classesErr } = useApi<{
+    classes: Array<{ id: string; name: string }>;
+  }>('/api/school/classes', { skip: !user, onError: onNoSchool });
+  const { data: classSubjectsData, error: classSubjectsErr } = useApi<{
+    classSubjects: ClassSubjectOption[];
+  }>('/api/school/class-subjects', { skip: !user, onError: onNoSchool });
+  const { data: schoolData, error: schoolErr } = useApi<{
+    academicYear: { terms: TermOption[] } | null;
+  }>('/api/school', { skip: !user, onError: onNoSchool });
+  // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
+  // just the classes that have subject affectations — a brand-new class must
+  // show up here immediately (its notebook is simply empty until subjects
+  // are assigned), and archived-year classes never.
+  const classes = classesData?.classes ?? [];
+  const classSubjects = classSubjectsData?.classSubjects ?? [];
+  const terms = schoolData?.academicYear?.terms ?? [];
+  const error = loadError ?? (classesErr || classSubjectsErr || schoolErr ? t('loadError') : null);
 
+  // Initial class/subject selection — derived once, the first time this
+  // data is available, never again (so a later background revalidation of
+  // the same cached lists doesn't stomp on a selection the user already made).
+  const initialSelectionDone = useRef(false);
   useEffect(() => {
-    if (!classId || !subjectValue) return;
-    const qs = termId ? `?termId=${termId}` : '';
-    const request =
-      subjectValue === 'ALL'
-        ? api<CombinedNotebookData>(`/api/school/classes/${classId}/notebook${qs}`).then(
-            toUnifiedCombined,
-          )
-        : api<NotebookData>(`/api/school/class-subjects/${subjectValue}/notebook${qs}`).then(
-            toUnifiedSingle,
-          );
-    request
-      .then((u) => {
-        setUnified(u);
-        setTermId(u.resolvedTermId ?? '');
-        setPage(1);
-      })
-      .catch(() => setError(t('loadError')));
-  }, [classId, subjectValue, termId, t]);
+    if (!initialSelectionDone.current && classes.length > 0) {
+      initialSelectionDone.current = true;
+      const firstClass = classes[0]!;
+      setClassId(firstClass.id);
+      const firstSubject = classSubjects.find((x) => x.classId === firstClass.id);
+      setSubjectValue(firstSubject ? firstSubject.id : 'ALL');
+    }
+  }, [classes, classSubjects]);
+
+  const qs = termId ? `?termId=${termId}` : '';
+  const notebookPath =
+    subjectValue === 'ALL'
+      ? `/api/school/classes/${classId}/notebook${qs}`
+      : `/api/school/class-subjects/${subjectValue}/notebook${qs}`;
+  const { data: rawNotebook } = useApi<CombinedNotebookData | NotebookData>(notebookPath, {
+    skip: !classId || !subjectValue,
+    onError: () => setLoadError(t('loadError')),
+  });
+
+  // Re-derive `unified` (and seed `termId`/reset `page`) only when the
+  // notebook's fetch key changes — not on every background revalidation of
+  // the SAME key, which would otherwise silently bounce the user back to
+  // page 1 mid-browsing. `classId`/`subjectValue`/`termId` are local state,
+  // not URL params, so this component never remounts on selection change —
+  // useApi's `data` can still hold the PREVIOUS selection's response for one
+  // render while the new fetch is in flight. Gate on
+  // `getCache(notebookPath) === rawNotebook` (only true once the cache entry
+  // actually written for THIS path matches what we're holding) so this
+  // effect can't fire early on stale data and permanently skip the real
+  // update once it lands.
+  const notebookKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      rawNotebook &&
+      getCache(notebookPath) === rawNotebook &&
+      notebookKeyRef.current !== notebookPath
+    ) {
+      notebookKeyRef.current = notebookPath;
+      const u =
+        subjectValue === 'ALL'
+          ? toUnifiedCombined(rawNotebook as CombinedNotebookData)
+          : toUnifiedSingle(rawNotebook as NotebookData);
+      setUnified(u);
+      setTermId(u.resolvedTermId ?? '');
+      setPage(1);
+    }
+  }, [rawNotebook, notebookPath, subjectValue]);
 
   const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
   const combined = subjectValue === 'ALL';
@@ -432,7 +459,10 @@ export default function GradeNotebookPage() {
     <div className={`${LIST_PAGE} gap-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-foreground">{t('title')}</h1>
+          <h1 className="flex items-center gap-1.5 text-lg font-bold text-foreground">
+            {t('title')}
+            <HelpTooltip label={t('help.pageOverview')} />
+          </h1>
           <p className="text-sm text-muted-foreground">
             {t('subtitle', { year: terms[0]?.label ?? '' })}
           </p>
@@ -481,6 +511,7 @@ export default function GradeNotebookPage() {
                 label={combined ? t('generalClassAverage') : t('classAverage')}
                 value={fmt(unified.classAverage)}
                 sub={t('outOf20')}
+                help={t('help.averageComputation')}
               />
               <SummaryCard
                 icon={TrendingUp}
@@ -495,6 +526,7 @@ export default function GradeNotebookPage() {
                 label={t('insufficientGrade')}
                 value={`${unified.students.filter((s) => s.generalAverage != null && s.generalAverage < 8).length}`}
                 sub={t('belowAverage')}
+                help={t('help.insufficientThreshold')}
               />
               <SummaryCard
                 icon={Calendar}
@@ -888,12 +920,14 @@ function SummaryCard({
   label,
   value,
   sub,
+  help,
 }: {
   icon: typeof Users;
   tone: 'secondary' | 'blue' | 'success' | 'destructive' | 'warning';
   label: string;
   value: string;
   sub: string;
+  help?: string;
 }) {
   const iconBg: Record<string, string> = {
     secondary: 'bg-secondary text-primary',
@@ -915,7 +949,10 @@ function SummaryCard({
         <Icon size={18} />
       </div>
       <div className="min-w-0">
-        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
+        <div className="flex items-center gap-1 text-2xs font-medium text-muted-foreground">
+          <span className="truncate">{label}</span>
+          {help && <HelpTooltip label={help} />}
+        </div>
         <div className={`text-lg font-bold ${valueColor[t]}`}>{value}</div>
         {sub && <div className="truncate text-2xs text-muted-foreground">{sub}</div>}
       </div>

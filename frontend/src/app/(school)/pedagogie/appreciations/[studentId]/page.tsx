@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { ASIDE_GRID } from '@/lib/layout';
 import { LOCALE_BCP47 } from '@/lib/locales';
 import { useUser } from '@/contexts/AuthContext';
@@ -56,22 +57,21 @@ export default function AppreciationDetailPage() {
   const params = useParams<{ studentId: string }>();
   const searchParams = useSearchParams();
   const termId = searchParams.get('termId') ?? '';
-  const [data, setData] = useState<StudentAppreciationData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const qs = termId ? `?termId=${termId}` : '';
-    api<StudentAppreciationData>(`/api/school/students/${params.studentId}/appreciations${qs}`)
-      .then(setData)
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) {
-          setError(t('studentNotFound'));
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, params.studentId, termId, t]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const qs = termId ? `?termId=${termId}` : '';
+  const { data } = useApi<StudentAppreciationData>(
+    `/api/school/students/${params.studentId}/appreciations${qs}`,
+    {
+      skip: !user,
+      onError: (err) => {
+        setLoadError(
+          err instanceof ApiError && err.status === 404 ? t('studentNotFound') : t('loadError'),
+        );
+        return true;
+      },
+    },
+  );
+  const error = loadError;
 
   async function onDelete() {
     if (!data) return;

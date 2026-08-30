@@ -33,6 +33,7 @@ import {
   SkeletonTable,
 } from '@/components/ui/Skeleton';
 import { Tabs } from '@/components/ui/Tabs';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { PageNumbers } from '@/components/ui/Pager';
 import { BarChart } from '@/components/admin/charts/BarChart';
 import { exportToCsv } from '@/lib/csv-export';
@@ -336,7 +337,10 @@ export default function PresencesPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {t('subtitle')}
             {s?.yearLabel ? t('yearSuffix', { year: s.yearLabel }) : ''}
@@ -407,6 +411,7 @@ export default function PresencesPage() {
               sub={t('summary.vsLastMonth', {
                 delta: `${s.lateThisMonthDelta >= 0 ? '+' : ''}${s.lateThisMonthDelta}`,
               })}
+              help={t('help.lateThisMonth')}
             />
             <SummaryCard
               icon={TrendingUp}
@@ -414,6 +419,7 @@ export default function PresencesPage() {
               label={t('summary.attendanceRate')}
               value={s.attendanceRatePercent != null ? `${s.attendanceRatePercent}%` : '—'}
               sub={t('summary.thisQuarter')}
+              help={t('help.attendanceRate')}
             />
           </div>
 
@@ -518,6 +524,7 @@ export default function PresencesPage() {
                   <span className={`h-2.5 w-2.5 rounded-full ${NOT_RECORDED_STYLE.dot}`} />
                   {t('notRecorded')}
                 </div>
+                <HelpTooltip label={t('help.markAttendance')} />
               </div>
 
               <Card>
@@ -728,12 +735,14 @@ function SummaryCard({
   label,
   value,
   sub,
+  help,
 }: {
   icon: typeof Users;
   tone: 'secondary' | 'blue' | 'success' | 'destructive' | 'warning';
   label: string;
   value: string;
   sub: string;
+  help?: string;
 }) {
   const iconBg: Record<string, string> = {
     secondary: 'bg-secondary text-primary',
@@ -750,7 +759,10 @@ function SummaryCard({
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <div className="text-2xs font-medium text-muted-foreground">{label}</div>
+        <div className="flex items-center gap-1 text-2xs font-medium text-muted-foreground">
+          {label}
+          {help && <HelpTooltip label={help} />}
+        </div>
         <div className="text-xl font-bold text-foreground">{value}</div>
         <div className="truncate text-2xs text-muted-foreground">{sub}</div>
       </div>

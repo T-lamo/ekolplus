@@ -9,6 +9,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Check } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -70,42 +71,55 @@ function SubjectDetailContent() {
     [router, params.id],
   );
 
-  const [subject, setSubject] = useState<SubjectDetail | null>(null);
-  const [subjects, setSubjects] = useState<SubjectData[]>([]);
-  const [teachers, setTeachers] = useState<TeacherOptionRow[]>([]);
-  const [classes, setClasses] = useState<ClassRow[]>([]);
-  const [yearLabel, setYearLabel] = useState<string | null>(null);
   const [chapterCount, setChapterCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
-  const loadDetail = useCallback(async () => {
-    const res = await api<{ subject: SubjectDetail }>(`/api/school/subjects/${params.id}`);
-    setSubject(res.subject);
-    setChapterCount((prev) => prev ?? res.subject.chapterCount);
-  }, [params.id]);
-
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      loadDetail(),
-      api<{ subjects: SubjectData[] }>('/api/school/subjects?includeDrafts=1'),
-      api<{ teachers: TeacherOptionRow[] }>('/api/school/teachers'),
-      api<{ classes: ClassRow[]; activeYearLabel: string | null }>('/api/school/classes'),
-    ])
-      .then(([, s, t, c]) => {
-        setSubjects(s.subjects);
-        setTeachers(t.teachers);
-        setClasses(c.classes);
-        setYearLabel(c.activeYearLabel);
-      })
-      .catch((err) => {
+  const { data: subjectData, refresh: loadDetail } = useApi<{ subject: SubjectDetail }>(
+    `/api/school/subjects/${params.id}`,
+    {
+      skip: !user,
+      onError: (err) => {
         if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
           router.replace('/');
-          return;
+          return true;
         }
-        setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
-      });
-  }, [user, router, loadDetail, t]);
+        setDetailError(
+          err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'),
+        );
+        return true;
+      },
+    },
+  );
+  const subject = subjectData?.subject ?? null;
+
+  useEffect(() => {
+    if (subject) setChapterCount((prev) => prev ?? subject.chapterCount);
+  }, [subject]);
+
+  const onNoSchool = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+      router.replace('/');
+      return true;
+    }
+  };
+  const { data: subjectsListData, error: subjectsListErr } = useApi<{ subjects: SubjectData[] }>(
+    '/api/school/subjects?includeDrafts=1',
+    { skip: !user, onError: onNoSchool },
+  );
+  const { data: teachersListData, error: teachersErr } = useApi<{ teachers: TeacherOptionRow[] }>(
+    '/api/school/teachers',
+    { skip: !user, onError: onNoSchool },
+  );
+  const { data: classesListData, error: classesErr } = useApi<{
+    classes: ClassRow[];
+    activeYearLabel: string | null;
+  }>('/api/school/classes', { skip: !user, onError: onNoSchool });
+  const subjects = subjectsListData?.subjects ?? [];
+  const teachers = teachersListData?.teachers ?? [];
+  const classes = classesListData?.classes ?? [];
+  const yearLabel = classesListData?.activeYearLabel ?? null;
+  const error =
+    detailError ?? (subjectsListErr || teachersErr || classesErr ? t('loadError') : null);
 
   // ── Informations générales (edit form) ─────────────────────────────
   const onSaved = useCallback(

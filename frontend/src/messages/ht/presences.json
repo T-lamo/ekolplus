@@ -14,6 +14,12 @@
   },
   "statusFilterExcused": "Absans jistifye",
   "notRecorded": "Pa ranseye",
+  "help": {
+    "pageOverview": "Swiv prezans pa klas ak pa peryòd. Sèvi ak filtè yo pou chanje klas, semèn/mwa oswa estati, epi klike sou « Ekspòte » pou telechaje yon rapò.",
+    "attendanceRate": "Pousantaj elèv ki prezan sou tout jou ki anrejistre trimès sa a.",
+    "lateThisMonth": "Kantite reta ki anrejistre depi kòmansman mwa a, konpare ak menm kantite jou mwa pase a.",
+    "markAttendance": "Klike sou yon kaz nan tablo a pou make oswa chanje prezans yon elèv pou jou sa a."
+  },
   "summary": {
     "totalStudents": "Total elèv",
     "presentToday": "Prezan jodi a",

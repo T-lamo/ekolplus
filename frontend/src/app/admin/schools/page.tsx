@@ -7,7 +7,7 @@
 // SUPERADMIN). "Accéder à l'école" et "Réinitialiser mdp" restent des stubs
 // honnêtes (impersonation + flow email non câblés — décision OVERVIEW).
 
-import { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CreditCard,
@@ -25,6 +25,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { AdminSchoolRow } from '@/lib/admin-types';
@@ -116,9 +117,6 @@ function SchoolsPage() {
   const [status, setStatus] = useState('');
   const [country, setCountry] = useState('');
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<SchoolsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   useEffect(() => {
@@ -126,27 +124,19 @@ function SchoolsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('q', debouncedSearch);
-    if (plan) params.set('plan', plan);
-    if (status) params.set('status', status);
-    if (country) params.set('country', country);
-    params.set('page', String(page));
-    try {
-      const res = await api<SchoolsResponse>(`/api/admin/schools?${params.toString()}`);
-      setData(res);
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, plan, status, country, page]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const schoolsParams = new URLSearchParams();
+  if (debouncedSearch) schoolsParams.set('q', debouncedSearch);
+  if (plan) schoolsParams.set('plan', plan);
+  if (status) schoolsParams.set('status', status);
+  if (country) schoolsParams.set('country', country);
+  schoolsParams.set('page', String(page));
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<SchoolsResponse>(`/api/admin/schools?${schoolsParams.toString()}`);
+  const error = dataErr ? T.loadError : null;
 
   // Any filter change restarts from page 1.
   useEffect(() => {
@@ -579,36 +569,37 @@ function EditModal({
     officialCode: string;
     officialEmail: string;
   } | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const { data: detailData, error: detailErr } = useApi<{ school: SchoolDetail }>(
+    `/api/admin/schools/${school.id}`,
+  );
+  const loadFailed = !!detailErr;
+
+  // This modal remounts fresh every time it's opened (the parent page only
+  // renders it conditionally), so a plain "seed once per mount" ref is
+  // enough — no risk of a background revalidation clobbering the form the
+  // user is actively editing.
+  const seededRef = useRef(false);
   useEffect(() => {
-    let cancelled = false;
-    api<{ school: SchoolDetail }>(`/api/admin/schools/${school.id}`)
-      .then(({ school: d }) => {
-        if (cancelled) return;
-        setForm({
-          logoUrl: d.logoUrl,
-          name: d.name,
-          shortName: d.shortName ?? '',
-          country: d.country,
-          city: d.city,
-          schoolType: d.schoolType,
-          primaryLanguage: d.primaryLanguage ?? '',
-          address: d.address ?? '',
-          phone: d.phone ?? '',
-          estimatedStudents: d.estimatedStudents !== null ? String(d.estimatedStudents) : '',
-          officialCode: d.officialCode ?? '',
-          officialEmail: d.officialEmail ?? '',
-        });
-      })
-      .catch(() => {
-        if (!cancelled) setLoadFailed(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [school.id]);
+    if (seededRef.current || !detailData) return;
+    seededRef.current = true;
+    const d = detailData.school;
+    setForm({
+      logoUrl: d.logoUrl,
+      name: d.name,
+      shortName: d.shortName ?? '',
+      country: d.country,
+      city: d.city,
+      schoolType: d.schoolType,
+      primaryLanguage: d.primaryLanguage ?? '',
+      address: d.address ?? '',
+      phone: d.phone ?? '',
+      estimatedStudents: d.estimatedStudents !== null ? String(d.estimatedStudents) : '',
+      officialCode: d.officialCode ?? '',
+      officialEmail: d.officialEmail ?? '',
+    });
+  }, [detailData]);
 
   function patch(p: Partial<NonNullable<typeof form>>) {
     setForm((f) => (f ? { ...f, ...p } : f));

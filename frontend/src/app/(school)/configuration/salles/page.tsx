@@ -21,12 +21,14 @@ import {
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
@@ -64,8 +66,6 @@ export default function RoomsPage() {
   const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
-  const [rooms, setRooms] = useState<RoomRow[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [status, setStatus] = useState<StatusFilter>('');
@@ -74,18 +74,21 @@ export default function RoomsPage() {
   // null = fermé ; 'new' = création ; RoomRow = édition.
   const [editing, setEditing] = useState<RoomRow | 'new' | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ rooms: RoomRow[] }>('/api/school/rooms')
-      .then((r) => setRooms(r.rooms))
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const {
+    data: roomsData,
+    error: roomsErr,
+    mutate: mutateRooms,
+  } = useApi<{ rooms: RoomRow[] }>('/api/school/rooms', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const rooms = roomsData?.rooms ?? null;
+  const error = roomsErr ? t('loadError') : null;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -121,12 +124,12 @@ export default function RoomsPage() {
   }, [rooms]);
 
   function onSaved(room: RoomRow, mode: 'create' | 'edit') {
-    setRooms((prev) => {
-      if (!prev) return [room];
+    mutateRooms((prev) => {
+      if (!prev) return { rooms: [room] };
       if (mode === 'create') {
-        return [...prev, room].sort((a, b) => a.name.localeCompare(b.name, bcp47));
+        return { rooms: [...prev.rooms, room].sort((a, b) => a.name.localeCompare(b.name, bcp47)) };
       }
-      return prev.map((r) => (r.id === room.id ? room : r));
+      return { rooms: prev.rooms.map((r) => (r.id === room.id ? room : r)) };
     });
     setEditing(null);
     toast(mode === 'create' ? t('toast.created') : t('toast.updated'), 'success');
@@ -138,7 +141,9 @@ export default function RoomsPage() {
         method: 'PATCH',
         body: { isActive: !room.isActive },
       });
-      setRooms((prev) => (prev ? prev.map((r) => (r.id === room.id ? res.room : r)) : prev));
+      mutateRooms((prev) =>
+        prev ? { rooms: prev.rooms.map((r) => (r.id === room.id ? res.room : r)) } : { rooms: [] },
+      );
       toast(res.room.isActive ? t('toast.reactivated') : t('toast.deactivated'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -163,7 +168,9 @@ export default function RoomsPage() {
       return;
     try {
       await api(`/api/school/rooms/${room.id}`, { method: 'DELETE' });
-      setRooms((prev) => (prev ? prev.filter((r) => r.id !== room.id) : prev));
+      mutateRooms((prev) =>
+        prev ? { rooms: prev.rooms.filter((r) => r.id !== room.id) } : { rooms: [] },
+      );
       toast(t('toast.deleted'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -200,7 +207,10 @@ export default function RoomsPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button className="w-fit" onClick={() => setEditing('new')}>

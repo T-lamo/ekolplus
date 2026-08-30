@@ -26,6 +26,10 @@
     "noSubject": "Pa gen matyè",
     "noSubjectShort": "Okenn",
     "noClassLabel": "Pa gen klas",
+    "help": {
+      "pageOverview": "Isit la ou jwenn tout pwofesè lekòl la. Chèche pa non, filtre pa matyè oswa estati, epi itilize « Ajoute yon pwofesè » pou kreye yon nouvo fich oswa « Ekspòte » pou telechaje lis la an CSV.",
+      "weeklyHoursColumn": "Total sa a kalkile otomatikman apati matyè ak klas ki asiyen a pwofesè a (paj « Matyè ») — li pa reprezante èdtan kontra ki antre nan fich li."
+    },
     "table": {
       "teacher": "Pwofesè",
       "subjects": "Matyè",

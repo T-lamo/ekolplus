@@ -11,6 +11,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Activity, Hash, School as SchoolIcon, SlidersHorizontal, User, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
@@ -148,9 +149,6 @@ export function StudentFormModal({
     SUSPENDED: t('statusOptions.SUSPENDED.desc'),
   };
 
-  const [student, setStudent] = useState<StudentDetail | null>(null);
-  const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [activeYearLabel, setActiveYearLabel] = useState<string | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
   const [guardian1, setGuardian1] = useState<GuardianData>({ ...EMPTY_GUARDIAN, isPrimary: true });
   const [showGuardian2, setShowGuardian2] = useState(false);
@@ -165,45 +163,48 @@ export function StudentFormModal({
   const [maxReached, setMaxReached] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
 
+  function handleLoadError(err: unknown) {
+    setLoadError(
+      err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
+    );
+    return true;
+  }
+  const { data: classesData } = useApi<{ classes: ClassOption[]; activeYearLabel: string | null }>(
+    '/api/school/classes',
+    { onError: handleLoadError },
+  );
+  const classes = classesData?.classes ?? [];
+  const activeYearLabel = classesData?.activeYearLabel ?? null;
+
+  const { data: studentData } = useApi<{ student: StudentDetail }>(
+    `/api/school/students/${studentId}`,
+    { skip: !studentId, onError: handleLoadError },
+  );
+  const student = studentData?.student ?? null;
+
+  // This modal remounts fresh every time it's opened (the parent page only
+  // renders it conditionally), so a plain "seed once per mount" ref is
+  // enough — no risk of a background revalidation for a DIFFERENT student
+  // clobbering the form the user is actively editing.
+  const seededRef = useRef(false);
   useEffect(() => {
-    let cancelled = false;
-    const loads: Promise<void>[] = [
-      api<{ classes: ClassOption[]; activeYearLabel: string | null }>('/api/school/classes').then(
-        (c) => {
-          if (cancelled) return;
-          setClasses(c.classes);
-          setActiveYearLabel(c.activeYearLabel);
-          if (!studentId) setForm((f) => f ?? emptyForm(c.classes[0]?.id ?? ''));
-        },
-      ),
-    ];
-    if (studentId) {
-      loads.push(
-        api<{ student: StudentDetail }>(`/api/school/students/${studentId}`).then(
-          ({ student: s }) => {
-            if (cancelled) return;
-            setStudent(s);
-            setForm(toForm(s));
-            if (s.guardians[0]) setGuardian1(s.guardians[0]);
-            if (s.guardians[1]) {
-              setGuardian2(s.guardians[1]);
-              setShowGuardian2(true);
-            }
-          },
-        ),
-      );
-    }
-    Promise.all(loads).catch((err) => {
-      if (!cancelled) {
-        setLoadError(
-          err instanceof ApiError ? t('loadErrorWithCode', { code: err.code }) : t('loadError'),
-        );
+    if (seededRef.current) return;
+    if (!studentId) {
+      if (classesData) {
+        seededRef.current = true;
+        setForm(emptyForm(classesData.classes[0]?.id ?? ''));
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [studentId, t]);
+    } else if (studentData) {
+      seededRef.current = true;
+      const s = studentData.student;
+      setForm(toForm(s));
+      if (s.guardians[0]) setGuardian1(s.guardians[0]);
+      if (s.guardians[1]) {
+        setGuardian2(s.guardians[1]);
+        setShowGuardian2(true);
+      }
+    }
+  }, [studentId, classesData, studentData]);
 
   function patch(p: Partial<FormState>) {
     setForm((f) => (f ? { ...f, ...p } : f));

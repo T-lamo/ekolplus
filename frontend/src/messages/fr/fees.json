@@ -75,7 +75,12 @@
     },
     "printReceiptNoPayment": "Aucun paiement enregistré pour cet élève.",
     "printReceiptLoadError": "Impossible de charger le reçu.",
-    "remainingInline": "Reste à payer : {amount}"
+    "remainingInline": "Reste à payer : {amount}",
+    "help": {
+      "pageOverview": "Suivez les paiements de scolarité par élève : recherchez, filtrez par classe ou par statut, et retrouvez le total recouvré face au total attendu. Utilisez « Paramétrage des plans » pour configurer les tranches par classe.",
+      "overdueAlert": "Cette alerte apparaît dès qu'au moins une tranche a dépassé sa date d'échéance sans être réglée ; elle disparaît automatiquement une fois les retards régularisés.",
+      "statusColumn": "Calculé à partir des tranches et versements de l'élève : « En retard » dès qu'une échéance est dépassée, « À jour » quand tout est payé, « Partiel » après un premier versement, « Non payé » tant qu'aucun versement n'a été enregistré."
+    }
   },
   "stub": "Cette fonctionnalité arrive bientôt.",
   "overdue": {
@@ -132,7 +137,12 @@
     "reminderChannelWhatsappDesc": "Payant (frais Meta) — sinon envoyés par email, gratuit",
     "byClassTitle": "Retards par classe",
     "quickActionsTitle": "Actions rapides",
-    "exportExcel": "Exporter Excel"
+    "exportExcel": "Exporter Excel",
+    "help": {
+      "pageOverview": "Liste chaque tranche en retard, une ligne par élève et par tranche : filtrez par classe, recherchez un nom, et cochez des lignes pour un rappel groupé.",
+      "automationPanel": "Ces réglages pilotent l'envoi automatique des rappels aux tuteurs. Si « Rappels automatiques » est désactivé dans la Configuration, aucun rappel ne part, même activé ici.",
+      "statusColumn": "Sévérité calculée à partir du nombre de jours de retard : « Récent » jusqu'à 14 jours, « En retard » de 15 à 30 jours, « Critique » au-delà de 30 jours."
+    }
   },
   "disputeModal": {
     "title": "Marquer comme litigieux",
@@ -210,7 +220,12 @@
     "trancheLatePenaltyField": "Pénalité de retard (optionnel)",
     "trancheGraceDaysField": "Délai de grâce (jours)",
     "noLatePenalty": "Aucune pénalité",
-    "saveTranche": "Enregistrer"
+    "saveTranche": "Enregistrer",
+    "help": {
+      "pageOverview": "Choisissez une classe, définissez son montant total et ses tranches de paiement pour l'année académique. La devise et les rappels automatiques réglés ici s'appliquent à toute l'école.",
+      "autoRemindersToggle": "Interrupteur principal des rappels : s'il est désactivé, aucun rappel automatique ne part, même si les cadences sont activées dans Relances & Impayés.",
+      "latePenaltyToggle": "Une fois activé, le pourcentage et le délai de grâce définis sur chaque tranche s'appliquent automatiquement dès qu'une échéance est dépassée, sans action manuelle."
+    }
   },
   "registerPayment": {
     "title": "Enregistrer un paiement",

@@ -3,7 +3,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { findActiveItem, findActiveSection } from './route-match';
 import { SidebarCollapseToggle } from './SidebarCollapseToggle';
@@ -74,10 +73,9 @@ export function Sidebar({
 
   return (
     <Tooltip.Provider delayDuration={300}>
-      <motion.aside
-        animate={{ width: collapsed ? COLLAPSED_WIDTH : width }}
-        transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className={`flex h-full shrink-0 flex-col overflow-hidden ${edgeClass} ${bgClass}`}
+      <aside
+        style={{ width: collapsed ? COLLAPSED_WIDTH : width }}
+        className={`flex h-full shrink-0 flex-col overflow-hidden transition-[width] duration-200 ease-in-out ${edgeClass} ${bgClass}`}
       >
         {/* Same h-13 as the topbar so the brand row and the breadcrumbs share
             one baseline. */}
@@ -144,7 +142,7 @@ export function Sidebar({
             profileHref={profileHref}
           />
         </div>
-      </motion.aside>
+      </aside>
     </Tooltip.Provider>
   );
 }

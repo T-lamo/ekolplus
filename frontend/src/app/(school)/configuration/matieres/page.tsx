@@ -21,12 +21,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu } from '@/components/ui/ActionMenu';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -66,26 +68,27 @@ export default function MatieresPage() {
   const t = useTranslations('Configuration.matieres.list');
   const tCommon = useTranslations('Common');
   const tStatus = useTranslations('Configuration.matieres.status');
-  const [subjects, setSubjects] = useState<SubjectData[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [domain, setDomain] = useState('');
   const [status, setStatus] = useState<StatusFilter>('');
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ subjects: SubjectData[] }>('/api/school/subjects?includeDrafts=1')
-      .then((res) => setSubjects(res.subjects))
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const {
+    data: subjectsData,
+    error: subjectsErr,
+    mutate: mutateSubjects,
+  } = useApi<{ subjects: SubjectData[] }>('/api/school/subjects?includeDrafts=1', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const subjects = subjectsData?.subjects ?? null;
+  const error = subjectsErr ? t('loadError') : null;
 
   const domains = useMemo(
     () => [...new Set((subjects ?? []).map((s) => s.domain).filter((d): d is string => !!d))],
@@ -124,7 +127,9 @@ export default function MatieresPage() {
       return;
     try {
       await api(`/api/school/subjects/${subject.id}`, { method: 'DELETE' });
-      setSubjects((prev) => (prev ? prev.filter((s) => s.id !== subject.id) : prev));
+      mutateSubjects((prev) =>
+        prev ? { subjects: prev.subjects.filter((s) => s.id !== subject.id) } : { subjects: [] },
+      );
       toast(t('subjectDeleted'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -140,14 +145,16 @@ export default function MatieresPage() {
           body: { status: subject.isActive ? 'ARCHIVED' : 'ACTIVE' },
         },
       );
-      setSubjects((prev) =>
+      mutateSubjects((prev) =>
         prev
-          ? prev.map((s) =>
-              s.id === subject.id
-                ? { ...s, isActive: res.subject.isActive, status: res.subject.status }
-                : s,
-            )
-          : prev,
+          ? {
+              subjects: prev.subjects.map((s) =>
+                s.id === subject.id
+                  ? { ...s, isActive: res.subject.isActive, status: res.subject.status }
+                  : s,
+              ),
+            }
+          : { subjects: [] },
       );
       toast(res.subject.isActive ? t('unarchived') : t('archived'), 'success');
     } catch (err) {
@@ -242,7 +249,10 @@ export default function MatieresPage() {
     <div className={`${LIST_PAGE} gap-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -400,7 +410,12 @@ export default function MatieresPage() {
                     <tr className="border-b border-border">
                       <Th>{t('table.subject')}</Th>
                       <Th>{t('table.domain')}</Th>
-                      <Th>{t('table.coefficient')}</Th>
+                      <Th>
+                        <span className="inline-flex items-center gap-1">
+                          {t('table.coefficient')}
+                          <HelpTooltip label={t('help.coefficientColumn')} />
+                        </span>
+                      </Th>
                       <Th>{t('table.assignedTeacher')}</Th>
                       <Th>{t('table.classes')}</Th>
                       <Th>{t('table.evaluationCount')}</Th>

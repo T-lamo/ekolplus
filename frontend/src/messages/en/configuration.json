@@ -28,6 +28,9 @@
       "invalidSet": "The grade level list has changed — reload the page and try again.",
       "orgRoleInsufficient": "You don't have permission to edit grade levels.",
       "validationFailed": "Invalid name (1 to 40 characters)."
+    },
+    "help": {
+      "pageOverview": "Drag a row to reorder grade levels, from first to last. This order is used to automatically suggest promotions when moving to the next school year."
     }
   },
   "classes": {
@@ -93,6 +96,9 @@
         "unassigned": "Unassigned",
         "places": "places",
         "active": "Active"
+      },
+      "help": {
+        "pageOverview": "Search and filter classes by grade level, then switch between grid and table view. The cards above summarize the number of classes, grade levels, assigned homeroom teachers, and the average number of subjects per class."
       }
     },
     "pageShell": {
@@ -342,6 +348,10 @@
         "classes": "Classes",
         "evaluationCount": "No. of assessments",
         "status": "Status"
+      },
+      "help": {
+        "pageOverview": "Search and filter subjects by domain or status (active, unassigned, archived), then switch between grid and table view.",
+        "coefficientColumn": "Coefficients and assigned teachers are now configured per class, directly from the subject's own record or from each class's \"Subject detail\" table — the old standalone Coefficients and Assignments screens now redirect here."
       }
     },
     "status": {
@@ -836,6 +846,9 @@
         "capacityRange": "Whole number between 1 and 5000.",
         "nameTaken": "A room already has this name."
       }
+    },
+    "help": {
+      "pageOverview": "Search and filter rooms by type or status, then switch between grid and table view. Active rooms feed the Room field on a class's record and the timetable's session modal; a deactivated room is no longer offered there."
     }
   },
   "modeleBulletin": {
@@ -877,6 +890,10 @@
       "personal": "Personal"
     },
     "editLink": "Edit",
+    "help": {
+      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own — global templates can't be edited directly. Only one personal template can be active at a time.",
+      "activeTemplate": "The active template is the one used to generate your students' official report cards. To activate a different one, open a personal template's menu and choose \"Set as active\"."
+    },
     "block": {
       "header": "Header",
       "studentInfo": "Student info",

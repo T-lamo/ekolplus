@@ -60,6 +60,11 @@
     "menuView": "Voir l'appréciation",
     "menuEdit": "Modifier l'appréciation",
     "menuDelete": "Supprimer l'appréciation",
+    "help": {
+      "pageOverview": "Consultez et publiez l'appréciation générale de fin de trimestre de chaque élève de la classe. Changez de classe ou de trimestre avec les filtres, et utilisez les onglets pour voir la vue par matière ou les statistiques de la classe.",
+      "positive": "Élèves ayant la mention « Très bien » ou « Bien » pour ce trimestre — ce total porte sur toute la classe, même si une recherche ou un filtre est actif dans le tableau ci-dessous.",
+      "alert": "Élèves ayant la mention « Insuffisant » pour ce trimestre, à surveiller en priorité — ce total porte sur toute la classe, quels que soient les filtres du tableau ci-dessous."
+    },
     "summary": {
       "totalStudents": "Total élèves",
       "totalStudentsSub": "{className} — {term}",

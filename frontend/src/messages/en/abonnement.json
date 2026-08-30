@@ -272,7 +272,11 @@
     "toastDowngradeScheduled": "Downgrade scheduled — {plan} stays active until {date}.",
     "toastIntervalUpdated": "Billing cycle updated.",
     "loadErrorNoSchool": "No school linked to this account.",
-    "loadErrorRestricted": "Billing is reserved for the school's administrators."
+    "loadErrorRestricted": "Billing is reserved for the school's administrators.",
+    "help": {
+      "pageOverview": "Manage your school's plan, track usage against the limits included in your plan, and find your invoices — everything is updated live from Stripe.",
+      "manageProration": "Switching your billing cycle is prorated and billed immediately by Stripe. A downgrade, on the other hand, only takes effect at the end of the period you've already paid for — no refund, but no loss of access before that date."
+    }
   },
   "errors": {
     "stripeNotConfigured": "Online billing isn’t enabled on this deployment yet.",

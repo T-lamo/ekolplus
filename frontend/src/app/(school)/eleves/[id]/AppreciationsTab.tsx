@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Star, BookOpen, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { api } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Skeleton, SkeletonTable } from '@/components/ui/Skeleton';
@@ -50,24 +50,22 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
-  const [data, setData] = useState<StudentAppreciationData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const qs = termId ? `?termId=${termId}` : '';
+  const appreciationsPath = `/api/school/students/${studentId}/appreciations${qs}`;
+  const { data, loading } = useApi<StudentAppreciationData>(appreciationsPath);
 
+  // `termId` is local state, not a URL param, so this component never
+  // remounts on term change — gate the auto-seed on `getCache(...) === data`
+  // (only true once the cache entry actually written for THIS path matches
+  // what we're holding) so a stale sibling term's data can't seed the wrong
+  // resolvedTermId.
+  const keyRef = useRef<string | null>(null);
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    const qs = termId ? `?termId=${termId}` : '';
-    api<StudentAppreciationData>(`/api/school/students/${studentId}/appreciations${qs}`)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setTermId(d.resolvedTermId ?? '');
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [studentId, termId]);
+    if (data && getCache(appreciationsPath) === data && keyRef.current !== appreciationsPath) {
+      keyRef.current = appreciationsPath;
+      setTermId(data.resolvedTermId ?? '');
+    }
+  }, [data, appreciationsPath]);
 
   if (!data) {
     return (

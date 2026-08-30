@@ -10,7 +10,7 @@
 // The API enforces ADMIN on mutations; a MEMBER just gets the 403 as a toast.
 // Spec: docs/superpowers/specs/2026-08-17-grade-level-ordering-design.md
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
@@ -34,12 +34,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -234,8 +236,6 @@ export default function NiveauxPage() {
   const t = useTranslations('Configuration.niveaux');
   const tCommon = useTranslations('Common');
 
-  const [levels, setLevels] = useState<GradeLevel[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [adding, setAdding] = useState(false);
   const [renaming, setRenaming] = useState<GradeLevel | null>(null);
@@ -248,25 +248,28 @@ export default function NiveauxPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ levels: GradeLevel[] }>('/api/school/grade-levels')
-      .then((res) => setLevels(res.levels))
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const {
+    data: levelsData,
+    error: levelsErr,
+    mutate: mutateLevels,
+  } = useApi<{ levels: GradeLevel[] }>('/api/school/grade-levels', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const levels = levelsData?.levels ?? null;
+  const error = levelsErr ? t('loadError') : null;
 
   async function addLevel(name: string) {
     const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
       method: 'POST',
       body: { name },
     });
-    setLevels((prev) => [...(prev ?? []), res.level]);
+    mutateLevels((prev) => ({ levels: [...(prev?.levels ?? []), res.level] }));
     toast(t('levelAdded'), 'success');
   }
 
@@ -275,7 +278,11 @@ export default function NiveauxPage() {
       method: 'PATCH',
       body: { name },
     });
-    setLevels((prev) => (prev ? prev.map((l) => (l.id === res.level.id ? res.level : l)) : prev));
+    mutateLevels((prev) =>
+      prev
+        ? { levels: prev.levels.map((l) => (l.id === res.level.id ? res.level : l)) }
+        : { levels: [] },
+    );
     toast(t('levelRenamed'), 'success');
   }
 
@@ -289,16 +296,16 @@ export default function NiveauxPage() {
     const previous = levels;
     const next = arrayMove(levels, from, to).map((l, order) => ({ ...l, order }));
     // Optimistic — orders are re-derived from the server response below.
-    setLevels(next);
+    mutateLevels({ levels: next });
     setSaving(true);
     try {
       const res = await api<{ levels: GradeLevel[] }>('/api/school/grade-levels/reorder', {
         method: 'POST',
         body: { orderedIds: next.map((l) => l.id) },
       });
-      setLevels(res.levels);
+      mutateLevels({ levels: res.levels });
     } catch (err) {
-      setLevels(previous);
+      mutateLevels({ levels: previous });
       toast(errorMessage(err, t, tCommon), 'error');
     } finally {
       setSaving(false);
@@ -310,7 +317,9 @@ export default function NiveauxPage() {
       return;
     try {
       await api(`/api/school/grade-levels/${level.id}`, { method: 'DELETE' });
-      setLevels((prev) => (prev ? prev.filter((l) => l.id !== level.id) : prev));
+      mutateLevels((prev) =>
+        prev ? { levels: prev.levels.filter((l) => l.id !== level.id) } : { levels: [] },
+      );
       toast(t('levelDeleted'), 'success');
     } catch (err) {
       toast(errorMessage(err, t, tCommon), 'error');
@@ -321,7 +330,10 @@ export default function NiveauxPage() {
     <div className="flex min-h-full flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+            <HelpTooltip label={t('help.pageOverview')} />
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button className="w-fit" onClick={() => setAdding(true)}>

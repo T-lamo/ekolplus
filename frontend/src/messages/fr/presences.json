@@ -13,6 +13,12 @@
   },
   "statusFilterExcused": "Absence justifiée",
   "notRecorded": "Non renseigné",
+  "help": {
+    "pageOverview": "Suivez les présences par classe et par période. Utilisez les filtres pour changer de classe, de semaine/mois ou de statut, et cliquez sur « Exporter » pour télécharger un relevé.",
+    "attendanceRate": "Pourcentage d'élèves présents sur l'ensemble des jours enregistrés ce trimestre.",
+    "lateThisMonth": "Nombre de retards enregistrés depuis le début du mois en cours, comparé au même nombre de jours le mois dernier.",
+    "markAttendance": "Cliquez sur une case du tableau pour marquer ou modifier la présence d'un élève ce jour-là."
+  },
   "summary": {
     "totalStudents": "Total élèves",
     "presentToday": "Présents aujourd'hui",

@@ -27,8 +27,6 @@
       "other": "{count} elèv enskri"
     },
     "loadError": "Nou pa ka chaje elèv yo.",
-    "import": "Enpòte",
-    "importSoon": "Enpòtasyon CSV — pral disponib byento.",
     "export": "Ekspòte",
     "addStudent": "Ajoute yon elèv",
     "searchPlaceholder": "Chèche yon elèv...",
@@ -47,6 +45,10 @@
     "emptyFiltered": "Pa gen rezilta.",
     "noClass": "Pa gen klas",
     "birthPrefix": "Nesans",
+    "help": {
+      "pageOverview": "Isit la ou jwenn tout elèv ki enskri nan lekòl la. Chèche pa non, filtre pa klas oswa estati, epi itilize « Ajoute yon elèv » pou kreye yon nouvo fich oswa « Ekspòte » pou telechaje lis la an CSV.",
+      "statusColumn": "Estati sa a defini alamen nan fich elèv la (aksyon « Modifye ») — li pa kalkile otomatikman apati prezans ki anrejistre nan modil Prezans lan."
+    },
     "table": {
       "student": "Elèv",
       "class": "Klas",

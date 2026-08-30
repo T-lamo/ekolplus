@@ -27,6 +27,11 @@
   },
   "toolbar": {
     "title": "Emploi du temps",
+    "help": {
+      "pageOverview": "Consultez et gérez l'emploi du temps de l'école. Changez de vue (Mois, Semaine, Jour, Agenda) et filtrez par classe, enseignant, salle ou matière pour affiner l'affichage.",
+      "createSession": "Vous pouvez aussi cliquer directement sur un créneau libre de la grille pour créer un cours pré-rempli à ce jour et cette heure, ou sur un cours existant pour le modifier.",
+      "exportScope": "L'export CSV ne contient que les cours de la période actuellement affichée (mois, semaine ou jour) et respecte les filtres de classe, enseignant, salle et matière en cours."
+    },
     "headerWithYear": "Année scolaire {label} — {view}",
     "viewsAriaLabel": "Vue",
     "views": {

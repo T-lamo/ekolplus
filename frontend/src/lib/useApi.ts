@@ -24,6 +24,13 @@ if (typeof window !== 'undefined') {
 interface UseApiOptions {
   skip?: boolean;
   staleTime?: number;
+  // Called with the raw thrown value (before it's flattened to the generic
+  // `error` string) — lets a caller inspect e.g. `ApiError.code` and react
+  // (redirect, etc.) the way callers did with their own try/catch before
+  // switching to this hook. Return `true` to say "I've handled this" and
+  // suppress the hook's own `error` state (matches the pre-migration
+  // behavior of pages that redirect instead of showing an error message).
+  onError?: (err: unknown) => boolean | void;
 }
 
 interface UseApiResult<T> {
@@ -31,10 +38,17 @@ interface UseApiResult<T> {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  // Optimistic local update (e.g. splice a deleted row out of a list) —
+  // writes through to the cache so a later remount doesn't flash the
+  // pre-mutation value before the next background revalidation catches up.
+  // No network call, unlike `refresh`.
+  mutate: (updater: T | ((prev: T | null) => T)) => void;
 }
 
 export function useApi<T>(path: string, options: UseApiOptions = {}): UseApiResult<T> {
-  const { skip = false, staleTime = STALE_TIME } = options;
+  const { skip = false, staleTime = STALE_TIME, onError } = options;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   const cached = cache.get(path);
   const [data, setData] = useState<T | null>(cached ? (cached.data as T) : null);
@@ -59,7 +73,8 @@ export function useApi<T>(path: string, options: UseApiOptions = {}): UseApiResu
         }
       } catch (err) {
         if (mountedRef.current && fetchIdRef.current === currentFetchId) {
-          setError(err instanceof Error ? err.message : 'Network error');
+          const handled = onErrorRef.current?.(err) === true;
+          if (!handled) setError(err instanceof Error ? err.message : 'Network error');
         }
       } finally {
         if (mountedRef.current && fetchIdRef.current === currentFetchId) setLoading(false);
@@ -95,7 +110,16 @@ export function useApi<T>(path: string, options: UseApiOptions = {}): UseApiResu
     await fetchData(true);
   }, [fetchData]);
 
-  return { data, loading, error, refresh };
+  const mutate = useCallback((updater: T | ((prev: T | null) => T)) => {
+    setData((prev) => {
+      const next =
+        typeof updater === 'function' ? (updater as (prev: T | null) => T)(prev) : updater;
+      cache.set(pathRef.current, { data: next, ts: Date.now() });
+      return next;
+    });
+  }, []);
+
+  return { data, loading, error, refresh, mutate };
 }
 
 export function getCache<T>(path: string): T | null {

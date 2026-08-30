@@ -6,7 +6,7 @@
 // "Envoyer rappels" is an honest stub (no send channel wired, fees-module
 // precedent). Everything else is real CRUD on the billing models.
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   AlertTriangle,
@@ -18,6 +18,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { ADMIN_SAAS, ADMIN_SUBSCRIPTIONS as T } from '@/lib/constants';
 import { fmtDateMed, fmtUsd, fmtUsdRound } from '@/lib/admin-format';
@@ -112,9 +113,6 @@ function SubscriptionsPage() {
   const [plan, setPlan] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<SubsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   useEffect(() => {
@@ -122,25 +120,18 @@ function SubscriptionsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('q', debouncedSearch);
-    if (plan) params.set('plan', plan);
-    if (status) params.set('status', status);
-    params.set('page', String(page));
-    try {
-      setData(await api<SubsResponse>(`/api/admin/billing/subscriptions?${params.toString()}`));
-    } catch {
-      setError(T.loadError);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, plan, status, page]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const subsParams = new URLSearchParams();
+  if (debouncedSearch) subsParams.set('q', debouncedSearch);
+  if (plan) subsParams.set('plan', plan);
+  if (status) subsParams.set('status', status);
+  subsParams.set('page', String(page));
+  const {
+    data,
+    loading,
+    error: dataErr,
+    refresh: load,
+  } = useApi<SubsResponse>(`/api/admin/billing/subscriptions?${subsParams.toString()}`);
+  const error = dataErr ? T.loadError : null;
 
   useEffect(() => {
     setPage(1);

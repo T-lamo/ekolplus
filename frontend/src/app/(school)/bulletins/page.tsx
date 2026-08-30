@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Users,
   CheckCircle2,
@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { getCache, useApi } from '@/lib/useApi';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
@@ -54,39 +55,52 @@ export default function BulletinsListPage() {
   // Class picker = the ACTIVE year's classes (`/api/school/classes`), not
   // the classes that happen to have subject affectations — a brand-new class
   // must show up here immediately, and archived-year classes never.
-  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
-  const [data, setData] = useState<BulletinsListData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    if (!user) return;
-    api<{ classes: Array<{ id: string; name: string }> }>('/api/school/classes')
-      .then((res) => {
-        setClasses(res.classes.map((c) => ({ id: c.id, name: c.name })));
-        if (res.classes[0]) setClassId(res.classes[0].id);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError('Impossible de charger les bulletins.');
-      });
-  }, [user, router]);
+  const { data: classesData, error: classesErr } = useApi<{
+    classes: Array<{ id: string; name: string }>;
+  }>('/api/school/classes', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const classes = classesData?.classes ?? [];
 
+  const initialClassDone = useRef(false);
   useEffect(() => {
-    if (!classId) return;
-    const qs = termId ? `?termId=${termId}` : '';
-    api<BulletinsListData>(`/api/school/classes/${classId}/bulletins${qs}`)
-      .then((d) => {
-        setData(d);
-        setTermId(d.resolvedTermId ?? '');
-      })
-      .catch(() => setError('Impossible de charger les bulletins.'));
-  }, [classId, termId]);
+    if (!initialClassDone.current && classes.length > 0) {
+      initialClassDone.current = true;
+      setClassId(classes[0]!.id);
+    }
+  }, [classes]);
+
+  const qs = termId ? `?termId=${termId}` : '';
+  const bulletinsPath = `/api/school/classes/${classId}/bulletins${qs}`;
+  const { data } = useApi<BulletinsListData>(bulletinsPath, {
+    skip: !classId,
+    onError: () => setLoadError('Impossible de charger les bulletins.'),
+  });
+  const error = loadError || classesErr ? 'Impossible de charger les bulletins.' : null;
+
+  // `classId` is local state, not a URL param, so this component never
+  // remounts on selection change — gate the auto-seed on
+  // `getCache(...) === data` (only true once the cache entry actually
+  // written for THIS path matches what we're holding) so a stale sibling
+  // class's data can't seed the wrong resolvedTermId.
+  const keyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (data && getCache(bulletinsPath) === data && keyRef.current !== bulletinsPath) {
+      keyRef.current = bulletinsPath;
+      setTermId(data.resolvedTermId ?? '');
+    }
+  }, [data, bulletinsPath]);
 
   const filteredStudents = useMemo(() => {
     if (!data) return [];

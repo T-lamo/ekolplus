@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { FileSpreadsheet } from 'lucide-react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Skeleton, SkeletonStatCards } from '@/components/ui/Skeleton';
 import { exportToCsv } from '@/lib/csv-export';
 import { ASIDE_GRID } from '@/lib/layout';
@@ -24,28 +25,16 @@ export default function DashboardPage() {
   const user = useUser();
   const router = useRouter();
   const t = useTranslations('Dashboard');
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    api<DashboardData>('/api/school/dashboard')
-      .then((res) => {
-        if (!cancelled) setData(res);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, router]);
+  const { data, error } = useApi<DashboardData>('/api/school/dashboard', {
+    skip: !user,
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+    },
+  });
+  const displayError = error ? t('loadError') : null;
 
   function onExport() {
     if (!data) return;
@@ -79,7 +68,10 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
+          <h1 className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
+            {t('title')}
+            <HelpTooltip label={t('help.pageOverview')} />
+          </h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {t('subtitle', { name: user.name ?? user.email })}
           </p>
@@ -88,6 +80,7 @@ export default function DashboardPage() {
           {data?.academicYear && (
             <span className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground">
               {t('academicYearBadge', { label: data.academicYear.label })}
+              <HelpTooltip label={t('help.academicYearScope')} />
             </span>
           )}
           <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
@@ -97,13 +90,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {error && (
+      {displayError && (
         <p role="alert" className="text-sm text-destructive-foreground">
-          {error}
+          {displayError}
         </p>
       )}
 
-      {!data && !error && (
+      {!data && !displayError && (
         <div className="flex flex-col gap-4">
           <SkeletonStatCards count={5} />
           <div className={ASIDE_GRID}>

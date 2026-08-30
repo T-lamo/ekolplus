@@ -3,11 +3,12 @@
 // /configuration/matieres/nouvelle — Banani « Add Matière » (add-matiere.md).
 // Full-page create form inside the shared subject shell; on success the user
 // lands on the new subject's detail page (Informations tab, banner active).
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 import { ASIDE_GRID } from '@/lib/layout';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -35,33 +36,38 @@ export default function NouvelleMatierePage() {
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations('Configuration.matieres.create');
-  const [subjects, setSubjects] = useState<SubjectData[] | null>(null);
-  const [teachers, setTeachers] = useState<TeacherRow[]>([]);
-  const [classes, setClasses] = useState<ClassRow[]>([]);
-  const [yearLabel, setYearLabel] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      api<{ subjects: SubjectData[] }>('/api/school/subjects?includeDrafts=1'),
-      api<{ teachers: TeacherRow[] }>('/api/school/teachers'),
-      api<{ classes: ClassRow[]; activeYearLabel: string | null }>('/api/school/classes'),
-    ])
-      .then(([s, t, c]) => {
-        setSubjects(s.subjects);
-        setTeachers(t.teachers);
-        setClasses(c.classes);
-        setYearLabel(c.activeYearLabel);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
-          router.replace('/');
-          return;
-        }
-        setError(t('loadError'));
-      });
-  }, [user, router, t]);
+  const handleError = useCallback(
+    (err: unknown) => {
+      if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
+        router.replace('/');
+        return true;
+      }
+      setLoadError(t('loadError'));
+      return true;
+    },
+    [router, t],
+  );
+
+  const { data: subjectsData } = useApi<{ subjects: SubjectData[] }>(
+    '/api/school/subjects?includeDrafts=1',
+    { skip: !user, onError: handleError },
+  );
+  const { data: teachersData } = useApi<{ teachers: TeacherRow[] }>('/api/school/teachers', {
+    skip: !user,
+    onError: handleError,
+  });
+  const { data: classesData } = useApi<{ classes: ClassRow[]; activeYearLabel: string | null }>(
+    '/api/school/classes',
+    { skip: !user, onError: handleError },
+  );
+
+  const subjects = subjectsData?.subjects ?? null;
+  const teachers = teachersData?.teachers ?? [];
+  const classes = classesData?.classes ?? [];
+  const yearLabel = classesData?.activeYearLabel ?? null;
+  const error = loadError;
 
   const onSaved = useCallback(
     (subject: { id: string; name: string }, intent: 'draft' | 'publish') => {

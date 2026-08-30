@@ -29,6 +29,9 @@
       "invalidSet": "Lis nivo yo chanje — rechaje paj la epi eseye ankò.",
       "orgRoleInsufficient": "Ou pa gen dwa pou modifye nivo yo.",
       "validationFailed": "Non envalid (1 rive 40 karaktè)."
+    },
+    "help": {
+      "pageOverview": "Trennen yon liy pou reòdone nivo yo, soti nan premye a rive nan dènye a. Lòd sa a sèvi pou sijere pwomosyon yo otomatikman lè n ap pase nan ane eskolè k ap vini an."
     }
   },
   "classes": {
@@ -94,6 +97,9 @@
         "unassigned": "Pa afekte",
         "places": "plas",
         "active": "Aktif"
+      },
+      "help": {
+        "pageOverview": "Chèche epi filtre klas yo pa nivo, epi chanje ant vi griy ak vi tablo. Kat anwo yo rezime kantite klas, nivo, pwofesè prensipal ki afekte, ak mwayèn kantite matyè pou chak klas."
       }
     },
     "pageShell": {
@@ -343,6 +349,10 @@
         "classes": "Klas",
         "evaluationCount": "Kantite evalyasyon",
         "status": "Estati"
+      },
+      "help": {
+        "pageOverview": "Chèche epi filtre matyè yo pa domèn oswa pa estati (aktif, pa afekte, achive), epi chanje ant vi griy ak vi tablo.",
+        "coefficientColumn": "Kounye a, kwefisyan yo ak pwofesè yo afekte konfigire pa klas, dirèkteman nan fich matyè a oswa nan tablo « Detay matyè yo » chak klas — ansyen ekran Kwefisyan ak Afektasyon yo redirije bò isit la kounye a."
       }
     },
     "status": {
@@ -837,6 +847,9 @@
         "capacityRange": "Nonm antye ant 1 ak 5000.",
         "nameTaken": "Gen yon sal ki deja gen non sa a."
       }
+    },
+    "help": {
+      "pageOverview": "Chèche epi filtre sal yo pa tip oswa pa estati, epi chanje ant vi griy ak vi tablo. Sal aktif yo ranpli chan Sal nan fich yon klas ak nan modal seyans nan orè a ; yon sal dezaktive pa parèt la ankò."
     }
   },
   "modeleBulletin": {
@@ -878,6 +891,10 @@
       "personal": "Pèsonèl"
     },
     "editLink": "Modifye",
+    "help": {
+      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou — ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka aktif nan yon moman.",
+      "activeTemplate": "Modèl aktif la se sa k ap sèvi pou jenere bilten ofisyèl elèv ou yo. Pou aktive yon lòt, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm aktif »."
+    },
     "block": {
       "header": "Antèt",
       "studentInfo": "Enfo elèv",

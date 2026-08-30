@@ -77,6 +77,40 @@ from.
    why this ends up being a small, centralized change rather than a
    file-by-file sweep.
 
+## Shared foundation with the future Student Portal
+
+A parallel session is designing a Student Portal (student-linked accounts,
+same invite mechanism) that shares this feature's foundation: schema,
+`resolveMySchool()`, the outbox, the invite email. Per the user's decision,
+this plan builds that foundation generically so the Student Portal lands on
+top of it later without re-touching the same files:
+
+- The outbox gains one generic `email.portal_invite` kind (payload includes
+  a `portalLabel` string for the email copy), not a teacher-specific kind —
+  avoids a second protected-file (`dispatcher.ts`) edit when the Student
+  Portal ships.
+- `frontend/src/lib/server/auth/email-templates.ts` gains one generic
+  `portalInviteEmail({ code, email, expiresAt, portalLabel })`, not a
+  teacher-specific template.
+- A new, reusable `createPortalInvite()` helper (new file, not protected)
+  does the "create pending User + OrganizationMember + generate
+  VerificationCode + enqueue the invite email" sequence generically, taking
+  a caller-supplied linking callback. The Teacher invite route calls it
+  with a callback that sets `Teacher.userId`; a future Student invite route
+  calls the same helper unchanged with its own callback.
+- `resolveMySchool()`'s deny-by-default check is written as a small,
+  clearly-named `isPortalOnlyAccount(userId, schoolId)` check that today
+  only queries `Teacher` — commented to note that the Student Portal adds
+  its own `Student` check into this same function later, once
+  `Student.userId` exists. This plan does **not** add a `Student.userId`
+  field or reference one — that field doesn't exist yet, and adding a
+  Prisma query against a nonexistent column would break the build.
+
+What stays teacher-specific in this plan: `Teacher.userId`, the
+`TEACHER_INVITE` `VerificationCode.type` value (each portal type keeps its
+own, for debuggability), the invite route itself, and the entire teacher
+scoping/UI work in "Authorization model" and "UI / navigation" below.
+
 ## Data model changes
 
 ```prisma
@@ -110,25 +144,27 @@ profile must survive account removal. Re-inviting later re-links a
    `Teacher.userId` is null (first invite) — a second call on an
    already-linked teacher is the **resend** path (invalidate the previous
    unused `VerificationCode`, issue a new one) rather than an error.
-2. Inside one transaction: create `User` (`passwordHash: null`,
-   `emailVerifiedAt: null`, `role: "USER"`, `email: teacher.email`),
+2. The route calls the shared `createPortalInvite()` helper (see "Shared
+   foundation" above) with a callback that sets `Teacher.userId`. Inside
+   one transaction, that helper: creates `User` (`passwordHash: null`,
+   `emailVerifiedAt: null`, `role: "USER"`, `email`), creates
    `OrganizationMember` (role `MEMBER`, that school's `organizationId`),
-   set `Teacher.userId`. Existing `User` with that email → reuse it (link
-   instead of creating a duplicate) if it has no password set yet and no
-   existing school membership; otherwise reject with a clear error
-   (`EMAIL_ALREADY_IN_USE`) rather than silently taking over an unrelated
-   account.
-3. Generate `VerificationCode` (`type: "TEACHER_INVITE"`, expiry: 7 days).
-   Every existing `VerificationCode` use (`signup`, `forgot-password`,
+   runs the caller's linking callback, generates the `VerificationCode`,
+   and enqueues the invite email via the outbox. Existing `User` with that
+   email → reuse it (link instead of creating a duplicate) if it has no
+   password set yet and no existing school membership; otherwise reject
+   with a clear error (`EMAIL_ALREADY_IN_USE`) rather than silently taking
+   over an unrelated account.
+3. `VerificationCode` (`type: "TEACHER_INVITE"`, expiry: 7 days). Every
+   existing `VerificationCode` use (`signup`, `forgot-password`,
    `resend-verification`) defaults to a short 15-minute TTL
    (`AUTH_VERIFICATION_TTL_MIN` env var) — that window is sized for an
    account-takeover-risk security code, not an onboarding link. A teacher
    invite is a different use case (a teacher may not open the email for
    days) so this introduces its own longer, hardcoded constant rather than
-   reusing `VERIFICATION_TTL_MIN`. Send via
-   Resend using a new template in
-   `frontend/src/lib/server/notifications/templates.ts` (must set a
-   `dedupeKey` per the outbox convention).
+   reusing `VERIFICATION_TTL_MIN`. The email itself renders via the shared
+   `portalInviteEmail()` template (must set a `dedupeKey` on the outbox
+   event per the outbox convention).
 4. New public page `frontend/src/app/(auth)/definir-mot-de-passe/page.tsx`
    (modeled on the existing `/reset-password` page/route pair): takes the
    code, sets `User.passwordHash`, stamps `emailVerifiedAt`, marks the
@@ -178,13 +214,20 @@ happens to also be teacher-linked (a director who teaches) is never
 affected — the new check only applies to plain `MEMBER` accounts.
 
 ```ts
+// Currently only checks Teacher. The Student Portal adds its own Student
+// check into this same function once Student.userId exists — not done
+// here, since that field doesn't exist yet.
+async function isPortalOnlyAccount(userId: string, schoolId: string): Promise<boolean> {
+  const teacher = await prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } });
+  return teacher !== null;
+}
+
 export async function resolveMySchool(userId: string): Promise<MySchool | null> {
   const membership = await /* existing query, unchanged */;
   if (!membership || !membership.organization.school) return null;
   const schoolId = membership.organization.school.id;
-  if (membership.role === 'MEMBER') {
-    const teacher = await prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } });
-    if (teacher) return null; // teacher-linked accounts get nothing by default
+  if (membership.role === 'MEMBER' && (await isPortalOnlyAccount(userId, schoolId))) {
+    return null; // portal-only accounts (teacher today, student later) get nothing by default
   }
   return { organizationId: membership.organizationId, schoolId, role: membership.role as OrgRole };
 }

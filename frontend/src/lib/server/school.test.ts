@@ -1,10 +1,19 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   resolveMySchool,
   resolveMySchoolIncludingTeacher,
   resolveMyTeacherProfile,
+  resolveMyStudentProfile,
 } from './school';
+
+// isPortalOnlyAccount now checks Student in addition to Teacher (Espace
+// Élève, 2026-08-30) — default every test to "no Student row" so existing
+// teacher-focused tests that don't care about the Student side don't hang
+// or reject on an unmocked call. Tests that DO care override this.
+beforeEach(() => {
+  prismaMock.student.findFirst.mockResolvedValue(null as never);
+});
 
 function membershipRow(over: Record<string, unknown> = {}) {
   return {
@@ -87,5 +96,53 @@ describe('resolveMyTeacherProfile', () => {
     expect(prismaMock.teacher.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: 'user_1', schoolId: 'school_1' } }),
     );
+  });
+});
+
+describe('resolveMySchool — student lockdown', () => {
+  it('returns null for a student-linked MEMBER (deny-by-default)', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue({
+      organizationId: 'org_1',
+      role: 'MEMBER',
+      organization: { school: { id: 'school_1' } },
+    } as never);
+    prismaMock.teacher.findFirst.mockResolvedValue(null as never);
+    prismaMock.student.findFirst.mockResolvedValue({ id: 'student_1' } as never);
+    expect(await resolveMySchool('user_1')).toBeNull();
+  });
+});
+
+describe('resolveMyStudentProfile', () => {
+  it('returns null when the user has no Student row', async () => {
+    prismaMock.student.findFirst.mockResolvedValue(null as never);
+    expect(await resolveMyStudentProfile('user_1')).toBeNull();
+  });
+
+  it('returns the current-year classId/academicYearId via the active Enrollment', async () => {
+    prismaMock.student.findFirst.mockResolvedValue({
+      id: 'student_1',
+      schoolId: 'school_1',
+      enrollments: [{ classId: 'class_1', academicYearId: 'year_1' }],
+    } as never);
+    expect(await resolveMyStudentProfile('user_1')).toEqual({
+      studentId: 'student_1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+  });
+
+  it('returns classId/academicYearId as null when there is no current-year Enrollment', async () => {
+    prismaMock.student.findFirst.mockResolvedValue({
+      id: 'student_1',
+      schoolId: 'school_1',
+      enrollments: [],
+    } as never);
+    expect(await resolveMyStudentProfile('user_1')).toEqual({
+      studentId: 'student_1',
+      schoolId: 'school_1',
+      classId: null,
+      academicYearId: null,
+    });
   });
 });

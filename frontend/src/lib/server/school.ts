@@ -4,13 +4,13 @@
 // OrganizationMember row by createdAt — a person staffing more than one
 // school has no switcher yet (documented limitation, school-settings.md).
 //
-// Deny-by-default lockdown (2026-08-30, Espace Enseignant Phase 1):
-// resolveMySchool() rejects MEMBER-role accounts linked to a portal-only
-// entity (a Teacher today; the Student Portal adds its own check here
-// later) so every existing /api/school/* route is locked down for free,
-// with zero edits to those ~65 files. Routes that must stay reachable by
-// teachers call resolveMySchoolIncludingTeacher() instead, and layer their
-// own per-classSubject/per-class check via resolveMyTeacherProfile() — see
+// Deny-by-default lockdown (2026-08-30, Espace Enseignant Phase 1; extended
+// 2026-08-30, Espace Élève Phase 1): resolveMySchool() rejects MEMBER-role
+// accounts linked to a portal-only entity (Teacher or Student) so every
+// existing /api/school/* route is locked down for free, with zero edits to
+// those ~65 files. Routes that must stay reachable by teachers call
+// resolveMySchoolIncludingTeacher() instead, and layer their own
+// per-classSubject/per-class check via resolveMyTeacherProfile() — see
 // docs/superpowers/specs/2026-08-30-espace-enseignant-design.md.
 import 'server-only';
 import { prisma } from './prisma';
@@ -34,14 +34,15 @@ async function findMembership(userId: string) {
   });
 }
 
-// Currently only checks Teacher. The Student Portal adds its own Student
-// check into this same function once Student.userId exists.
+// Currently checks Teacher; extended here (2026-08-30, Espace Élève) to also
+// check Student — either linked entity makes a MEMBER-role account
+// portal-only and denied by resolveMySchool() by default.
 async function isPortalOnlyAccount(userId: string, schoolId: string): Promise<boolean> {
-  const teacher = await prisma.teacher.findFirst({
-    where: { userId, schoolId },
-    select: { id: true },
-  });
-  return teacher !== null;
+  const [teacher, student] = await Promise.all([
+    prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } }),
+    prisma.student.findFirst({ where: { userId, schoolId }, select: { id: true } }),
+  ]);
+  return teacher !== null || student !== null;
 }
 
 export async function resolveMySchool(userId: string): Promise<MySchool | null> {
@@ -88,6 +89,42 @@ export async function resolveMyTeacherProfile(
     teacherId: teacher.id,
     classSubjectIds: teacher.classSubjects.map((cs) => cs.id),
     homeroomClassIds: teacher.homeroomClasses.map((c) => c.id),
+  };
+}
+
+export interface MyStudentProfile {
+  studentId: string;
+  schoolId: string;
+  classId: string | null;
+  academicYearId: string | null;
+}
+
+// A Student has no classId of its own — it's derived from the current-year
+// Enrollment (year-scoped studentId+classId+academicYearId). A student with
+// no Enrollment yet for the active year (e.g. mid-rollover) gets nulls
+// rather than an error — portal pages that need a class show an empty
+// state instead of crashing (see design spec's "no automatic access
+// revocation" decision — the account still logs in either way).
+export async function resolveMyStudentProfile(userId: string): Promise<MyStudentProfile | null> {
+  const student = await prisma.student.findFirst({
+    where: { userId },
+    select: {
+      id: true,
+      schoolId: true,
+      enrollments: {
+        where: { academicYear: { isActive: true } },
+        select: { classId: true, academicYearId: true },
+        take: 1,
+      },
+    },
+  });
+  if (!student) return null;
+  const enrollment = student.enrollments[0];
+  return {
+    studentId: student.id,
+    schoolId: student.schoolId,
+    classId: enrollment?.classId ?? null,
+    academicYearId: enrollment?.academicYearId ?? null,
   };
 }
 

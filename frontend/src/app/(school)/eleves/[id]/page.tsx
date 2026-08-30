@@ -16,7 +16,7 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ApiError } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -39,6 +39,16 @@ const STATUS_DOT: Record<StudentStatus, string> = {
   ENROLLED: '#16A34A',
   REPEATED_ABSENCES: '#F59E0B',
   SUSPENDED: '#9CA3AF',
+};
+
+// GET /api/school/students/[id] also returns these fields (Espace Élève
+// invite state) alongside everything StudentDetail already declares - kept
+// as a page-local extension rather than touching the shared types.ts, since
+// this profile page is the only current consumer (same convention as the
+// teacher profile page's TeacherWithAccess).
+type StudentWithAccess = StudentDetail & {
+  userId: string | null;
+  userEmailVerifiedAt: string | null;
 };
 
 function fmtDate(d: string, locale: string): string {
@@ -78,6 +88,8 @@ function StudentProfile() {
   const t = useTranslations('Eleves.profile');
   const tStatus = useTranslations('Eleves.status');
   const tOrdinal = useTranslations('Eleves.ordinal');
+  const tInvite = useTranslations('Eleves.invite');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -87,6 +99,7 @@ function StudentProfile() {
       : 'info',
   );
   const [editing, setEditing] = useState(false);
+  const [inviteSending, setInviteSending] = useState(false);
 
   function handleLoadError(err: unknown) {
     if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -96,7 +109,7 @@ function StudentProfile() {
     setLoadError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('loadError'));
     return true;
   }
-  const { data: studentData, refresh: refreshStudent } = useApi<{ student: StudentDetail }>(
+  const { data: studentData, refresh: refreshStudent } = useApi<{ student: StudentWithAccess }>(
     `/api/school/students/${params.id}`,
     { skip: !user, onError: handleLoadError },
   );
@@ -330,6 +343,72 @@ function StudentProfile() {
               <button onClick={() => setEditing(true)} className="text-xs font-medium text-primary">
                 {t('edit')}
               </button>
+            </div>
+            <div className="mb-3.5 flex items-center justify-between border-b border-border pb-3">
+              {student.userId === null ? (
+                <Button
+                  size="sm"
+                  className="w-fit"
+                  disabled={
+                    !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
+                  }
+                  title={
+                    !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
+                      ? tInvite('buttonDisabledNoEmail')
+                      : undefined
+                  }
+                  loading={inviteSending}
+                  onClick={async () => {
+                    setInviteSending(true);
+                    try {
+                      await api(`/api/school/students/${student.id}/invite`, { method: 'POST' });
+                      toast(tInvite('sentToast'), 'success');
+                      void refreshStudent();
+                    } catch (err) {
+                      toast(
+                        err instanceof ApiError && err.code === 'EMAIL_ALREADY_IN_USE'
+                          ? tInvite('errorEmailInUse')
+                          : err instanceof ApiError && err.code === 'NO_INVITE_TARGET'
+                            ? tInvite('errorNoTarget')
+                            : tCommon('errors.network'),
+                        'error',
+                      );
+                    } finally {
+                      setInviteSending(false);
+                    }
+                  }}
+                >
+                  {tInvite('button')}
+                </Button>
+              ) : student.userEmailVerifiedAt ? (
+                <span className="text-xs text-muted-foreground">{tInvite('activeSince')}</span>
+              ) : (
+                <>
+                  <span className="text-xs text-muted-foreground">{tInvite('pendingSince')}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-fit"
+                    loading={inviteSending}
+                    onClick={async () => {
+                      setInviteSending(true);
+                      try {
+                        await api(`/api/school/students/${student.id}/invite`, {
+                          method: 'POST',
+                        });
+                        toast(tInvite('resentToast'), 'success');
+                        void refreshStudent();
+                      } catch {
+                        toast(tCommon('errors.network'), 'error');
+                      } finally {
+                        setInviteSending(false);
+                      }
+                    }}
+                  >
+                    {tInvite('resendButton')}
+                  </Button>
+                </>
+              )}
             </div>
             <InfoRow
               label={t('fields.fullName')}

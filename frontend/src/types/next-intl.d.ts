@@ -33,6 +33,7 @@ import type appreciations from '@/messages/fr/appreciations.json';
 import type timetable from '@/messages/fr/timetable.json';
 import type setPassword from '@/messages/fr/setPassword.json';
 import type teacherPortal from '@/messages/fr/teacherPortal.json';
+import type setPasswordEleve from '@/messages/fr/setPasswordEleve.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -67,6 +68,7 @@ declare module 'next-intl' {
       Timetable: typeof timetable;
       SetPassword: typeof setPassword;
       TeacherPortal: typeof teacherPortal;
+      SetPasswordEleve: typeof setPasswordEleve;
     };
   }
 }

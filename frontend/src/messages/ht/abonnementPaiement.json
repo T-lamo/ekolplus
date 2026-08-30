@@ -11,7 +11,7 @@
     "sslBadge": "Koneksyon SSL 256-bit"
   },
   "banners": {
-    "canceled": "Peman anile — okenn montan pa t prelve. Ou ka repran nenpòt lè.",
+    "canceled": "Peman anile : okenn montan pa t prelve. Ou ka repran nenpòt lè.",
     "alreadyPro": "Lekòl sa a deja abòne sou plan {plan}. Jere sik la, kat la ak fakti yo soti nan paj <link>Abònman</link> la.",
     "notOwner": "Se sèlman pwopriyetè etablisman an ki ka abòne a yon plan."
   },
@@ -20,7 +20,7 @@
     "subtitle": "Pri a {amount} pou chak elèv / mwa",
     "ariaLabel": "Plan",
     "starterName": "Starter",
-    "starterDescCurrent": "Jiska 50 elèv · gratis pou tout tan — plan aktyèl ou",
+    "starterDescCurrent": "Jiska 50 elèv · gratis pou tout tan · plan aktyèl ou",
     "starterDescOther": "Jiska 50 elèv · plan repli apre yon desann",
     "starterPrice": "0 $",
     "starterDisabledCurrent": "Ou deja sou Starter",
@@ -39,7 +39,7 @@
     },
     "estimateAnnual": "Estimasyon anyèl",
     "estimateMonthly": "Estimasyon chak mwa",
-    "seatsHint": "Kantite syèj yo fakti swiv efektif ou yo otomatikman (sinkwonizasyon chak jou, san pworata sipriz) — pa bezwen ajiste l manyèlman.",
+    "seatsHint": "Kantite syèj yo fakti swiv efektif ou yo otomatikman (sinkwonizasyon chak jou, san pworata sipriz) : pa bezwen ajiste l manyèlman.",
     "unitPerYear": "/ an",
     "unitPerMonth": "/ mwa"
   },
@@ -84,7 +84,7 @@
     "perMonth": "pa mwa",
     "taxIncluded": "tax enkli",
     "savingBanner": "Ou ekonomize {amount} vs. chak mwa",
-    "trialBanner": "Esè gratis {days} jou — premye prelèvman {date}",
+    "trialBanner": "Esè gratis {days} jou : premye prelèvman {date}",
     "includedInPlan": "Enkli nan plan an"
   },
   "cta": {
@@ -111,7 +111,7 @@
     "activatedTitle": "Abònman aktive",
     "confirmedTitle": "Peman konfime",
     "activatedBody": "Lekòl ou a kounye a sou plan {plan}. Yon resi te voye ba ou pa Stripe.",
-    "pollingBody": "Mèsi ! Stripe konfime abònman ou — aktivasyon an kou, kèk segond…",
+    "pollingBody": "Mèsi ! Stripe konfime abònman ou : aktivasyon an kou, kèk segond…",
     "timeoutBody": "Peman an anrejistre bò kote Stripe ; aktivasyon an ap parèt talè konsa (sinkwonizasyon otomatik).",
     "viewSubscription": "Gade abònman m"
   },

@@ -1,10 +1,10 @@
 {
   "title": "Attendance",
   "subtitle": "Track absences and tardiness",
-  "yearSuffix": " — School year {year}",
+  "yearSuffix": " · School year {year}",
   "export": "Export",
   "loadError": "Unable to load attendance.",
-  "emptyClasses": "No class configured yet — create a class first in \"Classes\".",
+  "emptyClasses": "No class configured yet: create a class first in \"Classes\".",
   "status": {
     "PRESENT": "Present",
     "ABSENT": "Absent",
@@ -59,9 +59,9 @@
     "absences": "Absences",
     "noStudentsInClass": "No students in this class.",
     "noResults": "No results.",
-    "paginationSummary": "Showing {from} to {to} of {total} students — Average attendance rate: {rate}",
-    "dayFuture": "Upcoming day — cannot be edited",
-    "dayClickToChange": "{status} — click to change"
+    "paginationSummary": "Showing {from} to {to} of {total} students · Average attendance rate: {rate}",
+    "dayFuture": "Upcoming day · cannot be edited",
+    "dayClickToChange": "{status} · click to change"
   },
   "actions": {
     "viewDetail": "View details",
@@ -84,7 +84,7 @@
     "absences": "Absences"
   },
   "offline": {
-    "label": "Attendance — {name} ({day})",
+    "label": "Attendance · {name} ({day})",
     "labelFallback": "Attendance"
   },
   "stats": {
@@ -106,7 +106,7 @@
       "one": "{count} student to watch",
       "other": "{count} students to watch"
     },
-    "thresholdSubtitle": "— rate below {rate}% or {absences}+ absences this term",
+    "thresholdSubtitle": "· rate below {rate}% or {absences}+ absences this term",
     "student": "Student",
     "reason": "Reason",
     "rate": "Rate",

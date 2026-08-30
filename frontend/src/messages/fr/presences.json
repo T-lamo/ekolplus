@@ -1,10 +1,10 @@
 {
   "title": "Présences",
   "subtitle": "Suivi des absences et retards",
-  "yearSuffix": " — Année scolaire {year}",
+  "yearSuffix": " · Année scolaire {year}",
   "export": "Exporter",
   "loadError": "Impossible de charger les présences.",
-  "emptyClasses": "Aucune classe configurée — créez d'abord une classe dans « Classes ».",
+  "emptyClasses": "Aucune classe configurée : créez d'abord une classe dans « Classes ».",
   "status": {
     "PRESENT": "Présent",
     "ABSENT": "Absent",
@@ -59,9 +59,9 @@
     "absences": "Absences",
     "noStudentsInClass": "Aucun élève dans cette classe.",
     "noResults": "Aucun résultat.",
-    "paginationSummary": "Affichage de {from} à {to} sur {total} élèves — Taux moyen de présence : {rate}",
-    "dayFuture": "Jour à venir — non modifiable",
-    "dayClickToChange": "{status} — cliquer pour changer"
+    "paginationSummary": "Affichage de {from} à {to} sur {total} élèves · Taux moyen de présence : {rate}",
+    "dayFuture": "Jour à venir · non modifiable",
+    "dayClickToChange": "{status} · cliquer pour changer"
   },
   "actions": {
     "viewDetail": "Voir le détail",
@@ -84,7 +84,7 @@
     "absences": "Absences"
   },
   "offline": {
-    "label": "Présence — {name} ({day})",
+    "label": "Présence · {name} ({day})",
     "labelFallback": "Présence"
   },
   "stats": {
@@ -106,7 +106,7 @@
       "one": "{count} élève à surveiller",
       "other": "{count} élèves à surveiller"
     },
-    "thresholdSubtitle": "— taux < {rate}% ou {absences}+ absences ce trimestre",
+    "thresholdSubtitle": "· taux < {rate}% ou {absences}+ absences ce trimestre",
     "student": "Élève",
     "reason": "Motif",
     "rate": "Taux",

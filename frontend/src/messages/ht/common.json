@@ -43,7 +43,7 @@
     "nextYears": "12 ane apre yo",
     "previousYear": "Ane anvan an",
     "nextYear": "Ane apre a",
-    "invalidDate": "Dat envalid — itilize fòma jj/mm/aaaa a",
+    "invalidDate": "Dat envalid : itilize fòma jj/mm/aaaa a",
     "invalidDateRange": "(ant {min} ak {max})"
   },
   "phoneInput": {

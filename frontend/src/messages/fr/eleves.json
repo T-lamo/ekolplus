@@ -40,13 +40,13 @@
       "one": "{count} résultat",
       "other": "{count} résultats"
     },
-    "emptyNone": "Aucun élève — ajoutez le premier.",
+    "emptyNone": "Aucun élève : ajoutez le premier.",
     "emptyFiltered": "Aucun résultat.",
     "noClass": "Sans classe",
     "birthPrefix": "Naissance",
     "help": {
       "pageOverview": "Retrouvez ici tous les élèves inscrits dans l'établissement. Recherchez par nom, filtrez par classe ou par statut, et utilisez « Ajouter un élève » pour créer une nouvelle fiche ou « Exporter » pour télécharger la liste en CSV.",
-      "statusColumn": "Ce statut est défini manuellement depuis la fiche de l'élève (bouton « Modifier ») — il n'est pas calculé automatiquement à partir des présences enregistrées dans le module Présences."
+      "statusColumn": "Ce statut est défini manuellement depuis la fiche de l'élève (bouton « Modifier ») : il n'est pas calculé automatiquement à partir des présences enregistrées dans le module Présences."
     },
     "table": {
       "student": "Élève",
@@ -85,9 +85,15 @@
       "options": "Options"
     },
     "statusOptions": {
-      "ENROLLED": { "desc": "Élève actif dans le système" },
-      "REPEATED_ABSENCES": { "desc": "Assiduité à surveiller" },
-      "SUSPENDED": { "desc": "Accès temporairement restreint" }
+      "ENROLLED": {
+        "desc": "Élève actif dans le système"
+      },
+      "REPEATED_ABSENCES": {
+        "desc": "Assiduité à surveiller"
+      },
+      "SUSPENDED": {
+        "desc": "Accès temporairement restreint"
+      }
     },
     "editTitle": "Modifier le profil",
     "addTitle": "Ajouter un élève",
@@ -104,7 +110,7 @@
       "title": "Informations personnelles",
       "subtitle": "Identité et coordonnées de l'élève",
       "photoLabel": "Photo de l'élève",
-      "photoHint": "JPG, PNG ou WebP — max 10 Mo",
+      "photoHint": "JPG, PNG ou WebP · max 10 Mo",
       "firstName": "Prénom",
       "lastName": "Nom de famille",
       "dateOfBirth": "Date de naissance",
@@ -262,7 +268,7 @@
       "good": "Bien (12+)",
       "max": "Max : 20 pts"
     },
-    "ranking": "Classement — {className}",
+    "ranking": "Classement · {className}",
     "noRanking": "Aucun classement disponible.",
     "youAreViewing": "Vous consultez",
     "classAverageShort": "Moy. de classe",
@@ -275,7 +281,7 @@
         "other": "{count} matières en dessous de la moyenne (8/20). Suivi renforcé recommandé pour {names}."
       }
     },
-    "goals": "Objectifs — {term}",
+    "goals": "Objectifs · {term}",
     "defineGoal": "Définir",
     "noGoals": "Aucun objectif défini.",
     "current": "Actuel : {value}"
@@ -302,7 +308,7 @@
       "teacher": "Enseignant"
     },
     "overallAverage": "Moyenne générale",
-    "rank": "— Rang : {rank} / {rankedCount}"
+    "rank": "· Rang : {rank} / {rankedCount}"
   },
   "attendanceTab": {
     "journal": "Journal de présence",
@@ -315,7 +321,7 @@
   },
   "bulletins": {
     "loadError": "Impossible de charger les bulletins.",
-    "empty": "Aucune période scolaire configurée — les bulletins apparaîtront une fois l'année scolaire mise en place.",
+    "empty": "Aucune période scolaire configurée : les bulletins apparaîtront une fois l'année scolaire mise en place.",
     "generated": "Généré",
     "pending": "En attente",
     "summary": "Moyenne {average}/20 · Rang {rank}/{rankedCount}",

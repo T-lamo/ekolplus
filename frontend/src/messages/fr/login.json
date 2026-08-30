@@ -25,7 +25,7 @@
   "submitting": "Connexion…",
   "noAccount": "Pas encore de compte ?",
   "contactAdmin": "Contacter l'administrateur",
-  "securityNote": "Connexion sécurisée — vos données sont chiffrées",
+  "securityNote": "Connexion sécurisée : vos données sont chiffrées",
   "errors": {
     "TOO_MANY_LOGIN_ATTEMPTS": "Trop de tentatives. Réessayez dans quelques minutes.",
     "LOCKED_OUT": "Compte temporairement verrouillé après plusieurs échecs. Réessayez dans quelques minutes.",

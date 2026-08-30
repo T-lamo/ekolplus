@@ -77,7 +77,7 @@ describe('planPresentation — Starter upsell', () => {
   });
   it('at 80 % of the cap: urgency copy with the remaining seats (plural)', () => {
     expect(planPresentation(snap({ studentCount: 40 }), t, tPlan, bcp47)).toMatchObject({
-      subtitle: '40/50 élèves — plus que 10 places',
+      subtitle: '40/50 élèves · plus que 10 places',
       tone: 'gold',
     });
     expect(planPresentation(snap({ studentCount: 39 }), t, tPlan, bcp47)?.subtitle).toBe(
@@ -86,12 +86,12 @@ describe('planPresentation — Starter upsell', () => {
   });
   it('one seat left: singular', () => {
     expect(planPresentation(snap({ studentCount: 49 }), t, tPlan, bcp47)?.subtitle).toBe(
-      '49/50 élèves — plus que 1 place',
+      '49/50 élèves · plus que 1 place',
     );
   });
   it('cap reached (or exceeded): alert tone, enrolments blocked', () => {
     expect(planPresentation(snap({ studentCount: 50 }), t, tPlan, bcp47)).toMatchObject({
-      subtitle: 'Plafond atteint (50/50) — inscriptions bloquées',
+      subtitle: 'Plafond atteint (50/50) · inscriptions bloquées',
       tone: 'alert',
       cta: 'Découvrir',
     });
@@ -129,7 +129,7 @@ describe('planPresentation — Starter upsell', () => {
         bcp47,
       ),
     ).toMatchObject({
-      subtitle: '62 élèves pour 50 places — inscriptions bloquées',
+      subtitle: '62 élèves pour 50 places · inscriptions bloquées',
       tone: 'alert',
       cta: 'Réactiver',
     });
@@ -150,7 +150,7 @@ describe('planPresentation — Starter upsell', () => {
     ).toEqual({
       kind: 'upsell',
       title: 'Établissement Pro suspendu',
-      subtitle: 'Paiement en échec — régulariser',
+      subtitle: 'Paiement en échec · régulariser',
       tone: 'alert',
       shortLabel: 'Établissement Pro · À régulariser',
       cta: 'Régulariser',

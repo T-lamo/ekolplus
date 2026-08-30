@@ -5,10 +5,10 @@
   },
   "niveaux": {
     "title": "Nivo yo",
-    "subtitle": "Lòd nivo lekòl yo, soti nan premye a rive nan dènye a — trennen yon liy pou reòdone. Sèvi pou sijere pwomosyon yo lè n ap pase nan ane eskolè k ap vini an.",
+    "subtitle": "Lòd nivo lekòl yo, soti nan premye a rive nan dènye a : trennen yon liy pou reòdone. Sèvi pou sijere pwomosyon yo lè n ap pase nan ane eskolè k ap vini an.",
     "addLevel": "Ajoute yon nivo",
     "loadError": "Nou pa t kapab chaje nivo yo.",
-    "empty": "Pa gen nivo konfigire — ajoute premye nivo ou avèk bouton anwo a.",
+    "empty": "Pa gen nivo konfigire : ajoute premye nivo ou avèk bouton anwo a.",
     "reorderAria": "Reòdone {name}",
     "renameAria": "Chanje non {name}",
     "deleteAria": "Efase {name}",
@@ -26,7 +26,7 @@
     "cancel": "Anile",
     "errors": {
       "nameTaken": "Nivo sa a egziste deja.",
-      "invalidSet": "Lis nivo yo chanje — rechaje paj la epi eseye ankò.",
+      "invalidSet": "Lis nivo yo chanje : rechaje paj la epi eseye ankò.",
       "orgRoleInsufficient": "Ou pa gen dwa pou modifye nivo yo.",
       "validationFailed": "Non envalid (1 rive 40 karaktè)."
     },
@@ -70,13 +70,13 @@
       },
       "searchPlaceholder": "Chèche yon klas...",
       "allLevels": "Tout nivo",
-      "multiYearComingSoon": "Seleksyonè plizyè ane ap vini — yon sèl ane eskolè aktif pou kounye a",
+      "multiYearComingSoon": "Seleksyonè plizyè ane ap vini : yon sèl ane eskolè aktif pou kounye a",
       "noActiveYear": "Pa gen ane aktif",
       "resultCount": {
         "one": "{count} klas",
         "other": "{count} klas"
       },
-      "emptyNoClasses": "Pa gen klas — ajoute premye a.",
+      "emptyNoClasses": "Pa gen klas : ajoute premye a.",
       "emptyNoResults": "Pa gen rezilta.",
       "roomUnset": "Sal pa presize",
       "homeroomSuffix": "· Pwofesè prensipal",
@@ -114,7 +114,7 @@
     },
     "create": {
       "meta": "Nouvo klas",
-      "metaWithYear": "Nouvo klas — Ane eskolè {year}",
+      "metaWithYear": "Nouvo klas · Ane eskolè {year}",
       "cancel": "Anile",
       "save": "Anrejistre klas la",
       "created": "Klas kreye."
@@ -142,15 +142,15 @@
         "levelOtherPlaceholder": "Antre nivo a",
         "levelOtherAria": "Nivo (lòt)",
         "levelFreePlaceholder": "3yèm",
-        "noLevelCatalog": "Pa gen katalòg nivo —",
+        "noLevelCatalog": "Pa gen katalòg nivo :",
         "noLevelCatalogLink": "defini nivo lekòl la",
         "roomLabel": "Sal klas",
         "roomNone": "Pa gen sal afekte",
         "roomOther": "Lòt kote…",
         "roomOtherPlaceholder": "Antre kote a (egz. Lakou, Sal pawas)",
         "roomOtherAria": "Sal (lòt kote)",
-        "roomFreePlaceholder": "Sal 12 — Bilding B",
-        "noRoomCatalog": "Pa gen katalòg sal —",
+        "roomFreePlaceholder": "Sal 12 · Bilding B",
+        "noRoomCatalog": "Pa gen katalòg sal :",
         "noRoomCatalogLink": "defini sal lekòl la",
         "placesSuffix": "plas",
         "roomTooSmall": "Sal sa a gen sèlman {roomCapacity} plas pou {classCapacity} elèv.",
@@ -161,7 +161,7 @@
         "trackLabel": "Filyè / Seri",
         "trackPlaceholder": "Syans, Lèt, NS…",
         "yearLabel": "Ane eskolè",
-        "yearHint": "Ane aktif — modifyab nan Paramèt › Ane eskolè",
+        "yearHint": "Ane aktif : modifyab nan Paramèt › Ane eskolè",
         "noActiveYear": "Pa gen ane aktif",
         "errors": {
           "nameRequired": "Non an obligatwa.",
@@ -177,7 +177,7 @@
         "teacherLabel": "Pwofesè prensipal",
         "teacherHint": "Pwofesè sa a ap resevwa bilten ak rapò klas la",
         "teacherPlaceholder": "Chèche yon pwofesè…",
-        "teacherNone": "— Okenn —",
+        "teacherNone": "Okenn",
         "subjectsLabel": "Matyè li anseye",
         "subjectsHint": "dapre afektasyon li yo",
         "chooseTeacherHint": "Chwazi yon pwofesè pou wè matyè li yo"
@@ -186,8 +186,8 @@
         "title": "Matyè klas la",
         "subtitle": "Chwazi matyè yo anseye nan klas sa a.",
         "coefficientHint": "Kwef. {coefficient}",
-        "lockedHint": "Gen nòt ki egziste deja — yo pa ka retire matyè a ankò",
-        "noSubjectsPlaceholder": "Pa gen matyè aktif — kreye matyè lekòl la anvan",
+        "lockedHint": "Gen nòt ki egziste deja : yo pa ka retire matyè a ankò",
+        "noSubjectsPlaceholder": "Pa gen matyè aktif : kreye matyè lekòl la anvan",
         "placeholder": "Chwazi matyè klas la…",
         "searchPlaceholder": "Chèche yon matyè…",
         "emptyLabel": "Pa gen matyè yo jwenn",
@@ -207,8 +207,8 @@
           "coefficient": "Kwef.",
           "weeklyHours": "èdtan / sm",
           "lockAria": "Kadna",
-          "teacherNone": "— Okenn —",
-          "teacherPlaceholderMobile": "Pwofesè — Okenn",
+          "teacherNone": "Okenn",
+          "teacherPlaceholderMobile": "Pwofesè · Okenn",
           "coefficientAria": "Kwefisyan pou {subject}",
           "weeklyHoursAria": "Èdtan pou chak semèn pou {subject}",
           "lockedAria": "Gen nòt ki egziste deja pou matyè sa a",
@@ -218,7 +218,7 @@
       },
       "notes": {
         "title": "Konfigirasyon nòt yo",
-        "subtitle": "Paramèt evalyasyon eritye nan men lekòl la — menm jan pou tout klas.",
+        "subtitle": "Paramèt evalyasyon eritye nan men lekòl la : menm jan pou tout klas.",
         "scale": "Baram",
         "scaleDefault": "Sou 20",
         "periods": "Peryòd",
@@ -303,7 +303,7 @@
       "subjectDeleted": "Matyè efase.",
       "unarchived": "Matyè dezachive.",
       "archived": "Matyè achive.",
-      "duplicateComingSoon": "Duplikasyon matyè — ap vini.",
+      "duplicateComingSoon": "Duplikasyon matyè · ap vini.",
       "csv": {
         "subject": "Matyè",
         "code": "Kòd",
@@ -337,7 +337,7 @@
         "one": "{count} matyè",
         "other": "{count} matyè"
       },
-      "emptyNoSubjects": "Pa gen matyè — ajoute premye a.",
+      "emptyNoSubjects": "Pa gen matyè : ajoute premye a.",
       "emptyNoResults": "Pa gen rezilta.",
       "noClasses": "Pa gen klas",
       "unassignedLabel": "Pa afekte",
@@ -352,7 +352,7 @@
       },
       "help": {
         "pageOverview": "Chèche epi filtre matyè yo pa domèn oswa pa estati (aktif, pa afekte, achive), epi chanje ant vi griy ak vi tablo.",
-        "coefficientColumn": "Kounye a, kwefisyan yo ak pwofesè yo afekte konfigire pa klas, dirèkteman nan fich matyè a oswa nan tablo « Detay matyè yo » chak klas — ansyen ekran Kwefisyan ak Afektasyon yo redirije bò isit la kounye a."
+        "coefficientColumn": "Kounye a, kwefisyan yo ak pwofesè yo afekte konfigire pa klas, dirèkteman nan fich matyè a oswa nan tablo « Detay matyè yo » chak klas : ansyen ekran Kwefisyan ak Afektasyon yo redirije bò isit la kounye a."
       }
     },
     "status": {
@@ -372,7 +372,7 @@
     "pageShell": {
       "addTitle": "Ajoute yon matyè",
       "createMeta": "Nouvo matyè",
-      "createMetaWithYear": "Nouvo matyè — Ane eskolè {year}",
+      "createMetaWithYear": "Nouvo matyè · Ane eskolè {year}",
       "coeffPrefix": "Kwef. {coefficient}",
       "yearPrefix": "Ane {year}",
       "disabledHint": "Anrejistre matyè a pou kontinye"
@@ -469,11 +469,11 @@
         "teacherLabel": "Pwofesè responsab",
         "teacherHint": "Pwofesè a dwe deja kreye nan lis pwofesè yo",
         "teacherPlaceholder": "Chwazi yon pwofesè",
-        "teacherNone": "— Okenn —",
+        "teacherNone": "Okenn",
         "roomLabel": "Sal / Tip lokal ki nesesè",
         "roomHint": "Egzanp : Anfiteyat, Laboratwa, Sal enfòmatik",
         "roomPlaceholder": "Sal klas estanda",
-        "roomNone": "— Pa presize —",
+        "roomNone": "Pa presize",
         "prerequisitesLabel": "Prealab",
         "prerequisitesHint": "Matyè ki dwe validè anvan (egz. avwa validè MAT-001 pou MATH202)"
       },
@@ -508,7 +508,7 @@
       },
       "classesCard": {
         "title": "Klas konsène yo",
-        "subtitle": "Seleksyon rapid — detay nan onglè Afektasyon.",
+        "subtitle": "Seleksyon rapid : detay nan onglè Afektasyon.",
         "empty": "Pa gen klas nan ane eskolè aktif la.",
         "studentCount": {
           "one": "{count} elèv",
@@ -686,9 +686,9 @@
         "title": "Pwogram pa trimès",
         "description": "Ekri chapit ak objektif chak trimès. Trennen-lage pou reklase.",
         "import": "Enpòte",
-        "importToast": "Enpòte pwogram — talè konsa.",
+        "importToast": "Enpòte pwogram · talè konsa.",
         "duplicate": "Duplike ane pase a",
-        "duplicateToast": "Duplikasyon ane pase a — talè konsa."
+        "duplicateToast": "Duplikasyon ane pase a · talè konsa."
       },
       "empty": {
         "title": "Pa gen peryòd eskolè",
@@ -778,7 +778,7 @@
       "inactive": "Inaktif"
     },
     "empty": {
-      "noRooms": "Pa gen sal — ajoute premye a pou ofri l pou klas yo ak orè a.",
+      "noRooms": "Pa gen sal : ajoute premye a pou ofri l pou klas yo ak orè a.",
       "noResults": "Pa gen rezilta."
     },
     "card": {
@@ -857,7 +857,7 @@
     "subtitle": "Chwazi yon modèl pou itilize oswa pèsonalize pou bilten lekòl ou yo",
     "loadError": "Pa kapab chaje modèl bilten yo.",
     "toast": {
-      "forked": "Modèl la dupike — kounye a ou ka pèsonalize l.",
+      "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
       "forkError": "Erè pandan y ap dupike modèl la.",
       "activated": "Modèl defini kòm aktif.",
       "activateError": "Erè pandan aktivasyon modèl la.",
@@ -874,9 +874,9 @@
       "personal": "Modèl mwen yo",
       "global": "Modèl global yo"
     },
-    "globalHint": "Dupike yon modèl pou pèsonalize l — modèl global yo pa modifyab dirèkteman.",
+    "globalHint": "Dupike yon modèl pou pèsonalize l : modèl global yo pa modifyab dirèkteman.",
     "empty": {
-      "personal": "Ou poko gen modèl pèsonalize — dupike yon modèl global pou kòmanse.",
+      "personal": "Ou poko gen modèl pèsonalize : dupike yon modèl global pou kòmanse.",
       "global": "Pa gen modèl global disponib."
     },
     "menu": {
@@ -892,7 +892,7 @@
     },
     "editLink": "Modifye",
     "help": {
-      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou — ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka aktif nan yon moman.",
+      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou : ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka aktif nan yon moman.",
       "activeTemplate": "Modèl aktif la se sa k ap sèvi pou jenere bilten ofisyèl elèv ou yo. Pou aktive yon lòt, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm aktif »."
     },
     "block": {
@@ -911,7 +911,7 @@
         "saved": "Modèl anrejistre.",
         "saveError": "Erè pandan anrejistreman an.",
         "exportError": "Erè pandan ekspòtasyon PDF la.",
-        "forked": "Modèl la dupike — kounye a ou ka pèsonalize l.",
+        "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
         "forkError": "Erè pandan y ap dupike modèl la.",
         "activated": "Modèl defini kòm aktif.",
         "activateError": "Erè pandan aktivasyon modèl la.",
@@ -921,12 +921,12 @@
       },
       "mobileGate": {
         "title": "Editè disponib sou gwo ekran",
-        "description": "Mizanpaj modèl bilten an fèt sou òdinatè oswa tablèt — retounen isit sou yon ekran pi laj.",
+        "description": "Mizanpaj modèl bilten an fèt sou òdinatè oswa tablèt : retounen isit sou yon ekran pi laj.",
         "back": "Retounen nan modèl yo"
       },
       "back": "Retounen",
       "nameAria": "Non modèl la",
-      "readOnlyBadge": "Lekti sèlman — modèl global",
+      "readOnlyBadge": "Lekti sèlman · modèl global",
       "orientation": {
         "landscape": "Peyizaj",
         "portrait": "Pòtrè"
@@ -968,14 +968,14 @@
         "logoTitle": "Logo etablisman an",
         "logoLabel": "Logo",
         "logoSizeLabel": "Gwosè logo a",
-        "imageHint": "PNG, JPG oswa WebP — 10 Mo maksimòm",
+        "imageHint": "PNG, JPG oswa WebP · 10 Mo maksimòm",
         "signatureTitle": "Siyati direktè a",
         "signatureLabel": "Siyati",
         "signatureSizeLabel": "Gwosè siyati a",
         "textTitle": "Tèks bilten an",
         "titleLabel": "Tit bilten an",
         "footerLabel": "Mesaj pye paj",
-        "footerPlaceholder": "Opsyonèl — egz. « Ansanm pou reyisit »",
+        "footerPlaceholder": "Opsyonèl · egz. « Ansanm pou reyisit »",
         "signaturesTitle": "Siyati",
         "signatureDirector": "Direktè",
         "signatureHomeroom": "Titilè klas",

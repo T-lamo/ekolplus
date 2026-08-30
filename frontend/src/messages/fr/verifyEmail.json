@@ -15,7 +15,7 @@
     "submitting": "Enregistrement…",
     "skip": "Plus tard",
     "errors": {
-      "PASSWORD_BANNED": "Ce mot de passe est trop courant — choisissez-en un autre.",
+      "PASSWORD_BANNED": "Ce mot de passe est trop courant : choisissez-en un autre.",
       "PASSWORD_TOO_SHORT": "Mot de passe trop court.",
       "PASSWORD_PWNED": "Ce mot de passe est apparu dans une fuite de données connue."
     }
@@ -26,7 +26,7 @@
   },
   "errors": {
     "VERIFICATION_CODE_INVALID": "Code invalide. Vérifiez votre saisie.",
-    "VERIFICATION_CODE_EXPIRED": "Ce code a expiré — demandez-en un nouveau.",
+    "VERIFICATION_CODE_EXPIRED": "Ce code a expiré : demandez-en un nouveau.",
     "TOO_MANY_VERIFY_ATTEMPTS": "Trop de tentatives. Réessayez dans quelques minutes."
   }
 }

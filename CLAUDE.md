@@ -184,3 +184,4 @@ When the user asks for a capability the app does not already have, recommend the
 - Vitest for unit tests; setup file at [frontend/vitest.setup.ts](frontend/vitest.setup.ts), shared mocks under `frontend/src/test-utils/` (alias `server-only` to a no-op for jsdom).
 - Conventional Commits.
 - Node ≥ 20, pnpm ≥ 9 (see `engines` in [package.json](package.json)).
+- **User-facing text must not read as AI-generated.** Nothing shown to a school's staff, teachers, or students — UI copy, `frontend/src/messages/*/*.json`, email templates, PDF/report-card text, error messages — should carry obvious AI writing tells. In particular, don't use em dashes (—) in any user-facing string; prefer a period, comma, colon, or `·` (the app's own established separator for short label pairings, e.g. `"{plan}/20 · {term}"`) depending on what the sentence needs. This has no bearing on code comments, commit messages, or this file.

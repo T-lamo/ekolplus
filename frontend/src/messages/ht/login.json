@@ -26,7 +26,7 @@
   "submitting": "Ap konekte…",
   "noAccount": "Ou pa gen kont ankò?",
   "contactAdmin": "Kontakte administratè a",
-  "securityNote": "Koneksyon an sekirize — done ou yo kripte",
+  "securityNote": "Koneksyon an sekirize : done ou yo kripte",
   "errors": {
     "TOO_MANY_LOGIN_ATTEMPTS": "Twòp tantativ. Eseye ankò nan kèk minit.",
     "LOCKED_OUT": "Kont lan bloke pou kèk tan apre plizyè eseye ki echwe. Eseye ankò nan kèk minit.",

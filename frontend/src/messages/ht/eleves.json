@@ -41,13 +41,13 @@
       "one": "{count} rezilta",
       "other": "{count} rezilta"
     },
-    "emptyNone": "Pa gen elèv — ajoute premye a.",
+    "emptyNone": "Pa gen elèv : ajoute premye a.",
     "emptyFiltered": "Pa gen rezilta.",
     "noClass": "Pa gen klas",
     "birthPrefix": "Nesans",
     "help": {
       "pageOverview": "Isit la ou jwenn tout elèv ki enskri nan lekòl la. Chèche pa non, filtre pa klas oswa estati, epi itilize « Ajoute yon elèv » pou kreye yon nouvo fich oswa « Ekspòte » pou telechaje lis la an CSV.",
-      "statusColumn": "Estati sa a defini alamen nan fich elèv la (aksyon « Modifye ») — li pa kalkile otomatikman apati prezans ki anrejistre nan modil Prezans lan."
+      "statusColumn": "Estati sa a defini alamen nan fich elèv la (aksyon « Modifye ») : li pa kalkile otomatikman apati prezans ki anrejistre nan modil Prezans lan."
     },
     "table": {
       "student": "Elèv",
@@ -86,9 +86,15 @@
       "options": "Opsyon"
     },
     "statusOptions": {
-      "ENROLLED": { "desc": "Elèv aktif nan sistèm nan" },
-      "REPEATED_ABSENCES": { "desc": "Asiduite pou siveye" },
-      "SUSPENDED": { "desc": "Aksè restreyn tanporèman" }
+      "ENROLLED": {
+        "desc": "Elèv aktif nan sistèm nan"
+      },
+      "REPEATED_ABSENCES": {
+        "desc": "Asiduite pou siveye"
+      },
+      "SUSPENDED": {
+        "desc": "Aksè restreyn tanporèman"
+      }
     },
     "editTitle": "Modifye pwofil la",
     "addTitle": "Ajoute yon elèv",
@@ -105,7 +111,7 @@
       "title": "Enfòmasyon pèsonèl",
       "subtitle": "Idantite ak kontak elèv la",
       "photoLabel": "Foto elèv la",
-      "photoHint": "JPG, PNG oswa WebP — maksimòm 10 Mo",
+      "photoHint": "JPG, PNG oswa WebP · maksimòm 10 Mo",
       "firstName": "Prenon",
       "lastName": "Non fanmi",
       "dateOfBirth": "Dat nesans",
@@ -263,7 +269,7 @@
       "good": "Byen (12+)",
       "max": "Maks : 20 pwen"
     },
-    "ranking": "Klasman — {className}",
+    "ranking": "Klasman · {className}",
     "noRanking": "Pa gen klasman disponib.",
     "youAreViewing": "W ap konsilte",
     "classAverageShort": "Mwayèn klas",
@@ -276,7 +282,7 @@
         "other": "{count} matyè anba mwayèn nan (8/20). Swivi ranfòse rekòmande pou {names}."
       }
     },
-    "goals": "Objektif — {term}",
+    "goals": "Objektif · {term}",
     "defineGoal": "Defini",
     "noGoals": "Pa gen objektif defini.",
     "current": "Aktyèl : {value}"
@@ -303,7 +309,7 @@
       "teacher": "Pwofesè"
     },
     "overallAverage": "Mwayèn jeneral",
-    "rank": "— Ran : {rank} / {rankedCount}"
+    "rank": "· Ran : {rank} / {rankedCount}"
   },
   "attendanceTab": {
     "journal": "Jounal prezans",
@@ -316,7 +322,7 @@
   },
   "bulletins": {
     "loadError": "Nou pa ka chaje bilten yo.",
-    "empty": "Pa gen peryòd eskolè konfigire — bilten yo ap parèt yon fwa ane eskolè a mete an plas.",
+    "empty": "Pa gen peryòd eskolè konfigire : bilten yo ap parèt yon fwa ane eskolè a mete an plas.",
     "generated": "Jenere",
     "pending": "An atant",
     "summary": "Mwayèn {average}/20 · Ran {rank}/{rankedCount}",

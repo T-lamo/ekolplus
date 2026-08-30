@@ -43,8 +43,8 @@
     "configureFees": "Konfigirasyon plan yo",
     "loadError": "Nou pa ka chaje frè eskolarite yo.",
     "alertBanner": {
-      "one": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}",
-      "other": "{n} elèv an reta nan peman — {tranche} te dwe fèt {dueDate}"
+      "one": "{n} elèv an reta nan peman : {tranche} te dwe fèt {dueDate}",
+      "other": "{n} elèv an reta nan peman : {tranche} te dwe fèt {dueDate}"
     },
     "alertBannerSub": "Total montan ki poko peye : {amount}",
     "kpiTotalCollected": "Total Kolekte",
@@ -135,7 +135,7 @@
     "reminderCritical": "Alèt kritik",
     "reminderCriticalDesc": "An reta plis pase 30 jou",
     "reminderChannelWhatsapp": "Rapèl atravè WhatsApp",
-    "reminderChannelWhatsappDesc": "Peye (frè Meta) — otreman voye pa imèl, gratis",
+    "reminderChannelWhatsappDesc": "Peye (frè Meta) : otreman voye pa imèl, gratis",
     "byClassTitle": "Reta pa klas",
     "quickActionsTitle": "Aksyon rapid",
     "exportExcel": "Ekspòte Excel",
@@ -163,11 +163,11 @@
     "autoRemindersToggleDesc": "Notifye anvan echeyans lan",
     "currencyLabel": "Lajan prensipal",
     "currencyOptions": {
-      "HTG": "HTG — Goud ayisyen",
-      "USD": "USD — Dola ameriken",
-      "XOF": "XOF — Frank CFA (UEMOA)",
-      "XAF": "XAF — Frank CFA (CEMAC)",
-      "EUR": "EUR — Ewo"
+      "HTG": "HTG · Goud ayisyen",
+      "USD": "USD · Dola ameriken",
+      "XOF": "XOF · Frank CFA (UEMOA)",
+      "XAF": "XAF · Frank CFA (CEMAC)",
+      "EUR": "EUR · Ewo"
     },
     "selectClassPrompt": "Chwazi yon klas.",
     "editorConfigured": "Konfigire",
@@ -189,8 +189,8 @@
     "addTranche": "Ajoute yon vèsman",
     "editTranche": "Modifye vèsman an",
     "deleteTrancheAria": "Efase vèsman an",
-    "emptyClassPrompt": "Poko konfigire — defini montan total la pou kòmanse.",
-    "configHeadingPrefix": "Konfigirasyon — {className}",
+    "emptyClassPrompt": "Poko konfigire : defini montan total la pou kòmanse.",
+    "configHeadingPrefix": "Konfigirasyon · {className}",
     "studentCountBadge": {
       "one": "{n} elèv",
       "other": "{n} elèv"

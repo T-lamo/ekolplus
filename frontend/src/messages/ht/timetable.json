@@ -33,13 +33,25 @@
       "createSession": "Ou ka klike tou dirèkteman sou yon plaj orè vid nan griy la pou kreye yon kou ki deja ranpli ak jou ak lè sa a, oswa sou yon kou ki egziste deja pou modifye li.",
       "exportScope": "Ekspòtasyon CSV a gen sèlman kou ki nan peryòd k ap afiche kounye a (mwa, semèn oswa jou) e li respekte filtè klas, anseyan, sal ak matyè ki aktif yo."
     },
-    "headerWithYear": "Ane eskolè {label} — {view}",
+    "headerWithYear": "Ane eskolè {label} · {view}",
     "viewsAriaLabel": "Vi",
     "views": {
-      "month": { "label": "Mwa", "subtitle": "Vi mansyèl" },
-      "week": { "label": "Semèn", "subtitle": "Vi semanyèl" },
-      "day": { "label": "Jou", "subtitle": "Vi jounalye" },
-      "agenda": { "label": "Ajanda", "subtitle": "Ajanda semèn nan" }
+      "month": {
+        "label": "Mwa",
+        "subtitle": "Vi mansyèl"
+      },
+      "week": {
+        "label": "Semèn",
+        "subtitle": "Vi semanyèl"
+      },
+      "day": {
+        "label": "Jou",
+        "subtitle": "Vi jounalye"
+      },
+      "agenda": {
+        "label": "Ajanda",
+        "subtitle": "Ajanda semèn nan"
+      }
     },
     "addSession": "Ajoute yon kou",
     "prevPeriod": "Peryòd anvan",
@@ -57,7 +69,7 @@
     "exportEmpty": "Pa gen seyans pou ekspòte pou peryòd sa a.",
     "noYearTitle": "Pa gen ane eskolè aktif",
     "noYearHint": "Konfigire yon ane eskolè nan Paramèt anvan pou w ka planifye kou.",
-    "emptyRange": "Pa gen seyans pou peryòd sa a — klike sou yon plaj orè oswa sou « Ajoute yon kou ».",
+    "emptyRange": "Pa gen seyans pou peryòd sa a : klike sou yon plaj orè oswa sou « Ajoute yon kou ».",
     "networkError": "Erè rezo. Tanpri eseye ankò."
   },
   "export": {
@@ -119,7 +131,7 @@
       "label": "Koulè seyans lan",
       "groupAriaLabel": "Koulè",
       "reset": "Repran koulè matyè a",
-      "hint": "Koulè matyè a — li idantifye kou a rapidman sou griy la"
+      "hint": "Koulè matyè a : li idantifye kou a rapidman sou griy la"
     },
     "rooms": {
       "capacity": {
@@ -127,13 +139,20 @@
         "other": "{count} plas"
       },
       "inactive": "inaktif",
-      "noCatalogue": "Pa gen katalòg sal — <link>defini sal lekòl la</link>"
+      "noCatalogue": "Pa gen katalòg sal : <link>defini sal lekòl la</link>"
     },
     "recurrence": {
       "toggleLabel": "Repetisyon kou a",
       "toggleHint": "Defini yon repetisyon chak semèn",
       "daysLabel": "Jou repetisyon yo",
-      "dayShort": { "1": "L", "2": "Ma", "3": "Mè", "4": "J", "5": "V", "6": "S" },
+      "dayShort": {
+        "1": "L",
+        "2": "Ma",
+        "3": "Mè",
+        "4": "J",
+        "5": "V",
+        "6": "S"
+      },
       "dayPlural": {
         "1": "lendi",
         "2": "madi",
@@ -146,8 +165,8 @@
       "hint": "Kou a ap repete chak semèn nan jou ou chwazi yo",
       "untilLabel": "Fen repetisyon an",
       "untilHint": "Li koresponn ak fen ane eskolè {label}",
-      "summary": "Chak <b>{days}</b> soti {start} rive {end} — <b>{occurrences}</b>",
-      "summaryUntil": "Chak <b>{days}</b> soti {start} rive {end} · jiska {until} — <b>{occurrences}</b>",
+      "summary": "Chak <b>{days}</b> soti {start} rive {end} · <b>{occurrences}</b>",
+      "summaryUntil": "Chak <b>{days}</b> soti {start} rive {end} · jiska {until} · <b>{occurrences}</b>",
       "occurrenceCount": {
         "one": "{count} okirans",
         "other": "{count} okirans"
@@ -155,7 +174,7 @@
     },
     "series": {
       "toggleLabel": "Aplike sou tout seri a",
-      "hint": "Seyans sa a fè pati yon seri {count} seyans — dat la rete pwòp pou chak okirans."
+      "hint": "Seyans sa a fè pati yon seri {count} seyans : dat la rete pwòp pou chak okirans."
     },
     "delete": {
       "trigger": "Efase",

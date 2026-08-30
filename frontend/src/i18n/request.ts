@@ -52,6 +52,7 @@ export default getRequestConfig(async () => {
     setPassword,
     teacherPortal,
     setPasswordEleve,
+    elevePortal,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -82,6 +83,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/setPassword.json`),
     import(`../messages/${locale}/teacherPortal.json`),
     import(`../messages/${locale}/setPasswordEleve.json`),
+    import(`../messages/${locale}/elevePortal.json`),
   ]);
 
   return {
@@ -116,6 +118,7 @@ export default getRequestConfig(async () => {
       SetPassword: setPassword.default,
       TeacherPortal: teacherPortal.default,
       SetPasswordEleve: setPasswordEleve.default,
+      ElevePortal: elevePortal.default,
     },
   };
 });

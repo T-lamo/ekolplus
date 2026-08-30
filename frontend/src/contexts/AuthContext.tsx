@@ -36,6 +36,13 @@ export interface User {
    * Drives the login-time redirect (login/page.tsx) and the
    * belt-and-suspenders guard in (school)/layout.tsx. */
   isTeacherOnly?: boolean;
+  /** true for a purely student-linked account (MEMBER role + a linked
+   * StudentProfile) — same deny-by-default shape as isTeacherOnly, mirrors
+   * GET /api/auth/me's isStudentOnly field. false for an admin who happens
+   * to also be student-linked (not a real-world case, but kept symmetric
+   * with isTeacherOnly). Drives the login-time redirect (login/page.tsx)
+   * and the belt-and-suspenders guard in (school)/layout.tsx. */
+  isStudentOnly?: boolean;
 }
 
 interface AuthContextValue {

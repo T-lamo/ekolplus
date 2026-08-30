@@ -18,12 +18,14 @@ import { Skeleton } from '@/components/ui/Skeleton';
 // /api/school's NO_SCHOOL response), not the shell.
 //
 // A purely teacher-linked account (isTeacherOnly) is bounced to
-// /espace-enseignant — belt-and-suspenders on top of the login-time
+// /espace-enseignant, and a purely student-linked account (isStudentOnly)
+// is bounced to /eleve — belt-and-suspenders on top of the login-time
 // redirect (login/page.tsx), so a stale bookmark/tab can't land on the
-// admin shell. An admin who is ALSO teacher-linked is never redirected
-// here (isTeacherOnly is false for them) — see resolveMySchool()'s
-// deny-by-default check in lib/server/school.ts, which the client mirrors
-// via GET /api/auth/me's isTeacherOnly field.
+// admin shell. An admin who is ALSO teacher-linked or student-linked is
+// never redirected here (isTeacherOnly/isStudentOnly are false for them) —
+// see resolveMySchool()'s deny-by-default check in lib/server/school.ts,
+// which the client mirrors via GET /api/auth/me's isTeacherOnly and
+// isStudentOnly fields.
 export default function SchoolLayout({ children }: { children: ReactNode }) {
   const t = useTranslations('Shell');
   const user = useUser();
@@ -34,10 +36,12 @@ export default function SchoolLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user?.isTeacherOnly) {
       router.replace('/espace-enseignant');
+    } else if (user?.isStudentOnly) {
+      router.replace('/eleve');
     }
   }, [user, router]);
 
-  if (!user || user.isTeacherOnly) {
+  if (!user || user.isTeacherOnly || user.isStudentOnly) {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <Skeleton className="h-10 w-10 rounded-full" />

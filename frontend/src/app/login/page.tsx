@@ -75,7 +75,9 @@ export default function LoginPage() {
         ? '/admin'
         : me?.isTeacherOnly
           ? '/espace-enseignant'
-          : '/dashboard';
+          : me?.isStudentOnly
+            ? '/eleve'
+            : '/dashboard';
       router.push(destination);
     } catch (err) {
       if (err instanceof ApiError) {

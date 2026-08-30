@@ -72,6 +72,7 @@ export const MESSAGE_NAMESPACES = [
   'setPassword',
   'teacherPortal',
   'setPasswordEleve',
+  'elevePortal',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

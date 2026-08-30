@@ -75,9 +75,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
 
     const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
-    const teacherProfile = mySchool
-      ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
-      : null;
+    const teacherProfile =
+      mySchool?.role === 'MEMBER'
+        ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
+        : null;
     const isTeacherOnly = mySchool?.role === 'MEMBER' && teacherProfile !== null;
 
     const user = {

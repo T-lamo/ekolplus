@@ -69,6 +69,7 @@ export const MESSAGE_NAMESPACES = [
   'fees',
   'appreciations',
   'timetable',
+  'setPassword',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

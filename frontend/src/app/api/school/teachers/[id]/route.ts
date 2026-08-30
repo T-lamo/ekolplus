@@ -73,9 +73,13 @@ export async function GET(
         },
         // Linked portal account (Espace Enseignant invite) — `userId` is
         // already a scalar Teacher column and flows through via `...fields`
-        // below; `emailVerifiedAt` lives on User so it needs this include.
-        // The teacher fiche's invite/resend/active UI branches on both.
-        user: { select: { emailVerifiedAt: true } },
+        // below; `emailVerifiedAt` and `createdAt` live on User so they
+        // need this include. The teacher fiche's invite/resend/active UI
+        // branches on all three. `createdAt` (exposed as `userCreatedAt`
+        // below) is the "pending since" date — Teacher.updatedAt would be
+        // wrong here: it changes on any unrelated profile edit and does
+        // NOT change on an invite resend (resend never touches Teacher).
+        user: { select: { emailVerifiedAt: true, createdAt: true } },
       },
     });
     if (!teacher || teacher.schoolId !== mySchool.schoolId) {
@@ -91,6 +95,7 @@ export async function GET(
         teacher: {
           ...fields,
           emailVerifiedAt: user?.emailVerifiedAt ?? null,
+          userCreatedAt: user?.createdAt ?? null,
           subjects: [...new Map(classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
           classes: [...new Map(classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
           weeklyHours: classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),
@@ -196,7 +201,22 @@ export async function DELETE(
       );
     }
 
-    await prisma.teacher.delete({ where: { id } });
+    // A Teacher.userId link also carries an OrganizationMember(MEMBER) row
+    // from the original invite (see /invite/route.ts). Teacher.userId is
+    // the ONLY thing isPortalOnlyAccount() (lib/server/school.ts) checks to
+    // decide whether resolveMySchool() should deny this account — deleting
+    // the Teacher row alone (FK is ON DELETE SET NULL, so the User
+    // survives) would leave that membership behind and silently upgrade
+    // the ex-teacher's still-working account to full admin-shell access on
+    // their next login. Remove the membership in the same operation.
+    await prisma.$transaction(async (tx) => {
+      if (existing.userId) {
+        await tx.organizationMember.deleteMany({
+          where: { userId: existing.userId, organizationId: mySchool.organizationId },
+        });
+      }
+      await tx.teacher.delete({ where: { id } });
+    });
     return new NextResponse(null, { status: 204, headers: { 'x-request-id': ctx.requestId } });
   });
 }

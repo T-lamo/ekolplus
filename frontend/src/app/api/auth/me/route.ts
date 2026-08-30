@@ -85,7 +85,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         : null;
     const isTeacherOnly = mySchool?.role === 'MEMBER' && teacherProfile !== null;
     const studentProfile = await resolveMyStudentProfile(auth.user.sub);
-    const isStudentOnly = studentProfile !== null;
+    // Defense in depth: an ADMIN/SUPERADMIN account with an incidentally-linked
+    // Student.userId must not be flagged isStudentOnly. Not exploitable via
+    // the current invite flow (createPortalInvite refuses to link a Student to
+    // an account that already has a passwordHash), but Task 10 builds real
+    // redirect/bounce logic on top of this field, so gate it here too. Can't
+    // mirror isTeacherOnly's `mySchool?.role === 'MEMBER'` gate literally —
+    // students never get an OrganizationMember row, so that would always be
+    // false for genuine students. Gate on the platform-wide User.role instead.
+    const isStudentOnly = (dbUser?.role ?? 'USER') === 'USER' && studentProfile !== null;
 
     const user = {
       // Keep `sub` for back-compat with the AuthContext payload contract

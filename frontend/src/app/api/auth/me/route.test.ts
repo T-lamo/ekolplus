@@ -237,6 +237,26 @@ describe('GET /api/auth/me — isStudentOnly (Espace Élève Phase 1)', () => {
     const res = await GET(reqWithAuthHeader());
     expect((await res.json()).user.isStudentOnly).toBe(false);
   });
+
+  it('reports isStudentOnly=false for an ADMIN account even with a linked student profile', async () => {
+    // Not reachable today via createPortalInvite (it refuses to link a
+    // Student to an account that already has a passwordHash, which every
+    // admin/staff account has), but this documents and enforces the
+    // platform-role gate as defense in depth for Task 10's redirect logic.
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'admin@school.test',
+      role: 'ADMIN',
+    } as never);
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
+  });
 });
 
 // PATCH — theme preference (Paramètres › Apparence). Only known keys are

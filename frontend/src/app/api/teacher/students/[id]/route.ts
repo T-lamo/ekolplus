@@ -56,12 +56,14 @@ export async function GET(
       ...new Set([...myTeacher.homeroomClassIds, ...myClassSubjects.map((cs) => cs.classId)]),
     ];
 
+    if (myClassIds.length === 0) return notFound(ctx.requestId);
+
     const enrollment = await prisma.enrollment.findFirst({
       where: { studentId: id, academicYear: { isActive: true }, classId: { in: myClassIds } },
       select: {
         classId: true,
         academicYearId: true,
-        class: { select: { id: true, name: true, level: true } },
+        class: { select: { id: true, name: true, level: true, academicYearId: true } },
         student: {
           select: {
             id: true,
@@ -75,7 +77,11 @@ export async function GET(
         },
       },
     });
-    if (!enrollment || enrollment.student.schoolId !== mySchool.schoolId) {
+    if (
+      !enrollment ||
+      enrollment.student.schoolId !== mySchool.schoolId ||
+      enrollment.class.academicYearId !== enrollment.academicYearId
+    ) {
       return notFound(ctx.requestId);
     }
 
@@ -147,7 +153,9 @@ export async function GET(
             studentId: id,
             termId: term.id,
             OR: [
-              { subjectId: { in: inThisClass.map((cs) => cs.subjectId) } },
+              ...(inThisClass.length > 0
+                ? [{ subjectId: { in: inThisClass.map((cs) => cs.subjectId) } }]
+                : []),
               ...(isMyHomeroom ? [{ subjectId: null }] : []),
             ],
           },
@@ -173,9 +181,14 @@ export async function GET(
           photoUrl: enrollment.student.photoUrl,
           status: enrollment.student.status,
         },
-        class: enrollment.class,
+        class: {
+          id: enrollment.class.id,
+          name: enrollment.class.name,
+          level: enrollment.class.level,
+        },
         isMyHomeroom,
         term: term ? { id: term.id, label: term.label } : null,
+        terms: terms.map((t) => ({ id: t.id, label: t.label })),
         subjects,
         appreciations,
       },

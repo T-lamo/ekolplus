@@ -7,6 +7,7 @@
   },
   "profile": {
     "back": "Back to my students",
+    "notFound": "This student is not in your classes anymore.",
     "homeroom": "Homeroom teacher",
     "notesTitle": "Term grades",
     "average": "Average",

@@ -7,6 +7,7 @@
   },
   "profile": {
     "back": "Retour à mes élèves",
+    "notFound": "Cet élève n'est pas ou plus dans vos classes.",
     "homeroom": "Titulaire",
     "notesTitle": "Notes du trimestre",
     "average": "Moyenne",

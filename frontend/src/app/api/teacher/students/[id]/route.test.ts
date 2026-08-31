@@ -47,7 +47,7 @@ beforeEach(() => {
   prismaMock.enrollment.findFirst.mockResolvedValue({
     classId: 'cls_1',
     academicYearId: 'year_1',
-    class: { id: 'cls_1', name: '3ème A', level: '3ème' },
+    class: { id: 'cls_1', name: '3ème A', level: '3ème', academicYearId: 'year_1' },
     student: {
       id: 'stu_1',
       firstName: 'Nadia',
@@ -225,6 +225,7 @@ describe('GET /api/teacher/students/[id]', () => {
         status: 'DRAFT',
       },
     ]);
+    expect(body.terms).toEqual([{ id: 'term_1', label: '1er Trimestre' }]);
     const evalWhere = prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where;
     expect(evalWhere).toEqual({ classSubjectId: { in: ['cs_1'] }, termId: 'term_1' });
   });
@@ -280,7 +281,35 @@ describe('GET /api/teacher/students/[id]', () => {
     expect(where).toEqual({
       studentId: 'stu_1',
       termId: 'term_1',
-      OR: [{ subjectId: { in: [] } }, { subjectId: null }],
+      OR: [{ subjectId: null }],
     });
+  });
+
+  it('404s without querying enrollments when the teacher has no classes at all', async () => {
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: [],
+      homeroomClassIds: [],
+    });
+    expect((await call()).status).toBe(404);
+    expect(prismaMock.enrollment.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('404s when the enrollment year and the class year disagree', async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValue({
+      classId: 'cls_1',
+      academicYearId: 'year_1',
+      class: { id: 'cls_1', name: '3ème A', level: '3ème', academicYearId: 'year_OLD' },
+      student: {
+        id: 'stu_1',
+        firstName: 'Nadia',
+        lastName: 'Alexis',
+        studentNumber: 'EL-2026-001',
+        photoUrl: null,
+        status: 'ENROLLED',
+        schoolId: 'school_1',
+      },
+    } as never);
+    expect((await call()).status).toBe(404);
   });
 });

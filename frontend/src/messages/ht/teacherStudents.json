@@ -8,6 +8,7 @@
   },
   "profile": {
     "back": "Retounen sou elèv mwen yo",
+    "notFound": "Elèv sa a pa nan klas ou yo ankò.",
     "homeroom": "Titilè",
     "notesTitle": "Nòt trimès la",
     "average": "Mwayèn",

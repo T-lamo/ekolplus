@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronLeft } from 'lucide-react';
+import { ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
@@ -43,6 +44,7 @@ interface ProfileResponse {
   class: { id: string; name: string; level: string };
   isMyHomeroom: boolean;
   term: { id: string; label: string } | null;
+  terms: { id: string; label: string }[];
   subjects: {
     classSubjectId: string;
     subjectId: string;
@@ -72,11 +74,6 @@ interface ProfileResponse {
   }[];
 }
 
-interface TeacherMeTermsResponse {
-  terms: { id: string; label: string }[];
-  currentTermId: string | null;
-}
-
 export default function TeacherStudentProfilePage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('TeacherStudents.profile');
@@ -88,10 +85,18 @@ export default function TeacherStudentProfilePage() {
   const locale = useLocale();
   const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
+  const [notFound, setNotFound] = useState(false);
 
-  const { data: me } = useApi<TeacherMeTermsResponse>('/api/teacher/me');
   const { data, error } = useApi<ProfileResponse>(
     `/api/teacher/students/${id}${termId ? `?termId=${termId}` : ''}`,
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 404) {
+          setNotFound(true);
+          return true;
+        }
+      },
+    },
   );
 
   const fmtScore = (n: number) => n.toLocaleString(bcp47);
@@ -113,7 +118,11 @@ export default function TeacherStudentProfilePage() {
         {t('back')}
       </Link>
 
-      {error ? (
+      {notFound ? (
+        <p role="alert" className="text-sm text-muted-foreground">
+          {t('notFound')}
+        </p>
+      ) : error ? (
         <p role="alert" className="text-sm text-destructive-foreground">
           {tPortal('loadError')}
         </p>
@@ -144,9 +153,9 @@ export default function TeacherStudentProfilePage() {
                 {data.isMyHomeroom && <Badge>{t('homeroom')}</Badge>}
               </div>
             </div>
-            {me && me.terms.length > 0 && (
+            {data.terms.length > 0 && (
               <FilterSelect value={termId || (data.term?.id ?? '')} onValueChange={setTermId}>
-                {me.terms.map((term) => (
+                {data.terms.map((term) => (
                   <SelectItem key={term.id} value={term.id}>
                     {term.label}
                   </SelectItem>

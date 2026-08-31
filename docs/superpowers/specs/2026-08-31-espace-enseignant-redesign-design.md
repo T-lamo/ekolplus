@@ -15,7 +15,7 @@ Approches écartées : réutiliser littéralement le layout école avec des lien
 
 ## 1. Shell
 
-- **Desktop** : `TeacherSidebar` à gauche — même `SIDEBAR_WIDTH`, repliable (`useSidebarCollapse`), fond `bg-sidebar-dark`, `SidebarUserProfile` en bas (avatar + menu : Paramètres, Déconnexion). `TeacherTopbar` en haut : fil d'ariane, badge année scolaire, indicateur hors-ligne, menu d'aide — mêmes widgets que le topbar école, moins ce qui n'a pas de sens pour un enseignant (à trancher au plan : notifications si l'endpoint est accessible aux comptes enseignants, sinon omis pour cette phase).
+- **Desktop** : `TeacherSidebar` à gauche — même `SIDEBAR_WIDTH`, repliable (`useSidebarCollapse`), même variant `light` que le shell école (`bg-sidebar-light`, celui que voit le compte admin), `SidebarUserProfile` en bas (avatar + menu : Paramètres, Déconnexion). `TeacherTopbar` en haut : fil d'ariane, badge année scolaire, indicateur hors-ligne, menu d'aide — mêmes widgets que le topbar école, moins ce qui n'a pas de sens pour un enseignant (à trancher au plan : notifications si l'endpoint est accessible aux comptes enseignants, sinon omis pour cette phase).
 - **Mobile** : sidebar en drawer (même overlay/animation que le layout école) + `MobileBottomNav` générique décliné avec les liens enseignant. **`TeacherBottomNav` est supprimé.**
 - Le layout `(teacher)/espace-enseignant/layout.tsx` reproduit la structure de `(school)/layout.tsx` (gate `useUser`, drawer, collapse) — la redirection actuelle des non-enseignants reste.
 - Thèmes/couleurs : automatiques via les tokens `@theme` dès qu'on utilise les composants existants. Aucun hex en dur.

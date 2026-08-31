@@ -119,6 +119,31 @@ describe('portalInviteEmail', () => {
     expect(tpl.text).not.toContain('/definir-mot-de-passe?');
   });
 
+  it('falls back to the teacher accept page when acceptPath is missing', () => {
+    // Deploy-boundary guard: the outbox payload is a JSON column read back
+    // with a cast, so a portal-invite row enqueued before acceptPath existed
+    // reaches the template with the field empty/absent. Without the fallback
+    // the link would render as `${base}undefined?...`.
+    const empty = portalInviteEmail({
+      code: 'ABCD2345',
+      email: 'teacher@school.test',
+      portalLabel: 'espace enseignant',
+      acceptPath: '',
+    });
+    expect(empty.html).toContain('/definir-mot-de-passe?');
+    expect(empty.text).toContain('/definir-mot-de-passe?');
+
+    // A legacy row has the field absent entirely, which the type forbids at
+    // compile time but not at runtime — cast to reproduce it faithfully.
+    const legacy = portalInviteEmail({
+      code: 'ABCD2345',
+      email: 'teacher@school.test',
+      portalLabel: 'espace enseignant',
+    } as unknown as Parameters<typeof portalInviteEmail>[0]);
+    expect(legacy.html).toContain('/definir-mot-de-passe?');
+    expect(legacy.html).not.toContain('undefined?');
+  });
+
   it('escapes the portalLabel in html output', () => {
     const tpl = portalInviteEmail({
       code: 'ABCD2345',

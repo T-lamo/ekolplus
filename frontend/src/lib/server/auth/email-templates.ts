@@ -115,7 +115,13 @@ export interface PortalInviteEmailArgs {
 function portalInviteUrl(email: string, code: string, acceptPath: string): string {
   const base = process.env.APP_URL ?? 'http://localhost:3000';
   const qs = new URLSearchParams({ email, code }).toString();
-  return `${base}${acceptPath}?${qs}`;
+  // Defensive fallback for a deploy-boundary case the type system can't see:
+  // the outbox payload is a JSON column read back with a cast, so an
+  // `email.portal_invite` row enqueued before `acceptPath` existed arrives
+  // here with the field missing and would otherwise render
+  // `${base}undefined?...`. Every such legacy row is a teacher invite, so the
+  // teacher accept page is the correct recovery target.
+  return `${base}${acceptPath || '/definir-mot-de-passe'}?${qs}`;
 }
 
 export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {

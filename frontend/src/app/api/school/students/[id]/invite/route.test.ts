@@ -95,6 +95,10 @@ describe('POST /api/school/students/[id]/invite', () => {
         email: 'student@test.local',
         inviteType: 'STUDENT_INVITE',
         createOrgMembership: false,
+        // Regression guard: the invite email must link to the student accept
+        // page. The default is the teacher one, whose accept route only
+        // accepts TEACHER_INVITE codes and 400s on a student's code.
+        acceptPath: '/definir-mot-de-passe-eleve',
       }),
     );
   });
@@ -154,7 +158,10 @@ describe('POST /api/school/students/[id]/invite', () => {
       data: { usedAt: expect.any(Date) },
     });
     expect(mockCreatePortalInvite).toHaveBeenCalledWith(
-      expect.objectContaining({ existingUserId: 'user_existing' }),
+      expect.objectContaining({
+        existingUserId: 'user_existing',
+        acceptPath: '/definir-mot-de-passe-eleve',
+      }),
     );
   });
 

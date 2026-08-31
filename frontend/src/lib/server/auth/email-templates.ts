@@ -104,12 +104,18 @@ export interface PortalInviteEmailArgs {
   expiresAt?: string;
   /** Human-readable destination, e.g. "espace enseignant". */
   portalLabel: string;
+  /** Path the invite link points to, e.g. '/definir-mot-de-passe-eleve' for
+   * students, '/definir-mot-de-passe' for teachers. Each portal has its own
+   * accept page posting to its own accept route (which filters on its own
+   * VerificationCode type), so sending the wrong path makes the code look
+   * invalid to the receiving route. */
+  acceptPath: string;
 }
 
-function portalInviteUrl(email: string, code: string): string {
+function portalInviteUrl(email: string, code: string, acceptPath: string): string {
   const base = process.env.APP_URL ?? 'http://localhost:3000';
   const qs = new URLSearchParams({ email, code }).toString();
-  return `${base}/definir-mot-de-passe?${qs}`;
+  return `${base}${acceptPath}?${qs}`;
 }
 
 export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {
@@ -140,7 +146,7 @@ export function portalInviteEmail(args: PortalInviteEmailArgs): EmailTemplate {
   const code = htmlEscape(args.code);
   const portalLabel = htmlEscape(args.portalLabel);
   const ttl = ttlWording(args.expiresAt);
-  const url = portalInviteUrl(args.email, args.code);
+  const url = portalInviteUrl(args.email, args.code, args.acceptPath);
   const urlEscaped = htmlEscape(url);
   return {
     subject: `You've been invited to your ${portalLabel}`,

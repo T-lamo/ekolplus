@@ -52,6 +52,46 @@ describe('createPortalInvite', () => {
     );
   });
 
+  it('defaults acceptPath to the teacher accept page when the caller omits it', async () => {
+    // The teacher invite route (already merged) never passes acceptPath — its
+    // emails must keep pointing at /definir-mot-de-passe exactly as before.
+    prismaMock.user.findUnique.mockResolvedValue(null as never);
+    prismaMock.user.create.mockResolvedValue({ id: 'user_new' } as never);
+
+    await createPortalInvite({ ...baseParams, linkExisting: vi.fn().mockResolvedValue(undefined) });
+
+    expect(prismaMock.outboxEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payload: expect.objectContaining({ acceptPath: '/definir-mot-de-passe' }),
+        }),
+      }),
+    );
+  });
+
+  it('forwards an explicit acceptPath into the invite-email payload', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null as never);
+    prismaMock.user.create.mockResolvedValue({ id: 'user_new' } as never);
+
+    await createPortalInvite({
+      ...baseParams,
+      email: 'student@school.test',
+      inviteType: 'STUDENT_INVITE',
+      portalLabel: 'espace élève',
+      acceptPath: '/definir-mot-de-passe-eleve',
+      createOrgMembership: false,
+      linkExisting: vi.fn().mockResolvedValue(undefined),
+    });
+
+    expect(prismaMock.outboxEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payload: expect.objectContaining({ acceptPath: '/definir-mot-de-passe-eleve' }),
+        }),
+      }),
+    );
+  });
+
   it('skips OrganizationMember creation when createOrgMembership is false', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null as never);
     prismaMock.user.create.mockResolvedValue({ id: 'user_new' } as never);

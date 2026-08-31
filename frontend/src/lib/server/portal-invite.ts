@@ -19,6 +19,10 @@ export interface CreatePortalInviteParams {
   inviteType: string;
   /** Human-readable destination for the email copy, e.g. "espace enseignant". */
   portalLabel: string;
+  /** Path the invite email links to, e.g. '/definir-mot-de-passe-eleve'.
+   * Defaults to the teacher accept page for backward compatibility with
+   * callers that don't pass it. */
+  acceptPath?: string;
   expiresInMs: number;
   /** Student accounts get no OrganizationMember row by design — see the
    * Student Portal spec. Teacher accounts need one (role MEMBER). */
@@ -99,6 +103,7 @@ export async function createPortalInvite(
           code,
           expiresAt: expiresAt.toISOString(),
           portalLabel: params.portalLabel,
+          acceptPath: params.acceptPath ?? '/definir-mot-de-passe',
         },
       });
 

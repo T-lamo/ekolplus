@@ -88,6 +88,10 @@ export async function POST(
         email: targetEmail,
         inviteType: 'STUDENT_INVITE',
         portalLabel: 'espace élève',
+        // Students accept on their own page, which posts to the student
+        // accept route (it filters on type STUDENT_INVITE). The default is
+        // the teacher page, whose route would reject a student's code.
+        acceptPath: '/definir-mot-de-passe-eleve',
         expiresInMs: INVITE_TTL_MS,
         createOrgMembership: false,
         // Resend: resolve the existing account by id, not by the freshly
@@ -117,6 +121,7 @@ export async function POST(
       email: targetEmail,
       inviteType: 'STUDENT_INVITE',
       portalLabel: 'espace élève',
+      acceptPath: '/definir-mot-de-passe-eleve',
       expiresInMs: INVITE_TTL_MS,
       createOrgMembership: false,
       linkExisting: async (tx, userId) => {

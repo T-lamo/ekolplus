@@ -92,6 +92,7 @@ describe('portalInviteEmail', () => {
       email: 'teacher@school.test',
       expiresAt: new Date(Date.now() + 60_000).toISOString(),
       portalLabel: 'espace enseignant',
+      acceptPath: '/definir-mot-de-passe',
     });
     expect(tpl.subject).toContain('espace enseignant');
     expect(tpl.html).toContain('ABCD2345');
@@ -99,11 +100,31 @@ describe('portalInviteEmail', () => {
     expect(tpl.text).toContain('ABCD2345');
   });
 
+  it('links to the acceptPath it was given, not a hardcoded page', () => {
+    // Regression guard: the link used to be hardcoded to the teacher accept
+    // page, so every student invite landed on a route that filters
+    // TEACHER_INVITE codes and rejected the student's own code.
+    const tpl = portalInviteEmail({
+      code: 'ABCD2345',
+      email: 'student@school.test',
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      portalLabel: 'espace élève',
+      acceptPath: '/definir-mot-de-passe-eleve',
+    });
+    expect(tpl.html).toContain('/definir-mot-de-passe-eleve?');
+    expect(tpl.text).toContain('/definir-mot-de-passe-eleve?');
+    // ...and not the teacher page (which is a prefix of the student one, so
+    // assert on the full URL boundary rather than a substring).
+    expect(tpl.html).not.toContain('/definir-mot-de-passe?');
+    expect(tpl.text).not.toContain('/definir-mot-de-passe?');
+  });
+
   it('escapes the portalLabel in html output', () => {
     const tpl = portalInviteEmail({
       code: 'ABCD2345',
       email: 'x@test.local',
       portalLabel: '<script>alert(1)</script>',
+      acceptPath: '/definir-mot-de-passe',
     });
     expect(tpl.html).not.toContain('<script>');
   });

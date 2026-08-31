@@ -155,6 +155,7 @@ describe('drainOutbox (TEST-02)', () => {
         code: 'ABCD2345',
         expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
         portalLabel: 'espace enseignant',
+        acceptPath: '/definir-mot-de-passe',
       },
       attempts: 1,
       status: 'PROCESSING',
@@ -164,5 +165,33 @@ describe('drainOutbox (TEST-02)', () => {
 
     expect(result.succeeded).toBe(1);
     expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: 'teacher@school.test' }));
+  });
+
+  it('forwards the payload acceptPath into the rendered invite link', async () => {
+    // Regression guard: the dispatcher used to drop acceptPath, so every
+    // portal invite rendered the teacher accept page regardless of portal.
+    const enqueue = vi.fn().mockResolvedValue('job_1');
+    prismaMock.outboxEvent.findMany.mockResolvedValue([{ id: 'oe_2' }] as never);
+    prismaMock.outboxEvent.updateMany.mockResolvedValue({ count: 1 } as never);
+    prismaMock.outboxEvent.findUnique.mockResolvedValue({
+      id: 'oe_2',
+      kind: 'email.portal_invite',
+      payload: {
+        to: 'student@school.test',
+        code: 'ABCD2345',
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+        portalLabel: 'espace élève',
+        acceptPath: '/definir-mot-de-passe-eleve',
+      },
+      attempts: 1,
+      status: 'PROCESSING',
+    } as never);
+
+    const result = await drainOutbox({ prisma: prismaMock, emailQueue: { enqueue } as never });
+
+    expect(result.succeeded).toBe(1);
+    const arg = enqueue.mock.calls[0]![0] as { html: string };
+    expect(arg.html).toContain('/definir-mot-de-passe-eleve?');
+    expect(arg.html).not.toContain('/definir-mot-de-passe?');
   });
 });

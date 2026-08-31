@@ -93,7 +93,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // mirror isTeacherOnly's `mySchool?.role === 'MEMBER'` gate literally —
     // students never get an OrganizationMember row, so that would always be
     // false for genuine students. Gate on the platform-wide User.role instead.
-    const isStudentOnly = (dbUser?.role ?? 'USER') === 'USER' && studentProfile !== null;
+    // Second gate, same spirit: a non-null `mySchool` means this account
+    // really does hold an org role (director, secretary, teacher...), which a
+    // genuine student account never has by design. That covers the case the
+    // User.role check alone misses — a Google-OAuth account has no
+    // passwordHash, so createPortalInvite's passwordHash guard would not stop
+    // a school director who is also a guardian from being linked to a Student
+    // row, yet their `role` may still be plain USER.
+    const isStudentOnly =
+      (dbUser?.role ?? 'USER') === 'USER' && mySchool === null && studentProfile !== null;
 
     const user = {
       // Keep `sub` for back-compat with the AuthContext payload contract

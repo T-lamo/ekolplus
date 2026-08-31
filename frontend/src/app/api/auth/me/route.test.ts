@@ -201,6 +201,12 @@ describe('GET /api/auth/me — isStudentOnly (Espace Élève Phase 1)', () => {
     // module-scoped and never reset by the file-level beforeEach, so clear
     // call history only (each test below sets its own .mockResolvedValue).
     mockResolveMyStudentProfile.mockClear();
+    // A genuine student account holds no OrganizationMember row by design, so
+    // the org lookup resolves null. Set it explicitly: this mock is
+    // module-scoped and would otherwise carry over whatever the isTeacherOnly
+    // describe above left configured.
+    mockResolveMySchoolIncludingTeacher.mockClear();
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue(null);
     vi.mocked(verifyToken).mockResolvedValue({
       sub: 'user_1',
       email: 'student@school.test',
@@ -248,6 +254,33 @@ describe('GET /api/auth/me — isStudentOnly (Espace Élève Phase 1)', () => {
       email: 'admin@school.test',
       role: 'ADMIN',
     } as never);
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
+  });
+
+  it('reports isStudentOnly=false when the account holds an org membership', async () => {
+    // The OAuth edge the User.role check alone misses: a Google account has
+    // no passwordHash, so createPortalInvite's passwordHash guard would not
+    // stop a school director who is also a guardian from being linked to a
+    // Student row, and their platform role can still be a plain USER. Holding
+    // an OrganizationMember row (which a real student never does) is the
+    // second gate.
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'director@school.test',
+      role: 'USER',
+    } as never);
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'ADMIN',
+    });
     mockResolveMyStudentProfile.mockResolvedValue({
       studentId: 's1',
       schoolId: 'school_1',

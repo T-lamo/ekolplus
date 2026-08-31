@@ -172,8 +172,8 @@ async function dispatchEvent(deps: OutboxDispatcherDeps, event: OutboxEvent): Pr
       // the same import-on-dispatch shape.
       if (!deps.emailQueue) throw new Error('email queue not configured');
       const { portalInviteEmail } = await import('../auth/email-templates');
-      const { to, code, expiresAt, portalLabel } = event.payload;
-      const tpl = portalInviteEmail({ code, email: to, expiresAt, portalLabel });
+      const { to, code, expiresAt, portalLabel, acceptPath } = event.payload;
+      const tpl = portalInviteEmail({ code, email: to, expiresAt, portalLabel, acceptPath });
       await deps.emailQueue.enqueue({ to, subject: tpl.subject, html: tpl.html });
       return;
     }

@@ -75,6 +75,11 @@ export interface EmailPortalInviteEvent {
     code: string;
     expiresAt: string;
     portalLabel: string;
+    /** Path the invite link points to (e.g. '/definir-mot-de-passe' for
+     * teachers, '/definir-mot-de-passe-eleve' for students). Always filled
+     * concretely by createPortalInvite() before the event is enqueued —
+     * the default lives upstream there, not here. */
+    acceptPath: string;
   };
 }
 

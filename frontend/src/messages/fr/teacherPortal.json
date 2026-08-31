@@ -6,7 +6,7 @@
   "loadError": "Impossible de charger vos informations pour le moment.",
   "nav": {
     "ariaLabel": "Navigation principale",
-    "sectionLabel": "Menu",
+    "sectionLabel": "Principal",
     "home": "Accueil",
     "classes": "Classes",
     "students": "Mes élèves",
@@ -15,6 +15,7 @@
     "gradebookShort": "Notes",
     "pedagogySectionLabel": "Pédagogie",
     "timetable": "Emploi du temps",
+    "accountSectionLabel": "Compte",
     "settings": "Paramètres",
     "more": "Plus",
     "moreAriaLabel": "Ouvrir le menu"

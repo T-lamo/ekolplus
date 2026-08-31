@@ -7,7 +7,7 @@
   "loadError": "Nou pa t kapab chaje enfòmasyon w yo kounye a.",
   "nav": {
     "ariaLabel": "Navigasyon prensipal",
-    "sectionLabel": "Meni",
+    "sectionLabel": "Prensipal",
     "home": "Akèy",
     "classes": "Klas",
     "students": "Elèv mwen yo",
@@ -16,6 +16,7 @@
     "gradebookShort": "Nòt",
     "pedagogySectionLabel": "Pedagoji",
     "timetable": "Orè",
+    "accountSectionLabel": "Kont",
     "settings": "Paramèt",
     "more": "Plis",
     "moreAriaLabel": "Louvri meni an"

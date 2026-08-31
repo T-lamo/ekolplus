@@ -6,7 +6,7 @@
   "loadError": "We could not load your information right now.",
   "nav": {
     "ariaLabel": "Main navigation",
-    "sectionLabel": "Menu",
+    "sectionLabel": "Main",
     "home": "Home",
     "classes": "Classes",
     "students": "My students",
@@ -15,6 +15,7 @@
     "gradebookShort": "Grades",
     "pedagogySectionLabel": "Teaching",
     "timetable": "Timetable",
+    "accountSectionLabel": "Account",
     "settings": "Settings",
     "more": "More",
     "moreAriaLabel": "Open menu"

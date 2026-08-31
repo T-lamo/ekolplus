@@ -9,12 +9,14 @@ import { useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { KpiCard } from '@/app/(school)/dashboard/KpiRow';
-import { todayDay, weekDays, formatDayName } from '@/components/school/timetable/timetable-utils';
+import {
+  todayDay,
+  weekDays,
+  formatDayName,
+  isoWeekday,
+  minutesToHHMM,
+} from '@/components/school/timetable/timetable-utils';
 import type { LocaleKey } from '@/lib/locales';
-
-function minutesToHHMM(m: number): string {
-  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-}
 
 interface TeacherMeResponse {
   teacher: { id: string; name: string; email: string | null };
@@ -68,9 +70,11 @@ export default function EspaceEnseignantHomePage() {
   );
 
   const weekByDay = useMemo(() => {
-    const days = weekDays(today);
+    const sessions = data?.thisWeekSessions ?? [];
+    const withSaturday = sessions.some((s) => isoWeekday(s.date) === 6);
+    const days = weekDays(today, withSaturday);
     const map = new Map<string, number>(days.map((d) => [d, 0]));
-    for (const s of data?.thisWeekSessions ?? []) {
+    for (const s of sessions) {
       if (map.has(s.date)) map.set(s.date, (map.get(s.date) ?? 0) + 1);
     }
     return [...map.entries()];
@@ -160,7 +164,11 @@ export default function EspaceEnseignantHomePage() {
             {data.thisWeekSessions.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t('home.noSessions')}</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
+              <div
+                className={`grid grid-cols-2 gap-2.5 ${
+                  weekByDay.length === 6 ? 'sm:grid-cols-6' : 'sm:grid-cols-5'
+                }`}
+              >
                 {weekByDay.map(([day, count]) => (
                   <Card
                     key={day}

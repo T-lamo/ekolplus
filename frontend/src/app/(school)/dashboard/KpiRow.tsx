@@ -60,7 +60,7 @@ export function KpiRow({ kpis }: { kpis: DashboardData['kpis'] }) {
   );
 }
 
-function KpiCard({
+export function KpiCard({
   icon: Icon,
   iconBg,
   iconFg,

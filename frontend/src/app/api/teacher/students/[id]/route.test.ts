@@ -205,7 +205,28 @@ describe('GET /api/teacher/students/[id]', () => {
         comment: null,
       },
     ]);
-    expect(body.appreciations).toHaveLength(2);
+    expect(body.appreciations).toEqual([
+      {
+        subjectId: 'sub_1',
+        mention: 'BIEN',
+        text: 'Bon trimestre.',
+        comportement: null,
+        investissement: null,
+        assiduite: null,
+        status: 'PUBLISHED',
+      },
+      {
+        subjectId: null,
+        mention: 'BIEN',
+        text: 'Ensemble satisfaisant.',
+        comportement: 'Bon',
+        investissement: 'Soutenu',
+        assiduite: 'Régulière',
+        status: 'DRAFT',
+      },
+    ]);
+    const evalWhere = prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where;
+    expect(evalWhere).toEqual({ classSubjectId: { in: ['cs_1'] }, termId: 'term_1' });
   });
 
   it('omits the general appreciation clause for a non-homeroom teacher', async () => {
@@ -228,5 +249,38 @@ describe('GET /api/teacher/students/[id]', () => {
 
   it('404s an explicit termId that does not belong to the student year', async () => {
     expect((await call('stu_1', '?termId=term_OTHER')).status).toBe(404);
+  });
+
+  it('serves a homeroom-only teacher: no subjects, no evaluation query, general appreciation still returned', async () => {
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: [],
+      homeroomClassIds: ['cls_1'],
+    });
+    prismaMock.appreciation.findMany.mockResolvedValue([
+      {
+        subjectId: null,
+        mention: 'BIEN',
+        text: 'Ensemble satisfaisant.',
+        comportement: 'Bon',
+        investissement: 'Soutenu',
+        assiduite: 'Régulière',
+        status: 'DRAFT',
+      },
+    ] as never);
+    const res = await call();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.isMyHomeroom).toBe(true);
+    expect(body.subjects).toEqual([]);
+    expect(prismaMock.evaluation.findMany).not.toHaveBeenCalled();
+    expect(body.appreciations).toHaveLength(1);
+    expect(body.appreciations[0]?.subjectId).toBeNull();
+    const where = prismaMock.appreciation.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toEqual({
+      studentId: 'stu_1',
+      termId: 'term_1',
+      OR: [{ subjectId: { in: [] } }, { subjectId: null }],
+    });
   });
 });

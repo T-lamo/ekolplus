@@ -14,7 +14,13 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
+import {
+  resolveMySchool,
+  resolveMySchoolIncludingTeacher,
+  resolveMyTeacherProfile,
+  resolveActiveAcademicYear,
+  hasMinRole,
+} from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { DAY_MS, MAX_OCCURRENCES, expandRecurrence, parseDay } from '@/lib/server/timetable';
 import {
@@ -44,13 +50,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
+    const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
     if (!mySchool) {
       return NextResponse.json(
         { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
     }
+    const myTeacher =
+      mySchool.role === 'MEMBER'
+        ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
+        : null;
 
     const sp = req.nextUrl.searchParams;
     const parsed = Query.safeParse({
@@ -91,7 +101,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           academicYearId: activeYear.id,
           date: { gte: from, lte: to },
           ...(parsed.data.classId ? { classId: parsed.data.classId } : {}),
-          ...(parsed.data.teacherId ? { teacherId: parsed.data.teacherId } : {}),
+          ...(myTeacher
+            ? { teacherId: myTeacher.teacherId }
+            : parsed.data.teacherId
+              ? { teacherId: parsed.data.teacherId }
+              : {}),
           ...(parsed.data.subjectId ? { subjectId: parsed.data.subjectId } : {}),
           ...(parsed.data.room
             ? { room: { equals: parsed.data.room, mode: 'insensitive' as const } }

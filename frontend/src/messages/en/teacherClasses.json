@@ -1,0 +1,18 @@
+{
+  "title": "My classes",
+  "mySubjects": "My subjects",
+  "myHomerooms": "Homeroom class",
+  "noSubjects": "No subject has been assigned to you yet.",
+  "noHomerooms": "You are not the homeroom teacher of any class.",
+  "plural": {
+    "students": {
+      "one": "{count} student",
+      "other": "{count} students"
+    }
+  },
+  "roster": {
+    "back": "Back to my classes",
+    "noStudents": "No student enrolled in this class.",
+    "studentNumber": "No. {number}"
+  }
+}

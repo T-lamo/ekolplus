@@ -1,0 +1,9 @@
+{
+  "title": "Timetable",
+  "previousWeek": "Previous week",
+  "nextWeek": "Next week",
+  "today": "Today",
+  "noSessions": "No classes this day.",
+  "room": "Room: {room}",
+  "noRoom": "No room set"
+}

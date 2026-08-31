@@ -13,18 +13,31 @@ vi.mock('@/lib/server/auth', async () => {
 });
 vi.mock('@/lib/server/school', async () => {
   const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
-  return { ...actual, resolveMySchool: vi.fn(), resolveActiveAcademicYear: vi.fn() };
+  return {
+    ...actual,
+    resolveMySchool: vi.fn(),
+    resolveMySchoolIncludingTeacher: vi.fn(),
+    resolveMyTeacherProfile: vi.fn(),
+    resolveActiveAcademicYear: vi.fn(),
+  };
 });
 
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
-import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
+import {
+  resolveMySchool,
+  resolveMySchoolIncludingTeacher,
+  resolveMyTeacherProfile,
+  resolveActiveAcademicYear,
+} from '@/lib/server/school';
 import { GET, POST } from './route';
 import { PATCH, DELETE } from './[id]/route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
 const mockVerifyCsrf = vi.mocked(verifyCsrf);
 const mockResolveMySchool = vi.mocked(resolveMySchool);
+const mockResolveIncludingTeacher = vi.mocked(resolveMySchoolIncludingTeacher);
+const mockResolveMyTeacherProfile = vi.mocked(resolveMyTeacherProfile);
 const mockResolveYear = vi.mocked(resolveActiveAcademicYear);
 
 const authUser = { user: { sub: 'user_1', email: 'admin@test.local' } };
@@ -89,6 +102,8 @@ beforeEach(() => {
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);
+  mockResolveIncludingTeacher.mockResolvedValue(adminSchool);
+  mockResolveMyTeacherProfile.mockResolvedValue(null);
   mockResolveYear.mockResolvedValue({
     id: 'year_1',
     label: '2025-2026',
@@ -154,6 +169,66 @@ describe('GET /api/school/timetable', () => {
     const res = await GET(req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21'));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ academicYear: null, sessions: [], rooms: [] });
+  });
+
+  it('forces a teacher-linked caller to their own teacherId, ignoring ?teacherId override', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1'],
+      homeroomClassIds: [],
+    });
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([sessionRow()] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(
+      req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21&teacherId=tea_OTHER'),
+    );
+    expect(res.status).toBe(200);
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ teacherId: 'tea_1' });
+  });
+
+  it('a non-teacher MEMBER keeps the normal optional ?teacherId filter', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
+    mockResolveMyTeacherProfile.mockResolvedValue(null);
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([sessionRow()] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(
+      req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21&teacherId=tea_2'),
+    );
+    expect(res.status).toBe(200);
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ teacherId: 'tea_2' });
+  });
+
+  it('does not force teacherId for an ADMIN caller even when a teacher profile exists (admin-who-also-teaches keeps the full-school view)', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(adminSchool);
+    // Would resolve a real profile if the route called it, proving the
+    // route.ts role === 'MEMBER' guard, not just a lack of linked Teacher
+    // row, is what keeps this caller unscoped.
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1'],
+      homeroomClassIds: [],
+    });
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([sessionRow()] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(
+      req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21&teacherId=tea_2'),
+    );
+    expect(res.status).toBe(200);
+    expect(mockResolveMyTeacherProfile).not.toHaveBeenCalled();
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ teacherId: 'tea_2' });
   });
 });
 

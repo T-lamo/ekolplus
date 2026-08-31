@@ -33,6 +33,10 @@ import { main as seedBulletinTemplates } from './seed-bulletin-templates';
 
 // ─── Accounts (mirrors CREDENTIALS.local.md — dev only, never prod) ────────
 const OWNER_PASSWORD = 'TestEcole2026!';
+// Teacher portal test account (Espace Enseignant) — Mme Michel (key: 'michel'
+// in TEACHERS below) gets a real, already-active login so local testing
+// doesn't require going through the invite/accept-code flow each time.
+const TEACHER_PASSWORD = 'TeacherTest2026!';
 export const ETOILES = {
   // Same id as before the wipe so bookmarks / notes keep pointing at it.
   schoolId: 'cmsovzjgv00059xpfilkr2lyh',
@@ -840,6 +844,9 @@ export async function main(args: string[] = [], deps: SeedDeps = {}): Promise<vo
     console.log(`  ${ETOILES.ownerEmail}  → ${ETOILES.name}`);
     console.log(`  ${HELP.ownerEmail}  → ${HELP.name} (vide)`);
     console.log('  admin@example.com  → SUPERADMIN (/admin)');
+    console.log(
+      '  carline.michel@lesetoiles.edu.ht  → espace enseignant (Mme Michel, Les Étoiles)',
+    );
   } finally {
     if (!deps.prisma) await prisma.$disconnect();
   }
@@ -864,6 +871,33 @@ async function upsertOwner(
     },
     select: { id: true },
   });
+}
+
+// Espace Enseignant test account — mirrors upsertOwner's directness (a real,
+// already-active password immediately) rather than the real invite/accept-code
+// flow, since this is seed-time convenience, not a test of that flow itself.
+// Idempotent across `--reset`: the Organization deletion cascades away the
+// Teacher row and the OrganizationMember, but not this User row, so re-running
+// re-links it by email.
+async function upsertTeacherPortalAccount(
+  prisma: PrismaClient,
+  organizationId: string,
+  teacherId: string,
+  email: string,
+  passwordHash: string,
+): Promise<void> {
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { passwordHash, emailVerifiedAt: new Date(), status: 'ACTIVE' },
+    create: { email, passwordHash, emailVerifiedAt: new Date(), role: 'USER' },
+    select: { id: true },
+  });
+  await prisma.organizationMember.upsert({
+    where: { organizationId_userId: { organizationId, userId: user.id } },
+    update: {},
+    create: { organizationId, userId: user.id, role: 'MEMBER' },
+  });
+  await prisma.teacher.update({ where: { id: teacherId }, data: { userId: user.id } });
 }
 
 async function createTenant(
@@ -958,7 +992,7 @@ async function seedEtoiles(
   today: Date,
 ): Promise<void> {
   console.log(`— ${ETOILES.name}`);
-  const { schoolId } = await createTenant(prisma, {
+  const { organizationId, schoolId } = await createTenant(prisma, {
     schoolId: ETOILES.schoolId,
     slug: ETOILES.slug,
     name: ETOILES.name,
@@ -1034,6 +1068,19 @@ async function seedEtoiles(
     return v;
   };
   console.log(`  ${teacherId.size} enseignants`);
+
+  const michel = TEACHERS.find((t) => t.key === 'michel');
+  if (!michel) throw new Error('unknown teacher michel');
+  const michelEmail = `${slugName(michel.firstName)}.${slugName(michel.lastName)}@lesetoiles.edu.ht`;
+  const teacherPasswordHash = await bcrypt.hash(TEACHER_PASSWORD, 12);
+  await upsertTeacherPortalAccount(
+    prisma,
+    organizationId,
+    tid('michel'),
+    michelEmail,
+    teacherPasswordHash,
+  );
+  console.log(`  compte espace enseignant : ${michelEmail}`);
 
   // Subjects.
   const subjectId = new Map<string, string>();

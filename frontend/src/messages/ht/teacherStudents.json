@@ -1,0 +1,32 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "list": {
+    "title": "Elèv mwen yo",
+    "count": "{count, plural, =0 {Pa gen elèv} one {# elèv} other {# elèv}}",
+    "allSubjects": "Tout matyè yo",
+    "emptyNone": "Poko gen elèv nan klas ou yo."
+  },
+  "profile": {
+    "back": "Retounen sou elèv mwen yo",
+    "homeroom": "Titilè",
+    "notesTitle": "Nòt trimès la",
+    "average": "Mwayèn",
+    "noEvaluations": "Pa gen evalyasyon pou trimès sa a.",
+    "table": {
+      "evaluation": "Evalyasyon",
+      "type": "Tip",
+      "date": "Dat",
+      "score": "Nòt",
+      "coefficient": "Koef.",
+      "status": "Estati"
+    },
+    "notGraded": "Poko gen nòt",
+    "absent": "Absan",
+    "appreciationsTitle": "Apresyasyon",
+    "general": "Apresyasyon jeneral",
+    "noAppreciations": "Poko gen apresyasyon pou trimès sa a.",
+    "comportement": "Konpòtman",
+    "investissement": "Angajman",
+    "assiduite": "Asiduite"
+  }
+}

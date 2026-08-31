@@ -1,0 +1,31 @@
+{
+  "list": {
+    "title": "My students",
+    "count": "{count, plural, =0 {No students} one {# student} other {# students}}",
+    "allSubjects": "All subjects",
+    "emptyNone": "No students in your classes yet."
+  },
+  "profile": {
+    "back": "Back to my students",
+    "homeroom": "Homeroom teacher",
+    "notesTitle": "Term grades",
+    "average": "Average",
+    "noEvaluations": "No evaluations for this term.",
+    "table": {
+      "evaluation": "Evaluation",
+      "type": "Type",
+      "date": "Date",
+      "score": "Score",
+      "coefficient": "Coef.",
+      "status": "Status"
+    },
+    "notGraded": "Not graded",
+    "absent": "Absent",
+    "appreciationsTitle": "Comments",
+    "general": "General comment",
+    "noAppreciations": "No comments entered for this term.",
+    "comportement": "Behavior",
+    "investissement": "Commitment",
+    "assiduite": "Attendance"
+  }
+}

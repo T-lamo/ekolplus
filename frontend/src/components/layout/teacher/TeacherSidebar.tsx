@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, LayoutDashboard, School as SchoolIcon, Settings } from 'lucide-react';
+import { CalendarDays, LayoutDashboard, School as SchoolIcon, Settings, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useMemo } from 'react';
@@ -22,6 +22,7 @@ export function useTeacherSections(): NavSection[] {
         items: [
           { label: t('home'), href: '/espace-enseignant', icon: LayoutDashboard },
           { label: t('classes'), href: '/espace-enseignant/classes', icon: SchoolIcon },
+          { label: t('students'), href: '/espace-enseignant/eleves', icon: Users },
           {
             label: t('timetable'),
             href: '/espace-enseignant/emploi-du-temps',

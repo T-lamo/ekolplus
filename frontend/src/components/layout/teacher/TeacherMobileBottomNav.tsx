@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 import { isActiveRoute } from '../sidebar/route-match';
 
 interface BottomNavLink {
-  key: 'home' | 'studentsShort' | 'gradebookShort' | 'timetable';
+  key: 'home' | 'studentsShort' | 'gradebookShort' | 'timetableShort';
   href: string;
   icon: LucideIcon;
 }
@@ -26,7 +26,7 @@ const LINK_DEFS: BottomNavLink[] = [
   { key: 'home', href: '/espace-enseignant', icon: LayoutDashboard },
   { key: 'studentsShort', href: '/espace-enseignant/eleves', icon: Users },
   { key: 'gradebookShort', href: '/espace-enseignant/carnet-de-notes', icon: NotebookPen },
-  { key: 'timetable', href: '/espace-enseignant/emploi-du-temps', icon: CalendarDays },
+  { key: 'timetableShort', href: '/espace-enseignant/emploi-du-temps', icon: CalendarDays },
 ];
 
 export function TeacherMobileBottomNav({ onMoreClick }: { onMoreClick: () => void }) {

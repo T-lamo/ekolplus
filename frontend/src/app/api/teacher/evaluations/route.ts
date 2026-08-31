@@ -34,24 +34,24 @@ const CreateEvaluationBody = z.object({
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
   return withRequestContext(ctx, async () => {
+    const csrfFail = verifyCsrf(req);
+    if (csrfFail) return csrfFail;
+
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const csrfErr = verifyCsrf(req);
-    if (csrfErr instanceof NextResponse) return csrfErr;
-
     const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
-    if (mySchool === null) {
+    if (!mySchool) {
       return NextResponse.json(
-        { error: 'RESOLVE_FAILED', message: 'Unable to resolve school' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
+        { error: 'NOT_FOUND', message: 'Not found' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 
     const myTeacher = await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId);
-    if (myTeacher === null) {
+    if (!myTeacher) {
       return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Teacher profile not found' },
+        { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
     }
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Anti-leak: check affectations first without touching DB.
     if (!myTeacher.classSubjectIds.includes(parsed.data.classSubjectId)) {
       return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'ClassSubject not found' },
+        { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
     }

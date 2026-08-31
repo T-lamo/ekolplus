@@ -79,6 +79,17 @@ describe('POST /api/teacher/evaluations', () => {
     expect((await call(validBody)).status).toBe(404);
   });
 
+  it('404s when school resolve returns null, without touching the DB', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(null);
+    const res = await call(validBody);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe('NOT_FOUND');
+    expect(json.message).toBe('Not found');
+    expect(prismaMock.classSubject.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.evaluation.create).not.toHaveBeenCalled();
+  });
+
   it('404s a classSubject that is not one of my affectations, without touching the DB', async () => {
     const res = await call({ ...validBody, classSubjectId: 'cs_OTHER' });
     expect(res.status).toBe(404);

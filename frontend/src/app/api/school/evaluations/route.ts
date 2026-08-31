@@ -69,7 +69,9 @@ const CreateEvaluationBody = z.object({
   countsTowardAverage: z.boolean().optional(),
   notes: z.string().trim().max(500).nullable().optional(),
   order: z.number().int().min(0).optional(),
-  date: z.coerce.date().optional(),
+  // nullable: the creation modal sends date: null when the field is left
+  // empty; bare z.coerce.date() would coerce null to epoch (1970-01-01).
+  date: z.coerce.date().nullable().optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

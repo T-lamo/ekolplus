@@ -131,4 +131,12 @@ describe('POST /api/teacher/evaluations', () => {
       },
     });
   });
+
+  it('stores an explicit null date as null, not the epoch (the modal sends date: null)', async () => {
+    const res = await call({ ...validBody, date: null });
+    expect(res.status).toBe(201);
+    expect(prismaMock.evaluation.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ date: null }),
+    });
+  });
 });

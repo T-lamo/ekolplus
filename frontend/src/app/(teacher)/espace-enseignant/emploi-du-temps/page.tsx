@@ -29,6 +29,12 @@ interface TimetableResponse {
   }[];
 }
 
+// Minimal shape of GET /api/teacher/me — only the caller's own teacherId is
+// needed here.
+interface TeacherIdentity {
+  teacher: { id: string };
+}
+
 function minutesToHHMM(m: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 }
@@ -39,9 +45,33 @@ export default function EspaceEnseignantTimetablePage() {
   const locale = useLocale() as LocaleKey;
   const [anchor, setAnchor] = useState(() => mondayOf(todayDay()));
   const days = weekDays(anchor);
-  const { data, loading, error } = useApi<TimetableResponse>(
-    `/api/school/timetable?from=${days[0]}&to=${days[days.length - 1]}`,
+
+  // GET /api/school/timetable only forces the caller's own teacherId
+  // server-side for MEMBER-role accounts (route.ts). An admin/owner who is
+  // ALSO teacher-linked would otherwise see the whole school's timetable
+  // here, so this page always passes its own teacherId explicitly. The
+  // Accueil page already fetches /api/teacher/me, so this is usually a
+  // cache hit (no extra round trip); the timetable fetch is gated (skip)
+  // until the id is known so the request that actually lands is always
+  // correctly scoped, on a direct deep link as well.
+  const { data: me, error: meError } = useApi<TeacherIdentity>('/api/teacher/me');
+  const teacherId = me?.teacher.id ?? null;
+  const {
+    data,
+    loading: timetableLoading,
+    error: timetableError,
+  } = useApi<TimetableResponse>(
+    teacherId
+      ? `/api/school/timetable?from=${days[0]}&to=${days[days.length - 1]}&teacherId=${teacherId}`
+      : '',
+    { skip: !teacherId },
   );
+  const error = meError ?? timetableError;
+  // `data` stays null until the first correctly-scoped fetch resolves, so
+  // gating on it (rather than only on the timetable hook's own transient
+  // `loading` flag) keeps the skeleton up across the identity-then-timetable
+  // hand-off instead of flashing an empty "no sessions" state for a frame.
+  const loading = !error && (!teacherId || timetableLoading || data === null);
 
   const sessionsByDay = new Map<string, TimetableResponse['sessions']>();
   for (const day of days) sessionsByDay.set(day, []);

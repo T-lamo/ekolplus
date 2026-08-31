@@ -206,6 +206,30 @@ describe('GET /api/school/timetable', () => {
     const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
     expect(where).toMatchObject({ teacherId: 'tea_2' });
   });
+
+  it('does not force teacherId for an ADMIN caller even when a teacher profile exists (admin-who-also-teaches keeps the full-school view)', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(adminSchool);
+    // Would resolve a real profile if the route called it, proving the
+    // route.ts role === 'MEMBER' guard, not just a lack of linked Teacher
+    // row, is what keeps this caller unscoped.
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1'],
+      homeroomClassIds: [],
+    });
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([sessionRow()] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(
+      req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21&teacherId=tea_2'),
+    );
+    expect(res.status).toBe(200);
+    expect(mockResolveMyTeacherProfile).not.toHaveBeenCalled();
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ teacherId: 'tea_2' });
+  });
 });
 
 describe('POST /api/school/timetable', () => {

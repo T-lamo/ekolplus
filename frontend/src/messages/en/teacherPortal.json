@@ -1,18 +1,35 @@
 {
+  "roleLabel": "Teacher",
   "title": "Teacher space",
   "welcome": "Welcome, {name}",
   "logout": "Log out",
   "loadError": "We could not load your information right now.",
   "nav": {
     "ariaLabel": "Main navigation",
+    "sectionLabel": "Menu",
     "home": "Home",
     "classes": "Classes",
-    "timetable": "Timetable"
+    "timetable": "Timetable",
+    "settings": "Settings",
+    "more": "More",
+    "moreAriaLabel": "Open menu"
+  },
+  "topbar": {
+    "defaultPageTitle": "Teacher portal"
   },
   "home": {
+    "today": "Today's classes",
+    "noCoursesToday": "No classes today.",
     "thisWeek": "This week",
     "noSessions": "No classes scheduled this week.",
     "myClasses": "My classes",
-    "viewTimetable": "View timetable"
+    "viewTimetable": "View timetable",
+    "quickActions": "Quick actions",
+    "sessionsCount": "{count, plural, =0 {No classes} one {# class} other {# classes}}",
+    "stats": {
+      "classes": "Classes",
+      "subjects": "Subjects taught",
+      "students": "Students"
+    }
   }
 }

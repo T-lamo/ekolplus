@@ -14,5 +14,9 @@
     "back": "Back to my classes",
     "noStudents": "No student enrolled in this class.",
     "studentNumber": "No. {number}"
+  },
+  "table": {
+    "student": "Student",
+    "studentNumber": "Student no."
   }
 }

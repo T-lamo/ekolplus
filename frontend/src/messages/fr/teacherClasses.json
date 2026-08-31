@@ -14,5 +14,9 @@
     "back": "Retour à mes classes",
     "noStudents": "Aucun élève inscrit dans cette classe.",
     "studentNumber": "N° {number}"
+  },
+  "table": {
+    "student": "Élève",
+    "studentNumber": "Matricule"
   }
 }

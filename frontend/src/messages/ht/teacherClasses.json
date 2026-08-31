@@ -15,5 +15,9 @@
     "back": "Tounen nan klas mwen yo",
     "noStudents": "Pa gen elèv enskri nan klas sa a.",
     "studentNumber": "N° {number}"
+  },
+  "table": {
+    "student": "Elèv",
+    "studentNumber": "Nimewo elèv"
   }
 }

@@ -17,18 +17,21 @@ import { usePathname } from 'next/navigation';
 import { isActiveRoute } from '../sidebar/route-match';
 
 interface BottomNavLink {
-  key: 'home' | 'studentsShort' | 'gradebookShort' | 'timetableShort';
+  key: 'home' | 'students' | 'gradebook' | 'timetable';
   href: string;
   icon: LucideIcon;
 }
 
 const LINK_DEFS: BottomNavLink[] = [
   { key: 'home', href: '/espace-enseignant', icon: LayoutDashboard },
-  { key: 'studentsShort', href: '/espace-enseignant/eleves', icon: Users },
-  { key: 'gradebookShort', href: '/espace-enseignant/carnet-de-notes', icon: NotebookPen },
-  { key: 'timetableShort', href: '/espace-enseignant/emploi-du-temps', icon: CalendarDays },
+  { key: 'students', href: '/espace-enseignant/eleves', icon: Users },
+  { key: 'gradebook', href: '/espace-enseignant/carnet-de-notes', icon: NotebookPen },
+  { key: 'timetable', href: '/espace-enseignant/emploi-du-temps', icon: CalendarDays },
 ];
 
+// Icon-only: a label under each of 5 narrow tabs made the row read
+// unevenly (one tab's label was much longer than the rest). The name still
+// reaches screen readers via `aria-label` on each link/button.
 export function TeacherMobileBottomNav({ onMoreClick }: { onMoreClick: () => void }) {
   const t = useTranslations('TeacherPortal.nav');
   const pathname = usePathname();
@@ -47,14 +50,12 @@ export function TeacherMobileBottomNav({ onMoreClick }: { onMoreClick: () => voi
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-1 flex-col items-center justify-center gap-0.5 ${
+            aria-label={t(item.key)}
+            className={`flex flex-1 items-center justify-center ${
               active ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
-            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-            <span className={`text-[10px] ${active ? 'font-semibold' : 'font-medium'}`}>
-              {t(item.key)}
-            </span>
+            <Icon size={24} strokeWidth={active ? 2.5 : 2} />
           </Link>
         );
       })}
@@ -62,14 +63,11 @@ export function TeacherMobileBottomNav({ onMoreClick }: { onMoreClick: () => voi
         type="button"
         onClick={onMoreClick}
         aria-label={t('moreAriaLabel')}
-        className={`flex flex-1 flex-col items-center justify-center gap-0.5 ${
+        className={`flex flex-1 items-center justify-center ${
           moreActive ? 'text-primary' : 'text-muted-foreground'
         }`}
       >
-        <Menu size={22} strokeWidth={moreActive ? 2.5 : 2} />
-        <span className={`text-[10px] ${moreActive ? 'font-semibold' : 'font-medium'}`}>
-          {t('more')}
-        </span>
+        <Menu size={24} strokeWidth={moreActive ? 2.5 : 2} />
       </button>
     </nav>
   );

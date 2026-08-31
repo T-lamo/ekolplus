@@ -22,7 +22,7 @@
 - Stable error codes: `NOT_FOUND`, `VALIDATION_FAILED`. The frontend switches on `ApiError.code`/status, never on messages.
 - Before every commit: `pnpm format && pnpm lint && pnpm typecheck && pnpm test` must pass (the shared-tree pre-commit hook also runs prettier/eslint/tsc on staged files).
 - Worktree hygiene: EnterWorktree's default baseRef branches from **origin**, not local develop. After creating the worktree: `git reset --hard develop` then `pnpm install`, and copy `frontend/.env.local` from the main checkout if you need `pnpm dev`. Re-anchor every file path to the worktree.
-- **Known concurrent edit:** the main checkout has an uncommitted edit to `frontend/src/messages/fr/teacherPortal.json` (renames `nav.sectionLabel` to « Principal », adds `nav.accountSectionLabel`). Task 4 adds one key (`nav.appreciations`) to the same file's three locales. At merge time, re-check the main checkout's `git status` and resolve by keeping both changes.
+- The sidebar was reorganized on develop into three sections, Principal / Pédagogie / Compte (commit `1113f42`), with Pédagogie holding Emploi du temps + Carnet de notes. Task 7 adds Appréciations to that Pédagogie section; branch the worktree from develop at or after `1113f42` (`git reset --hard develop` right after creating it).
 
 ---
 
@@ -1593,12 +1593,17 @@ git commit --only "frontend/src/app/(teacher)/espace-enseignant/appreciations/[s
 
 - [ ] **Step 1: Sidebar**
 
-In `useTeacherSections()`, add `Star` to the lucide import and extend the Pédagogie section:
+In `useTeacherSections()`, add `Star` to the lucide import and extend the Pédagogie section (which since `1113f42` holds Emploi du temps + Carnet de notes):
 
 ```ts
       {
         label: t('pedagogySectionLabel'),
         items: [
+          {
+            label: t('timetable'),
+            href: '/espace-enseignant/emploi-du-temps',
+            icon: CalendarDays,
+          },
           {
             label: t('gradebook'),
             href: '/espace-enseignant/carnet-de-notes',

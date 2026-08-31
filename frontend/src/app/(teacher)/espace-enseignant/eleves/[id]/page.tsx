@@ -202,8 +202,13 @@ export default function TeacherStudentProfilePage() {
                         <tbody>
                           {subject.evaluations.map((e) => (
                             <tr key={e.id} className="border-b border-border last:border-none">
-                              <td className="px-3.5 py-2.5 font-semibold text-foreground">
-                                {e.label}
+                              <td className="px-3.5 py-2.5">
+                                <Link
+                                  href={`/espace-enseignant/carnet-de-notes/${e.id}/saisie`}
+                                  className="font-semibold text-foreground hover:text-primary hover:underline"
+                                >
+                                  {e.label}
+                                </Link>
                               </td>
                               <td className="px-3.5 py-2.5 text-muted-foreground">
                                 {tType(e.type)}

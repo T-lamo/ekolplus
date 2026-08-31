@@ -3,14 +3,21 @@
 // Teacher twin of mobile/MobileBottomNav — same phone-native bottom bar,
 // curated to the teacher's four screens plus « Plus » opening the sidebar
 // drawer (profile + logout live there via SidebarUserProfile).
-import { CalendarDays, LayoutDashboard, Menu, School, Users, type LucideIcon } from 'lucide-react';
+import {
+  CalendarDays,
+  LayoutDashboard,
+  Menu,
+  NotebookPen,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isActiveRoute } from '../sidebar/route-match';
 
 interface BottomNavLink {
-  key: 'home' | 'studentsShort' | 'classes' | 'timetable';
+  key: 'home' | 'studentsShort' | 'gradebookShort' | 'timetable';
   href: string;
   icon: LucideIcon;
 }
@@ -18,7 +25,7 @@ interface BottomNavLink {
 const LINK_DEFS: BottomNavLink[] = [
   { key: 'home', href: '/espace-enseignant', icon: LayoutDashboard },
   { key: 'studentsShort', href: '/espace-enseignant/eleves', icon: Users },
-  { key: 'classes', href: '/espace-enseignant/classes', icon: School },
+  { key: 'gradebookShort', href: '/espace-enseignant/carnet-de-notes', icon: NotebookPen },
   { key: 'timetable', href: '/espace-enseignant/emploi-du-temps', icon: CalendarDays },
 ];
 

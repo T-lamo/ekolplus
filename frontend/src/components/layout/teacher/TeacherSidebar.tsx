@@ -1,6 +1,13 @@
 'use client';
 
-import { CalendarDays, LayoutDashboard, School as SchoolIcon, Settings, Users } from 'lucide-react';
+import {
+  CalendarDays,
+  LayoutDashboard,
+  NotebookPen,
+  School as SchoolIcon,
+  Settings,
+  Users,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useMemo } from 'react';
@@ -10,7 +17,7 @@ import type { NavSection } from '../sidebar/types';
 // Teacher shell sidebar — third instance of the shared Sidebar bricks
 // (SchoolSidebar and AdminSidebar are the other two). Same `light` variant
 // as the school shell so both surfaces read as one product. No role
-// filtering: every teacher sees the same five entries. Exposed as a hook for
+// filtering: every teacher sees the same two sections. Exposed as a hook for
 // the same reason useSchoolSections is one — TeacherTopbar needs the same
 // translated sections for breadcrumbs and the command palette.
 export function useTeacherSections(): NavSection[] {
@@ -29,6 +36,16 @@ export function useTeacherSections(): NavSection[] {
             icon: CalendarDays,
           },
           { label: t('settings'), href: '/espace-enseignant/parametres', icon: Settings },
+        ],
+      },
+      {
+        label: t('pedagogySectionLabel'),
+        items: [
+          {
+            label: t('gradebook'),
+            href: '/espace-enseignant/carnet-de-notes',
+            icon: NotebookPen,
+          },
         ],
       },
     ],

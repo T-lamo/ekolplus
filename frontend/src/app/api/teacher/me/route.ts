@@ -54,7 +54,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }),
       prisma.class.findMany({
         where: { id: { in: myTeacher.homeroomClassIds } },
-        select: { id: true, name: true, level: true },
+        select: { id: true, name: true, level: true, academicYearId: true },
         orderBy: { name: 'asc' },
       }),
       prisma.classSubject.findMany({
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         select: {
           id: true,
           classId: true,
-          class: { select: { name: true, level: true } },
+          class: { select: { name: true, level: true, academicYearId: true } },
           subjectId: true,
           subject: { select: { name: true } },
         },
@@ -70,6 +70,29 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }),
       resolveActiveAcademicYear(mySchool.schoolId),
     ]);
+
+    const countClassKeys = [
+      ...homeroomClasses.map((c) => ({ classId: c.id, academicYearId: c.academicYearId })),
+      ...classSubjects.map((cs) => ({
+        classId: cs.classId,
+        academicYearId: cs.class.academicYearId,
+      })),
+    ];
+    const uniqueClassIds = [...new Set(countClassKeys.map((k) => k.classId))];
+    const enrollmentCounts =
+      uniqueClassIds.length > 0
+        ? await prisma.enrollment.groupBy({
+            by: ['classId', 'academicYearId'],
+            where: { classId: { in: uniqueClassIds } },
+            _count: { _all: true },
+          })
+        : [];
+    function studentCountFor(classId: string, academicYearId: string): number {
+      return (
+        enrollmentCounts.find((e) => e.classId === classId && e.academicYearId === academicYearId)
+          ?._count._all ?? 0
+      );
+    }
 
     let thisWeekSessions: SerializedSession[] = [];
     if (activeYear) {
@@ -94,7 +117,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         teacher,
-        homeroomClasses,
+        homeroomClasses: homeroomClasses.map((c) => ({
+          id: c.id,
+          name: c.name,
+          level: c.level,
+          studentCount: studentCountFor(c.id, c.academicYearId),
+        })),
         classSubjects: classSubjects.map((cs) => ({
           id: cs.id,
           classId: cs.classId,
@@ -102,6 +130,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           classLevel: cs.class.level,
           subjectId: cs.subjectId,
           subjectName: cs.subject.name,
+          studentCount: studentCountFor(cs.classId, cs.class.academicYearId),
         })),
         thisWeekSessions,
         academicYear: activeYear ? { id: activeYear.id, label: activeYear.label } : null,

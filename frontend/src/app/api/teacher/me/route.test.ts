@@ -56,16 +56,19 @@ beforeEach(() => {
     email: 'carline.michel@lesetoiles.edu.ht',
   } as never);
   prismaMock.class.findMany.mockResolvedValue([
-    { id: 'cls_1', name: '3ème A', level: '3ème' },
+    { id: 'cls_1', name: '3ème A', level: '3ème', academicYearId: 'year_1' },
   ] as never);
   prismaMock.classSubject.findMany.mockResolvedValue([
     {
       id: 'cs_1',
       classId: 'cls_1',
-      class: { name: '3ème A', level: '3ème' },
+      class: { name: '3ème A', level: '3ème', academicYearId: 'year_1' },
       subjectId: 'sub_1',
       subject: { name: 'Mathématiques' },
     },
+  ] as never);
+  (prismaMock.enrollment.groupBy as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
+    { classId: 'cls_1', academicYearId: 'year_1', _count: { _all: 27 } },
   ] as never);
   prismaMock.timetableSession.findMany.mockResolvedValue([]);
   groupByMock.mockResolvedValue([]);
@@ -98,7 +101,9 @@ describe('GET /api/teacher/me', () => {
       name: 'Carline Michel',
       email: 'carline.michel@lesetoiles.edu.ht',
     });
-    expect(json.homeroomClasses).toEqual([{ id: 'cls_1', name: '3ème A', level: '3ème' }]);
+    expect(json.homeroomClasses).toEqual([
+      { id: 'cls_1', name: '3ème A', level: '3ème', studentCount: 27 },
+    ]);
     expect(json.classSubjects).toEqual([
       {
         id: 'cs_1',
@@ -107,6 +112,7 @@ describe('GET /api/teacher/me', () => {
         classLevel: '3ème',
         subjectId: 'sub_1',
         subjectName: 'Mathématiques',
+        studentCount: 27,
       },
     ]);
     expect(json.academicYear).toEqual({ id: 'year_1', label: '2025-2026' });
@@ -119,5 +125,31 @@ describe('GET /api/teacher/me', () => {
     await GET(req());
     const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
     expect(where).toMatchObject({ schoolId: 'school_1', teacherId: 'tea_1' });
+  });
+
+  it('returns studentCount per homeroom class and class-subject, scoped to the class own academic year', async () => {
+    const res = await GET(req());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.homeroomClasses[0]).toMatchObject({ id: 'cls_1', studentCount: 27 });
+    expect(body.classSubjects[0]).toMatchObject({ id: 'cs_1', studentCount: 27 });
+    const groupByArgs = (prismaMock.enrollment.groupBy as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0];
+    expect(groupByArgs).toMatchObject({
+      by: ['classId', 'academicYearId'],
+      where: { classId: { in: ['cls_1'] } },
+    });
+  });
+
+  it('ignores enrollment counts from mismatched academicYears', async () => {
+    (prismaMock.enrollment.groupBy as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { classId: 'cls_1', academicYearId: 'year_1', _count: { _all: 27 } },
+      { classId: 'cls_1', academicYearId: 'year_OLD', _count: { _all: 99 } },
+    ] as never);
+    const res = await GET(req());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.homeroomClasses[0]).toMatchObject({ id: 'cls_1', studentCount: 27 });
+    expect(body.classSubjects[0]).toMatchObject({ id: 'cs_1', studentCount: 27 });
   });
 });

@@ -22,7 +22,8 @@ export function TimetableMonth({
   sessions: TimetableSession[];
   today: string;
   onDayClick: (day: string) => void;
-  onSessionClick: (session: TimetableSession) => void;
+  /** Absent → read-only month (teacher portal): chips render without button semantics. */
+  onSessionClick?: (session: TimetableSession) => void;
 }) {
   const locale = useLocale();
   const t = useTranslations('Timetable.month');
@@ -84,7 +85,7 @@ export function TimetableMonth({
                         session={s}
                         showClass={false}
                         compact
-                        onClick={onSessionClick}
+                        {...(onSessionClick ? { onClick: onSessionClick } : {})}
                       />
                     ))}
                     {extra > 0 && (

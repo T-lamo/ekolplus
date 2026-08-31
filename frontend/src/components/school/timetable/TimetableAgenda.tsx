@@ -26,7 +26,8 @@ export function TimetableAgenda({
   days: string[];
   sessions: TimetableSession[];
   today: string;
-  onSessionClick: (session: TimetableSession) => void;
+  /** Absent → read-only agenda (teacher portal): rows render without button semantics. */
+  onSessionClick?: (session: TimetableSession) => void;
 }) {
   const locale = useLocale();
   const t = useTranslations('Timetable.agenda');
@@ -73,38 +74,47 @@ export function TimetableAgenda({
               {list.map((s) => {
                 const colors = cardColors(sessionColor(s));
                 const meta = [s.class.name, s.teacher?.name, s.room].filter(Boolean).join(' · ');
+                const rowChildren = (
+                  <>
+                    <span className="w-[92px] shrink-0 text-xs font-semibold text-foreground tabular-nums">
+                      {minutesToHHMM(s.startMinutes)} – {minutesToHHMM(s.endMinutes)}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="h-8 w-[3px] shrink-0 rounded-full"
+                      style={{ background: colors.band }}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-caption font-semibold text-foreground">
+                        {s.subject.name}
+                      </span>
+                      <span className="block truncate text-2xs text-muted-foreground">{meta}</span>
+                    </span>
+                    <span
+                      className={cn(
+                        'shrink-0 rounded-full px-[7px] py-0.5 text-[10px] font-bold',
+                        typeMeta(s.type).badge,
+                      )}
+                    >
+                      {typeMeta(s.type).short}
+                    </span>
+                  </>
+                );
                 return (
                   <li key={s.id} className="border-b border-border last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => onSessionClick(s)}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-background"
-                    >
-                      <span className="w-[92px] shrink-0 text-xs font-semibold text-foreground tabular-nums">
-                        {minutesToHHMM(s.startMinutes)} – {minutesToHHMM(s.endMinutes)}
-                      </span>
-                      <span
-                        aria-hidden
-                        className="h-8 w-[3px] shrink-0 rounded-full"
-                        style={{ background: colors.band }}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-caption font-semibold text-foreground">
-                          {s.subject.name}
-                        </span>
-                        <span className="block truncate text-2xs text-muted-foreground">
-                          {meta}
-                        </span>
-                      </span>
-                      <span
-                        className={cn(
-                          'shrink-0 rounded-full px-[7px] py-0.5 text-[10px] font-bold',
-                          typeMeta(s.type).badge,
-                        )}
+                    {onSessionClick ? (
+                      <button
+                        type="button"
+                        onClick={() => onSessionClick(s)}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-background"
                       >
-                        {typeMeta(s.type).short}
-                      </span>
-                    </button>
+                        {rowChildren}
+                      </button>
+                    ) : (
+                      <div className="flex w-full items-center gap-3 px-4 py-2.5 text-left">
+                        {rowChildren}
+                      </div>
+                    )}
                   </li>
                 );
               })}

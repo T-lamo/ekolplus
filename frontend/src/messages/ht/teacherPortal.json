@@ -1,19 +1,36 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "roleLabel": "Pwofesè",
   "title": "Espas anseyan",
   "welcome": "Byenveni, {name}",
   "logout": "Dekonekte",
   "loadError": "Nou pa t kapab chaje enfòmasyon w yo kounye a.",
   "nav": {
     "ariaLabel": "Navigasyon prensipal",
+    "sectionLabel": "Meni",
     "home": "Akèy",
     "classes": "Klas",
-    "timetable": "Orè"
+    "timetable": "Orè",
+    "settings": "Paramèt",
+    "more": "Plis",
+    "moreAriaLabel": "Louvri meni an"
+  },
+  "topbar": {
+    "defaultPageTitle": "Espas pwofesè"
   },
   "home": {
+    "today": "Kou jodi a",
+    "noCoursesToday": "Pa gen kou jodi a.",
     "thisWeek": "Semèn sa a",
     "noSessions": "Pa gen kou pwograme semèn sa a.",
     "myClasses": "Klas mwen yo",
-    "viewTimetable": "Gade orè a"
+    "viewTimetable": "Gade orè a",
+    "quickActions": "Aksè rapid",
+    "sessionsCount": "{count, plural, =0 {Pa gen kou} one {# kou} other {# kou}}",
+    "stats": {
+      "classes": "Klas",
+      "subjects": "Matyè w ap anseye",
+      "students": "Elèv"
+    }
   }
 }

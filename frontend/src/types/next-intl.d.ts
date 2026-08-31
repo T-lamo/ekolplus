@@ -36,6 +36,7 @@ import type teacherPortal from '@/messages/fr/teacherPortal.json';
 import type teacherClasses from '@/messages/fr/teacherClasses.json';
 import type teacherTimetable from '@/messages/fr/teacherTimetable.json';
 import type teacherStudents from '@/messages/fr/teacherStudents.json';
+import type teacherGradebook from '@/messages/fr/teacherGradebook.json';
 import type setPasswordEleve from '@/messages/fr/setPasswordEleve.json';
 import type elevePortal from '@/messages/fr/elevePortal.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
@@ -75,6 +76,7 @@ declare module 'next-intl' {
       TeacherClasses: typeof teacherClasses;
       TeacherTimetable: typeof teacherTimetable;
       TeacherStudents: typeof teacherStudents;
+      TeacherGradebook: typeof teacherGradebook;
       SetPasswordEleve: typeof setPasswordEleve;
       ElevePortal: typeof elevePortal;
     };

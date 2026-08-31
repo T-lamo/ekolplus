@@ -1,0 +1,7 @@
+{
+  "title": "Grade book",
+  "subtitle": "Enter and publish grades for your subjects.",
+  "classSubjectLabel": "Class and subject",
+  "empty": "No subjects are assigned to you yet.",
+  "loadError": "Unable to load the grade book right now."
+}

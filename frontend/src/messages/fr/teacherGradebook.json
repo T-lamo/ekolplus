@@ -1,0 +1,7 @@
+{
+  "title": "Carnet de notes",
+  "subtitle": "Saisie et publication des notes de vos matières.",
+  "classSubjectLabel": "Classe et matière",
+  "empty": "Aucune matière ne vous est encore assignée.",
+  "loadError": "Impossible de charger le carnet de notes pour le moment."
+}

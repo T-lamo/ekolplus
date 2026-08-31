@@ -38,7 +38,14 @@ interface EvalRow {
   totalCount: number;
 }
 
-export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) {
+export function ParEvaluationTab({
+  unified,
+  saisieHrefBase = '/pedagogie/carnet-de-notes',
+}: {
+  unified: UnifiedNotebookData;
+  /** Base path for the per-evaluation grade-entry link — the teacher portal passes its own. */
+  saisieHrefBase?: string;
+}) {
   const t = useTranslations('Gradebook.parEvaluation');
   const tType = useTranslations('Gradebook.evaluationType');
   const tStatus = useTranslations('Gradebook.evaluationStatus');
@@ -150,7 +157,7 @@ export function ParEvaluationTab({ unified }: { unified: UnifiedNotebookData }) 
               </div>
             </div>
             <Link
-              href={`/pedagogie/carnet-de-notes/${r.key}/saisie`}
+              href={`${saisieHrefBase}/${r.key}/saisie`}
               className="flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-2xs font-semibold text-foreground hover:bg-muted"
             >
               <Pencil size={12} />

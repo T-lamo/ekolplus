@@ -72,6 +72,26 @@ beforeEach(() => {
   ] as never);
   prismaMock.timetableSession.findMany.mockResolvedValue([]);
   groupByMock.mockResolvedValue([]);
+  prismaMock.term.findMany.mockResolvedValue([
+    {
+      id: 'term_1',
+      label: '1er Trimestre',
+      order: 1,
+      type: 'TRIMESTRE',
+      gradeEntryEnabled: true,
+      startDate: new Date('2025-09-01T00:00:00.000Z'),
+      endDate: new Date('2025-12-20T00:00:00.000Z'),
+    },
+    {
+      id: 'term_2',
+      label: '2e Trimestre',
+      order: 2,
+      type: 'TRIMESTRE',
+      gradeEntryEnabled: true,
+      startDate: new Date('2026-01-05T00:00:00.000Z'),
+      endDate: new Date('2026-03-31T00:00:00.000Z'),
+    },
+  ] as never);
 });
 
 describe('GET /api/teacher/me', () => {
@@ -151,5 +171,46 @@ describe('GET /api/teacher/me', () => {
     const body = await res.json();
     expect(body.homeroomClasses[0]).toMatchObject({ id: 'cls_1', studentCount: 27 });
     expect(body.classSubjects[0]).toMatchObject({ id: 'cs_1', studentCount: 27 });
+  });
+
+  it('returns the active year terms with a resolved currentTermId', async () => {
+    const res = await GET(req());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.terms).toEqual([
+      {
+        id: 'term_1',
+        label: '1er Trimestre',
+        order: 1,
+        type: 'TRIMESTRE',
+        gradeEntryEnabled: true,
+        startDate: '2025-09-01T00:00:00.000Z',
+        endDate: '2025-12-20T00:00:00.000Z',
+      },
+      {
+        id: 'term_2',
+        label: '2e Trimestre',
+        order: 2,
+        type: 'TRIMESTRE',
+        gradeEntryEnabled: true,
+        startDate: '2026-01-05T00:00:00.000Z',
+        endDate: '2026-03-31T00:00:00.000Z',
+      },
+    ]);
+    // Both terms are in the past relative to the test run date (2026+), so
+    // resolveCurrentTerm picks the most recently ended one.
+    expect(body.currentTermId).toBe('term_2');
+    const where = prismaMock.term.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ academicYearId: 'year_1' });
+  });
+
+  it('returns empty terms and null currentTermId when no academic year is active', async () => {
+    mockResolveYear.mockResolvedValue(null);
+    const res = await GET(req());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.terms).toEqual([]);
+    expect(body.currentTermId).toBeNull();
+    expect(prismaMock.term.findMany).not.toHaveBeenCalled();
   });
 });

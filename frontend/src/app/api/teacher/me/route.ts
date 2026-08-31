@@ -25,6 +25,7 @@ import {
   seriesCounts,
   type SerializedSession,
 } from '@/lib/server/timetable-route-helpers';
+import { resolveCurrentTerm } from '@/lib/server/grades';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -114,6 +115,32 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    let terms: {
+      id: string;
+      label: string;
+      order: number;
+      type: string;
+      gradeEntryEnabled: boolean;
+      startDate: Date;
+      endDate: Date;
+    }[] = [];
+    if (activeYear) {
+      terms = await prisma.term.findMany({
+        where: { academicYearId: activeYear.id },
+        orderBy: { order: 'asc' },
+        select: {
+          id: true,
+          label: true,
+          order: true,
+          type: true,
+          gradeEntryEnabled: true,
+          startDate: true,
+          endDate: true,
+        },
+      });
+    }
+    const currentTerm = resolveCurrentTerm(terms);
+
     return NextResponse.json(
       {
         teacher,
@@ -134,6 +161,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         })),
         thisWeekSessions,
         academicYear: activeYear ? { id: activeYear.id, label: activeYear.label } : null,
+        terms: terms.map((t) => ({
+          id: t.id,
+          label: t.label,
+          order: t.order,
+          type: t.type,
+          gradeEntryEnabled: t.gradeEntryEnabled,
+          startDate: t.startDate.toISOString(),
+          endDate: t.endDate.toISOString(),
+        })),
+        currentTermId: currentTerm?.id ?? null,
       },
       { headers: { 'x-request-id': ctx.requestId } },
     );

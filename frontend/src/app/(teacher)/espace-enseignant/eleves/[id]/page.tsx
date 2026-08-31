@@ -247,7 +247,15 @@ export default function TeacherStudentProfilePage() {
           </section>
 
           <section className="flex flex-col gap-2">
-            <h2 className="text-sm font-bold text-foreground">{t('appreciationsTitle')}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-foreground">{t('appreciationsTitle')}</h2>
+              <Link
+                href={`/espace-enseignant/appreciations/${id}${termId || data.term?.id ? `?termId=${termId || data.term?.id}` : ''}`}
+                className="text-caption font-semibold text-primary hover:underline"
+              >
+                {t('appreciationsEdit')}
+              </Link>
+            </div>
             {sortedAppreciations.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t('noAppreciations')}</p>
             ) : (

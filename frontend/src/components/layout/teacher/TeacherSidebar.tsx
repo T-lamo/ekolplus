@@ -6,6 +6,7 @@ import {
   NotebookPen,
   School as SchoolIcon,
   Settings,
+  Star,
   Users,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -48,6 +49,11 @@ export function useTeacherSections(): NavSection[] {
             label: t('gradebook'),
             href: '/espace-enseignant/carnet-de-notes',
             icon: NotebookPen,
+          },
+          {
+            label: t('appreciations'),
+            href: '/espace-enseignant/appreciations',
+            icon: Star,
           },
         ],
       },

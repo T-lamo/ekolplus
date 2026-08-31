@@ -7,6 +7,7 @@ import { useApi } from '@/lib/useApi';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { CARD_GRID, CARD_GRID_CONTAINER } from '@/lib/layout';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 
 interface TeacherClassesResponse {
   homeroomClasses: { id: string; name: string; level: string; studentCount: number }[];
@@ -15,6 +16,8 @@ interface TeacherClassesResponse {
     className: string;
     classLevel: string;
     subjectName: string;
+    subjectIcon: string | null;
+    subjectColor: string | null;
     studentCount: number;
   }[];
 }
@@ -75,20 +78,36 @@ export default function EspaceEnseignantClassesPage() {
             ) : (
               <div className={CARD_GRID_CONTAINER}>
                 <div className={CARD_GRID}>
-                  {data.classSubjects.map((cs) => (
-                    <Link key={cs.id} href={`/espace-enseignant/classes/${cs.id}`}>
-                      <Card className="gap-1 p-4">
-                        <p className="text-sm font-bold text-foreground">{cs.subjectName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {cs.className} · {cs.classLevel}
-                        </p>
-                        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users size={12} />
-                          {studentsLabel(cs.studentCount)}
-                        </p>
-                      </Card>
-                    </Link>
-                  ))}
+                  {data.classSubjects.map((cs) => {
+                    const visual = getSubjectVisual(cs.subjectName, {
+                      icon: cs.subjectIcon,
+                      color: cs.subjectColor,
+                    });
+                    return (
+                      <Link key={cs.id} href={`/espace-enseignant/classes/${cs.id}`}>
+                        <Card className="flex-row items-center gap-3 p-4">
+                          <div
+                            className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md"
+                            style={{ background: visual.iconBg, color: visual.iconFg }}
+                          >
+                            <visual.Icon size={18} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {cs.subjectName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {cs.className} · {cs.classLevel}
+                            </p>
+                            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                              <Users size={12} />
+                              {studentsLabel(cs.studentCount)}
+                            </p>
+                          </div>
+                        </Card>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}

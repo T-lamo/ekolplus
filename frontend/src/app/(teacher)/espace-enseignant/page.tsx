@@ -17,6 +17,7 @@ import {
   minutesToHHMM,
 } from '@/components/school/timetable/timetable-utils';
 import type { LocaleKey } from '@/lib/locales';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 
 interface TeacherMeResponse {
   teacher: { id: string; name: string; email: string | null };
@@ -37,7 +38,7 @@ interface TeacherMeResponse {
     endMinutes: number;
     room: string | null;
     class: { name: string };
-    subject: { name: string };
+    subject: { name: string; icon: string | null; color: string | null };
   }[];
   academicYear: { id: string; label: string } | null;
 }
@@ -133,19 +134,30 @@ export default function EspaceEnseignantHomePage() {
               <p className="text-sm text-muted-foreground">{t('home.noCoursesToday')}</p>
             ) : (
               <Card className="divide-y divide-border p-0">
-                {todaysSessions.map((s) => (
-                  <div key={s.id} className="flex items-center gap-3 px-3.5 py-2.5">
-                    <span className="w-24 shrink-0 text-xs font-semibold text-primary">
-                      {minutesToHHMM(s.startMinutes)}-{minutesToHHMM(s.endMinutes)}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-                      {s.subject.name} · {s.class.name}
-                    </span>
-                    {s.room && (
-                      <span className="shrink-0 text-xs text-muted-foreground">{s.room}</span>
-                    )}
-                  </div>
-                ))}
+                {todaysSessions.map((s) => {
+                  const visual = getSubjectVisual(s.subject.name, {
+                    icon: s.subject.icon,
+                    color: s.subject.color,
+                  });
+                  return (
+                    <div key={s.id} className="flex items-center gap-3 px-3.5 py-2.5">
+                      <span className="w-24 shrink-0 text-xs font-semibold text-primary">
+                        {minutesToHHMM(s.startMinutes)}-{minutesToHHMM(s.endMinutes)}
+                      </span>
+                      <visual.Icon
+                        size={15}
+                        className="shrink-0"
+                        style={{ color: visual.iconFg }}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                        {s.subject.name} · {s.class.name}
+                      </span>
+                      {s.room && (
+                        <span className="shrink-0 text-xs text-muted-foreground">{s.room}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </Card>
             )}
           </section>

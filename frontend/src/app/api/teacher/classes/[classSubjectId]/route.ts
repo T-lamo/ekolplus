@@ -45,7 +45,7 @@ export async function GET(
         classId: true,
         class: { select: { id: true, name: true, level: true, academicYearId: true } },
         subjectId: true,
-        subject: { select: { id: true, name: true } },
+        subject: { select: { id: true, name: true, icon: true, color: true } },
       },
     });
 
@@ -66,6 +66,8 @@ export async function GET(
           classLevel: classSubject.class.level,
           subjectId: classSubject.subjectId,
           subjectName: classSubject.subject.name,
+          subjectIcon: classSubject.subject.icon,
+          subjectColor: classSubject.subject.color,
         },
         students: enrollments.map((e) => e.student),
       },

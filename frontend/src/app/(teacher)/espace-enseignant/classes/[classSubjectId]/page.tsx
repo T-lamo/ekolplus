@@ -11,11 +11,19 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Avatar } from '@/components/ui/Avatar';
 import { Pager } from '@/components/ui/Pager';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
+import { getSubjectVisual } from '@/lib/subject-visuals';
 
 const PAGE_SIZE = 20;
 
 interface RosterResponse {
-  classSubject: { id: string; className: string; classLevel: string; subjectName: string };
+  classSubject: {
+    id: string;
+    className: string;
+    classLevel: string;
+    subjectName: string;
+    subjectIcon: string | null;
+    subjectColor: string | null;
+  };
   students: { id: string; firstName: string; lastName: string; studentNumber: string }[];
 }
 
@@ -55,17 +63,33 @@ export default function ClassSubjectRosterPage() {
         <p className="text-sm text-destructive">{tPortal('loadError')}</p>
       ) : (
         <>
-          <div className="mb-4">
-            <h1 className="text-xl font-extrabold tracking-tight text-foreground">
-              {data.classSubject.subjectName}
-            </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {data.classSubject.className} · {data.classSubject.classLevel} ·{' '}
-              {t(students.length === 1 ? 'plural.students.one' : 'plural.students.other', {
-                count: students.length,
-              })}
-            </p>
-          </div>
+          {(() => {
+            const visual = getSubjectVisual(data.classSubject.subjectName, {
+              icon: data.classSubject.subjectIcon,
+              color: data.classSubject.subjectColor,
+            });
+            return (
+              <div className="mb-4 flex items-center gap-3">
+                <div
+                  className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md"
+                  style={{ background: visual.iconBg, color: visual.iconFg }}
+                >
+                  <visual.Icon size={18} />
+                </div>
+                <div>
+                  <h1 className="text-xl font-extrabold tracking-tight text-foreground">
+                    {data.classSubject.subjectName}
+                  </h1>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {data.classSubject.className} · {data.classSubject.classLevel} ·{' '}
+                    {t(students.length === 1 ? 'plural.students.one' : 'plural.students.other', {
+                      count: students.length,
+                    })}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {students.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('roster.noStudents')}</p>

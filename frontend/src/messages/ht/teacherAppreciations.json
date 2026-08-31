@@ -1,0 +1,12 @@
+{
+  "_review": true,
+  "title": "Apresyasyon",
+  "subtitle": "Antre apresyasyon pou matyè ou yo ak klas ou yo.",
+  "empty": "Poko gen okenn klas ki asiyen ba ou.",
+  "loadError": "Nou pa ka chaje apresyasyon yo kounye a.",
+  "studentCount": "{count} elèv",
+  "homeroomBadge": "Titilè",
+  "subjectProgress": "{subject} · {count}/{total} antre",
+  "generalProgress": "Jeneral · {count}/{total} antre",
+  "noStudents": "Pa gen elèv enskri"
+}

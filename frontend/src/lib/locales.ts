@@ -75,6 +75,7 @@ export const MESSAGE_NAMESPACES = [
   'teacherTimetable',
   'teacherStudents',
   'teacherGradebook',
+  'teacherAppreciations',
   'setPasswordEleve',
   'elevePortal',
 ] as const;

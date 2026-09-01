@@ -33,7 +33,7 @@
     "eleves": { "label": "Students", "sub": "Records & Enrollment" },
     "enseignants": { "label": "Teachers", "sub": "Staff & Assignments" },
     "notes": { "label": "Grades & Report cards", "sub": "Assessments & Results" },
-    "appreciations": { "label": "Comments", "sub": "Report card comments" },
+    "appreciations": { "label": "Assessments", "sub": "Report card comments" },
     "presences": { "label": "Attendance", "sub": "Absences & Lateness" },
     "emploiDuTemps": { "label": "Timetable", "sub": "Schedule & Sessions" },
     "paiements": { "label": "Payments", "sub": "Fees & Collections" },

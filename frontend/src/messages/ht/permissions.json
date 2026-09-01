@@ -15,7 +15,7 @@
   "systemRoleHint": "Wòl sistèm : aksè konplè, pa ka modifye.",
   "ownerRole": "Pwopriyetè",
   "adminRole": "Administratè",
-  "modifiedOn": "Modifye le {date}",
+  "modifiedOn": "Modifye {date}",
   "edit": "Modifye",
   "delete": "Efase",
   "matrix": {
@@ -45,7 +45,7 @@
     "parametres": { "label": "Paramèt etablisman", "sub": "Ane eskolè & Peryòd" }
   },
   "footer": {
-    "meta": "Wòl : {name} · {count} itilizatè konsène · Dènye mizajou le {date}",
+    "meta": "Wòl : {name} · {count} itilizatè konsène · Dènye mizajou {date}",
     "deleteRole": "Efase wòl sa a",
     "cancel": "Anile",
     "save": "Anrejistre"

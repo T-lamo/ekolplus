@@ -40,8 +40,13 @@ permet, et le serveur refuse tout appel hors de ses droits.
 
 ## 3. Modèle de données (Prisma, migration versionnée)
 
+Nom du modèle : **`StaffRole`** (et non `SchoolRole` — ce nom est déjà pris
+côté frontend par le type org `'OWNER' | 'ADMIN' | 'MEMBER'` exporté de
+`SchoolPlanContext` ; réutiliser le même mot pour deux concepts différents
+serait un piège).
+
 ```prisma
-model SchoolRole {
+model StaffRole {
   id          String   @id @default(cuid())
   schoolId    String
   school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -60,12 +65,11 @@ model SchoolRole {
 `OrganizationMember` gagne :
 
 ```prisma
-schoolRoleId String?
-schoolRole   SchoolRole? @relation(fields: [schoolRoleId], references: [id], onDelete: SetNull)
+staffRoleId String?
+staffRole   StaffRole? @relation(fields: [staffRoleId], references: [id], onDelete: SetNull)
 ```
 
-Un membre a au plus un rôle. La suppression d'un rôle remet ses membres à
-`null` (⇒ refus par défaut) après confirmation explicite dans l'UI.
+Un membre a au plus un rôle. La suppression d'un rôle remet ses membres à `null` (⇒ refus par défaut) après confirmation explicite dans l'UI.
 
 ## 4. Vocabulaire des permissions — `frontend/src/lib/permissions.ts`
 
@@ -107,7 +111,7 @@ Nouveau `frontend/src/lib/server/school-permissions.ts` :
 
 - `resolveMyGrants(userId)` → `{ schoolId, orgRole, grants: 'ALL' | Set<PermissionGrant> } | null`
   (`'ALL'` pour OWNER/ADMIN ; `Set` — possiblement vide — pour MEMBER via
-  son `schoolRole.grants` ; `null` si pas d'école, mêmes règles que
+  son `staffRole.grants` ; `null` si pas d'école, mêmes règles que
   `resolveMySchool()`, portal-only inclus).
 - `resolveMySchoolWithPermission(userId, module, action)` → soit le même
   contexte école que `resolveMySchool()`, soit une `NextResponse` :
@@ -134,7 +138,7 @@ fiche mappent vers le module qui les possède (ex. `students/[id]/attendance`
 | `classes`, `class-subjects`, `grade-levels`, `rooms`, `subjects` | `configuration` |
 | `academic-year`, `academic-year-rollover`, `terms`, `reset-year` | `parametres` |
 | `dashboard`, `activity` | `dashboard` |
-| `GET /api/school` (bootstrap) | liste blanche : accessible à tout membre, il porte les permissions elles-mêmes |
+| `GET /api/school` (bootstrap) et `GET /api/school/billing/plan` (snapshot du shell, porte `role` + `permissions`) | liste blanche : accessibles à tout membre — l'écran Paramètres personnels et le shell en dépendent |
 | `billing`, `export` (ZIP Zone Dangereuse, déjà OWNER-only) | inchangés |
 
 Action par méthode : GET → `view`, POST → `create`, PATCH/PUT → `edit`,
@@ -150,10 +154,12 @@ permission sauf liste blanche explicite : bootstrap, billing).
 
 ## 6. Côté client — « automatique dès la connexion »
 
-- `GET /api/school` (bootstrap déjà consommé par le shell) renvoie en plus
-  `permissions: 'ALL' | PermissionGrant[]`.
-- Nouveau hook `usePermissions()` (contexte alimenté par le bootstrap) :
-  `can(module, action)`, `canSee(module)`.
+- Le snapshot du shell `GET /api/school/billing/plan` (déjà consommé par
+  `SchoolPlanProvider` sur chaque page école, et qui porte déjà `role`)
+  renvoie en plus `permissions: 'ALL' | PermissionGrant[]`.
+- `SchoolPlanContext` expose `permissions` ; nouveau hook `usePermissions()`
+  par-dessus : `can(module, action)`, `canSee(module)`. (Le portail
+  enseignant n'a pas de `SchoolPlanProvider` : zéro impact.)
 - **Sidebar** : `NavItem` gagne `module?: ModuleKey` ; nouvelle passe
   `filterSectionsByPermissions(sections, perms)` appliquée en plus du filtre
   `minRole` existant (Abonnement inchangé). `perms === null` (chargement) ne
@@ -233,11 +239,14 @@ PATCH immédiat avec toast. Lien « Gérer les rôles et permissions » vers
 - `PATCH /api/school/roles/[id]` — `{ name?, description?, grants? }`,
   grants passés par `sanitizeGrants`. 404 anti-fuite si le rôle n'est pas de
   l'école du caller.
-- `DELETE /api/school/roles/[id]` — les membres repassent à `schoolRoleId =
+- `DELETE /api/school/roles/[id]` — les membres repassent à `staffRoleId =
   null` (comportement du `SetNull`).
-- Attribution : la route existante de gestion des membres (onglet
-  Administrateurs) accepte `schoolRoleId: string | null` en PATCH pour les
-  membres MEMBER (refusé pour OWNER/ADMIN).
+- Attribution : il n'existe aujourd'hui aucune route de gestion des
+  membres (l'onglet Administrateurs est en lecture seule sur le payload de
+  `GET /api/school`). Nouvelle route `PATCH /api/school/members/[userId]`
+  acceptant `{ staffRoleId: string | null }`, pour les membres MEMBER
+  uniquement (400 pour OWNER/ADMIN), min-role ADMIN. Le payload `members`
+  de `GET /api/school` gagne `staffRoleId`.
 
 ## 9. i18n
 

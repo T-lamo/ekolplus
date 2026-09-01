@@ -5,6 +5,8 @@ import {
   resolveMySchoolIncludingTeacher,
   resolveMyTeacherProfile,
   resolveMyStudentProfile,
+  isPortalLocked,
+  resolveMySpaces,
 } from './school';
 
 // isPortalOnlyAccount now checks Student in addition to Teacher (Espace
@@ -19,6 +21,7 @@ function membershipRow(over: Record<string, unknown> = {}) {
   return {
     organizationId: 'org_1',
     role: 'MEMBER',
+    staffRoles: [],
     organization: { school: { id: 'school_1' } },
     ...over,
   };
@@ -104,6 +107,7 @@ describe('resolveMySchool — student lockdown', () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue({
       organizationId: 'org_1',
       role: 'MEMBER',
+      staffRoles: [],
       organization: { school: { id: 'school_1' } },
     } as never);
     prismaMock.teacher.findFirst.mockResolvedValue(null as never);
@@ -143,6 +147,149 @@ describe('resolveMyStudentProfile', () => {
       schoolId: 'school_1',
       classId: null,
       academicYearId: null,
+    });
+  });
+});
+
+describe('resolveMySchool — déblocage double profil (multi-espaces)', () => {
+  it('still denies a teacher-linked MEMBER with no staff role', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    expect(await resolveMySchool('user_1')).toBeNull();
+  });
+
+  it('still denies a teacher-linked MEMBER whose roles have zero grants', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [{ grants: [] }, { grants: ['bogus.grant'] }] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    expect(await resolveMySchool('user_1')).toBeNull();
+  });
+
+  it('unlocks a teacher-linked MEMBER whose grant union is non-empty', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [{ grants: ['paiements.view'] }] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    expect(await resolveMySchool('user_1')).toEqual({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'MEMBER',
+    });
+  });
+
+  it('a student-linked MEMBER stays denied even with staff-role grants', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [{ grants: ['paiements.view'] }] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue(null as never);
+    prismaMock.student.findFirst.mockResolvedValue({ id: 'student_1' } as never);
+    expect(await resolveMySchool('user_1')).toBeNull();
+  });
+});
+
+describe('isPortalLocked', () => {
+  it.each([
+    [{ teacherLinked: false, studentLinked: false, staffGrantUnion: [] }, false],
+    [{ teacherLinked: true, studentLinked: false, staffGrantUnion: [] }, true],
+    [{ teacherLinked: true, studentLinked: false, staffGrantUnion: ['eleves.view'] }, false],
+    [{ teacherLinked: false, studentLinked: true, staffGrantUnion: ['eleves.view'] }, true],
+    [{ teacherLinked: true, studentLinked: true, staffGrantUnion: ['eleves.view'] }, true],
+  ])('%o → %s', (input, locked) => {
+    expect(isPortalLocked(input)).toBe(locked);
+  });
+});
+
+describe('resolveMySpaces', () => {
+  function mockUserRole(role: string) {
+    prismaMock.user.findUnique.mockResolvedValue({ role } as never);
+  }
+
+  it('pure school admin → school only', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ role: 'OWNER', staffRoles: [] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue(null as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: true,
+      teacher: false,
+      student: false,
+    });
+  });
+
+  it('pure teacher (MEMBER, no grants) → teacher only', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: false,
+      teacher: true,
+      student: false,
+    });
+  });
+
+  it('pure student (no membership, USER role) → student only', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(null as never);
+    prismaMock.student.findFirst.mockResolvedValue({ id: 'student_1' } as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: false,
+      teacher: false,
+      student: true,
+    });
+  });
+
+  it('teacher with a granted staff role (double profil) → school + teacher', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [{ grants: ['paiements.view'] }] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: true,
+      teacher: true,
+      student: false,
+    });
+  });
+
+  it('director who also teaches (ADMIN + teacher link) → school + teacher', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ role: 'ADMIN', staffRoles: [] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teacher_1' } as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: true,
+      teacher: true,
+      student: false,
+    });
+  });
+
+  it('MEMBER staff without any grant → no space at all (login falls back to /dashboard)', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue(null as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: false,
+      teacher: false,
+      student: false,
+    });
+  });
+
+  it('account with nothing → all false', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(null as never);
+    mockUserRole('USER');
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: false,
+      teacher: false,
+      student: false,
     });
   });
 });

@@ -11,10 +11,14 @@
 // those ~65 files. Routes that must stay reachable by teachers call
 // resolveMySchoolIncludingTeacher() instead, and layer their own
 // per-classSubject/per-class check via resolveMyTeacherProfile() — see
-// docs/superpowers/specs/2026-08-30-espace-enseignant-design.md.
+// docs/superpowers/specs/2026-08-30-espace-enseignant-design.md. Depuis
+// multi-espaces (2026-09-01), un MEMBER lié enseignant dont l'union des
+// grants de rôles staff est non vide est débloqué (double profil) ; un lien
+// élève reste toujours verrouillé.
 import 'server-only';
 import { prisma } from './prisma';
 import { ORG_ROLE_RANK, type OrgRole } from './middleware/require-org-role';
+import { sanitizeGrants } from '@/lib/permissions';
 
 export interface MySchool {
   organizationId: string;
@@ -29,28 +33,43 @@ async function findMembership(userId: string) {
     select: {
       organizationId: true,
       role: true,
+      staffRoles: { select: { grants: true } },
       organization: { select: { school: { select: { id: true } } } },
     },
   });
 }
 
-// Currently checks Teacher; extended here (2026-08-30, Espace Élève) to also
-// check Student — either linked entity makes a MEMBER-role account
-// portal-only and denied by resolveMySchool() by default.
-async function isPortalOnlyAccount(userId: string, schoolId: string): Promise<boolean> {
-  const [teacher, student] = await Promise.all([
-    prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } }),
-    prisma.student.findFirst({ where: { userId, schoolId }, select: { id: true } }),
-  ]);
-  return teacher !== null || student !== null;
+// Verrou portail (multi-espaces 2026-09-01), pur et testable :
+// - lien Student → toujours verrouillé (aucun rôle staff ne débloque un élève)
+// - lien Teacher seul → verrouillé sauf si l'union des grants des rôles
+//   staff du membre est non vide (« double profil » : le RBAC route par
+//   route fait ensuite toute l'autorisation, rien de plus n'est ouvert ici)
+// - pas de lien portail → jamais verrouillé (comportement historique)
+export function isPortalLocked(input: {
+  teacherLinked: boolean;
+  studentLinked: boolean;
+  staffGrantUnion: readonly string[];
+}): boolean {
+  if (input.studentLinked) return true;
+  if (input.teacherLinked) return input.staffGrantUnion.length === 0;
+  return false;
 }
 
 export async function resolveMySchool(userId: string): Promise<MySchool | null> {
   const membership = await findMembership(userId);
   if (!membership || !membership.organization.school) return null;
   const schoolId = membership.organization.school.id;
-  if (membership.role === 'MEMBER' && (await isPortalOnlyAccount(userId, schoolId))) {
-    return null;
+  if (membership.role === 'MEMBER') {
+    const [teacher, student] = await Promise.all([
+      prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } }),
+      prisma.student.findFirst({ where: { userId, schoolId }, select: { id: true } }),
+    ]);
+    const locked = isPortalLocked({
+      teacherLinked: teacher !== null,
+      studentLinked: student !== null,
+      staffGrantUnion: sanitizeGrants(membership.staffRoles.flatMap((r) => r.grants)),
+    });
+    if (locked) return null;
   }
   return { organizationId: membership.organizationId, schoolId, role: membership.role as OrgRole };
 }
@@ -125,6 +144,47 @@ export async function resolveMyStudentProfile(userId: string): Promise<MyStudent
     schoolId: student.schoolId,
     classId: enrollment?.classId ?? null,
     academicYearId: enrollment?.academicYearId ?? null,
+  };
+}
+
+export interface MySpaces {
+  school: boolean;
+  teacher: boolean;
+  student: boolean;
+}
+
+// Un « espace » = une interface complète (app école / portail enseignant /
+// portail élève). Source de vérité unique du login, de la page /espaces et
+// du sélecteur « Mes espaces » — spec 2026-09-01-multi-espaces §3.
+// school : OWNER/ADMIN, ou MEMBER dont l'union des grants est non vide
+// (et jamais un compte lié élève). teacher : lien Teacher dans l'école du
+// membership. student : mêmes gardes qu'isStudentOnly (User.role USER,
+// aucun membership d'org, lien Student).
+export async function resolveMySpaces(userId: string): Promise<MySpaces> {
+  const membership = await findMembership(userId);
+  const schoolId = membership?.organization.school?.id ?? null;
+  const [user, teacher, student] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    schoolId
+      ? prisma.teacher.findFirst({ where: { userId, schoolId }, select: { id: true } })
+      : Promise.resolve(null),
+    prisma.student.findFirst({
+      where: schoolId ? { userId, schoolId } : { userId },
+      select: { id: true },
+    }),
+  ]);
+  const grantUnion = membership
+    ? sanitizeGrants(membership.staffRoles.flatMap((r) => r.grants))
+    : [];
+  const school =
+    membership !== null &&
+    schoolId !== null &&
+    student === null &&
+    (membership.role !== 'MEMBER' || grantUnion.length > 0);
+  return {
+    school,
+    teacher: schoolId !== null && teacher !== null,
+    student: (user?.role ?? 'USER') === 'USER' && schoolId === null && student !== null,
   };
 }
 

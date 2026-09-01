@@ -12,7 +12,9 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { parseDay } from '@/lib/server/timetable';
 import { findSchoolRoom } from '@/lib/server/rooms';
@@ -46,16 +48,12 @@ const PatchBody = z
     message: 'date cannot be changed for a whole series',
   });
 
-async function guard(req: NextRequest, requestId: string, id: string) {
+async function guard(req: NextRequest, requestId: string, id: string, action: PermissionAction) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
-  const mySchool = await resolveMySchool(auth.user.sub);
-  if (!mySchool) {
-    return NextResponse.json(
-      { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-      { status: 404, headers: { 'x-request-id': requestId } },
-    );
-  }
+  const perm = await requireSchoolPermission(auth.user.sub, 'emploiDuTemps', action, requestId);
+  if (!perm.ok) return perm.response;
+  const mySchool = perm.mySchool;
   if (!hasMinRole(mySchool.role, 'ADMIN')) {
     return NextResponse.json(
       { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
@@ -81,7 +79,7 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(req, ctx.requestId, id);
+    const g = await guard(req, ctx.requestId, id, 'edit');
     if (g instanceof NextResponse) return g;
     const { mySchool, session } = g;
 
@@ -243,7 +241,7 @@ export async function DELETE(req: NextRequest, { params }: Params): Promise<Next
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(req, ctx.requestId, id);
+    const g = await guard(req, ctx.requestId, id, 'delete');
     if (g instanceof NextResponse) return g;
     const { mySchool, session } = g;
 

@@ -16,7 +16,6 @@ import { CtaLink } from './landing-ui';
 const NAV_LINKS: { href: string; label: string }[] = [
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#pricing', label: 'Tarifs' },
-  { href: '/#attendance', label: 'Présence' },
   { href: '/#faq', label: 'FAQ' },
   { href: '/#contact', label: 'Contact' },
 ];

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import {
-  ArrowRight,
   BadgeCheck,
   CalendarDays,
   ChartColumn,
@@ -14,11 +13,15 @@ import {
 import { IconPlate, Illustration, SectionHead } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
 import { useSpotlight } from './use-spotlight';
+import { useTilt } from './use-tilt';
 
 /**
- * Banani `#features` — 6 feature cards (3×2, card 3 is the dark navy
- * `.highlight`) each headed by a recolored local Storyset illustration,
- * plus the nested `#gallery-grid` of 4 illustration thumbnails.
+ * Banani `#features` — 6 feature cards (3×2) each headed by a recolored
+ * local Storyset illustration, plus the nested `#gallery-grid` of 4
+ * illustration thumbnails. Reworked per user feedback: no "En savoir
+ * plus" links, and the Bulletins card keeps the same background as its
+ * neighbors (the mock's dark `.highlight` treatment is dropped). Every
+ * card carries a cursor spotlight + 3D tilt.
  */
 
 interface Feature {
@@ -27,8 +30,6 @@ interface Feature {
   alt: string;
   title: string;
   desc: string;
-  href: string;
-  highlight?: boolean;
 }
 
 const FEATURES: Feature[] = [
@@ -38,7 +39,6 @@ const FEATURES: Feature[] = [
     alt: 'Dossiers élèves',
     title: 'Dossiers élèves centralisés',
     desc: 'Identité, inscriptions, documents, responsables, historique scolaire et suivi administratif dans un profil unique.',
-    href: '#contact',
   },
   {
     icon: WalletCards,
@@ -46,7 +46,6 @@ const FEATURES: Feature[] = [
     alt: 'Paiements et finance',
     title: 'Paiements & frais de scolarité',
     desc: 'Configurez les frais par classe, suivez le recouvrement en pourcentage et gardez les reçus organisés.',
-    href: '#finance',
   },
   {
     icon: FileBadge2,
@@ -54,8 +53,6 @@ const FEATURES: Feature[] = [
     alt: 'Bulletins et contenus',
     title: 'Bulletins & relevés de notes',
     desc: 'Éditez des bulletins clairs, lisibles et prêts à être partagés aux familles et à la direction.',
-    href: '#contact',
-    highlight: true,
   },
   {
     icon: CalendarDays,
@@ -63,7 +60,6 @@ const FEATURES: Feature[] = [
     alt: 'Emploi du temps mobile',
     title: 'Emploi du temps interactif',
     desc: 'Planifiez par classe, enseignant, salle ou matière avec une vue lisible et des créneaux maîtrisés.',
-    href: '#contact',
   },
   {
     icon: BadgeCheck,
@@ -71,7 +67,6 @@ const FEATURES: Feature[] = [
     alt: 'Présences confirmées',
     title: 'Émargement & présences',
     desc: 'Les présences sont confirmées rapidement et remontent dans le dossier élève sans double saisie.',
-    href: '#attendance',
   },
   {
     icon: ChartColumn,
@@ -79,7 +74,6 @@ const FEATURES: Feature[] = [
     alt: 'Analyse et dashboard',
     title: 'Tableaux de bord & analytics',
     desc: "Mesurez les effectifs, la réussite, l'assiduité et la santé financière avec des visuels compréhensibles.",
-    href: '#contact',
   },
 ];
 
@@ -111,20 +105,19 @@ const GALLERY = [
 ];
 
 function FeatureCard({ feature }: { feature: Feature }) {
-  const { onMouseMove, background } = useSpotlight(
-    feature.highlight ? 'rgba(255,255,255,0.10)' : 'rgba(37,99,235,0.10)',
-    280,
-  );
+  const { onMouseMove, background } = useSpotlight('rgba(37,99,235,0.10)', 280);
+  const tilt = useTilt(6);
   return (
     <motion.div
       variants={fadeUp}
       whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
-      onMouseMove={onMouseMove}
-      className={`group relative flex flex-col gap-3.5 overflow-hidden rounded-[18px] border p-[22px] ${
-        feature.highlight
-          ? 'border-white/10 bg-foreground text-white'
-          : 'border-border bg-card text-foreground'
-      }`}
+      onMouseMove={(e) => {
+        onMouseMove(e);
+        tilt.onMouseMove(e);
+      }}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
+      className="group relative flex flex-col gap-3.5 overflow-hidden rounded-[18px] border border-border bg-card p-[22px] text-foreground"
     >
       <motion.div
         aria-hidden="true"
@@ -133,30 +126,50 @@ function FeatureCard({ feature }: { feature: Feature }) {
       />
       <div className="relative z-10 flex flex-1 flex-col gap-3.5">
         <div className="flex h-[172px] items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_100%)]">
-          <Illustration src={feature.illustration} alt={feature.alt} className="p-3" />
-        </div>
-        <IconPlate
-          icon={feature.icon}
-          {...(feature.highlight ? { className: 'bg-white/10', iconClassName: 'text-white' } : {})}
-        />
-        <div className="text-[17px] leading-[1.35] font-bold">{feature.title}</div>
-        <div
-          className={`text-sm leading-[1.7] ${feature.highlight ? 'text-white/70' : 'text-muted-foreground'}`}
-        >
-          {feature.desc}
-        </div>
-        <a
-          href={feature.href}
-          className={`mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold ${
-            feature.highlight ? 'text-[#a7f3d0]' : 'text-primary'
-          }`}
-        >
-          En savoir plus
-          <ArrowRight
-            className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-            aria-hidden="true"
+          <Illustration
+            src={feature.illustration}
+            alt={feature.alt}
+            className="p-3 transition-transform duration-500 group-hover:scale-[1.06]"
           />
-        </a>
+        </div>
+        <IconPlate icon={feature.icon} />
+        <div className="text-[17px] leading-[1.35] font-bold">{feature.title}</div>
+        <div className="text-sm leading-[1.7] text-muted-foreground">{feature.desc}</div>
+      </div>
+    </motion.div>
+  );
+}
+
+function GalleryCard({ item }: { item: (typeof GALLERY)[number] }) {
+  const { onMouseMove, background } = useSpotlight('rgba(37,99,235,0.08)', 220);
+  const tilt = useTilt(7);
+  return (
+    <motion.div
+      variants={fadeUp}
+      whileHover={{ y: -4, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+      onMouseMove={(e) => {
+        onMouseMove(e);
+        tilt.onMouseMove(e);
+      }}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
+      className="group relative overflow-hidden rounded-[18px] border border-border bg-card p-4"
+    >
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background }}
+      />
+      <div className="relative z-10">
+        <div className="flex h-40 items-center justify-center overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#f8fbff_0%,#edf4ff_100%)] sm:h-[220px]">
+          <Illustration
+            src={item.illustration}
+            alt={item.alt}
+            className="p-4 transition-transform duration-500 group-hover:scale-[1.06]"
+          />
+        </div>
+        <div className="mt-3 text-sm font-bold text-foreground">{item.title}</div>
+        <div className="mt-1 text-xs leading-[1.6] text-muted-foreground">{item.text}</div>
       </div>
     </motion.div>
   );
@@ -204,18 +217,7 @@ export function FeaturesSection() {
           className="mt-[38px] grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5"
         >
           {GALLERY.map((item) => (
-            <motion.div
-              key={item.title}
-              variants={fadeUp}
-              whileHover={{ y: -4, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
-              className="rounded-[18px] border border-border bg-card p-4"
-            >
-              <div className="flex h-40 items-center justify-center overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#f8fbff_0%,#edf4ff_100%)] sm:h-[220px]">
-                <Illustration src={item.illustration} alt={item.alt} className="p-4" />
-              </div>
-              <div className="mt-3 text-sm font-bold text-foreground">{item.title}</div>
-              <div className="mt-1 text-xs leading-[1.6] text-muted-foreground">{item.text}</div>
-            </motion.div>
+            <GalleryCard key={item.title} item={item} />
           ))}
         </motion.div>
       </div>

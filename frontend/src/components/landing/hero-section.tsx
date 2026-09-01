@@ -1,7 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
+import { useRef, type MouseEvent } from 'react';
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
 import { CalendarCheck2, FileText, ShieldCheck, WalletCards, type LucideIcon } from 'lucide-react';
 import { CtaLink } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
@@ -28,6 +37,9 @@ interface FloatCardSpec {
   position: string;
   width: string;
   floatDelay: number;
+  /** Cursor-parallax factor (px of drift per normalized mouse unit) —
+   * varied per card so they separate into depth planes. */
+  depth: number;
   icon?: LucideIcon;
   label: string;
   sub?: string;
@@ -43,6 +55,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
     position: 'lg:-left-[124px] lg:top-[28px]',
     width: 'lg:w-[162px]',
     floatDelay: 0,
+    depth: -22,
     label: 'Dossiers élèves',
     value: '3k+',
     text: 'Profils, inscriptions et pièces académiques réunis au même endroit.',
@@ -54,6 +67,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
     position: 'lg:-left-[88px] lg:bottom-[38px]',
     width: 'lg:w-[142px]',
     floatDelay: 0.9,
+    depth: -14,
     icon: FileText,
     label: 'Bulletins',
     sub: 'Édition rapide',
@@ -64,6 +78,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
     position: 'lg:-right-[126px] lg:top-[42px]',
     width: 'lg:w-[164px]',
     floatDelay: 1.6,
+    depth: 18,
     icon: CalendarCheck2,
     label: 'Présences',
     sub: '97% confirmées',
@@ -74,6 +89,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
     position: 'lg:-right-[96px] lg:bottom-[34px]',
     width: 'lg:w-[146px]',
     floatDelay: 0.5,
+    depth: 26,
     icon: WalletCards,
     label: 'Recouvrement',
     sub: '84% ce mois',
@@ -83,17 +99,28 @@ const FLOAT_CARDS: FloatCardSpec[] = [
 function FloatCard({
   spec,
   parallaxY,
+  mouseX,
+  mouseY,
   reduceMotion,
 }: {
   spec: FloatCardSpec;
   parallaxY: MotionValue<number>;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
   reduceMotion: boolean;
 }) {
   const Icon = spec.icon;
+  // Cursor parallax: each card drifts by its own depth factor, summed with
+  // the scroll parallax on the y axis so the two effects compose.
+  const x = useTransform(mouseX, (v) => v * spec.depth);
+  const y = useTransform([parallaxY, mouseY], (latest) => {
+    const [scrollOffset = 0, mouse = 0] = latest as number[];
+    return scrollOffset + mouse * spec.depth;
+  });
   return (
     <motion.div
       variants={fadeUp}
-      {...(reduceMotion ? {} : { style: { y: parallaxY } })}
+      {...(reduceMotion ? {} : { style: { x, y } })}
       className={`lg:absolute ${spec.position} ${spec.width}`}
     >
       <motion.div
@@ -165,16 +192,45 @@ export function HeroSection() {
   const cardsY = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const orbsY = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
+  // Cursor parallax: normalized (-1..1) mouse position over the section,
+  // spring-smoothed so the cards glide instead of twitching; plus a big
+  // soft glow that follows the cursor across the gradient.
+  const mouseXRaw = useMotionValue(0);
+  const mouseYRaw = useMotionValue(0);
+  const mouseX = useSpring(mouseXRaw, { stiffness: 60, damping: 18, mass: 0.8 });
+  const mouseY = useSpring(mouseYRaw, { stiffness: 60, damping: 18, mass: 0.8 });
+  const glowX = useMotionValue(-9999);
+  const glowY = useMotionValue(-9999);
+  const glow = useMotionTemplate`radial-gradient(520px circle at ${glowX}px ${glowY}px, rgba(96,165,250,0.16), transparent 70%)`;
+  const orbAX = useTransform(mouseX, (v) => v * -46);
+  const orbBX = useTransform(mouseX, (v) => v * 38);
+
+  function onHeroMouseMove(e: MouseEvent<HTMLElement>) {
+    if (reduceMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseXRaw.set(((e.clientX - rect.left) / rect.width) * 2 - 1);
+    mouseYRaw.set(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    glowX.set(e.clientX - rect.left);
+    glowY.set(e.clientY - rect.top);
+  }
+
   return (
     <section
       ref={sectionRef}
       id="hero"
+      onMouseMove={onHeroMouseMove}
       className="relative overflow-hidden bg-[linear-gradient(135deg,#0f172a_0%,#0f172a_54%,#2563eb_100%)] pt-[120px] pb-16 sm:pt-[136px] lg:pt-[150px] lg:pb-[88px]"
     >
       {/* Banani #hero::before — 4 soft radial spots. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_84%_16%,rgba(255,255,255,0.08),transparent_22%),radial-gradient(circle_at_50%_78%,rgba(37,99,235,0.20),transparent_28%),radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.05),transparent_26%)]"
+      />
+      {/* Cursor-tracked glow (desktop only — touch has no cursor). */}
+      <motion.div
+        aria-hidden="true"
+        style={{ background: glow }}
+        className="pointer-events-none absolute inset-0 hidden lg:block"
       />
 
       <div className="relative z-[2] mx-auto w-full max-w-[1280px] px-6 lg:px-12">
@@ -187,12 +243,12 @@ export function HeroSection() {
           {/* Ambient orbs — behind the copy, parallax against scroll. */}
           <motion.div
             aria-hidden="true"
-            {...(reduceMotion ? {} : { style: { y: orbsY } })}
+            {...(reduceMotion ? {} : { style: { y: orbsY, x: orbAX } })}
             className="pointer-events-none absolute top-[96px] -left-[180px] hidden h-[210px] w-[210px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.18),rgba(255,255,255,0.03))] blur-lg lg:block"
           />
           <motion.div
             aria-hidden="true"
-            {...(reduceMotion ? {} : { style: { y: orbsY } })}
+            {...(reduceMotion ? {} : { style: { y: orbsY, x: orbBX } })}
             className="pointer-events-none absolute -right-[190px] bottom-[26px] hidden h-[250px] w-[250px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.34),rgba(59,130,246,0.08))] blur-lg lg:block"
           />
 
@@ -200,7 +256,13 @@ export function HeroSection() {
           <div className="contents">
             {FLOAT_CARDS.map((spec) => (
               <div key={spec.id} className="hidden lg:contents">
-                <FloatCard spec={spec} parallaxY={cardsY} reduceMotion={reduceMotion} />
+                <FloatCard
+                  spec={spec}
+                  parallaxY={cardsY}
+                  mouseX={mouseX}
+                  mouseY={mouseY}
+                  reduceMotion={reduceMotion}
+                />
               </div>
             ))}
           </div>

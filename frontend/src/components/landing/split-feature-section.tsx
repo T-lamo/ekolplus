@@ -5,6 +5,7 @@ import { Check } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Illustration, Kicker } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+import { useTilt } from './use-tilt';
 
 /**
  * Banani `#attendance` / `#finance` — the two mirrored split sections:
@@ -39,6 +40,7 @@ export function SplitFeatureSection({
 }: SplitFeatureProps) {
   const reduceMotion = useReducedMotion() ?? false;
   const visualFrom = reduceMotion ? 0 : reverse ? 40 : -40;
+  const tilt = useTilt(3);
 
   const visual = (
     <div className="relative flex min-h-[320px] items-center justify-center lg:min-h-[380px]">
@@ -47,6 +49,9 @@ export function SplitFeatureSection({
         whileInView={{ opacity: 1, x: 0 }}
         viewport={viewportOnce}
         transition={{ duration: 0.65, ease: [0.5, 0, 0, 1] }}
+        onMouseMove={tilt.onMouseMove}
+        onMouseLeave={tilt.onMouseLeave}
+        style={tilt.style}
         className="relative w-full max-w-[480px] rounded-3xl border border-border bg-card p-5 shadow-[0_24px_54px_rgba(15,23,42,0.10)]"
       >
         <div className="flex h-[240px] items-center justify-center overflow-hidden rounded-[18px] bg-[linear-gradient(180deg,#f8fbff_0%,#eff7ff_100%)] sm:h-[300px]">

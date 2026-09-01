@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { SectionHead } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+import { useSpotlight } from './use-spotlight';
+import { useTilt } from './use-tilt';
 
 /**
  * Banani `#onboarding` — the 3-step "ruban lumineux": a 32px-radius glass
@@ -37,6 +39,57 @@ const STEPS = [
     featured: false,
   },
 ];
+
+function StepCard({ step }: { step: (typeof STEPS)[number] }) {
+  const { onMouseMove, background } = useSpotlight('rgba(37,99,235,0.10)', 260);
+  const tilt = useTilt(6);
+  return (
+    <div className={step.featured ? 'lg:mt-6' : ''}>
+      <motion.div
+        variants={fadeUp}
+        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+        onMouseMove={(e) => {
+          onMouseMove(e);
+          tilt.onMouseMove(e);
+        }}
+        onMouseLeave={tilt.onMouseLeave}
+        style={tilt.style}
+        className={`group relative min-h-[224px] overflow-hidden rounded-3xl border p-6 backdrop-blur-[10px] ${
+          step.featured
+            ? 'border-[rgba(220,228,240,0.92)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.86)_100%)] shadow-[0_20px_44px_rgba(37,99,235,0.12)]'
+            : 'border-[rgba(220,228,240,0.92)] bg-white/[0.76] shadow-[0_16px_34px_rgba(15,23,42,0.06)]'
+        }`}
+      >
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          style={{ background }}
+        />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between gap-3">
+            <div
+              className={`flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-xl font-extrabold ${step.numberClass}`}
+            >
+              {step.number}
+            </div>
+            <motion.span
+              initial={{ scale: 0.5, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={viewportOnce}
+              transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.3 }}
+              className="h-4 w-4 shrink-0 rounded-full bg-[rgba(37,99,235,0.16)] shadow-[0_0_0_8px_rgba(37,99,235,0.06)]"
+              aria-hidden="true"
+            />
+          </div>
+          <div className="mt-[18px] text-[22px] leading-[1.15] font-extrabold tracking-[-0.7px] text-foreground">
+            {step.title}
+          </div>
+          <div className="mt-3 text-sm leading-[1.75] text-muted-foreground">{step.text}</div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 export function StepsSection() {
   return (
@@ -92,42 +145,7 @@ export function StepsSection() {
             className="relative z-[2] grid grid-cols-1 items-start gap-5 lg:grid-cols-3"
           >
             {STEPS.map((step) => (
-              <div key={step.number} className={step.featured ? 'lg:mt-6' : ''}>
-                <motion.div
-                  variants={fadeUp}
-                  whileHover={{
-                    y: -5,
-                    transition: { type: 'spring', stiffness: 300, damping: 22 },
-                  }}
-                  className={`min-h-[224px] rounded-3xl border p-6 backdrop-blur-[10px] ${
-                    step.featured
-                      ? 'border-[rgba(220,228,240,0.92)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.86)_100%)] shadow-[0_20px_44px_rgba(37,99,235,0.12)]'
-                      : 'border-[rgba(220,228,240,0.92)] bg-white/[0.76] shadow-[0_16px_34px_rgba(15,23,42,0.06)]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div
-                      className={`flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-xl font-extrabold ${step.numberClass}`}
-                    >
-                      {step.number}
-                    </div>
-                    <motion.span
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      whileInView={{ scale: 1, opacity: 1 }}
-                      viewport={viewportOnce}
-                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.3 }}
-                      className="h-4 w-4 shrink-0 rounded-full bg-[rgba(37,99,235,0.16)] shadow-[0_0_0_8px_rgba(37,99,235,0.06)]"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="mt-[18px] text-[22px] leading-[1.15] font-extrabold tracking-[-0.7px] text-foreground">
-                    {step.title}
-                  </div>
-                  <div className="mt-3 text-sm leading-[1.75] text-muted-foreground">
-                    {step.text}
-                  </div>
-                </motion.div>
-              </div>
+              <StepCard key={step.number} step={step} />
             ))}
           </motion.div>
         </div>

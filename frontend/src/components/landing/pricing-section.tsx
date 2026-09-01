@@ -5,6 +5,7 @@ import { Building2, Check, Gift, Zap, type LucideIcon } from 'lucide-react';
 import { IconPlate, SectionHead } from './landing-ui';
 import { fadeUp, scaleIn, staggerContainer, tapScale, viewportOnce } from './landing-motion';
 import { useSpotlight } from './use-spotlight';
+import { useTilt } from './use-tilt';
 
 /**
  * Banani `#pricing` — 3 plan cards on the tinted band. Plan names come from
@@ -88,11 +89,17 @@ function PlanCard({ plan }: { plan: Plan }) {
     plan.recommended ? 'rgba(230,184,66,0.18)' : 'rgba(37,99,235,0.10)',
     300,
   );
+  const tilt = useTilt(4);
   return (
     <motion.div
       variants={plan.recommended ? scaleIn : fadeUp}
       whileHover={{ y: -6, transition: { type: 'spring', stiffness: 260, damping: 20 } }}
-      onMouseMove={onMouseMove}
+      onMouseMove={(e) => {
+        onMouseMove(e);
+        tilt.onMouseMove(e);
+      }}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
       className={`group relative flex flex-col gap-[18px] overflow-visible rounded-[18px] border p-7 ${
         plan.recommended
           ? 'border-[rgba(230,184,66,0.35)] bg-foreground text-white shadow-[0_22px_56px_rgba(15,23,42,0.18),0_0_44px_rgba(230,184,66,0.16)]'

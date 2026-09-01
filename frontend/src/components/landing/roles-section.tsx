@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { BookOpenCheck, Building2, Calculator, GraduationCap, type LucideIcon } from 'lucide-react';
 import { SectionHead } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+import { useSpotlight } from './use-spotlight';
+import { useTilt } from './use-tilt';
 
 /**
  * Banani `#roles` — 4 glass cards on the same navy→blue gradient as the
@@ -50,6 +52,53 @@ const ROLES: Role[] = [
   },
 ];
 
+function RoleCard({ role }: { role: Role }) {
+  const Icon = role.icon;
+  const { onMouseMove, background } = useSpotlight('rgba(255,255,255,0.10)', 260);
+  const tilt = useTilt(6);
+  return (
+    <motion.div
+      variants={fadeUp}
+      whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+      onMouseMove={(e) => {
+        onMouseMove(e);
+        tilt.onMouseMove(e);
+      }}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
+      className="group relative flex flex-col overflow-hidden rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-6"
+    >
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background }}
+      />
+      <div className="relative z-10 flex flex-1 flex-col">
+        <div className="mb-3.5 flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+            <Icon className="h-6 w-6 text-white" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-base font-bold text-white">{role.title}</div>
+            <div className="mt-1 text-[13px] text-white/[0.64]">{role.sub}</div>
+          </div>
+        </div>
+        <div className="text-sm leading-[1.7] text-white/[0.76]">{role.desc}</div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {role.pills.map((pill) => (
+            <span
+              key={pill}
+              className="rounded-full bg-white/10 px-2.5 py-1.5 text-xs whitespace-nowrap text-white/[0.78]"
+            >
+              {pill}
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function RolesSection() {
   return (
     <section
@@ -84,38 +133,9 @@ export function RolesSection() {
           variants={staggerContainer(0.08)}
           className="mt-9 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4"
         >
-          {ROLES.map((role) => {
-            const Icon = role.icon;
-            return (
-              <motion.div
-                key={role.title}
-                variants={fadeUp}
-                whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
-                className="flex flex-col rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-6"
-              >
-                <div className="mb-3.5 flex items-center gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
-                    <Icon className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-base font-bold text-white">{role.title}</div>
-                    <div className="mt-1 text-[13px] text-white/[0.64]">{role.sub}</div>
-                  </div>
-                </div>
-                <div className="text-sm leading-[1.7] text-white/[0.76]">{role.desc}</div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {role.pills.map((pill) => (
-                    <span
-                      key={pill}
-                      className="rounded-full bg-white/10 px-2.5 py-1.5 text-xs whitespace-nowrap text-white/[0.78]"
-                    >
-                      {pill}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
+          {ROLES.map((role) => (
+            <RoleCard key={role.title} role={role} />
+          ))}
         </motion.div>
       </div>
     </section>

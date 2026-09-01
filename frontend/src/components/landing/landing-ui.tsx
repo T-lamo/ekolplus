@@ -117,7 +117,7 @@ export function SectionHead({
   icon?: LucideIcon;
   kicker: string;
   title: ReactNode;
-  text: string;
+  text?: string;
   tone?: 'light' | 'dark';
   centered?: boolean;
   className?: string;
@@ -135,15 +135,17 @@ export function SectionHead({
       >
         {title}
       </h2>
-      <p
-        className={cn(
-          'mt-4 max-w-[680px] text-[15px] leading-[1.75]',
-          tone === 'dark' ? 'text-white/70' : 'text-muted-foreground',
-          centered && 'mx-auto',
-        )}
-      >
-        {text}
-      </p>
+      {text && (
+        <p
+          className={cn(
+            'mt-4 max-w-[680px] text-[15px] leading-[1.75]',
+            tone === 'dark' ? 'text-white/70' : 'text-muted-foreground',
+            centered && 'mx-auto',
+          )}
+        >
+          {text}
+        </p>
+      )}
     </div>
   );
 }

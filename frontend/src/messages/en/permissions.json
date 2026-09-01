@@ -1,0 +1,98 @@
+{
+  "title": "Permission management",
+  "subtitle": "Define access rights per role for each module of the application.",
+  "rolesLabel": "Roles",
+  "newRole": "New role",
+  "duplicateRole": "Duplicate role",
+  "duplicateSuffix": "(copy)",
+  "systemBadge": "System",
+  "usersCount": { "one": "{count} user", "other": "{count} users" },
+  "note": { "title": "Note", "body": "Changes apply immediately to users with this role." },
+  "systemRoleHint": "System role: full access, cannot be changed.",
+  "ownerRole": "Owner",
+  "adminRole": "Administrator",
+  "modifiedOn": "Modified on {date}",
+  "edit": "Edit",
+  "delete": "Delete",
+  "matrix": {
+    "module": "Module",
+    "view": "View",
+    "create": "Create",
+    "editAction": "Edit",
+    "deleteAction": "Delete",
+    "export": "Export"
+  },
+  "sections": {
+    "general": "General",
+    "academic": "Academic",
+    "finance": "Finance",
+    "config": "Configuration"
+  },
+  "modules": {
+    "dashboard": { "label": "Dashboard", "sub": "Home & Overview" },
+    "eleves": { "label": "Students", "sub": "Records & Enrollment" },
+    "enseignants": { "label": "Teachers", "sub": "Staff & Assignments" },
+    "notes": { "label": "Grades & Report cards", "sub": "Assessments & Results" },
+    "appreciations": { "label": "Comments", "sub": "Report card comments" },
+    "presences": { "label": "Attendance", "sub": "Absences & Lateness" },
+    "emploiDuTemps": { "label": "Timetable", "sub": "Schedule & Sessions" },
+    "paiements": { "label": "Payments", "sub": "Fees & Collections" },
+    "configuration": { "label": "Configuration", "sub": "Classes, subjects, rooms" },
+    "parametres": { "label": "School settings", "sub": "Academic year & Terms" }
+  },
+  "footer": {
+    "meta": "Role: {name} · {count} users affected · Last updated on {date}",
+    "deleteRole": "Delete this role",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "toasts": {
+    "saved": "Permissions saved.",
+    "created": "Role created. Now configure its permissions.",
+    "updated": "Role updated.",
+    "deleted": "Role deleted.",
+    "duplicated": "Role duplicated."
+  },
+  "deleteConfirm": {
+    "one": "Delete the role \"{name}\"? {count} user will lose all access until a new role is assigned.",
+    "other": "Delete the role \"{name}\"? {count} users will lose all access until a new role is assigned.",
+    "zero": "Delete the role \"{name}\"? No user currently has it."
+  },
+  "unsaved": "Unsaved changes",
+  "unsavedSwitchConfirm": "You have unsaved changes. Switch role without saving?",
+  "emptyRoles": "No custom roles yet. Create the first one to delegate access.",
+  "loadError": "Could not load roles.",
+  "form": {
+    "createTitle": "Create a new role",
+    "editTitle": "Edit role",
+    "createSubtitle": "Start by defining the role's basic information. Detailed permissions are set in the matrix after saving.",
+    "badgeNew": "New role",
+    "badgeStep": "Step 1/2",
+    "nameLabel": "Role name",
+    "nameHint": "Examples: Accountant, Supervisor, Secretary.",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Briefly describe how this role is used in the school.",
+    "descriptionHint": "Optional. You'll be able to configure permissions on the next screen.",
+    "previewTitle": "Role preview",
+    "previewBody": "The role will be created immediately, then completed with its detailed permissions.",
+    "previewBadgePending": "Permissions to be set later",
+    "previewBadgeActive": "Active",
+    "footerNote": "Permissions are managed in the matrix after the role is created.",
+    "cancel": "Cancel",
+    "submitCreate": "Create role",
+    "submitEdit": "Save",
+    "nameTaken": "A role already has this name.",
+    "nameRequired": "The role name is required."
+  },
+  "accessDenied": {
+    "title": "Access denied",
+    "body": "Your role does not allow access to this page. Contact a school administrator if you think this is a mistake."
+  },
+  "adminsTab": {
+    "roleColumn": "Role",
+    "fullAccess": "Full access",
+    "noRole": "No role (no access)",
+    "roleUpdated": "Role updated.",
+    "manageLink": "Manage roles and permissions"
+  }
+}

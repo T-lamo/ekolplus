@@ -40,6 +40,7 @@ import type teacherGradebook from '@/messages/fr/teacherGradebook.json';
 import type teacherAppreciations from '@/messages/fr/teacherAppreciations.json';
 import type setPasswordEleve from '@/messages/fr/setPasswordEleve.json';
 import type elevePortal from '@/messages/fr/elevePortal.json';
+import type permissions from '@/messages/fr/permissions.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -81,6 +82,7 @@ declare module 'next-intl' {
       TeacherAppreciations: typeof teacherAppreciations;
       SetPasswordEleve: typeof setPasswordEleve;
       ElevePortal: typeof elevePortal;
+      Permissions: typeof permissions;
     };
   }
 }

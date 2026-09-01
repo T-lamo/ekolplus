@@ -1,0 +1,102 @@
+{
+  "_review": true,
+  "title": "Jesyon pèmisyon yo",
+  "subtitle": "Defini dwa aksè pou chak wòl, pou chak modil nan aplikasyon an.",
+  "rolesLabel": "Wòl",
+  "newRole": "Nouvo wòl",
+  "duplicateRole": "Duplike wòl la",
+  "duplicateSuffix": "(kopi)",
+  "systemBadge": "Sistèm",
+  "usersCount": { "one": "{count} itilizatè", "other": "{count} itilizatè" },
+  "note": {
+    "title": "Remak",
+    "body": "Chanjman yo aplike imedyatman pou itilizatè ki gen wòl sa a."
+  },
+  "systemRoleHint": "Wòl sistèm : aksè konplè, pa ka modifye.",
+  "ownerRole": "Pwopriyetè",
+  "adminRole": "Administratè",
+  "modifiedOn": "Modifye le {date}",
+  "edit": "Modifye",
+  "delete": "Efase",
+  "matrix": {
+    "module": "Modil",
+    "view": "Wè",
+    "create": "Kreye",
+    "editAction": "Modifye",
+    "deleteAction": "Efase",
+    "export": "Ekspòte"
+  },
+  "sections": {
+    "general": "Jeneral",
+    "academic": "Akademik",
+    "finance": "Finans",
+    "config": "Konfigirasyon"
+  },
+  "modules": {
+    "dashboard": { "label": "Tablodbò", "sub": "Akèy & Apèsi jeneral" },
+    "eleves": { "label": "Elèv", "sub": "Dosye & Enskripsyon" },
+    "enseignants": { "label": "Anseyan", "sub": "Pèsonèl & Afektasyon" },
+    "notes": { "label": "Nòt & Bilten", "sub": "Evalyasyon & Rezilta" },
+    "appreciations": { "label": "Apresyasyon", "sub": "Kòmantè bilten" },
+    "presences": { "label": "Prezans", "sub": "Absans & Reta" },
+    "emploiDuTemps": { "label": "Orè", "sub": "Planifikasyon & Seyans" },
+    "paiements": { "label": "Peman", "sub": "Frè & Ankesman" },
+    "configuration": { "label": "Konfigirasyon", "sub": "Klas, matyè, sal" },
+    "parametres": { "label": "Paramèt etablisman", "sub": "Ane eskolè & Peryòd" }
+  },
+  "footer": {
+    "meta": "Wòl : {name} · {count} itilizatè konsène · Dènye mizajou le {date}",
+    "deleteRole": "Efase wòl sa a",
+    "cancel": "Anile",
+    "save": "Anrejistre"
+  },
+  "toasts": {
+    "saved": "Pèmisyon anrejistre.",
+    "created": "Wòl kreye. Kounye a konfigire pèmisyon li yo.",
+    "updated": "Wòl mizajou.",
+    "deleted": "Wòl efase.",
+    "duplicated": "Wòl duplike."
+  },
+  "deleteConfirm": {
+    "one": "Efase wòl « {name} » a ? {count} itilizatè ap pèdi tout aksè jiskaske yo resevwa yon nouvo wòl.",
+    "other": "Efase wòl « {name} » a ? {count} itilizatè ap pèdi tout aksè jiskaske yo resevwa yon nouvo wòl.",
+    "zero": "Efase wòl « {name} » a ? Pa gen okenn itilizatè k ap sèvi avè l kounye a."
+  },
+  "unsaved": "Chanjman ki pa anrejistre",
+  "unsavedSwitchConfirm": "Gen chanjman ki pa anrejistre. Chanje wòl san w pa anrejistre yo ?",
+  "emptyRoles": "Pa gen wòl pèsonalize pou kounye a. Kreye premye a pou delege aksè.",
+  "loadError": "Pa kapab chaje wòl yo.",
+  "form": {
+    "createTitle": "Kreye yon nouvo wòl",
+    "editTitle": "Modifye wòl la",
+    "createSubtitle": "Kòmanse ak enfòmasyon debaz wòl la. Pèmisyon detaye yo konfigire nan matris la apre w fin anrejistre.",
+    "badgeNew": "Nouvo wòl",
+    "badgeStep": "Etap 1/2",
+    "nameLabel": "Non wòl la",
+    "nameHint": "Egzanp : Kontab, Sipèvizè, Sekretè.",
+    "descriptionLabel": "Deskripsyon",
+    "descriptionPlaceholder": "Dekri an kèk mo kijan wòl sa a itilize nan etablisman an.",
+    "descriptionHint": "Opsyonèl. W ap ka konfigire pèmisyon yo nan ekran ki vin apre a.",
+    "previewTitle": "Apèsi wòl la",
+    "previewBody": "Wòl la ap kreye imedyatman epi konplete apre ak pèmisyon detaye li yo.",
+    "previewBadgePending": "Pèmisyon poko defini",
+    "previewBadgeActive": "Aktif",
+    "footerNote": "Jesyon pèmisyon yo fèt nan matris la apre wòl la kreye.",
+    "cancel": "Anile",
+    "submitCreate": "Kreye wòl la",
+    "submitEdit": "Anrejistre",
+    "nameTaken": "Gen yon wòl ki deja gen non sa a.",
+    "nameRequired": "Non wòl la obligatwa."
+  },
+  "accessDenied": {
+    "title": "Aksè pa otorize",
+    "body": "Wòl ou a pa pèmèt ou antre nan paj sa a. Kontakte yon administratè nan etablisman an si w panse se yon erè."
+  },
+  "adminsTab": {
+    "roleColumn": "Wòl",
+    "fullAccess": "Aksè konplè",
+    "noRole": "Pa gen wòl (pa gen aksè)",
+    "roleUpdated": "Wòl mizajou.",
+    "manageLink": "Jere wòl ak pèmisyon yo"
+  }
+}

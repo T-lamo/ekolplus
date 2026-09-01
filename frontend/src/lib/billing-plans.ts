@@ -13,17 +13,17 @@ export const PLAN_KEYS: readonly PlanKey[] = ['STARTER', 'PRO', 'ENTERPRISE'];
 
 export type BillingIntervalKey = 'MONTH' | 'YEAR';
 
-/** 0,60 $ / élève / mois — the Pro rate advertised on the landing page. */
-export const PRO_RATE_CENTS = 60;
+/** 0,40 $ / élève / mois — the Pro rate advertised on the landing page. */
+export const PRO_RATE_CENTS = 40;
 
 /**
  * Annual billing is a genuinely discounted Stripe Price (not a coupon) —
  * see scripts/stripe-setup-prices.ts. This constant only DISPLAYS the
  * saving; the amount charged always comes from the Stripe Price itself.
- * 0,60 $ × 12 × 0,90 = 6,48 $ / élève / an.
+ * 0,40 $ × 12 × 0,90 = 4,32 $ / élève / an.
  */
 export const ANNUAL_DISCOUNT = 0.1;
-export const PRO_ANNUAL_RATE_CENTS = Math.round(PRO_RATE_CENTS * 12 * (1 - ANNUAL_DISCOUNT)); // 648
+export const PRO_ANNUAL_RATE_CENTS = Math.round(PRO_RATE_CENTS * 12 * (1 - ANNUAL_DISCOUNT)); // 432
 
 /** Free trial promised on the landing ("Essai gratuit 30 jours"). */
 export const TRIAL_DAYS = 30;

@@ -176,8 +176,8 @@ describe('getBillingSummary', () => {
       usage: { students: 40, teachers: 8, classes: 6, admins: 2 },
       studentHardLimit: 50,
       studentSoftLimit: null,
-      rates: { monthlyCents: 60, annualCents: 648, trialDays: 30, annualAvailable: true },
-      estimate: { monthlyCents: 2400, annualCents: 25920 },
+      rates: { monthlyCents: 40, annualCents: 432, trialDays: 30, annualAvailable: true },
+      estimate: { monthlyCents: 1600, annualCents: 17280 },
       stripeConfigured: true,
       transactions: [],
     });

@@ -1,6 +1,6 @@
 // One-off per Stripe environment (test, then live): creates the Product
 // « Schoolgesti — Établissement Pro » with its two recurring, per-seat
-// (licensed) Prices — monthly 0,60 $/élève and annual 6,48 $/élève (−10 %) —
+// (licensed) Prices — monthly 0,40 $/élève and annual 4,32 $/élève (−10 %) —
 // and prints the ids to paste into STRIPE_PRICE_ID_PRO /
 // STRIPE_PRICE_ID_PRO_ANNUAL. Done by script rather than in the Dashboard so
 // the amounts can never drift from src/lib/billing-plans.ts.

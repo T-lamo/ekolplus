@@ -36,6 +36,7 @@ export function FaqSection() {
                 Nous avons des réponses.
               </>
             }
+            centered
           />
         </motion.div>
 

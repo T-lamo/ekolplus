@@ -51,6 +51,7 @@ export function DemoRequestSection() {
             kicker="Prise de contact"
             title="Parlons de votre école et de vos besoins"
             text="Que vous cherchiez une démonstration, un devis ou une première discussion, notre équipe vous répond avec un cadrage clair et des recommandations adaptées."
+            centered
           />
         </motion.div>
 

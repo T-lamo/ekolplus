@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useRef, type ReactNode } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   BadgeCheck,
   CalendarDays,
@@ -11,7 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { IconPlate, Illustration, SectionHead } from './landing-ui';
-import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+import { fadeUp, viewportOnce } from './landing-motion';
 import { useSpotlight } from './use-spotlight';
 import { useTilt } from './use-tilt';
 
@@ -19,9 +20,12 @@ import { useTilt } from './use-tilt';
  * Banani `#features` — 6 feature cards (3×2) each headed by a recolored
  * local Storyset illustration, plus the nested `#gallery-grid` of 4
  * illustration thumbnails. Reworked per user feedback: no "En savoir
- * plus" links, and the Bulletins card keeps the same background as its
- * neighbors (the mock's dark `.highlight` treatment is dropped). Every
- * card carries a cursor spotlight + 3D tilt.
+ * plus" links, the Bulletins card keeps the same background as its
+ * neighbors (the mock's dark `.highlight` treatment is dropped), every
+ * card carries a cursor spotlight + 3D tilt, and the three card rows are
+ * scroll-scrubbed — row 1 glides in from the right, row 2 from the left,
+ * row 3 from the right, each settling into place as the visitor scrolls
+ * (no scroll-jacking: the page keeps scrolling normally throughout).
  */
 
 interface Feature {
@@ -109,7 +113,6 @@ function FeatureCard({ feature }: { feature: Feature }) {
   const tilt = useTilt(6);
   return (
     <motion.div
-      variants={fadeUp}
       whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
       onMouseMove={(e) => {
         onMouseMove(e);
@@ -145,7 +148,6 @@ function GalleryCard({ item }: { item: (typeof GALLERY)[number] }) {
   const tilt = useTilt(7);
   return (
     <motion.div
-      variants={fadeUp}
       whileHover={{ y: -4, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
       onMouseMove={(e) => {
         onMouseMove(e);
@@ -175,6 +177,38 @@ function GalleryCard({ item }: { item: (typeof GALLERY)[number] }) {
   );
 }
 
+/** Scroll-scrubbed row: slides in horizontally as the visitor scrolls —
+ * progress 0 when the row's top enters near the bottom of the viewport,
+ * 1 once it reaches mid-screen, so the glide tracks the wheel instead of
+ * playing on a timer. Reduced motion renders the row in place. */
+function ScrubRow({
+  fromRight,
+  className,
+  children,
+}: {
+  fromRight: boolean;
+  className: string;
+  children: ReactNode;
+}) {
+  const reduceMotion = useReducedMotion() ?? false;
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start 0.95', 'start 0.45'],
+  });
+  const x = useTransform(scrollYProgress, [0, 1], [fromRight ? 180 : -180, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  return (
+    <motion.div
+      ref={ref}
+      {...(reduceMotion ? {} : { style: { x, opacity } })}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function FeaturesSection() {
   return (
     <section id="features" className="scroll-mt-24 px-6 py-16 lg:px-12 lg:py-[92px]">
@@ -194,32 +228,29 @@ export function FeaturesSection() {
               </>
             }
             text="Une interface claire pour la direction, la comptabilité, les enseignants et les familles, avec des modules pensés pour le travail réel de l'établissement."
+            centered
           />
         </motion.div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewportOnce}
-          variants={staggerContainer(0.08)}
-          className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {FEATURES.map((feature) => (
+        <ScrubRow fromRight className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.slice(0, 3).map((feature) => (
             <FeatureCard key={feature.title} feature={feature} />
           ))}
-        </motion.div>
-
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewportOnce}
-          variants={staggerContainer(0.07)}
-          className="mt-[38px] grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5"
+        </ScrubRow>
+        <ScrubRow
+          fromRight={false}
+          className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
         >
+          {FEATURES.slice(3).map((feature) => (
+            <FeatureCard key={feature.title} feature={feature} />
+          ))}
+        </ScrubRow>
+
+        <ScrubRow fromRight className="mt-[38px] grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
           {GALLERY.map((item) => (
             <GalleryCard key={item.title} item={item} />
           ))}
-        </motion.div>
+        </ScrubRow>
       </div>
     </section>
   );

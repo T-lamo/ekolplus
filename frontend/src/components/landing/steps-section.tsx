@@ -108,6 +108,7 @@ export function StepsSection() {
             kicker="Démarrage guidé"
             title="Comment démarrer ?"
             text="Une mise en route simple, en trois étapes, avec notre équipe à vos côtés du premier échange jusqu'au lancement."
+            centered
             className="max-w-[760px]"
           />
         </motion.div>

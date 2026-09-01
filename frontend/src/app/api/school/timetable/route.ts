@@ -4,7 +4,9 @@
 // POST — create one session or a weekly series (recurrence expanded into one
 // row per occurrence sharing a seriesId); 409 TIMETABLE_CONFLICT when the
 // class, teacher or room is already busy on any occurrence. Read = compte lié
-// à un Teacher (vue scopée) ou grant emploiDuTemps.view, write requires emploiDuTemps.create
+// à un Teacher (vue scopée à ses propres séances) ou grant emploiDuTemps.view ;
+// un enseignant qui détient AUSSI ce grant obtient la vue pleine école (le
+// grant prime sur le scoping enseignant). Write requires emploiDuTemps.create
 // grant (OWNER/ADMIN pass automatically). See .planning/banani/emploi-du-temps.md.
 export const runtime = 'nodejs';
 
@@ -62,13 +64,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       mySchool.role === 'MEMBER'
         ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
         : null;
-    // Garde RBAC manuelle : cette lecture reste ouverte aux comptes liés à un
-    // Teacher (portail enseignant, vue scopée à ses propres cours). Un MEMBER
-    // non enseignant doit, lui, détenir emploiDuTemps.view via son rôle
-    // personnalisé. Même refus que requireSchoolPermission.
-    if (!myTeacher && mySchool.role === 'MEMBER') {
+    // Garde RBAC manuelle + raffinement multi-espaces (spec 2026-09-01 §4) :
+    // un MEMBER non enseignant doit détenir emploiDuTemps.view ; un MEMBER
+    // enseignant SANS ce grant garde la vue scopée à ses propres séances ;
+    // AVEC ce grant, la vue pleine école prime (le rôle donne ce qu'il
+    // accorde). Même refus que requireSchoolPermission.
+    let forcedTeacherId: string | null = myTeacher?.teacherId ?? null;
+    if (mySchool.role === 'MEMBER') {
       const grants = await resolveGrantsFor(mySchool, auth.user.sub);
-      if (!hasGrant(grants, 'emploiDuTemps', 'view')) {
+      const hasTimetableView = hasGrant(grants, 'emploiDuTemps', 'view');
+      if (!myTeacher && !hasTimetableView) {
         return NextResponse.json(
           {
             error: 'PERMISSION_DENIED',
@@ -77,6 +82,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           { status: 403, headers: { 'x-request-id': ctx.requestId } },
         );
       }
+      if (hasTimetableView) forcedTeacherId = null;
     }
 
     const sp = req.nextUrl.searchParams;
@@ -118,8 +124,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           academicYearId: activeYear.id,
           date: { gte: from, lte: to },
           ...(parsed.data.classId ? { classId: parsed.data.classId } : {}),
-          ...(myTeacher
-            ? { teacherId: myTeacher.teacherId }
+          ...(forcedTeacherId
+            ? { teacherId: forcedTeacherId }
             : parsed.data.teacherId
               ? { teacherId: parsed.data.teacherId }
               : {}),

@@ -246,6 +246,50 @@ describe('GET /api/school/timetable', () => {
     const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
     expect(where).toMatchObject({ teacherId: 'tea_2' });
   });
+
+  it('a teacher-linked MEMBER holding emploiDuTemps.view gets the full-school view (no forced teacherId)', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1'],
+      homeroomClassIds: [],
+    });
+    prismaMock.organizationMember.findFirst.mockResolvedValue({
+      staffRoles: [{ grants: ['emploiDuTemps.view'] }],
+    } as never);
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([sessionRow()] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21'));
+    expect(res.status).toBe(200);
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).not.toHaveProperty('teacherId');
+  });
+
+  it('a teacher-linked MEMBER with the grant can use the optional ?teacherId filter', async () => {
+    mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1'],
+      homeroomClassIds: [],
+    });
+    prismaMock.organizationMember.findFirst.mockResolvedValue({
+      staffRoles: [{ grants: ['emploiDuTemps.view'] }],
+    } as never);
+    prismaMock.timetableSession.findMany
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([] as never);
+    prismaMock.class.findMany.mockResolvedValue([] as never);
+
+    const res = await GET(
+      req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21&teacherId=tea_2'),
+    );
+    expect(res.status).toBe(200);
+    const where = prismaMock.timetableSession.findMany.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ teacherId: 'tea_2' });
+  });
 });
 
 describe('POST /api/school/timetable', () => {

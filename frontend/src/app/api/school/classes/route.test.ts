@@ -14,10 +14,13 @@ vi.mock('@/lib/server/school', async () => {
   const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
   return { ...actual, resolveMySchool: vi.fn(), resolveActiveAcademicYear: vi.fn() };
 });
+vi.mock('@/lib/server/school-permissions', () => ({ requireSchoolPermission: vi.fn() }));
 
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import { passThroughSchoolPermission } from '@/test-utils/school-permission-mock';
 import { GET, POST } from './route';
 import { GET as GET_ONE, PATCH } from './[id]/route';
 
@@ -55,6 +58,9 @@ const createdClass = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireSchoolPermission).mockImplementation(
+    passThroughSchoolPermission(mockResolveMySchool),
+  );
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);

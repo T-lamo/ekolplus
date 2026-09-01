@@ -10,29 +10,32 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { LevelNameBody } from '../route';
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Shared guard chain for both mutating verbs: CSRF → auth → school → ADMIN
- * → owned level. Returns either the level row + school, or the NextResponse
- * to bail with. */
-async function guard(req: NextRequest, params: Ctx['params'], requestId: string) {
+/** Shared guard chain for both mutating verbs: CSRF → auth → configuration
+ * grant → ADMIN → owned level. Returns either the level row + school, or the
+ * NextResponse to bail with. */
+async function guard(
+  req: NextRequest,
+  params: Ctx['params'],
+  requestId: string,
+  action: PermissionAction,
+) {
   const csrfFail = verifyCsrf(req);
   if (csrfFail) return csrfFail;
 
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
 
-  const mySchool = await resolveMySchool(auth.user.sub);
-  if (!mySchool) {
-    return NextResponse.json(
-      { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-      { status: 404, headers: { 'x-request-id': requestId } },
-    );
-  }
+  const perm = await requireSchoolPermission(auth.user.sub, 'configuration', action, requestId);
+  if (!perm.ok) return perm.response;
+  const mySchool = perm.mySchool;
   if (!hasMinRole(mySchool.role, 'ADMIN')) {
     return NextResponse.json(
       { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
@@ -54,7 +57,7 @@ async function guard(req: NextRequest, params: Ctx['params'], requestId: string)
 export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
   return withRequestContext(ctx, async () => {
-    const g = await guard(req, params, ctx.requestId);
+    const g = await guard(req, params, ctx.requestId, 'edit');
     if (g instanceof NextResponse) return g;
 
     const parsed = LevelNameBody.safeParse(await req.json().catch(() => null));
@@ -91,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
 export async function DELETE(req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
   return withRequestContext(ctx, async () => {
-    const g = await guard(req, params, ctx.requestId);
+    const g = await guard(req, params, ctx.requestId, 'delete');
     if (g instanceof NextResponse) return g;
 
     await prisma.gradeLevel.delete({ where: { id: g.level.id } });

@@ -9,7 +9,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { CHAPTER_SELECT, ChapterFields } from '@/lib/server/subject-chapters';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -31,8 +32,15 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'edit',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
+    if (!hasMinRole(mySchool.role, 'ADMIN')) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
@@ -74,8 +82,15 @@ export async function DELETE(req: NextRequest, { params }: Params): Promise<Next
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'delete',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
+    if (!hasMinRole(mySchool.role, 'ADMIN')) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },

@@ -10,7 +10,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { ROOM_INCLUDE, RoomBody, serializeRoom } from '@/lib/server/rooms';
 
@@ -18,16 +20,12 @@ type Params = { params: Promise<{ id: string }> };
 
 const PatchBody = RoomBody.partial();
 
-async function guard(requestId: string, id: string) {
+async function guard(requestId: string, id: string, action: PermissionAction) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
-  const mySchool = await resolveMySchool(auth.user.sub);
-  if (!mySchool) {
-    return NextResponse.json(
-      { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-      { status: 404, headers: { 'x-request-id': requestId } },
-    );
-  }
+  const perm = await requireSchoolPermission(auth.user.sub, 'configuration', action, requestId);
+  if (!perm.ok) return perm.response;
+  const mySchool = perm.mySchool;
   if (!hasMinRole(mySchool.role, 'ADMIN')) {
     return NextResponse.json(
       { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
@@ -50,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(ctx.requestId, id);
+    const g = await guard(ctx.requestId, id, 'edit');
     if (g instanceof NextResponse) return g;
     const { mySchool, room } = g;
 
@@ -115,7 +113,7 @@ export async function DELETE(req: NextRequest, { params }: Params): Promise<Next
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(ctx.requestId, id);
+    const g = await guard(ctx.requestId, id, 'delete');
     if (g instanceof NextResponse) return g;
     await prisma.room.delete({ where: { id: g.room.id } });
     return new NextResponse(null, { status: 204, headers: { 'x-request-id': ctx.requestId } });

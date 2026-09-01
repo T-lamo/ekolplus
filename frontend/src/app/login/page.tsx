@@ -67,17 +67,24 @@ export default function LoginPage() {
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       const me = await refresh();
-      // Platform staff (ADMIN/SUPERADMIN) land on the SaaS back-office;
-      // school users land on their dashboard. `/` stays the public
-      // marketing landing — a logged-in user must never land there.
+      // Multi-espaces (spec 2026-09-01 §6) : plateforme (ADMIN/SUPERADMIN)
+      // d'abord ; 1 seul espace → entrée directe (l'onglet est ignoré) ;
+      // ≥ 2 espaces → page « Choisissez votre espace », l'onglet du login
+      // pré-sélectionnant la carte ; 0 espace → /dashboard (écran « pas
+      // d'école » existant). `/` reste la landing publique.
       const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
+      const spaces = me?.spaces;
+      const available = [
+        ...(spaces?.school ? ['/dashboard'] : []),
+        ...(spaces?.teacher ? ['/espace-enseignant'] : []),
+        ...(spaces?.student ? ['/eleve'] : []),
+      ];
+      const pref = role === 'studentParent' ? 'student' : role;
       const destination = isPlatformStaff
         ? '/admin'
-        : me?.isTeacherOnly
-          ? '/espace-enseignant'
-          : me?.isStudentOnly
-            ? '/eleve'
-            : '/dashboard';
+        : available.length >= 2
+          ? `/espaces?pref=${pref}`
+          : (available[0] ?? '/dashboard');
       router.push(destination);
     } catch (err) {
       if (err instanceof ApiError) {

@@ -30,8 +30,8 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import {
   resolveMySchoolIncludingTeacher,
-  resolveMyTeacherProfile,
   resolveMyStudentProfile,
+  resolveMySpaces,
 } from '@/lib/server/school';
 import { zPhone } from '@/lib/server/zod-helpers';
 import { THEME_KEYS, isThemeKey } from '@/lib/themes';
@@ -79,11 +79,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
 
     const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
-    const teacherProfile =
-      mySchool?.role === 'MEMBER'
-        ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
-        : null;
-    const isTeacherOnly = mySchool?.role === 'MEMBER' && teacherProfile !== null;
+    // Multi-espaces (spec 2026-09-01 §5) : « purement enseignant » = lié
+    // enseignant sans aucun espace école. Un double profil (rôle staff avec
+    // au moins un droit) garde les deux espaces et n'est plus rebondi hors
+    // de l'app école par (school)/layout.tsx ni par le login.
+    const spaces = await resolveMySpaces(auth.user.sub);
+    const isTeacherOnly = spaces.teacher && !spaces.school;
     const studentProfile = await resolveMyStudentProfile(auth.user.sub);
     // Defense in depth: an ADMIN/SUPERADMIN account with an incidentally-linked
     // Student.userId must not be flagged isStudentOnly. Not exploitable via
@@ -135,6 +136,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       hasPassword: !!dbUser?.passwordHash,
       isTeacherOnly,
       isStudentOnly,
+      spaces,
       passwordChangedAt: dbUser?.passwordChangedAt
         ? dbUser.passwordChangedAt instanceof Date
           ? dbUser.passwordChangedAt.toISOString()

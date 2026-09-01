@@ -21,21 +21,22 @@ vi.mock('@/lib/server/school', async () => {
     resolveMySchoolIncludingTeacher: vi.fn(),
     resolveMyTeacherProfile: vi.fn(),
     resolveMyStudentProfile: vi.fn(),
+    resolveMySpaces: vi.fn(),
   };
 });
 
 import { verifyToken } from '@/lib/server/auth';
 import {
   resolveMySchoolIncludingTeacher,
-  resolveMyTeacherProfile,
   resolveMyStudentProfile,
+  resolveMySpaces,
 } from '@/lib/server/school';
 import { GET, PATCH } from './route';
 import { NextRequest } from 'next/server';
 
 const mockResolveMySchoolIncludingTeacher = vi.mocked(resolveMySchoolIncludingTeacher);
-const mockResolveMyTeacherProfile = vi.mocked(resolveMyTeacherProfile);
 const mockResolveMyStudentProfile = vi.mocked(resolveMyStudentProfile);
+const mockResolveMySpaces = vi.mocked(resolveMySpaces);
 
 function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequest {
   const headers: Record<string, string> = {};
@@ -54,6 +55,9 @@ function reqWithAuthHeader(): NextRequest {
 beforeEach(() => {
   __cookieStore.clear();
   vi.mocked(verifyToken).mockReset();
+  // Default: a plain school-side staff account with no teacher/student link.
+  // Individual tests override this via mockResolveMySpaces.mockResolvedValue(...).
+  mockResolveMySpaces.mockResolvedValue({ school: true, teacher: false, student: false });
 });
 
 describe('GET /api/auth/me', () => {
@@ -117,15 +121,11 @@ describe('GET /api/auth/me', () => {
   });
 });
 
-describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () => {
+describe('GET /api/auth/me — isTeacherOnly (multi-espaces)', () => {
   beforeEach(() => {
-    // These two mocks are module-scoped (created once by vi.mock() above)
-    // and are never reset by the file-level beforeEach, so a prior test's
-    // call history would otherwise leak into this describe's
-    // not.toHaveBeenCalled() assertion — clear call history only (each
-    // test below sets its own .mockResolvedValue after this runs).
+    // Module-scoped mock, never reset by the file-level beforeEach — clear
+    // call history only (each test below sets its own .mockResolvedValue).
     mockResolveMySchoolIncludingTeacher.mockClear();
-    mockResolveMyTeacherProfile.mockClear();
     vi.mocked(verifyToken).mockResolvedValue({
       sub: 'user_1',
       email: 'teach@school.test',
@@ -143,55 +143,20 @@ describe('GET /api/auth/me — isTeacherOnly (Espace Enseignant Phase 1)', () =>
     } as never);
   });
 
-  it('reports isTeacherOnly=true for a MEMBER-role teacher-linked account', async () => {
-    prismaMock.user.findUnique.mockResolvedValue({
-      id: 'user_1',
-      email: 'teach@school.test',
-      role: 'USER',
-    } as never);
-    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
-      organizationId: 'org_1',
-      schoolId: 'school_1',
-      role: 'MEMBER',
-    });
-    mockResolveMyTeacherProfile.mockResolvedValue({
-      teacherId: 't1',
-      classSubjectIds: [],
-      homeroomClassIds: [],
-    });
+  it('reports isTeacherOnly=true for a purely teacher-linked account', async () => {
+    mockResolveMySpaces.mockResolvedValue({ school: false, teacher: true, student: false });
     const res = await GET(reqWithAuthHeader());
-    expect((await res.json()).user.isTeacherOnly).toBe(true);
+    const body = await res.json();
+    expect(body.user.isTeacherOnly).toBe(true);
+    expect(body.user.spaces).toEqual({ school: false, teacher: true, student: false });
   });
 
-  it('reports isTeacherOnly=false for an admin who is also teacher-linked', async () => {
-    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
-      organizationId: 'org_1',
-      schoolId: 'school_1',
-      role: 'ADMIN',
-    });
-    mockResolveMyTeacherProfile.mockResolvedValue({
-      teacherId: 't1',
-      classSubjectIds: [],
-      homeroomClassIds: [],
-    });
+  it('reports isTeacherOnly=false for a double profile (teacher + granted staff role)', async () => {
+    mockResolveMySpaces.mockResolvedValue({ school: true, teacher: true, student: false });
     const res = await GET(reqWithAuthHeader());
-    expect((await res.json()).user.isTeacherOnly).toBe(false);
-    // Perf short-circuit: the `mySchool?.role === 'MEMBER' ? ... : null`
-    // guard in route.ts must skip the Teacher lookup entirely for a
-    // non-MEMBER role — regression-guards against it being reverted to an
-    // unconditional call.
-    expect(mockResolveMyTeacherProfile).not.toHaveBeenCalled();
-  });
-
-  it('reports isTeacherOnly=false for a plain staff account', async () => {
-    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
-      organizationId: 'org_1',
-      schoolId: 'school_1',
-      role: 'MEMBER',
-    });
-    mockResolveMyTeacherProfile.mockResolvedValue(null);
-    const res = await GET(reqWithAuthHeader());
-    expect((await res.json()).user.isTeacherOnly).toBe(false);
+    const body = await res.json();
+    expect(body.user.isTeacherOnly).toBe(false);
+    expect(body.user.spaces).toEqual({ school: true, teacher: true, student: false });
   });
 });
 

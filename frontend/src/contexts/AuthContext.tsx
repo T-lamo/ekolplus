@@ -43,6 +43,11 @@ export interface User {
    * with isTeacherOnly). Drives the login-time redirect (login/page.tsx)
    * and the belt-and-suspenders guard in (school)/layout.tsx. */
   isStudentOnly?: boolean;
+  /** Espaces accessibles par ce compte (multi-casquettes) : miroir du champ
+   * `spaces` de GET /api/auth/me, calculé côté serveur par resolveMySpaces()
+   * (lib/server/school.ts). Drive le routage du login, la page /espaces et
+   * le sélecteur « Mes espaces » des trois shells. */
+  spaces?: { school: boolean; teacher: boolean; student: boolean };
 }
 
 interface AuthContextValue {

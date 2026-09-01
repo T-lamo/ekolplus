@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
-import { resolveMySchool } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { getStudentBulletinView } from '@/lib/server/bulletin-pdf/get-bulletin-view';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -20,13 +20,9 @@ export async function GET(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'notes', 'view', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id: studentId } = await params;
     const termId = req.nextUrl.searchParams.get('termId');

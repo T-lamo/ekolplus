@@ -221,12 +221,7 @@ export function FeaturesSection() {
         >
           <SectionHead
             kicker="Fonctionnalités essentielles"
-            title={
-              <>
-                Tout ce dont votre école a besoin,
-                <br className="hidden sm:block" /> réuni en un seul endroit
-              </>
-            }
+            title="Gérez moins, enseignez plus."
             text="Une interface claire pour la direction, la comptabilité, les enseignants et les familles, avec des modules pensés pour le travail réel de l'établissement."
             centered
           />

@@ -15,7 +15,10 @@ interface RoleSummaryCardProps {
   name: string;
   description: string | null;
   memberCount: number;
-  updatedAt: string;
+  /** null for the system roles (Propriétaire/Administrateur) — they are not
+   * `StaffRole` rows and have no real modification date, so the whole
+   * "Modifié le" line is skipped rather than showing a fabricated date. */
+  updatedAt: string | null;
   readOnly: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -33,11 +36,14 @@ export function RoleSummaryCard({
   const t = useTranslations('Permissions');
   const locale = useLocale();
 
-  const dateLabel = new Intl.DateTimeFormat(LOCALE_BCP47[locale], {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(updatedAt));
+  const dateLabel =
+    updatedAt !== null
+      ? new Intl.DateTimeFormat(LOCALE_BCP47[locale], {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(new Date(updatedAt))
+      : null;
 
   return (
     <Card className="gap-3 p-4">
@@ -57,10 +63,12 @@ export function RoleSummaryCard({
               </Badge>
             </div>
             {description && <p className="text-sm text-muted-foreground">{description}</p>}
-            <p className="flex items-center gap-1 text-2xs text-muted-foreground">
-              <Clock3 size={12} className="shrink-0" />
-              {t('modifiedOn', { date: dateLabel })}
-            </p>
+            {dateLabel !== null && (
+              <p className="flex items-center gap-1 text-2xs text-muted-foreground">
+                <Clock3 size={12} className="shrink-0" />
+                {t('modifiedOn', { date: dateLabel })}
+              </p>
+            )}
           </div>
         </div>
 

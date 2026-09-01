@@ -280,7 +280,10 @@ export default function PermissionsPage() {
       ? (data?.systemCounts.owners ?? 0)
       : (data?.systemCounts.admins ?? 0)
     : (selectedRole?.memberCount ?? 0);
-  const summaryUpdatedAt = selectedRole?.updatedAt ?? new Date().toISOString();
+  // null for system roles: they aren't `StaffRole` rows and have no real
+  // modification date — RoleSummaryCard skips the "Modifié le" line entirely
+  // rather than showing a fabricated one.
+  const summaryUpdatedAt = isSystemSelected ? null : (selectedRole?.updatedAt ?? null);
 
   const footerDateLabel = selectedRole
     ? new Intl.DateTimeFormat(LOCALE_BCP47[locale], {
@@ -302,7 +305,7 @@ export default function PermissionsPage() {
             type="button"
             variant="outline"
             className="w-fit"
-            disabled={isSystemSelected || !selectedRole || duplicating}
+            disabled={isSystemSelected || !selectedRole || dirty || duplicating}
             loading={duplicating}
             onClick={() => void handleDuplicate()}
           >

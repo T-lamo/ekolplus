@@ -67,6 +67,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       select: {
         role: true,
         createdAt: true,
+        staffRoleId: true,
         user: { select: { id: true, email: true, name: true } },
       },
     });
@@ -98,6 +99,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           email: m.user.email,
           name: m.user.name,
           role: m.role,
+          staffRoleId: m.staffRoleId,
           joinedAt: m.createdAt,
         })),
       },

@@ -51,13 +51,13 @@ export function RoleFormModal({
   const [submitting, setSubmitting] = useState(false);
 
   async function submit() {
+    setServerError(null);
     const trimmedName = name.trim();
     if (trimmedName.length === 0) {
       setNameError(t('nameRequired'));
       return;
     }
     setNameError(null);
-    setServerError(null);
     setSubmitting(true);
     const trimmedDescription = description.trim();
     try {
@@ -99,6 +99,7 @@ export function RoleFormModal({
       title={isEdit ? t('editTitle') : t('createTitle')}
       {...(isEdit ? {} : { subtitle: t('createSubtitle') })}
       onClose={onClose}
+      wide
       header={
         <div className="flex flex-wrap items-center gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">

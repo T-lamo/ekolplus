@@ -292,4 +292,23 @@ describe('resolveMySpaces', () => {
       student: false,
     });
   });
+
+  it('a student-linked MEMBER stays school:false even with a non-empty grant union', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue(
+      membershipRow({ staffRoles: [{ grants: ['paiements.view'] }] }) as never,
+    );
+    prismaMock.teacher.findFirst.mockResolvedValue(null as never);
+    prismaMock.student.findFirst.mockResolvedValue({ id: 'student_1' } as never);
+    mockUserRole('USER');
+    // The student veto must win over a non-empty grant union — this is the
+    // security-relevant boundary of the hand-derived `school` formula
+    // (student === null && (role !== 'MEMBER' || grantUnion.length > 0)).
+    // `student` stays false too: it requires schoolId === null, and this
+    // account has a school membership.
+    expect(await resolveMySpaces('user_1')).toEqual({
+      school: false,
+      teacher: false,
+      student: false,
+    });
+  });
 });

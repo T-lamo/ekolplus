@@ -1,12 +1,13 @@
 # Banani implementation status
 
-Last updated: 2026-08-21 (landing-page — post-launch visual feedback rounds: fixed nav, pricing gold/violet, wow-animation pass, dropdown theme-leak fix, scroll blur, mouse-move effects)
+Last updated: 2026-09-01 (permission-manager + create-role fetched and planned; RBAC spec written, implementation pending)
 
 Full architecture analysis: [OVERVIEW.md](./OVERVIEW.md) (v2 — School/AcademicYear/Term/Enrollment as first-class models). All 6 open questions decided and locked 2026-08-11.
 
 ## In progress
 
-_(none)_
+- [ ] `permission-manager` (`Sr4sWYaoaPZ0`, flow `2oB_n5kLBeuy`) → `frontend/src/app/(school)/settings/permissions/page.tsx` — plan: `permission-manager.md` — spec produit : `docs/superpowers/specs/2026-09-01-permission-manager-design.md` (RBAC école complet : registre `lib/permissions.ts`, modèle `SchoolRole`, enforcement serveur sur toutes les routes `/api/school/*`, filtrage sidebar/pages). Fetched + planned 2026-09-01, implémentation à venir.
+- [ ] `create-role` (`OlsuHWlZ3rkJ`, flow `2oB_n5kLBeuy`) → `RoleFormModal` dans le même dossier — plan: `create-role.md` — même spec, modal Étape 1/2 (nom + description, permissions ensuite dans la matrice).
 
 ## Done
 - [x] `landing-page` (`od101RR35cuu`, flow `2oB_n5kLBeuy`, "EkolSuite Landing") → replaces `frontend/src/app/page.tsx` — plan: `landing-page.md` — DONE 2026-08-20. Dark "Lavande Douce" theme, self-contained via `#landing-root` CSS-custom-property scope in `globals.css` (app shell stays untouched/light). All 10 sections rebuilt mobile-first (Banani export was desktop-only, zero responsive, zero interactivity): nav, hero (absolute-positioned floating scene from `lg:`, stacked cards below), stats band (count-up), features (rotated "tag" cards + dashed connector), roles (list + photo/KPI overlay), steps ribbon, pricing (3 material cards), demo (real `DemoRequestForm` logic under a new "clipboard" shell), FAQ (real Radix `Accordion`, `type="multiple"`), footer.

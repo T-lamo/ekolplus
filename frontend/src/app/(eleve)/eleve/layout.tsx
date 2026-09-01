@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
+import { SpaceSwitcherInline } from '@/components/layout/SpaceSwitcher';
 
 // Mobile-first shell for the student-facing portal, deliberately NOT the
 // admin (school)/layout.tsx (no SchoolSidebar/SchoolTopbar), matching the
@@ -35,7 +36,10 @@ export default function EleveLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="mx-auto min-h-screen max-w-lg px-4 py-6">
-      <header className="mb-4 flex items-center justify-end">
+      <header className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex items-center">
+          <SpaceSwitcherInline current="student" />
+        </div>
         <Button
           type="button"
           variant="ghost"

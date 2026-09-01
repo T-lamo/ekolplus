@@ -194,6 +194,7 @@ export function SchoolSidebar({
       }
       roleLabel={t('roleLabel')}
       profileHref="/settings"
+      currentSpace="school"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       onNavigate={onNavigate}

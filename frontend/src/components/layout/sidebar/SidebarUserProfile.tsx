@@ -6,12 +6,16 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { SpaceSwitcherMenuItems, type SpaceKey } from '../SpaceSwitcher';
 
 interface SidebarUserProfileProps {
   variant: 'light' | 'dark';
   collapsed: boolean;
   roleLabel: string;
   profileHref?: string;
+  /** Espace courant du shell : active le bloc « Mes espaces » dans le menu.
+   * Absent = pas de sélecteur (shell admin plateforme). */
+  currentSpace?: SpaceKey | undefined;
 }
 
 export function SidebarUserProfile({
@@ -19,6 +23,7 @@ export function SidebarUserProfile({
   collapsed,
   roleLabel,
   profileHref = '/settings',
+  currentSpace,
 }: SidebarUserProfileProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -64,6 +69,7 @@ export function SidebarUserProfile({
             <UserRound size={14} />
             {t('myProfile')}
           </DropdownMenu.Item>
+          {currentSpace && <SpaceSwitcherMenuItems current={currentSpace} />}
           <DropdownMenu.Item
             onSelect={() => void logout()}
             className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive-foreground outline-none data-[highlighted]:bg-destructive"

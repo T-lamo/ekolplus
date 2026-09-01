@@ -98,6 +98,7 @@ export function TeacherSidebar({
       }
       roleLabel={t('roleLabel')}
       profileHref="/espace-enseignant/parametres"
+      currentSpace="teacher"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       onNavigate={onNavigate}

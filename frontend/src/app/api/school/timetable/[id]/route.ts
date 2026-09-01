@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { hasMinRole } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -54,12 +53,6 @@ async function guard(req: NextRequest, requestId: string, id: string, action: Pe
   const perm = await requireSchoolPermission(auth.user.sub, 'emploiDuTemps', action, requestId);
   if (!perm.ok) return perm.response;
   const mySchool = perm.mySchool;
-  if (!hasMinRole(mySchool.role, 'ADMIN')) {
-    return NextResponse.json(
-      { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-      { status: 403, headers: { 'x-request-id': requestId } },
-    );
-  }
   const session = await prisma.timetableSession.findUnique({
     where: { id },
     include: SESSION_INCLUDE,

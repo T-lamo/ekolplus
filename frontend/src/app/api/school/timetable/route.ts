@@ -19,7 +19,6 @@ import {
   resolveMySchoolIncludingTeacher,
   resolveMyTeacherProfile,
   resolveActiveAcademicYear,
-  hasMinRole,
 } from '@/lib/server/school';
 import { requireSchoolPermission, resolveGrantsFor } from '@/lib/server/school-permissions';
 import { hasGrant } from '@/lib/permissions';
@@ -198,12 +197,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
     if (!activeYear) {

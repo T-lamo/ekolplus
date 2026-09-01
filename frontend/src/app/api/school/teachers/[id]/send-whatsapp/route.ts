@@ -9,7 +9,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { hasMinRole } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { sendWhatsAppMessage } from '@/lib/server/whatsapp/twilio';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -29,12 +28,6 @@ export async function POST(
     const perm = await requireSchoolPermission(auth.user.sub, 'enseignants', 'edit', ctx.requestId);
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id } = await params;
     const teacher = await prisma.teacher.findFirst({

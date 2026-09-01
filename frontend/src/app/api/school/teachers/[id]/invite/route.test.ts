@@ -52,7 +52,7 @@ describe('POST /api/school/teachers/[id]/invite', () => {
     expect(res.status).toBe(404);
   });
 
-  it('rejects a non-admin caller', async () => {
+  it('rejects a staff member whose role does not carry enseignants.edit', async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
     prismaMock.teacher.findUnique.mockResolvedValue({
       id: 't1',
@@ -62,6 +62,7 @@ describe('POST /api/school/teachers/[id]/invite', () => {
     } as never);
     const res = await POST(req(), params);
     expect(res.status).toBe(403);
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
   });
 
   it('rejects a teacher with no email on file', async () => {

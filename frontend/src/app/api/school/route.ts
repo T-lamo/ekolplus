@@ -139,12 +139,6 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     const perm = await requireSchoolPermission(auth.user.sub, 'parametres', 'edit', ctx.requestId);
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const parsed = UpdateSchoolBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {

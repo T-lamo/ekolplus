@@ -9,7 +9,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { hasMinRole } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { CHAPTER_SELECT, ChapterFields } from '@/lib/server/subject-chapters';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -40,12 +39,6 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id, chapterId } = await params;
     const existing = await findOwnedChapter(mySchool.schoolId, id, chapterId);
@@ -90,12 +83,6 @@ export async function DELETE(req: NextRequest, { params }: Params): Promise<Next
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id, chapterId } = await params;
     const existing = await findOwnedChapter(mySchool.schoolId, id, chapterId);

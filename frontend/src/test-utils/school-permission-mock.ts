@@ -13,6 +13,20 @@ import { NextResponse } from 'next/server';
 import type { MySchool } from '@/lib/server/school';
 import type { SchoolPermissionResult } from '@/lib/server/school-permissions';
 
+/** Refus de grant, tel que le renvoie requireSchoolPermission : un membre du
+ * personnel dont le rôle ne porte pas l'action demandée. À utiliser dans les
+ * tests « ce profil ne doit pas pouvoir écrire », puisque c'est désormais le
+ * grant, et non plus un palier de rôle, qui autorise l'écriture. */
+export function deniedSchoolPermission(requestId = 'test-request'): SchoolPermissionResult {
+  return {
+    ok: false,
+    response: NextResponse.json(
+      { error: 'PERMISSION_DENIED', message: 'You do not have permission to perform this action.' },
+      { status: 403, headers: { 'x-request-id': requestId } },
+    ),
+  };
+}
+
 export function passThroughSchoolPermission(
   resolveMySchool: (userId: string) => Promise<MySchool | null>,
 ) {

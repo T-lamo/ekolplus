@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { hasMinRole } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import {
   CHAPTER_SELECT,
@@ -89,12 +88,6 @@ export async function POST(
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id } = await params;
     const subject = await findOwnedSubject(mySchool.schoolId, id);

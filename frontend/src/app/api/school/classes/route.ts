@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
+import { resolveActiveAcademicYear } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { findSchoolRoom } from '@/lib/server/rooms';
@@ -104,12 +104,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
     if (!activeYear) {

@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { hasMinRole } from '@/lib/server/school';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -126,12 +125,6 @@ export async function PATCH(
     const perm = await requireSchoolPermission(auth.user.sub, 'enseignants', 'edit', ctx.requestId);
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id } = await params;
     const existing = await assertOwnedTeacher(id, mySchool.schoolId);
@@ -176,12 +169,6 @@ export async function DELETE(
     );
     if (!perm.ok) return perm.response;
     const mySchool = perm.mySchool;
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
     const { id } = await params;
     const existing = await assertOwnedTeacher(id, mySchool.schoolId);

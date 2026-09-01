@@ -3,23 +3,45 @@
   "chooser": {
     "title": "Chwazi espas ou",
     "subtitle": "Kont ou bay aksè a plizyè espas. Ou ka chanje nenpòt lè nan meni itilizatè ou a.",
-    "enter": "Antre"
+    "enter": "Antre nan espas sa a",
+    "preferredBadge": "Aksè prensipal"
   },
   "cards": {
     "school": {
       "title": "Administrasyon",
-      "subtitle": "Jesyon lekòl la : elèv, nòt, peman ak lòt modil selon pèmisyon ou yo."
+      "subtitle": "Jere lekòl la, elèv yo, peman yo ak aksè yo selon pèmisyon ou yo.",
+      "tags": {
+        "one": "Elèv",
+        "two": "Peman",
+        "three": "Bilten"
+      }
     },
     "teacher": {
       "title": "Espas pwofesè",
-      "subtitle": "Klas ou yo, kanè nòt ou, apresyasyon ou yo ak orè ou."
+      "subtitle": "Klas ou yo, kanè nòt ou, apresyasyon ou yo ak orè ou.",
+      "tags": {
+        "one": "Nòt",
+        "two": "Orè",
+        "three": "Prezans"
+      }
     },
     "student": {
       "title": "Espas elèv",
-      "subtitle": "Nòt, prezans, orè ak bilten."
+      "subtitle": "Nòt, prezans, orè ak bilten.",
+      "tags": {
+        "one": "Nòt mwen yo",
+        "two": "Bilten",
+        "three": "Prezans"
+      }
     }
   },
   "switcher": {
     "label": "Espas mwen yo"
+  },
+  "footer": {
+    "wrongAccount": "Se pa bon kont lan ?",
+    "logout": "Dekonekte",
+    "help": "Èd ak sipò",
+    "copyright": "© {year} SchoolGesti"
   }
 }

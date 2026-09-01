@@ -2,23 +2,45 @@
   "chooser": {
     "title": "Choose your space",
     "subtitle": "Your account gives access to several spaces. You can switch at any time from your user menu.",
-    "enter": "Enter"
+    "enter": "Enter this space",
+    "preferredBadge": "Main access"
   },
   "cards": {
     "school": {
       "title": "Administration",
-      "subtitle": "School management: students, grades, payments and other modules based on your permissions."
+      "subtitle": "Manage the school, students, payments and access based on your permissions.",
+      "tags": {
+        "one": "Students",
+        "two": "Payments",
+        "three": "Report cards"
+      }
     },
     "teacher": {
       "title": "Teacher space",
-      "subtitle": "Your classes, grade book, assessments and timetable."
+      "subtitle": "Your classes, grade book, assessments and timetable.",
+      "tags": {
+        "one": "Grades",
+        "two": "Timetable",
+        "three": "Attendance"
+      }
     },
     "student": {
       "title": "Student space",
-      "subtitle": "Grades, attendance, timetable and report cards."
+      "subtitle": "Grades, attendance, timetable and report cards.",
+      "tags": {
+        "one": "My grades",
+        "two": "Report cards",
+        "three": "Attendance"
+      }
     }
   },
   "switcher": {
     "label": "My spaces"
+  },
+  "footer": {
+    "wrongAccount": "Wrong account?",
+    "logout": "Log out",
+    "help": "Help and support",
+    "copyright": "© {year} SchoolGesti"
   }
 }

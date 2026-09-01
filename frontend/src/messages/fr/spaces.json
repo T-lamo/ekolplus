@@ -2,23 +2,45 @@
   "chooser": {
     "title": "Choisissez votre espace",
     "subtitle": "Votre compte donne accès à plusieurs espaces. Vous pourrez en changer à tout moment depuis votre menu utilisateur.",
-    "enter": "Entrer"
+    "enter": "Entrer dans cet espace",
+    "preferredBadge": "Accès principal"
   },
   "cards": {
     "school": {
       "title": "Administration",
-      "subtitle": "Gestion de l’établissement : élèves, notes, paiements et autres modules selon vos permissions."
+      "subtitle": "Gérez l’établissement, les élèves, les paiements et les accès selon vos permissions.",
+      "tags": {
+        "one": "Élèves",
+        "two": "Paiements",
+        "three": "Bulletins"
+      }
     },
     "teacher": {
       "title": "Espace enseignant",
-      "subtitle": "Vos classes, votre carnet de notes, vos appréciations et votre emploi du temps."
+      "subtitle": "Vos classes, votre carnet de notes, vos appréciations et votre emploi du temps.",
+      "tags": {
+        "one": "Notes",
+        "two": "Emploi du temps",
+        "three": "Présences"
+      }
     },
     "student": {
       "title": "Espace élève",
-      "subtitle": "Notes, présences, emploi du temps et bulletins."
+      "subtitle": "Notes, présences, emploi du temps et bulletins.",
+      "tags": {
+        "one": "Mes notes",
+        "two": "Bulletins",
+        "three": "Présences"
+      }
     }
   },
   "switcher": {
     "label": "Mes espaces"
+  },
+  "footer": {
+    "wrongAccount": "Pas le bon compte ?",
+    "logout": "Se déconnecter",
+    "help": "Aide et support",
+    "copyright": "© {year} SchoolGesti"
   }
 }

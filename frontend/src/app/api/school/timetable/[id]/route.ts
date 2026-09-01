@@ -2,7 +2,7 @@
 // applies the non-date fields (subject, teacher, room, type, colour, hours,
 // description, link) to every occurrence sharing the seriesId, each kept on
 // its own date. DELETE ?scope=one|series. Both re-run the conflict check and
-// answer 409 TIMETABLE_CONFLICT. ADMIN+ only; sessions of another school
+// answer 409 TIMETABLE_CONFLICT. emploiDuTemps.edit/delete grants; sessions of another school
 // are 404 (existence not leaked). See .planning/banani/emploi-du-temps.md.
 export const runtime = 'nodejs';
 

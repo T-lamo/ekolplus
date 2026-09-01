@@ -25,8 +25,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // so a plain MEMBER's own StaffRole grants ride along on this response.
     if (!hasMinRole(guard.mySchool.role, 'ADMIN')) {
       const grants = await resolveGrantsFor(guard.mySchool, guard.auth.user.sub);
+      const permissions = grants === 'ALL' ? 'ALL' : [...grants];
       return NextResponse.json(
-        { plan: null, role: guard.mySchool.role, permissions: [...grants] },
+        { plan: null, role: guard.mySchool.role, permissions },
         { headers: { 'x-request-id': ctx.requestId } },
       );
     }

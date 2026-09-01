@@ -4,8 +4,8 @@
 // POST — create one session or a weekly series (recurrence expanded into one
 // row per occurrence sharing a seriesId); 409 TIMETABLE_CONFLICT when the
 // class, teacher or room is already busy on any occurrence. Read = compte lié
-// à un Teacher (vue scopée) ou grant emploiDuTemps.view, write = ADMIN+ avec
-// emploiDuTemps.create. See .planning/banani/emploi-du-temps.md.
+// à un Teacher (vue scopée) ou grant emploiDuTemps.view, write requires emploiDuTemps.create
+// grant (OWNER/ADMIN pass automatically). See .planning/banani/emploi-du-temps.md.
 export const runtime = 'nodejs';
 
 import 'server-only';

@@ -1,6 +1,6 @@
 // GET /api/school/rooms — the school's room catalogue (configuration/salles)
 // with usage counts (classes using it, timetable sessions). POST — create a
-// room (ADMIN); the name is unique per school, case-insensitively (409
+// room (configuration.create grant; OWNER/ADMIN pass automatically); the name is unique per school, case-insensitively (409
 // ROOM_NAME_TAKEN). Class.room / TimetableSession.room keep the label as
 // text — the catalogue only adds identity, capacity and type.
 export const runtime = 'nodejs';

@@ -18,7 +18,7 @@ import { LevelNameBody } from '../route';
 type Ctx = { params: Promise<{ id: string }> };
 
 /** Shared guard chain for both mutating verbs: CSRF → auth → configuration
- * grant → ADMIN → owned level. Returns either the level row + school, or the
+ * grant → owned level. Returns either the level row + school, or the
  * NextResponse to bail with. */
 async function guard(
   req: NextRequest,

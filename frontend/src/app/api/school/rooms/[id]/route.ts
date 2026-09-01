@@ -1,7 +1,7 @@
-// PATCH /api/school/rooms/[id] — edit a room (ADMIN); renaming also rewrites
+// PATCH /api/school/rooms/[id] — edit a room (configuration.edit grant; OWNER/ADMIN pass automatically); renaming also rewrites
 // the label copied into Class.room / TimetableSession.room (same tx) so the
 // catalogue and the displayed text never drift. DELETE — remove the room
-// (ADMIN): links are set to null (Prisma SetNull) but the text label stays on
+// (configuration.delete grant; OWNER/ADMIN pass automatically): links are set to null (Prisma SetNull) but the text label stays on
 // classes / sessions, so nothing else breaks. Other schools' rooms are 404.
 export const runtime = 'nodejs';
 

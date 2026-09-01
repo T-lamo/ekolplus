@@ -2,7 +2,7 @@
 // (add-class.md): profile + subjectIds + lockedSubjectIds (pivots that already
 // carry evaluations) + classSubjects detail (teacher / coefficient / weekly
 // hours) + studentCount. Any school member can read.
-// PATCH /api/school/classes/[id] — update a class (ADMIN).
+// PATCH /api/school/classes/[id] — update a class (configuration.edit grant; OWNER/ADMIN pass automatically).
 // DELETE /api/school/classes/[id] — delete, blocked (409) if it still has
 // ClassSubject rows. See .planning/banani/classes-config.md.
 export const runtime = 'nodejs';

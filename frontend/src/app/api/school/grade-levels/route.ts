@@ -1,5 +1,5 @@
 // GET /api/school/grade-levels — the school's ordered grade-level catalog.
-// POST — append a level at the end (order = max+1). ADMIN+ for mutations,
+// POST — append a level at the end (order = max+1). configuration.create grant for mutations,
 // any school member may read. Names are unique per school (409
 // LEVEL_NAME_TAKEN). Spec: docs/superpowers/specs/2026-08-17-grade-level-ordering-design.md
 export const runtime = 'nodejs';

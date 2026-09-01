@@ -127,7 +127,7 @@ function VerifyEmailForm() {
         />
 
         <div className="absolute top-4 right-4 z-20 hidden lg:top-6 lg:right-8 lg:block">
-          <LocaleQuickSwitcher className="[&_button]:text-white/70 [&_button[aria-current]]:text-white" />
+          <LocaleQuickSwitcher variant="dark" />
         </div>
 
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
@@ -152,7 +152,7 @@ function VerifyEmailForm() {
 
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="mb-5 flex flex-col items-start gap-2">
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"

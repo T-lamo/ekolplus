@@ -17,10 +17,12 @@ import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { usePermissions } from '@/lib/usePermissions';
 import { CardGrid } from '@/components/school/CardGrid';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -115,6 +117,9 @@ export default function StudentsPage() {
   useEffect(() => {
     setPage(1);
   }, [search, classFilter, status]);
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('eleves')) return <AccessDenied />;
 
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -233,14 +238,18 @@ export default function StudentsPage() {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
-            <UserPlus size={14} />
-            {t('addStudent')}
-          </Button>
+          {can('eleves', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
+          {can('eleves', 'create') && (
+            <Button className="w-fit" onClick={() => setEditing('new')}>
+              <UserPlus size={14} />
+              {t('addStudent')}
+            </Button>
+          )}
         </div>
       </div>
 

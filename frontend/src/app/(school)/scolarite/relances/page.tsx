@@ -5,9 +5,11 @@ import { Bell, CircleAlert, Eye, FileSpreadsheet, Flag, Send, Wallet } from 'luc
 import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
@@ -124,6 +126,9 @@ export default function OverdueFeesPage() {
     settings: AutomationSettings;
   }>('/api/school/fees/automation-settings', { skip: !user });
   const automation = automationData?.settings ?? null;
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('paiements')) return <AccessDenied />;
 
   function updateSearch(value: string) {
     setPage(1);
@@ -256,10 +261,12 @@ export default function OverdueFeesPage() {
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExportList} disabled={!data}>
-            <FileSpreadsheet size={14} />
-            {t('exportList')}
-          </Button>
+          {can('paiements', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExportList} disabled={!data}>
+              <FileSpreadsheet size={14} />
+              {t('exportList')}
+            </Button>
+          )}
           <Button className="w-fit" onClick={() => toast(tStub('stub'), 'info')}>
             <Bell size={14} />
             {selected.size > 0
@@ -560,13 +567,15 @@ export default function OverdueFeesPage() {
                 </div>
               </Card>
 
-              <Card className="gap-2 p-4">
-                <h2 className="text-sm font-bold text-foreground">{t('quickActionsTitle')}</h2>
-                <Button variant="outline" className="w-full" onClick={onExportList}>
-                  <FileSpreadsheet size={14} />
-                  {t('exportExcel')}
-                </Button>
-              </Card>
+              {can('paiements', 'export') && (
+                <Card className="gap-2 p-4">
+                  <h2 className="text-sm font-bold text-foreground">{t('quickActionsTitle')}</h2>
+                  <Button variant="outline" className="w-full" onClick={onExportList}>
+                    <FileSpreadsheet size={14} />
+                    {t('exportExcel')}
+                  </Button>
+                </Card>
+              )}
             </div>
           </div>
         </>

@@ -22,10 +22,12 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { getCache, useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -129,6 +131,9 @@ export default function AppreciationsListPage() {
   const pageStudents = filteredStudents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const enAttenteCount = data ? data.students.filter((s) => s.status !== 'PUBLISHED').length : 0;
 
+  const { can, canSee } = usePermissions();
+  if (!canSee('appreciations')) return <AccessDenied />;
+
   async function deleteAppreciation(studentId: string, name: string) {
     if (!data) return;
     if (!(await confirm({ message: t('deleteConfirm', { name }), danger: true }))) return;
@@ -219,23 +224,27 @@ export default function AppreciationsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
-          <Button
-            className="w-fit"
-            disabled={!data || data.students.length === 0}
-            onClick={() =>
-              data?.students[0] &&
-              router.push(
-                `/pedagogie/appreciations/${data.students[0].studentId}/saisie?termId=${termId}`,
-              )
-            }
-          >
-            <Plus size={14} />
-            {t('newEntry')}
-          </Button>
+          {can('appreciations', 'export') && (
+            <Button variant="ghost" className="w-fit border border-border" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
+          {can('appreciations', 'create') && (
+            <Button
+              className="w-fit"
+              disabled={!data || data.students.length === 0}
+              onClick={() =>
+                data?.students[0] &&
+                router.push(
+                  `/pedagogie/appreciations/${data.students[0].studentId}/saisie?termId=${termId}`,
+                )
+              }
+            >
+              <Plus size={14} />
+              {t('newEntry')}
+            </Button>
+          )}
         </div>
       </div>
 

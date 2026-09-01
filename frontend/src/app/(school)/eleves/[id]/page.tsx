@@ -18,8 +18,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -123,6 +125,8 @@ function StudentProfile() {
     { skip: !user, onError: handleLoadError },
   );
   const error = loadError;
+  const { canSee } = usePermissions();
+  if (!canSee('eleves')) return <AccessDenied />;
 
   const TABS = [
     { key: 'info' as const, label: t('tabs.info'), icon: UserCheck },

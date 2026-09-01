@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 import { Pager } from '@/components/ui/Pager';
@@ -45,6 +47,8 @@ export default function ActivityLogPage() {
     { skip: !user },
   );
   const error = dataErr ? t('loadError') : null;
+  const { canSee } = usePermissions();
+  if (!canSee('dashboard')) return <AccessDenied />;
 
   function updateType(value: string) {
     setPage(1);

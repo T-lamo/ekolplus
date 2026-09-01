@@ -24,8 +24,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -102,6 +104,8 @@ export default function TeacherProfilePage() {
   );
   const teacher = teacherData?.teacher ?? null;
   const error = loadError;
+  const { canSee } = usePermissions();
+  if (!canSee('enseignants')) return <AccessDenied />;
 
   if (!user || (teacher === null && !error)) {
     return (

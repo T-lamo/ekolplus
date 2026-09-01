@@ -17,9 +17,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
@@ -127,6 +129,9 @@ export default function FeeManagementPage() {
     { skip: !user },
   );
   const currency = settingsData?.settings.currency ?? 'HTG';
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('paiements')) return <AccessDenied />;
 
   function updateSearch(value: string) {
     setPage(1);
@@ -289,10 +294,12 @@ export default function FeeManagementPage() {
             <Settings2 size={14} />
             {t('configureFees')}
           </Button>
-          <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
+          {can('paiements', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
         </div>
       </div>
 

@@ -5,8 +5,10 @@ import { Copy, Pencil, Plus, Save, Split, Trash2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { getCache, useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
@@ -271,6 +273,9 @@ export default function PaymentConfigurationPage() {
     () => (classes ?? []).filter((c) => c.configured && c.id !== selectedId),
     [classes, selectedId],
   );
+
+  const { canSee } = usePermissions();
+  if (!canSee('paiements')) return <AccessDenied />;
 
   if (!user) {
     return (

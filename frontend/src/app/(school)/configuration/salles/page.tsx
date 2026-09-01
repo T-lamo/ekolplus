@@ -22,9 +22,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -123,6 +125,9 @@ export default function RoomsPage() {
     };
   }, [rooms]);
 
+  const { can, canSee } = usePermissions();
+  if (!canSee('configuration')) return <AccessDenied />;
+
   function onSaved(room: RoomRow, mode: 'create' | 'edit') {
     mutateRooms((prev) => {
       if (!prev) return { rooms: [room] };
@@ -213,10 +218,12 @@ export default function RoomsPage() {
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Button className="w-fit" onClick={() => setEditing('new')}>
-          <Plus size={14} />
-          {t('addRoom')}
-        </Button>
+        {can('configuration', 'create') && (
+          <Button className="w-fit" onClick={() => setEditing('new')}>
+            <Plus size={14} />
+            {t('addRoom')}
+          </Button>
+        )}
       </div>
 
       {error && (

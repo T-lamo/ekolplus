@@ -17,9 +17,11 @@ import {
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -212,6 +214,9 @@ export default function PresencesPage() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageStudents = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const { can, canSee } = usePermissions();
+  if (!canSee('presences')) return <AccessDenied />;
+
   async function markDay(studentId: string, date: string, status: AttendanceStatus | null) {
     if (!user) return;
     setData((prev) => {
@@ -347,10 +352,12 @@ export default function PresencesPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
+          {can('presences', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
         </div>
       </div>
 

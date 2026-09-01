@@ -41,6 +41,17 @@ describe('filterSectionsByPermissions', () => {
     ]);
   });
 
+  it('a section made only of moduled items with no matching grant disappears entirely, while a sibling section with a moduleless item survives', () => {
+    // Neither 'dashboard.view' nor 'eleves.view' is granted, so every item in
+    // « Principal » (both moduled) is filtered out and the section itself is
+    // dropped — unlike the previous case, nothing is left standing in it.
+    // « Compte » keeps both its items regardless: « Abonnement » has no
+    // module (role-gated only) and « Paramètres » has no module either.
+    expect(labels(filterSectionsByPermissions(SECTIONS, ['paiements.view']))).toEqual([
+      ['Compte', ['Abonnement', 'Paramètres']],
+    ]);
+  });
+
   it('does not mutate the input', () => {
     filterSectionsByPermissions(SECTIONS, ['eleves.view']);
     expect(SECTIONS[0]!.items).toHaveLength(2);

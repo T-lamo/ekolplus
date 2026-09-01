@@ -33,6 +33,8 @@
     "db:make-superadmin": "pnpm --filter frontend run db:make-superadmin",
     "seed:dev": "pnpm --filter frontend run seed:dev",
     "seed:dev-school": "pnpm --filter frontend run seed:dev-school",
+    "stripe:migrate-price": "pnpm --filter frontend run stripe:migrate-price",
+    "stripe:migrate-price:live": "pnpm --filter frontend run stripe:migrate-price:live",
     "stripe:doctor": "pnpm --filter frontend run stripe:doctor",
     "stripe:doctor:live": "pnpm --filter frontend run stripe:doctor:live",
     "stripe:sync-coupons": "pnpm --filter frontend run stripe:sync-coupons",

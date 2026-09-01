@@ -13,7 +13,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { createPortalInvite } from '@/lib/server/portal-invite';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -39,13 +40,9 @@ export async function POST(
     const csrfError = verifyCsrf(req);
     if (csrfError) return csrfError;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'eleves', 'edit', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     if (!hasMinRole(mySchool.role, 'ADMIN')) {
       return NextResponse.json(

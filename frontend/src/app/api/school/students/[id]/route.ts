@@ -12,7 +12,8 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
+import { resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -31,13 +32,9 @@ export async function GET(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'eleves', 'view', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const student = await prisma.student.findUnique({
@@ -143,8 +140,10 @@ export async function PATCH(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
+    const perm = await requireSchoolPermission(auth.user.sub, 'eleves', 'edit', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
+    if (!hasMinRole(mySchool.role, 'ADMIN')) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
@@ -240,8 +239,10 @@ export async function DELETE(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
+    const perm = await requireSchoolPermission(auth.user.sub, 'eleves', 'delete', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
+    if (!hasMinRole(mySchool.role, 'ADMIN')) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },

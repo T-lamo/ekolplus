@@ -1,7 +1,7 @@
 // Application serveur du RBAC école (spec 2026-09-01-permission-manager) :
 // remplace resolveMySchool() dans les routes /api/school/* pour porter la
 // vérification module.action. OWNER/ADMIN passent toujours ; MEMBER passe
-// par les grants de son StaffRole ; sans rôle = refus (deny by default).
+// par l'union des grants de ses rôles staff ; sans rôle = refus (deny by default).
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { prisma } from './prisma';
@@ -20,9 +20,11 @@ export async function resolveGrantsFor(mySchool: MySchool, userId: string): Prom
   if (mySchool.role !== 'MEMBER') return 'ALL';
   const member = await prisma.organizationMember.findFirst({
     where: { userId, organizationId: mySchool.organizationId },
-    select: { staffRole: { select: { grants: true } } },
+    select: { staffRoles: { select: { grants: true } } },
   });
-  return new Set(sanitizeGrants(member?.staffRole?.grants ?? []));
+  // Union de tous les rôles du membre — sanitizeGrants déduplique et
+  // réordonne selon le registre (multi-espaces 2026-09-01, décision 7).
+  return new Set(sanitizeGrants((member?.staffRoles ?? []).flatMap((r) => r.grants)));
 }
 
 export async function resolveMyGrants(

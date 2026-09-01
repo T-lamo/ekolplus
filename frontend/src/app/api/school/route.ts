@@ -68,8 +68,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       select: {
         role: true,
         createdAt: true,
-        staffRoleId: true,
-        user: { select: { id: true, email: true, name: true } },
+        staffRoles: { select: { id: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            // Badge « Enseignant » de l'onglet Administrateurs : signale à
+            // l'admin qu'assigner un rôle ici crée un double profil.
+            teacherProfile: { select: { schoolId: true } },
+          },
+        },
       },
     });
 
@@ -100,7 +109,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           email: m.user.email,
           name: m.user.name,
           role: m.role,
-          staffRoleId: m.staffRoleId,
+          staffRoleIds: m.staffRoles.map((r) => r.id),
+          isTeacher: m.user.teacherProfile?.schoolId === mySchool.schoolId,
           joinedAt: m.createdAt,
         })),
       },

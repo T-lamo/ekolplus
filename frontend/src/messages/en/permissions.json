@@ -54,9 +54,9 @@
     "duplicated": "Role duplicated."
   },
   "deleteConfirm": {
-    "one": "Delete the role \"{name}\"? {count} user will lose all access until a new role is assigned.",
-    "other": "Delete the role \"{name}\"? {count} users will lose all access until a new role is assigned.",
-    "zero": "Delete the role \"{name}\"? No user currently has it."
+    "one": "Delete the role \"{name}\"? {count} user will lose the access this role grants. Any other roles they hold stay active.",
+    "other": "Delete the role \"{name}\"? {count} users will lose the access this role grants. Any other roles they hold stay active.",
+    "zero": "Delete the role \"{name}\"? No user currently holds it."
   },
   "unsaved": "Unsaved changes",
   "unsavedSwitchConfirm": "You have unsaved changes. Switch role without saving?",
@@ -89,11 +89,15 @@
     "body": "Your role does not allow access to this page. Contact a school administrator if you think this is a mistake."
   },
   "adminsTab": {
-    "roleColumn": "Role",
+    "roleColumn": "Roles",
     "fullAccess": "Full access",
     "noRole": "No role (no access)",
+    "noRolePlaceholder": "No role",
+    "searchRoles": "Search roles",
+    "noRoleResults": "No matching role",
     "roleAssigned": "Role assigned",
-    "roleUpdated": "Role updated.",
+    "roleUpdated": "Roles updated.",
+    "teacherBadge": "Teacher",
     "manageLink": "Manage roles and permissions"
   }
 }

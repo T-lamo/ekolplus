@@ -57,8 +57,8 @@
     "duplicated": "Rôle dupliqué."
   },
   "deleteConfirm": {
-    "one": "Supprimer le rôle « {name} » ? {count} utilisateur perdra tout accès jusqu'à l'attribution d'un nouveau rôle.",
-    "other": "Supprimer le rôle « {name} » ? {count} utilisateurs perdront tout accès jusqu'à l'attribution d'un nouveau rôle.",
+    "one": "Supprimer le rôle « {name} » ? {count} utilisateur perdra les accès donnés par ce rôle. Ses autres rôles, s'il en a, restent actifs.",
+    "other": "Supprimer le rôle « {name} » ? {count} utilisateurs perdront les accès donnés par ce rôle. Leurs autres rôles, s'ils en ont, restent actifs.",
     "zero": "Supprimer le rôle « {name} » ? Aucun utilisateur ne l'utilise actuellement."
   },
   "unsaved": "Modifications non enregistrées",
@@ -92,11 +92,15 @@
     "body": "Votre rôle ne permet pas d'accéder à cette page. Contactez un administrateur de l'établissement si vous pensez qu'il s'agit d'une erreur."
   },
   "adminsTab": {
-    "roleColumn": "Rôle",
+    "roleColumn": "Rôles",
     "fullAccess": "Accès complet",
     "noRole": "Aucun rôle (aucun accès)",
+    "noRolePlaceholder": "Aucun rôle",
+    "searchRoles": "Rechercher un rôle",
+    "noRoleResults": "Aucun rôle trouvé",
     "roleAssigned": "Rôle attribué",
-    "roleUpdated": "Rôle mis à jour.",
+    "roleUpdated": "Rôles mis à jour.",
+    "teacherBadge": "Enseignant",
     "manageLink": "Gérer les rôles et permissions"
   }
 }

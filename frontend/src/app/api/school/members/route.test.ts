@@ -1,8 +1,9 @@
-// /api/school/members/[userId] — PATCH assigns/unassigns a StaffRole on a
-// MEMBER-role org account (OWNER/ADMIN only), gated by hasMinRole('ADMIN'),
-// NOT by grants (spec 2026-09-01-permission-manager §8). prismaMock first
-// (auto-hoists vi.mock for '@/lib/server/prisma'), then mock requireAuth +
-// verifyCsrf + resolveMySchool — modeled on
+// /api/school/members/[userId] — PATCH full-replaces the list of StaffRoles
+// on a MEMBER-role org account (OWNER/ADMIN only), gated by
+// hasMinRole('ADMIN'), NOT by grants (spec 2026-09-01-multi-espaces §8).
+// A member can hold several roles at once; `staffRoleIds: []` clears every
+// role. prismaMock first (auto-hoists vi.mock for '@/lib/server/prisma'),
+// then mock requireAuth + verifyCsrf + resolveMySchool — modeled on
 // src/app/api/school/roles/route.test.ts.
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -54,7 +55,7 @@ describe('PATCH /api/school/members/[userId]', () => {
       NextResponse.json({ error: 'CSRF_INVALID' }, { status: 403 }),
     );
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(403);
@@ -64,7 +65,7 @@ describe('PATCH /api/school/members/[userId]', () => {
   it('no school membership → 404 NOT_FOUND (anti-leak)', async () => {
     mockResolveMySchool.mockResolvedValueOnce(null);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(404);
@@ -75,7 +76,7 @@ describe('PATCH /api/school/members/[userId]', () => {
   it('caller is MEMBER → 404 NOT_FOUND (anti-leak)', async () => {
     mockResolveMySchool.mockResolvedValueOnce(memberSchool);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(404);
@@ -86,7 +87,7 @@ describe('PATCH /api/school/members/[userId]', () => {
   it('target not a member of the org → 404 NOT_FOUND', async () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue(null);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_x', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_x', { staffRoleIds: [] }),
       params('user_x'),
     );
     expect(res.status).toBe(404);
@@ -100,7 +101,7 @@ describe('PATCH /api/school/members/[userId]', () => {
       role: 'OWNER',
     } as never);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(400);
@@ -114,7 +115,7 @@ describe('PATCH /api/school/members/[userId]', () => {
       role: 'ADMIN',
     } as never);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(400);
@@ -128,7 +129,7 @@ describe('PATCH /api/school/members/[userId]', () => {
       role: 'MEMBER',
     } as never);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 42 }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: 42 }),
       params('user_2'),
     );
     expect(res.status).toBe(400);
@@ -136,35 +137,34 @@ describe('PATCH /api/school/members/[userId]', () => {
     expect(prismaMock.organizationMember.update).not.toHaveBeenCalled();
   });
 
-  it('staffRoleId belongs to another school → 404 NOT_FOUND', async () => {
+  it('a foreign/unknown staffRoleId → 404 NOT_FOUND', async () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue({
       id: 'om_2',
       role: 'MEMBER',
     } as never);
-    prismaMock.staffRole.findFirst.mockResolvedValue(null);
+    prismaMock.staffRole.count.mockResolvedValue(0);
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_other_school' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: ['role_other'] }),
       params('user_2'),
     );
     expect(res.status).toBe(404);
     expect(((await res.json()) as { error: string }).error).toBe('NOT_FOUND');
-    expect(prismaMock.staffRole.findFirst).toHaveBeenCalledWith({
-      where: { id: 'role_other_school', schoolId: 'school_1' },
-      select: { id: true },
+    expect(prismaMock.staffRole.count).toHaveBeenCalledWith({
+      where: { id: { in: ['role_other'] }, schoolId: 'school_1' },
     });
     expect(prismaMock.organizationMember.update).not.toHaveBeenCalled();
   });
 
-  it('200 — assigns a valid staffRoleId', async () => {
+  it('200 — assigns multiple valid staffRoleIds', async () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue({
       id: 'om_2',
       role: 'MEMBER',
     } as never);
-    prismaMock.staffRole.findFirst.mockResolvedValue({ id: 'role_1' } as never);
+    prismaMock.staffRole.count.mockResolvedValue(2);
     prismaMock.organizationMember.update.mockResolvedValue({} as never);
 
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: 'role_1' }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: ['role_1', 'role_2'] }),
       params('user_2'),
     );
     expect(res.status).toBe(200);
@@ -175,11 +175,11 @@ describe('PATCH /api/school/members/[userId]', () => {
     });
     expect(prismaMock.organizationMember.update).toHaveBeenCalledWith({
       where: { id: 'om_2' },
-      data: { staffRoleId: 'role_1' },
+      data: { staffRoles: { set: [{ id: 'role_1' }, { id: 'role_2' }] } },
     });
   });
 
-  it('200 — unassigns (staffRoleId: null) without looking up a role', async () => {
+  it('200 — clears all roles (staffRoleIds: []) without looking up a role', async () => {
     prismaMock.organizationMember.findFirst.mockResolvedValue({
       id: 'om_2',
       role: 'MEMBER',
@@ -187,15 +187,37 @@ describe('PATCH /api/school/members/[userId]', () => {
     prismaMock.organizationMember.update.mockResolvedValue({} as never);
 
     const res = await PATCH(
-      req('PATCH', '/api/school/members/user_2', { staffRoleId: null }),
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: [] }),
       params('user_2'),
     );
     expect(res.status).toBe(200);
     expect((await res.json()) as unknown).toEqual({ ok: true });
-    expect(prismaMock.staffRole.findFirst).not.toHaveBeenCalled();
+    expect(prismaMock.staffRole.count).not.toHaveBeenCalled();
     expect(prismaMock.organizationMember.update).toHaveBeenCalledWith({
       where: { id: 'om_2' },
-      data: { staffRoleId: null },
+      data: { staffRoles: { set: [] } },
+    });
+  });
+
+  it('200 — duplicate staffRoleIds are deduped before checking and writing', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue({
+      id: 'om_2',
+      role: 'MEMBER',
+    } as never);
+    prismaMock.staffRole.count.mockResolvedValue(1);
+    prismaMock.organizationMember.update.mockResolvedValue({} as never);
+
+    const res = await PATCH(
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: ['role_1', 'role_1'] }),
+      params('user_2'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.staffRole.count).toHaveBeenCalledWith({
+      where: { id: { in: ['role_1'] }, schoolId: 'school_1' },
+    });
+    expect(prismaMock.organizationMember.update).toHaveBeenCalledWith({
+      where: { id: 'om_2' },
+      data: { staffRoles: { set: [{ id: 'role_1' }] } },
     });
   });
 });

@@ -67,7 +67,7 @@ describe('GET /api/school/students — grants du rôle personnalisé', () => {
   it('MEMBER dont le rôle ne porte pas eleves.view → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
     prismaMock.organizationMember.findFirst.mockResolvedValue({
-      staffRole: { grants: ['presences.view', 'notes.view'] },
+      staffRoles: [{ grants: ['presences.view', 'notes.view'] }],
     } as never);
 
     const res = await GET(req());
@@ -80,7 +80,7 @@ describe('GET /api/school/students — grants du rôle personnalisé', () => {
   it('MEMBER dont le rôle porte eleves.view → 200', async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
     prismaMock.organizationMember.findFirst.mockResolvedValue({
-      staffRole: { grants: ['eleves.view'] },
+      staffRoles: [{ grants: ['eleves.view'] }],
     } as never);
 
     const res = await GET(req());
@@ -133,7 +133,7 @@ describe('POST /api/school/students — grants du rôle personnalisé', () => {
   it('MEMBER dont le rôle porte eleves.create → 201 (plus de palier ADMIN au-dessus du grant)', async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
     prismaMock.organizationMember.findFirst.mockResolvedValue({
-      staffRole: { grants: ['eleves.view', 'eleves.create'] },
+      staffRoles: [{ grants: ['eleves.view', 'eleves.create'] }],
     } as never);
 
     const res = await POST(postReq());
@@ -145,7 +145,7 @@ describe('POST /api/school/students — grants du rôle personnalisé', () => {
   it("MEMBER dont le rôle n'a que eleves.view → 403 PERMISSION_DENIED", async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
     prismaMock.organizationMember.findFirst.mockResolvedValue({
-      staffRole: { grants: ['eleves.view'] },
+      staffRoles: [{ grants: ['eleves.view'] }],
     } as never);
 
     const res = await POST(postReq());

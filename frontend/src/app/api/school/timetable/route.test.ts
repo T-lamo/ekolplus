@@ -178,6 +178,7 @@ describe('GET /api/school/timetable', () => {
       classSubjectIds: ['cs_1'],
       homeroomClassIds: [],
     });
+    prismaMock.organizationMember.findFirst.mockResolvedValue({ staffRoles: [] } as never);
     prismaMock.timetableSession.findMany
       .mockResolvedValueOnce([sessionRow()] as never)
       .mockResolvedValueOnce([] as never);
@@ -194,7 +195,7 @@ describe('GET /api/school/timetable', () => {
   it('a non-teacher MEMBER without emploiDuTemps.view is refused (403 PERMISSION_DENIED)', async () => {
     mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
     mockResolveMyTeacherProfile.mockResolvedValue(null);
-    prismaMock.organizationMember.findFirst.mockResolvedValue({ staffRole: null } as never);
+    prismaMock.organizationMember.findFirst.mockResolvedValue({ staffRoles: [] } as never);
 
     const res = await GET(req('GET', '/api/school/timetable?from=2026-08-17&to=2026-08-21'));
 
@@ -207,7 +208,7 @@ describe('GET /api/school/timetable', () => {
     mockResolveIncludingTeacher.mockResolvedValue(memberSchool);
     mockResolveMyTeacherProfile.mockResolvedValue(null);
     prismaMock.organizationMember.findFirst.mockResolvedValue({
-      staffRole: { grants: ['emploiDuTemps.view'] },
+      staffRoles: [{ grants: ['emploiDuTemps.view'] }],
     } as never);
     prismaMock.timetableSession.findMany
       .mockResolvedValueOnce([sessionRow()] as never)

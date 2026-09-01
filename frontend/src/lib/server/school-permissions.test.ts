@@ -28,16 +28,35 @@ describe('resolveMyGrants', () => {
   it('MEMBER with a staff role gets its sanitized grants', async () => {
     mockResolve.mockResolvedValueOnce(school);
     prismaMock.organizationMember.findFirst.mockResolvedValueOnce({
-      staffRole: { grants: ['eleves.view', 'not-a-grant'] },
+      staffRoles: [{ grants: ['eleves.view', 'not-a-grant'] }],
     } as never);
     const r = await resolveMyGrants('u1');
     expect(r?.grants).toEqual(new Set(['eleves.view']));
   });
   it('MEMBER without a staff role gets an empty set (deny by default)', async () => {
     mockResolve.mockResolvedValueOnce(school);
-    prismaMock.organizationMember.findFirst.mockResolvedValueOnce({ staffRole: null } as never);
+    prismaMock.organizationMember.findFirst.mockResolvedValueOnce({ staffRoles: [] } as never);
     const r = await resolveMyGrants('u1');
     expect(r?.grants).toEqual(new Set());
+  });
+  it('MEMBER with two roles gets the deduplicated union of their grants, registry-ordered', async () => {
+    mockResolve.mockResolvedValueOnce(school);
+    prismaMock.organizationMember.findFirst.mockResolvedValueOnce({
+      staffRoles: [
+        { grants: ['notes.view', 'eleves.view'] },
+        { grants: ['eleves.view', 'paiements.view'] },
+      ],
+    } as never);
+    const r = await resolveMyGrants('u1');
+    expect(r?.grants).toEqual(new Set(['eleves.view', 'notes.view', 'paiements.view']));
+  });
+  it('a member whose only remaining role has grants keeps exactly those (deleted role leaves no trace)', async () => {
+    mockResolve.mockResolvedValueOnce(school);
+    prismaMock.organizationMember.findFirst.mockResolvedValueOnce({
+      staffRoles: [{ grants: ['presences.view'] }],
+    } as never);
+    const r = await resolveMyGrants('u1');
+    expect(r?.grants).toEqual(new Set(['presences.view']));
   });
 });
 
@@ -55,7 +74,7 @@ describe('requireSchoolPermission', () => {
   it('403 PERMISSION_DENIED for a MEMBER without the grant', async () => {
     mockResolve.mockResolvedValueOnce(school);
     prismaMock.organizationMember.findFirst.mockResolvedValueOnce({
-      staffRole: { grants: ['notes.view'] },
+      staffRoles: [{ grants: ['notes.view'] }],
     } as never);
     const r = await requireSchoolPermission('u1', 'eleves', 'view', 'req1');
     expect(r.ok).toBe(false);
@@ -67,7 +86,7 @@ describe('requireSchoolPermission', () => {
   it('passes through for a MEMBER holding the grant', async () => {
     mockResolve.mockResolvedValueOnce(school);
     prismaMock.organizationMember.findFirst.mockResolvedValueOnce({
-      staffRole: { grants: ['eleves.view'] },
+      staffRoles: [{ grants: ['eleves.view'] }],
     } as never);
     const r = await requireSchoolPermission('u1', 'eleves', 'view', 'req1');
     expect(r).toEqual({ ok: true, mySchool: school });

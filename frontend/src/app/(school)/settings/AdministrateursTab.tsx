@@ -8,12 +8,10 @@ import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
-import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import { LOCALE_BCP47 } from '@/lib/locales';
 import { roleLabel } from './role-label';
 import type { MemberData } from './types';
-
-const NO_ROLE_VALUE = '';
 
 interface StaffRole {
   id: string;
@@ -30,8 +28,9 @@ interface RolesResponse {
 }
 
 // Add/remove is an invite flow, deferred (see school-settings.md). The
-// staff-role column is editable by ADMIN+ viewers (assigns/clears a
-// member's StaffRole); everyone else sees it as plain text.
+// staff-roles column is editable by ADMIN+ viewers via a checkbox popover
+// (a member can hold several roles at once, effective grants = their
+// union — multi-espaces 2026-09-01); everyone else sees it as plain text.
 export function AdministrateursTab({
   members,
   myRole,
@@ -65,15 +64,14 @@ export function AdministrateursTab({
     });
   }
 
-  async function handleRoleChange(userId: string, value: string) {
-    const staffRoleId = value === NO_ROLE_VALUE ? null : value;
+  async function handleRolesChange(userId: string, staffRoleIds: string[]) {
     setSavingIds((prev) => new Set(prev).add(userId));
     try {
       await api(`/api/school/members/${userId}`, {
         method: 'PATCH',
-        body: { staffRoleId },
+        body: { staffRoleIds },
       });
-      setRows((prev) => prev.map((m) => (m.userId === userId ? { ...m, staffRoleId } : m)));
+      setRows((prev) => prev.map((m) => (m.userId === userId ? { ...m, staffRoleIds } : m)));
       toast(tAdmins('roleUpdated'), 'success');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
@@ -116,7 +114,7 @@ export function AdministrateursTab({
                   {t('since', { date: fmt(m.joinedAt) })}
                 </span>
               </div>
-              <div className="flex w-full shrink-0 flex-col gap-1 sm:w-48">
+              <div className="flex w-full shrink-0 flex-col gap-1 sm:w-56">
                 <span className="text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                   {tAdmins('roleColumn')}
                 </span>
@@ -125,23 +123,24 @@ export function AdministrateursTab({
                     {tAdmins('fullAccess')}
                   </span>
                 ) : isAdminPlus ? (
-                  <FilterSelect
-                    value={m.staffRoleId ?? NO_ROLE_VALUE}
-                    onValueChange={(v) => void handleRoleChange(m.userId, v)}
+                  <MultiSelect
+                    options={roles.map((r) => ({ id: r.id, label: r.name }))}
+                    value={m.staffRoleIds}
+                    onChange={(ids) => void handleRolesChange(m.userId, ids)}
                     disabled={saving}
-                    ariaLabel={tAdmins('roleColumn')}
+                    placeholder={tAdmins('noRolePlaceholder')}
+                    searchPlaceholder={tAdmins('searchRoles')}
+                    emptyLabel={tAdmins('noRoleResults')}
                     className="w-full"
-                  >
-                    <SelectItem value={NO_ROLE_VALUE}>{tAdmins('noRole')}</SelectItem>
-                    {roles.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </FilterSelect>
+                  />
                 ) : (
                   <span className="text-xs font-medium text-foreground">
-                    {m.staffRoleId !== null ? tAdmins('roleAssigned') : tAdmins('noRole')}
+                    {m.staffRoleIds.length > 0 ? tAdmins('roleAssigned') : tAdmins('noRole')}
+                  </span>
+                )}
+                {m.isTeacher && !isFullAccess && (
+                  <span className="w-fit rounded-full bg-info px-2 py-0.5 text-2xs font-semibold text-info-foreground">
+                    {tAdmins('teacherBadge')}
                   </span>
                 )}
               </div>

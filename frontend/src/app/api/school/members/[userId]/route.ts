@@ -1,10 +1,11 @@
 // frontend/src/app/api/school/members/[userId]/route.ts
-// PATCH — assigns or unassigns a StaffRole on a MEMBER-role org account.
-// OWNER/ADMIN targets never carry a StaffRole (implicit full access), so
-// they 400 as NOT_A_MEMBER. 404 anti-fuite when the caller isn't ADMIN+,
-// when the target isn't part of the caller's org, or when the given
-// staffRoleId doesn't belong to the caller's school.
-// Spec 2026-09-01-permission-manager §8.
+// PATCH — full replace of the StaffRoles assigned to a MEMBER-role org
+// account (multiple roles allowed, `[]` clears every role). OWNER/ADMIN
+// targets never carry a StaffRole (implicit full access), so they 400 as
+// NOT_A_MEMBER. 404 anti-fuite when the caller isn't ADMIN+, when the
+// target isn't part of the caller's org, or when a given staffRoleId
+// doesn't belong to the caller's school.
+// Spec 2026-09-01-multi-espaces §8.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -16,7 +17,7 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool, hasMinRole } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
-const bodySchema = z.object({ staffRoleId: z.string().nullable() });
+const bodySchema = z.object({ staffRoleIds: z.array(z.string().min(1)).max(50) });
 
 function notFound(requestId: string) {
   return NextResponse.json(
@@ -58,16 +59,17 @@ export async function PATCH(
     }
     const parsed = bodySchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) return validationFailed(ctx.requestId);
-    if (parsed.data.staffRoleId !== null) {
-      const role = await prisma.staffRole.findFirst({
-        where: { id: parsed.data.staffRoleId, schoolId: mySchool.schoolId },
-        select: { id: true },
+    const staffRoleIds = Array.from(new Set(parsed.data.staffRoleIds));
+    if (staffRoleIds.length > 0) {
+      // 404 anti-fuite : un id inconnu ou d'une autre école est indistinguable
+      const count = await prisma.staffRole.count({
+        where: { id: { in: staffRoleIds }, schoolId: mySchool.schoolId },
       });
-      if (!role) return notFound(ctx.requestId);
+      if (count !== staffRoleIds.length) return notFound(ctx.requestId);
     }
     await prisma.organizationMember.update({
       where: { id: target.id },
-      data: { staffRoleId: parsed.data.staffRoleId },
+      data: { staffRoles: { set: staffRoleIds.map((id) => ({ id })) } },
     });
     return NextResponse.json({ ok: true }, { headers: { 'x-request-id': ctx.requestId } });
   });

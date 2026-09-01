@@ -58,9 +58,9 @@
     "duplicated": "Wòl duplike."
   },
   "deleteConfirm": {
-    "one": "Efase wòl « {name} » a ? {count} itilizatè ap pèdi tout aksè jiskaske yo resevwa yon nouvo wòl.",
-    "other": "Efase wòl « {name} » a ? {count} itilizatè ap pèdi tout aksè jiskaske yo resevwa yon nouvo wòl.",
-    "zero": "Efase wòl « {name} » a ? Pa gen okenn itilizatè k ap sèvi avè l kounye a."
+    "one": "Efase wòl « {name} » la ? {count} itilizatè pral pèdi aksè wòl sa a bay yo. Lòt wòl li genyen yo rete aktif.",
+    "other": "Efase wòl « {name} » la ? {count} itilizatè pral pèdi aksè wòl sa a bay yo. Lòt wòl yo genyen yo rete aktif.",
+    "zero": "Efase wòl « {name} » la ? Pa gen okenn itilizatè k ap sèvi avè l kounye a."
   },
   "unsaved": "Chanjman ki pa anrejistre",
   "unsavedSwitchConfirm": "Gen chanjman ki pa anrejistre. Chanje wòl san w pa anrejistre yo ?",
@@ -93,11 +93,15 @@
     "body": "Wòl ou a pa pèmèt ou antre nan paj sa a. Kontakte yon administratè nan etablisman an si w panse se yon erè."
   },
   "adminsTab": {
-    "roleColumn": "Wòl",
+    "roleColumn": "Wòl yo",
     "fullAccess": "Aksè konplè",
-    "noRole": "Pa gen wòl (pa gen aksè)",
+    "noRole": "Okenn wòl (okenn aksè)",
+    "noRolePlaceholder": "Okenn wòl",
+    "searchRoles": "Chèche yon wòl",
+    "noRoleResults": "Pa gen wòl ki koresponn",
     "roleAssigned": "Wòl atribye",
-    "roleUpdated": "Wòl mizajou.",
+    "roleUpdated": "Wòl yo mete ajou.",
+    "teacherBadge": "Pwofesè",
     "manageLink": "Jere wòl ak pèmisyon yo"
   }
 }

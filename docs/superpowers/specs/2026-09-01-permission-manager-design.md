@@ -1,7 +1,7 @@
 # Gestionnaire de rôles & permissions (RBAC école) — Design
 
 Date : 2026-09-01
-Statut : validé en discussion (choix utilisateur enregistrés), en attente de relecture de cette spec
+Statut : implémenté (2026-09-01) — plan `docs/superpowers/plans/2026-09-01-permission-manager.md`, branche `feat/permission-manager`.
 Écrans Banani sources : flow `2oB_n5kLBeuy` — « Permission Manager » (`Sr4sWYaoaPZ0`), « Create Role » (`OlsuHWlZ3rkJ`)
 
 ## 1. Objectif

@@ -947,7 +947,7 @@ if (!perm.ok) return perm.response;
 const mySchool = perm.mySchool;
 ```
 
-(import : `import { requireSchoolPermission } from '@/lib/server/school-permissions';` ; retirer `resolveMySchool` de l'import s'il n'est plus utilisé ; **conserver** les `hasMinRole(...)` existants — ils s'additionnent.)
+(import : `import { requireSchoolPermission } from '@/lib/server/school-permissions';` ; retirer `resolveMySchool` de l'import s'il n'est plus utilisé ; **conserver** les `hasMinRole(...)` existants — ils s'additionnent. [Amendé en cours d'exécution : ruling R6 — les `hasMinRole('ADMIN')` préexistants ont finalement été RETIRÉS des handlers désormais gardés par `requireSchoolPermission` ; les grants du `StaffRole` sont la seule autorisation pour le personnel MEMBER, ils ne s'additionnent pas à un plancher de rôle. Seules les gardes OWNER (paramètres école, zone dangereuse) et les routes de gestion des rôles elles-mêmes (`roles/`, `members/`, en liste blanche du tripwire RBAC-01) conservent `hasMinRole('ADMIN')`. Voir CLAUDE.md § Permission manager pour l'état livré.]
 
 **Mapping exhaustif** (module, action par handler ; GET→view, POST→create, PATCH/PUT→edit, DELETE→delete sauf mention) :
 

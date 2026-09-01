@@ -38,11 +38,21 @@ export interface PlanResponse {
   /** null for a plain MEMBER — plan visibility is an OWNER/ADMIN matter. */
   plan: PlanSnapshot | null;
   role: SchoolRole;
+  /**
+   * 'ALL' for OWNER/ADMIN, the caller's sanitized grant list for a MEMBER.
+   * Optional: the `useBilling` call sites build this object from the older
+   * `/api/school/billing` and `/subscription` responses, which don't carry
+   * grants — `apply()` there simply resets permissions to "not yet loaded"
+   * (null), same anti-flicker convention as a fresh mount.
+   */
+  permissions?: 'ALL' | string[];
 }
 
 export interface SchoolPlanState {
   snapshot: PlanSnapshot | null;
   role: SchoolRole | null;
+  /** null = not yet loaded (anti-flicker: callers treat this as "everything visible"). */
+  permissions: 'ALL' | string[] | null;
   /** True only until the first result — later refreshes keep the previous snapshot visible. */
   loading: boolean;
   error: string | null;
@@ -53,6 +63,7 @@ export interface SchoolPlanState {
 const NOOP_STATE: SchoolPlanState = {
   snapshot: null,
   role: null,
+  permissions: null,
   loading: false,
   error: null,
   refresh: async () => {},
@@ -113,6 +124,7 @@ export function SchoolPlanProvider({ children }: { children: ReactNode }) {
     () => ({
       snapshot: state.data?.plan ?? null,
       role: state.data?.role ?? null,
+      permissions: state.data?.permissions ?? null,
       loading: state.loading,
       error: state.error,
       refresh: fetchSnapshot,

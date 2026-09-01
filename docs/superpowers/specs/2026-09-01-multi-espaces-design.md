@@ -36,6 +36,12 @@ connexion et la bascule à tout moment.
 6. Le message d'erreur « mauvais onglet » envisagé initialement est abandonné :
    ce flow rend le cas impossible (mono-casquette = onglet ignoré,
    multi-casquettes = page de choix).
+7. **Un membre peut cumuler plusieurs rôles staff** (ajout du 2026-09-01,
+   amende la décision « un membre a au plus un rôle » de la spec permission
+   manager). Ses droits effectifs sont l'**union** des grants de tous ses
+   rôles. Corollaire : le système d'espaces s'adapte à tout nouveau rôle créé
+   sans câblage particulier (l'espace Administration découle de « au moins un
+   droit », jamais d'un rôle nommé).
 
 ## 3. Le modèle : trois espaces par compte
 
@@ -43,7 +49,7 @@ Un « espace » est une interface complète servie par la même app :
 
 | Espace | URL d'entrée | Éligibilité du compte |
 |---|---|---|
-| Administration école | `/dashboard` | `OrganizationMember` OWNER/ADMIN, **ou** MEMBER avec `staffRole` dont `grants.length ≥ 1` |
+| Administration école | `/dashboard` | `OrganizationMember` OWNER/ADMIN, **ou** MEMBER dont l'union des grants de ses rôles staff est non vide |
 | Espace enseignant | `/espace-enseignant` | `Teacher.userId` lié (quel que soit le rôle org) |
 | Espace élève/parent | `/eleve` | `Student.userId` lié + gardes existantes d'`isStudentOnly` (User.role USER, pas de membership org) |
 
@@ -63,15 +69,15 @@ Règle actuelle : `role === 'MEMBER' && isPortalOnlyAccount()` → `null`.
 Nouvelle règle, en distinguant la nature du lien :
 
 - lien **Student** → `null`, toujours (aucun déblocage possible).
-- lien **Teacher** seul → `null` **sauf si** le membership porte un
-  `staffRole` avec `grants.length ≥ 1` → contexte école normal (les routes
-  school appliquent ensuite `requireSchoolPermission` comme pour tout staff).
+- lien **Teacher** seul → `null` **sauf si** l'union des grants des rôles
+  staff du membership est non vide → contexte école normal (les routes school
+  appliquent ensuite `requireSchoolPermission` comme pour tout staff).
 - pas de lien portail → comportement actuel inchangé.
 
-Implémentation : `findMembership()` sélectionne en plus
-`staffRole: { select: { grants: true } }`; le test du verrou devient une
-fonction pure testable. Aucun changement aux routes school elles-mêmes : le
-RBAC (tripwire RBAC-01) fait déjà toute l'autorisation module par module.
+Implémentation : `findMembership()` sélectionne en plus les rôles staff du
+membre avec leurs `grants`; le test du verrou devient une fonction pure
+testable. Aucun changement aux routes school elles-mêmes : le RBAC (tripwire
+RBAC-01) fait déjà toute l'autorisation module par module.
 
 ### Cas particulier hérité : `GET /api/school/timetable`
 
@@ -129,12 +135,33 @@ condition dans la garde manuelle existante de cette route, plus un test.
 - L'entrée `/espaces` du sélecteur n'est pas nécessaire : les liens vont
   directement aux URL d'entrée.
 
-## 8. Onglet Administrateurs
+## 8. Plusieurs rôles staff par membre (schéma + API + UI)
 
-- Assigner un rôle staff à un MEMBER lié enseignant devient **opérant** (double
+- **Schéma** : `OrganizationMember.staffRoleId` (1-à-N) est remplacé par une
+  relation plusieurs-à-plusieurs implicite Prisma
+  (`OrganizationMember.staffRoles StaffRole[]` ⇄ `StaffRole.members
+  OrganizationMember[]`). Migration versionnée : création de la table de
+  jointure, reprise des assignations existantes (`INSERT ... SELECT` depuis
+  `staffRoleId`), puis suppression de la colonne. La suppression d'un rôle
+  retire ses lignes de jointure : les membres **conservent leurs autres
+  rôles** (plus de SetNull); un membre sans plus aucun rôle repasse en refus
+  par défaut.
+- **Résolution des droits** : `resolveGrantsFor` fait l'union des `grants` de
+  tous les rôles du membre (toujours re-sanitisée). `GET /api/school` expose
+  `staffRoleIds: string[]` par membre (remplace `staffRoleId`).
+- **API** : `PATCH /api/school/members/[userId]` prend
+  `{ staffRoleIds: string[] }` (liste complète, remplace l'existante; `[]` =
+  aucun rôle). 404 anti-fuite si un id n'appartient pas à l'école; toujours
+  réservé aux cibles MEMBER.
+- **UI onglet Administrateurs** : la colonne « Rôle » devient « Rôles » : un
+  bouton compact ouvrant un popover à cases à cocher (un item par rôle de
+  l'école); la cellule affiche les noms des rôles cochés (ou « Aucun rôle »).
+  Le compteur « N utilisateurs » des écrans de rôles compte les membres liés
+  (inchangé sémantiquement via la jointure).
+- Assigner des rôles à un MEMBER lié enseignant devient **opérant** (double
   profil). Le garde-fou envisagé précédemment (blocage) est remplacé par une
-  simple mention informative sur ces lignes (ex. petit badge « Enseignant »),
-  pour que l'admin comprenne qu'il crée un double profil.
+  mention informative sur ces lignes (petit badge « Enseignant »), pour que
+  l'admin comprenne qu'il crée un double profil.
 - Rien à faire pour les élèves/parents : jamais membres de l'org.
 
 ## 9. i18n
@@ -142,16 +169,22 @@ condition dans la garde manuelle existante de cette route, plus un test.
 Namespace `spaces` (fr/en/ht, ht `_review`), enregistré `Spaces` (convention
 casse existante) : titres/sous-titres des trois cartes, « Choisissez votre
 espace », « Entrer », libellés du sélecteur « Mes espaces », badge
-« Enseignant » de l'onglet Administrateurs. Parité de clés vérifiée par
-`locales.test.ts` (37 namespaces).
+« Enseignant » de l'onglet Administrateurs. Les nouvelles chaînes du popover
+multi-rôles vivent dans `Permissions.adminsTab` (namespace existant de cet
+onglet). Parité de clés vérifiée par `locales.test.ts` (37 namespaces).
 
 ## 10. Tests
 
-- `resolveMySchool` : lié enseignant sans rôle staff → null; avec rôle staff à
-  grants vides → null; avec ≥ 1 grant → contexte; lié élève + rôle staff →
-  null; OWNER/ADMIN lié enseignant → contexte (inchangé).
+- `resolveMySchool` : lié enseignant sans rôle staff → null; avec rôles à
+  grants vides → null; avec ≥ 1 grant (union) → contexte; lié élève + rôle
+  staff → null; OWNER/ADMIN lié enseignant → contexte (inchangé).
+- `resolveGrantsFor` : union de 2 rôles (recouvrement partiel → dédupliqué,
+  ordre du registre); membre multi-rôles dont un rôle supprimé → droits des
+  rôles restants.
 - `resolveMySpaces` : les 6 combinaisons notables (mono ×3, prof+staff,
   directeur+prof, aucun espace).
+- `PATCH /members/[userId]` : remplacement complet de la liste; `[]` vide
+  tout; id d'une autre école → 404.
 - `/api/auth/me` : `spaces` présent; `isTeacherOnly` false pour un double
   profil, true pour un prof pur.
 - Timetable GET : MEMBER prof avec `emploiDuTemps.view` → vue pleine école;

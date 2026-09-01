@@ -79,9 +79,9 @@ const SOFTWARE_JSON_LD = {
     {
       '@type': 'Offer',
       name: 'Pro',
-      price: '0.60',
+      price: '0.40',
       priceCurrency: 'USD',
-      description: "À partir de 0,60 $ par élève et par mois, jusqu'à 1000 élèves.",
+      description: "À partir de 0,40 $ par élève et par mois, jusqu'à 1000 élèves.",
     },
   ],
 };

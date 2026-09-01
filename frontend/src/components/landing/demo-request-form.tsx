@@ -8,9 +8,9 @@ import { Field } from '@/components/ui/Field';
 import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
 
-// Effectif représentatif par tranche → estimation du plan Pro (0,60 $/élève/mois).
+// Effectif représentatif par tranche → estimation du plan Pro (0,40 $/élève/mois).
 // null = « Plus de 1000 » → tarif entreprise (sur devis).
-const RATE = 0.6;
+const RATE = 0.4;
 const SIZE_TO_COUNT: Record<string, number | null> = {
   small: 150,
   medium: 350,

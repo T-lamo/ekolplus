@@ -52,7 +52,7 @@ const PLANS: Plan[] = [
     icon: Zap,
     name: 'Pro',
     pricePrefix: 'À partir de',
-    price: '0,60 $',
+    price: '0,40 $',
     priceNote: '/ élève / mois',
     desc: 'Le meilleur choix pour structurer votre gestion scolaire avec une équipe administrative plus sereine.',
     features: [

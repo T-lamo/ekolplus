@@ -8,6 +8,7 @@
 import { Info, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { FilterSelect, SelectItem } from '@/components/ui/FilterSelect';
 
@@ -53,11 +54,14 @@ export function RolesPanel({
           ariaLabel={t('rolesLabel')}
           className="w-full"
         >
-          {rows.map((r) => (
-            <SelectItem key={r.id} value={r.id}>
-              {r.name}
-            </SelectItem>
-          ))}
+          {rows.map((r) => {
+            const isSystem = r.id === SYSTEM_OWNER_ID || r.id === SYSTEM_ADMIN_ID;
+            return (
+              <SelectItem key={r.id} value={r.id}>
+                {isSystem ? `${r.name} · ${t('systemBadge')}` : r.name}
+              </SelectItem>
+            );
+          })}
         </FilterSelect>
         <Button type="button" variant="outline" onClick={onAddRole}>
           <Plus size={16} />
@@ -85,6 +89,7 @@ export function RolesPanel({
         <div className="flex flex-col gap-1.5">
           {rows.map((r) => {
             const active = r.id === selectedId;
+            const isSystem = r.id === SYSTEM_OWNER_ID || r.id === SYSTEM_ADMIN_ID;
             return (
               <button
                 key={r.id}
@@ -96,7 +101,14 @@ export function RolesPanel({
                   active ? 'bg-secondary text-primary' : 'bg-card text-foreground hover:bg-muted',
                 )}
               >
-                <span className="truncate text-xs font-semibold">{r.name}</span>
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-xs font-semibold">{r.name}</span>
+                  {isSystem && (
+                    <Badge tone={active ? 'primary' : 'muted'} className="shrink-0">
+                      {t('systemBadge')}
+                    </Badge>
+                  )}
+                </span>
                 <span
                   className={cn(
                     'flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-2xs font-semibold',

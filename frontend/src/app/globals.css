@@ -263,66 +263,44 @@
   }
 }
 
-/* ── Landing page (marketing, route "/") — self-contained DARK theme ──────
-   Banani "Lavande Douce" export (.planning/banani/landing-page.md). Scoped
-   to #landing-root so it never leaks into the app shell's own light
+/* ── Landing page (marketing, route "/") — self-contained LIGHT theme ─────
+   Banani "Electric Blue" export (.planning/banani/landing-page-v2.md).
+   Scoped to #landing-root so it never leaks into the app shell's own
    @theme above — same "renders identically regardless of the app's theme"
-   precedent the old landing page followed. Radii are already numerically
-   identical (4/6/8/12px) across both themes, so only colors are redefined
-   here; every Tailwind utility that reads a --color-* token (bg-input,
-   text-foreground, border-border, …) picks up the dark values automatically
+   precedent as the previous landing. Radii are numerically identical
+   (4/6/8/12px) across both themes, so only colors are redefined here;
+   every Tailwind utility that reads a --color-* token (bg-input,
+   text-foreground, border-border, …) picks up these values automatically
    for any component rendered inside this subtree, including shared
-   primitives like Field/PhoneInput/Select. */
+   primitives like Field/PhoneInput/Select (the demo form portals its Radix
+   popovers into a node inside this subtree so they inherit the same
+   scope — see DemoRequestForm's portalContainer). */
 #landing-root {
-  --color-background: #1e1630;
-  --color-foreground: #fbf8ff;
-  --color-border: #ffffff1a;
-  --color-input: #261c39;
-  --color-primary: #c7a7ff;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-border: #dce4f0;
+  --color-input: #eff4fb;
+  --color-primary: #2563eb;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #241a38;
-  --color-secondary-foreground: #e8ddf8;
-  --color-muted: #2c2140;
-  --color-muted-foreground: #c7bdd8;
-  --color-accent: #e7d8ff;
-  --color-accent-foreground: #24173a;
-  --color-card: #231937;
-  --color-card-foreground: #fbf8ff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #e2e8f0;
+  --color-muted-foreground: #475569;
+  --color-accent: #a7f3d0;
+  --color-accent-foreground: #064e3b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
   --color-destructive-foreground: #dc2626;
   /* Nothing on the landing page currently reads these 4 — re-defined anyway
      so the scope shields ALL 16 tokens src/lib/themes.ts's THEMED_TOKENS
-     touches, not just the 12 the page happens to use today. Values are the
-     app's own default (Lavande, untouched by data-theme) — same "the
+     touches, not just the 12 the page happens to use today — same "the
      landing page renders identically no matter which theme the viewer has
-     saved" guarantee as the rest of this block, just future-proofed. */
-  --color-primary-gradient-end: #a855f7;
-  --color-sidebar-light-foreground: #1a1a2e;
-  --color-sidebar-dark: #16102e;
-  --color-sidebar-dark-foreground: #e8e3f7;
-  background:
-    radial-gradient(circle at 18% 16%, rgba(199, 167, 255, 0.24), transparent 26%),
-    radial-gradient(circle at 78% 10%, rgba(231, 216, 255, 0.16), transparent 24%),
-    radial-gradient(circle at 50% 44%, rgba(199, 167, 255, 0.1), transparent 32%),
-    linear-gradient(180deg, #181126 0%, #211633 30%, #1b132b 100%);
-  color: var(--color-foreground);
-}
-
-/* The demo-request "clipboard" card (DemoRequestForm) is a light paper
-   card floating on the dark landing page — re-scope the same token names
-   back to a cream palette so the shared Field/PhoneInput/Select primitives
-   restyle automatically without duplicating their markup or logic. */
-.landing-clipboard {
-  --color-border: rgba(36, 26, 21, 0.1);
-  --color-input: rgba(255, 255, 255, 0.62);
-  --color-primary: #9b6bff;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #efe6d9;
-  --color-secondary-foreground: #6b5c51;
-  --color-muted: #efe6d9;
-  --color-muted-foreground: #8a7b70;
-  --color-card: #faf6ef;
-  --color-foreground: #241a15;
-  --radius-md: 14px;
+     saved" guarantee as the rest of this block. */
+  --color-primary-gradient-end: #3b82f6;
+  --color-sidebar-light-foreground: #0f172a;
+  --color-sidebar-dark: #0f172a;
+  --color-sidebar-dark-foreground: #e2e8f0;
+  background: var(--color-background);
   color: var(--color-foreground);
 }
 

@@ -291,7 +291,7 @@ export default function LoginPage() {
 
           <p className="mb-3.5 text-center text-xs leading-relaxed text-muted-foreground">
             {t('noAccount')}{' '}
-            <Link href="/#contact-demo" className="font-semibold text-primary">
+            <Link href="/#contact" className="font-semibold text-primary">
               {t('contactAdmin')}
             </Link>
           </p>

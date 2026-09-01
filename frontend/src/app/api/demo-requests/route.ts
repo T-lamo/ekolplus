@@ -40,6 +40,7 @@ const Body = z.object({
   school: z.string().trim().min(1).max(200),
   size: z.enum(['small', 'medium', 'large', 'xlarge']),
   plan: z.enum(['starter', 'pro', 'enterprise']),
+  message: z.string().trim().max(2000).optional(), // « Votre besoin » (landing v2 form)
   company: z.string().optional(), // honeypot — must stay empty
 });
 
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { fullName, phone, email, school, size, plan, company } = parsed.data;
+    const { fullName, phone, email, school, size, plan, message, company } = parsed.data;
 
     // Honeypot tripped — pretend success, do nothing further.
     if (company && company.trim() !== '') {
@@ -96,12 +97,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           <li><strong>Effectif :</strong> ${escapeHtml(SIZE_LABEL[size] ?? size)}</li>
           <li><strong>Plan souhaité :</strong> ${escapeHtml(PLAN_LABEL[plan] ?? plan)}</li>
         </ul>
+        ${message ? `<p><strong>Besoin exprimé :</strong></p><p>${escapeHtml(message)}</p>` : ''}
       `.trim();
       await queue.enqueue({
         to,
         subject: `Nouvelle demande de démo — ${school}`,
         html,
-        text: `${fullName} (${email}, ${phone || 'sans téléphone'}) — ${school}, ${SIZE_LABEL[size] ?? size}, plan ${PLAN_LABEL[plan] ?? plan}`,
+        text: `${fullName} (${email}, ${phone || 'sans téléphone'}) — ${school}, ${SIZE_LABEL[size] ?? size}, plan ${PLAN_LABEL[plan] ?? plan}${message ? ` — Besoin : ${message}` : ''}`,
       });
 
       // Visitor-facing confirmation — the internal email above only reaches

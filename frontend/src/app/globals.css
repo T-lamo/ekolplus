@@ -27,23 +27,23 @@
    every screen export (Login, School Dashboard, SaaS Admin Dashboard). See
    .planning/banani/epic-0-shell.md for the full token mapping table. */
 @theme {
-  --color-background: #f3f3f7;
-  --color-foreground: #1a1a2e;
-  --color-border: #e2e2ee;
+  --color-background: #f2f5fa;
+  --color-foreground: #15203a;
+  --color-border: #dde3ee;
   --color-input: #ffffff;
-  --color-primary: #6c2bd9;
+  --color-primary: #1e40af;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #ede9fb;
-  --color-secondary-foreground: #6c2bd9;
-  --color-muted: #ececf3;
+  --color-secondary: #dbe7fe;
+  --color-secondary-foreground: #1e40af;
+  --color-muted: #e8edf5;
   /* Darkened from Banani's #8884a0 (~3.2:1 on --background) to clear WCAG AA's
      4.5:1 for normal text — muted-foreground is the app's default secondary-
      text color, used at text-sm/text-xs on nearly every screen. */
-  --color-muted-foreground: #696582;
+  --color-muted-foreground: #586582;
   --color-success: #e6f9f0;
   /* Darkened from Banani's #1a9e5c (~3.2:1 on --success) for the same reason. */
   --color-success-foreground: #157d49;
-  --color-accent: #7c3aed;
+  --color-accent: #2563eb;
   --color-accent-foreground: #ffffff;
   --color-destructive: #fdecea;
   /* Darkened from Banani's #d93025 (~4.2:1 on --destructive, under 4.5:1). */
@@ -52,7 +52,7 @@
   /* Darkened from Banani's #f59e0b (~2:1 on --warning, badly under 4.5:1). */
   --color-warning-foreground: #996206;
   --color-card: #ffffff;
-  --color-card-foreground: #1a1a2e;
+  --color-card-foreground: #15203a;
 
   /* 5th status pair ("info"/blue — attendance's Justifié, etc.), promoted
      from a hex literal (#e0f0ff/#2563eb) copy-pasted across 16+ files.
@@ -64,7 +64,7 @@
 
   /* Second stop of the primary→purple brand gradient, previously hand-typed
      as a literal (#a855f7) alongside --color-primary in 2+ components. */
-  --color-primary-gradient-end: #a855f7;
+  --color-primary-gradient-end: #3b82f6;
 
   /* Bulletin (printed document) gradient end — deliberately NOT themed: the
      PDF pipeline renders /print/* without a user theme, so the on-screen
@@ -93,9 +93,9 @@
      sidebar's surface color lives here, not shared with --color-background
      (see (school)/layout.tsx). */
   --color-sidebar-light: #ffffff;
-  --color-sidebar-light-foreground: #1a1a2e;
-  --color-sidebar-dark: #16102e;
-  --color-sidebar-dark-foreground: #e8e3f7;
+  --color-sidebar-light-foreground: #15203a;
+  --color-sidebar-dark: #0e1b3d;
+  --color-sidebar-dark-foreground: #e0e7f7;
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -127,25 +127,25 @@
    every theme, so Lighthouse's color-contrast audit stays green whatever the
    user picks. Status colours (success/warning/destructive/info/gold), data
    colours (subjects, avatars, charts) and --color-card are NOT themed.
-   The default theme (Lavande) has no block: it is the @theme above. */
+   The default theme (Océan) has no block: it is the @theme above. */
 
-:root[data-theme='ocean'] {
-  --color-background: #f2f5fa;
-  --color-foreground: #15203a;
-  --color-border: #dde3ee;
-  --color-muted: #e8edf5;
-  --color-muted-foreground: #586582;
-  --color-primary: #1e40af;
+:root[data-theme='lavande'] {
+  --color-background: #f3f3f7;
+  --color-foreground: #1a1a2e;
+  --color-border: #e2e2ee;
+  --color-muted: #ececf3;
+  --color-muted-foreground: #696582;
+  --color-primary: #6c2bd9;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #dbe7fe;
-  --color-secondary-foreground: #1e40af;
-  --color-accent: #2563eb;
+  --color-secondary: #ede9fb;
+  --color-secondary-foreground: #6c2bd9;
+  --color-accent: #7c3aed;
   --color-accent-foreground: #ffffff;
-  --color-primary-gradient-end: #3b82f6;
-  --color-card-foreground: #15203a;
-  --color-sidebar-light-foreground: #15203a;
-  --color-sidebar-dark: #0e1b3d;
-  --color-sidebar-dark-foreground: #e0e7f7;
+  --color-primary-gradient-end: #a855f7;
+  --color-card-foreground: #1a1a2e;
+  --color-sidebar-light-foreground: #1a1a2e;
+  --color-sidebar-dark: #16102e;
+  --color-sidebar-dark-foreground: #e8e3f7;
 }
 
 :root[data-theme='foret'] {

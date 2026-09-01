@@ -15,10 +15,10 @@
 //
 // Client-safe: no server imports.
 
-export const THEME_KEYS = ['lavande', 'ocean', 'foret', 'ardoise', 'terracotta'] as const;
+export const THEME_KEYS = ['ocean', 'lavande', 'foret', 'ardoise', 'terracotta'] as const;
 export type ThemeKey = (typeof THEME_KEYS)[number];
 
-export const DEFAULT_THEME: ThemeKey = 'lavande';
+export const DEFAULT_THEME: ThemeKey = 'ocean';
 
 /** `<html data-theme="…">` — read by the CSS and by the pre-paint script. */
 export const THEME_ATTR = 'data-theme';
@@ -35,16 +35,17 @@ export interface ThemeDef {
 
 export const THEMES: readonly ThemeDef[] = [
   {
+    key: 'ocean',
+    label: 'Océan',
+    description:
+      'Le thème par défaut — bleu marine posé, fonds gris-bleu, sobre et institutionnel.',
+    swatch: { primary: '#1e40af', secondary: '#dbe7fe', sidebarDark: '#0e1b3d' },
+  },
+  {
     key: 'lavande',
     label: 'Lavande',
     description: 'Le thème Schoolgesti d’origine — violet profond, fonds gris-lilas.',
     swatch: { primary: '#6c2bd9', secondary: '#ede9fb', sidebarDark: '#16102e' },
-  },
-  {
-    key: 'ocean',
-    label: 'Océan',
-    description: 'Bleu marine posé, fonds gris-bleu — sobre et institutionnel.',
-    swatch: { primary: '#1e40af', secondary: '#dbe7fe', sidebarDark: '#0e1b3d' },
   },
   {
     key: 'foret',

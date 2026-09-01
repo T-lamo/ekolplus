@@ -29,9 +29,9 @@ interface RolesResponse {
   systemCounts: { owners: number; admins: number };
 }
 
-// Add/remove is an invite flow, deferred (see school-settings.md) — the
-// member list itself stays read-only here. The staff-role column (this
-// task) is the one editable field on this screen, gated to ADMIN+.
+// Add/remove is an invite flow, deferred (see school-settings.md). The
+// staff-role column is editable by ADMIN+ viewers (assigns/clears a
+// member's StaffRole); everyone else sees it as plain text.
 export function AdministrateursTab({
   members,
   myRole,
@@ -96,7 +96,6 @@ export function AdministrateursTab({
         {rows.map((m) => {
           const isFullAccess = m.role === 'OWNER' || m.role === 'ADMIN';
           const saving = savingIds.has(m.userId);
-          const assignedRole = roles.find((r) => r.id === m.staffRoleId) ?? null;
 
           return (
             <div
@@ -142,7 +141,7 @@ export function AdministrateursTab({
                   </FilterSelect>
                 ) : (
                   <span className="text-xs font-medium text-foreground">
-                    {assignedRole ? assignedRole.name : tAdmins('noRole')}
+                    {m.staffRoleId !== null ? tAdmins('roleAssigned') : tAdmins('noRole')}
                   </span>
                 )}
               </div>

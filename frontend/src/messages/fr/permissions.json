@@ -95,6 +95,7 @@
     "roleColumn": "Rôle",
     "fullAccess": "Accès complet",
     "noRole": "Aucun rôle (aucun accès)",
+    "roleAssigned": "Rôle attribué",
     "roleUpdated": "Rôle mis à jour.",
     "manageLink": "Gérer les rôles et permissions"
   }

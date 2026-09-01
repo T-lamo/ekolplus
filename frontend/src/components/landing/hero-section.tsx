@@ -52,7 +52,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
   {
     id: 'left-top',
     rotate: -11,
-    position: 'lg:-left-[124px] lg:top-[28px]',
+    position: 'lg:left-[min(-124px,470px-50vw)] lg:top-[28px]',
     width: 'lg:w-[162px]',
     floatDelay: 0,
     depth: -22,
@@ -64,7 +64,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
   {
     id: 'left-bottom',
     rotate: 10,
-    position: 'lg:-left-[88px] lg:bottom-[38px]',
+    position: 'lg:left-[min(-88px,500px-50vw)] lg:bottom-[38px]',
     width: 'lg:w-[142px]',
     floatDelay: 0.9,
     depth: -14,
@@ -75,7 +75,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
   {
     id: 'right-top',
     rotate: 10,
-    position: 'lg:-right-[126px] lg:top-[42px]',
+    position: 'lg:right-[min(-126px,466px-50vw)] lg:top-[42px]',
     width: 'lg:w-[164px]',
     floatDelay: 1.6,
     depth: 18,
@@ -86,7 +86,7 @@ const FLOAT_CARDS: FloatCardSpec[] = [
   {
     id: 'right-bottom',
     rotate: -9,
-    position: 'lg:-right-[96px] lg:bottom-[34px]',
+    position: 'lg:right-[min(-96px,494px-50vw)] lg:bottom-[34px]',
     width: 'lg:w-[146px]',
     floatDelay: 0.5,
     depth: 26,

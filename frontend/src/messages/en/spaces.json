@@ -1,0 +1,24 @@
+{
+  "chooser": {
+    "title": "Choose your space",
+    "subtitle": "Your account gives access to several spaces. You can switch at any time from your user menu.",
+    "enter": "Enter"
+  },
+  "cards": {
+    "school": {
+      "title": "Administration",
+      "subtitle": "School management: students, grades, payments and other modules based on your permissions."
+    },
+    "teacher": {
+      "title": "Teacher space",
+      "subtitle": "Your classes, grade book, assessments and timetable."
+    },
+    "student": {
+      "title": "Student space",
+      "subtitle": "Grades, attendance, timetable and report cards."
+    }
+  },
+  "switcher": {
+    "label": "My spaces"
+  }
+}

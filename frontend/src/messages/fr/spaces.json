@@ -1,0 +1,24 @@
+{
+  "chooser": {
+    "title": "Choisissez votre espace",
+    "subtitle": "Votre compte donne accès à plusieurs espaces. Vous pourrez en changer à tout moment depuis votre menu utilisateur.",
+    "enter": "Entrer"
+  },
+  "cards": {
+    "school": {
+      "title": "Administration",
+      "subtitle": "Gestion de l’établissement : élèves, notes, paiements et autres modules selon vos permissions."
+    },
+    "teacher": {
+      "title": "Espace enseignant",
+      "subtitle": "Vos classes, votre carnet de notes, vos appréciations et votre emploi du temps."
+    },
+    "student": {
+      "title": "Espace élève",
+      "subtitle": "Notes, présences, emploi du temps et bulletins."
+    }
+  },
+  "switcher": {
+    "label": "Mes espaces"
+  }
+}

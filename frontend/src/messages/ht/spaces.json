@@ -1,0 +1,25 @@
+{
+  "_review": true,
+  "chooser": {
+    "title": "Chwazi espas ou",
+    "subtitle": "Kont ou bay aksè a plizyè espas. Ou ka chanje nenpòt lè nan meni itilizatè ou a.",
+    "enter": "Antre"
+  },
+  "cards": {
+    "school": {
+      "title": "Administrasyon",
+      "subtitle": "Jesyon lekòl la : elèv, nòt, peman ak lòt modil selon pèmisyon ou yo."
+    },
+    "teacher": {
+      "title": "Espas pwofesè",
+      "subtitle": "Klas ou yo, kanè nòt ou, apresyasyon ou yo ak orè ou."
+    },
+    "student": {
+      "title": "Espas elèv",
+      "subtitle": "Nòt, prezans, orè ak bilten."
+    }
+  },
+  "switcher": {
+    "label": "Espas mwen yo"
+  }
+}

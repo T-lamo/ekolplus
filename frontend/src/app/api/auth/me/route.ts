@@ -91,9 +91,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // the current invite flow (createPortalInvite refuses to link a Student to
     // an account that already has a passwordHash), but Task 10 builds real
     // redirect/bounce logic on top of this field, so gate it here too. Can't
-    // mirror isTeacherOnly's `mySchool?.role === 'MEMBER'` gate literally —
-    // students never get an OrganizationMember row, so that would always be
-    // false for genuine students. Gate on the platform-wide User.role instead.
+    // mirror isTeacherOnly's `spaces.teacher && !spaces.school` derivation
+    // literally — students never get an OrganizationMember row, so
+    // `spaces.school` would always be false for genuine students. Gate on
+    // the platform-wide User.role instead.
     // Second gate, same spirit: a non-null `mySchool` means this account
     // really does hold an org role (director, secretary, teacher...), which a
     // genuine student account never has by design. That covers the case the

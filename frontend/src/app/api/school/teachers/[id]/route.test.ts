@@ -1,12 +1,14 @@
 // DELETE /api/school/teachers/[id] — blocked (409) if still referenced by a
 // ClassSubject row or as a Class homeroom teacher; when allowed, also
 // removes the linked OrganizationMember row for a teacher-linked account.
-// This matters because Teacher.userId is the ONLY thing
-// isPortalOnlyAccount() (lib/server/school.ts) checks to decide whether
-// resolveMySchool() should deny an account — deleting the Teacher row
-// alone (FK is ON DELETE SET NULL, so the User survives) would leave that
-// membership behind and silently upgrade the ex-teacher's still-working
-// account to full admin-shell access on their next login.
+// This matters because Teacher.userId is one of the signals
+// isPortalLocked() (lib/server/school.ts) checks to decide whether
+// resolveMySchool() should deny an account (unless the member already
+// holds a staff role with a non-empty grant union, a "double profile"
+// unlocked regardless) — deleting the Teacher row alone (FK is ON DELETE
+// SET NULL, so the User survives) would leave that membership behind and
+// silently upgrade the ex-teacher's still-working account to full
+// admin-shell access on their next login.
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';

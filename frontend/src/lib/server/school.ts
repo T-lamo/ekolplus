@@ -159,7 +159,7 @@ export interface MySpaces {
 // school : OWNER/ADMIN, ou MEMBER dont l'union des grants est non vide
 // (et jamais un compte lié élève). teacher : lien Teacher dans l'école du
 // membership. student : mêmes gardes qu'isStudentOnly (User.role USER,
-// aucun membership d'org, lien Student).
+// aucun membership lié à une école, lien Student).
 export async function resolveMySpaces(userId: string): Promise<MySpaces> {
   const membership = await findMembership(userId);
   const schoolId = membership?.organization.school?.id ?? null;

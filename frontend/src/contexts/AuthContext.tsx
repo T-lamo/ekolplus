@@ -29,11 +29,12 @@ export interface User {
   /** UI language key (src/lib/locales.ts) chosen in Paramètres › Langue;
    * null = never chosen (default: French). Applied by LocaleProvider. */
   locale: string | null;
-  /** true for a purely teacher-linked account (MEMBER role + a linked
-   * TeacherProfile) — mirrors GET /api/auth/me's deny-by-default check in
-   * lib/server/school.ts. false for an admin who happens to also be
-   * teacher-linked, so their normal school-admin experience is untouched.
-   * Drives the login-time redirect (login/page.tsx) and the
+  /** true only for a teacher-linked account with NO school space (mirrors
+   * GET /api/auth/me's `spaces.teacher && !spaces.school`, itself built on
+   * resolveMySpaces() in lib/server/school.ts). A teacher-linked account
+   * that also holds a staff role with a non-empty grant union is a
+   * "double profile" — it keeps its school space too, so it is NOT
+   * isTeacherOnly. Drives the login-time redirect (login/page.tsx) and the
    * belt-and-suspenders guard in (school)/layout.tsx. */
   isTeacherOnly?: boolean;
   /** true for a purely student-linked account (MEMBER role + a linked

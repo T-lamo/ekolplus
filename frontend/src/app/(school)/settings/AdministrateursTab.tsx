@@ -65,15 +65,25 @@ export function AdministrateursTab({
   }
 
   async function handleRolesChange(userId: string, staffRoleIds: string[]) {
+    const previous = rows.find((m) => m.userId === userId)?.staffRoleIds;
     setSavingIds((prev) => new Set(prev).add(userId));
+    // Optimistic: apply immediately so a rapid second toggle reads the new
+    // value off `rows` rather than a stale prop (lost-update race — the
+    // popover stays interactive while a PATCH is in flight for another row,
+    // and `disabled` on this row only blocks further clicks here).
+    setRows((prev) => prev.map((m) => (m.userId === userId ? { ...m, staffRoleIds } : m)));
     try {
       await api(`/api/school/members/${userId}`, {
         method: 'PATCH',
         body: { staffRoleIds },
       });
-      setRows((prev) => prev.map((m) => (m.userId === userId ? { ...m, staffRoleIds } : m)));
       toast(tAdmins('roleUpdated'), 'success');
     } catch (err) {
+      if (previous) {
+        setRows((prev) =>
+          prev.map((m) => (m.userId === userId ? { ...m, staffRoleIds: previous } : m)),
+        );
+      }
       toast(err instanceof ApiError ? err.message : tCommon('errors.network'), 'error');
     } finally {
       setSavingIds((prev) => {
@@ -128,6 +138,7 @@ export function AdministrateursTab({
                     value={m.staffRoleIds}
                     onChange={(ids) => void handleRolesChange(m.userId, ids)}
                     disabled={saving}
+                    ariaLabel={tAdmins('roleColumn')}
                     placeholder={tAdmins('noRolePlaceholder')}
                     searchPlaceholder={tAdmins('searchRoles')}
                     emptyLabel={tAdmins('noRoleResults')}

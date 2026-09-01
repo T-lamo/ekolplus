@@ -220,4 +220,20 @@ describe('PATCH /api/school/members/[userId]', () => {
       data: { staffRoles: { set: [{ id: 'role_1' }] } },
     });
   });
+
+  it('a staffRoleId deleted between the count check and the update (P2025) → 404 NOT_FOUND', async () => {
+    prismaMock.organizationMember.findFirst.mockResolvedValue({
+      id: 'om_2',
+      role: 'MEMBER',
+    } as never);
+    prismaMock.staffRole.count.mockResolvedValue(1);
+    prismaMock.organizationMember.update.mockRejectedValue({ code: 'P2025' } as never);
+
+    const res = await PATCH(
+      req('PATCH', '/api/school/members/user_2', { staffRoleIds: ['role_1'] }),
+      params('user_2'),
+    );
+    expect(res.status).toBe(404);
+    expect(((await res.json()) as { error: string }).error).toBe('NOT_FOUND');
+  });
 });

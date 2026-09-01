@@ -67,10 +67,20 @@ export async function PATCH(
       });
       if (count !== staffRoleIds.length) return notFound(ctx.requestId);
     }
-    await prisma.organizationMember.update({
-      where: { id: target.id },
-      data: { staffRoles: { set: staffRoleIds.map((id) => ({ id })) } },
-    });
+    try {
+      await prisma.organizationMember.update({
+        where: { id: target.id },
+        data: { staffRoles: { set: staffRoleIds.map((id) => ({ id })) } },
+      });
+    } catch (err) {
+      // A staffRoleId can be deleted between the count check above and this
+      // update (TOCTOU) — Prisma throws P2025 when a `set` connect target no
+      // longer exists. Treat it the same as any other anti-fuite miss.
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'P2025') {
+        return notFound(ctx.requestId);
+      }
+      throw err;
+    }
     return NextResponse.json({ ok: true }, { headers: { 'x-request-id': ctx.requestId } });
   });
 }

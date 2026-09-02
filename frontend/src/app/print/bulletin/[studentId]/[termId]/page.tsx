@@ -26,7 +26,12 @@ export default async function PrintBulletinPage({
     return <p style={{ padding: 24, fontFamily: 'sans-serif' }}>Lien invalide ou expiré.</p>;
   }
 
-  const view = await getStudentBulletinView(payload.schoolId, studentId, termId);
+  const view = await getStudentBulletinView(
+    payload.schoolId,
+    studentId,
+    termId,
+    payload.audience ?? 'staff',
+  );
   if (!view || !view.template) {
     return <p style={{ padding: 24, fontFamily: 'sans-serif' }}>Bulletin indisponible.</p>;
   }

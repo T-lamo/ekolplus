@@ -309,7 +309,8 @@
       "teacher": "Pwofesè"
     },
     "overallAverage": "Mwayèn jeneral",
-    "rank": "· Ran : {rank} / {rankedCount}"
+    "rank": "· Ran : {rank} / {rankedCount}",
+    "loadError": "Nou pa ka chaje apresyasyon yo."
   },
   "attendanceTab": {
     "journal": "Jounal prezans",
@@ -318,7 +319,8 @@
       "date": "Dat",
       "status": "Estati",
       "justification": "Jistifikasyon"
-    }
+    },
+    "loadError": "Nou pa ka chaje prezans yo."
   },
   "bulletins": {
     "loadError": "Nou pa ka chaje bilten yo.",

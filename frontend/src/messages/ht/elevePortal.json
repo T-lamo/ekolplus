@@ -79,5 +79,23 @@
   "settings": {
     "subtitle": "Pwofil ou, aparans ak lang espas ou a.",
     "profileSubtitle": "Enfòmasyon kont elèv ou a"
+  },
+  "pages": {
+    "grades": {
+      "title": "Nòt mwen yo",
+      "subtitle": "Rezilta w pa matyè, mwayèn ou ak ran ou nan klas la."
+    },
+    "attendance": {
+      "title": "Prezans mwen yo",
+      "subtitle": "Asidite w ak jounal prezans ou, peryòd pa peryòd."
+    },
+    "bulletins": {
+      "title": "Bilten mwen yo",
+      "subtitle": "Bilten ou yo pa peryòd, pou li sou ekran oswa telechaje an PDF."
+    },
+    "appreciations": {
+      "title": "Apresyasyon",
+      "subtitle": "Apresyasyon pwofesè w yo pou chak peryòd."
+    }
   }
 }

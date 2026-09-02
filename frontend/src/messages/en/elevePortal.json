@@ -78,5 +78,23 @@
   "settings": {
     "subtitle": "Your profile, the look and the language of your space.",
     "profileSubtitle": "Your student account information"
+  },
+  "pages": {
+    "grades": {
+      "title": "My grades",
+      "subtitle": "Your results by subject, your average and your rank in the class."
+    },
+    "attendance": {
+      "title": "My attendance",
+      "subtitle": "Your attendance record and day-by-day log, term by term."
+    },
+    "bulletins": {
+      "title": "My report cards",
+      "subtitle": "Your report cards by term, to read on screen or download as PDF."
+    },
+    "appreciations": {
+      "title": "Comments",
+      "subtitle": "Your teachers' comments for each term."
+    }
   }
 }

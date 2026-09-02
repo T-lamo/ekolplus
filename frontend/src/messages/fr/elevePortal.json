@@ -78,5 +78,23 @@
   "settings": {
     "subtitle": "Votre profil, l'apparence et la langue de votre espace.",
     "profileSubtitle": "Informations de votre compte élève"
+  },
+  "pages": {
+    "grades": {
+      "title": "Mes notes",
+      "subtitle": "Vos résultats par matière, votre moyenne et votre rang dans la classe."
+    },
+    "attendance": {
+      "title": "Mes présences",
+      "subtitle": "Votre assiduité et le journal de vos présences, période par période."
+    },
+    "bulletins": {
+      "title": "Mes bulletins",
+      "subtitle": "Vos bulletins par période, à consulter à l'écran ou à télécharger en PDF."
+    },
+    "appreciations": {
+      "title": "Appréciations",
+      "subtitle": "Les appréciations de vos enseignants pour chaque période."
+    }
   }
 }

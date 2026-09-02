@@ -43,7 +43,17 @@ function fmtDate(iso: string | undefined, locale: string): string {
   });
 }
 
-export function AppreciationsTab({ studentId }: { studentId: string }) {
+export function AppreciationsTab({
+  studentId,
+  apiBase = `/api/school/students/${studentId}`,
+  readOnly = false,
+}: {
+  studentId: string;
+  /** API prefix of the appreciations read (`${apiBase}/appreciations`). Default: the fiche's school route. */
+  apiBase?: string;
+  /** Espace Élève: no « Modifier » / « Rédiger » links. */
+  readOnly?: boolean;
+}) {
   const t = useTranslations('Eleves.appreciations');
   const tFilterBy = useTranslations('Eleves');
   const tMention = useTranslations('Eleves.mention');
@@ -51,8 +61,8 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
   const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
   const qs = termId ? `?termId=${termId}` : '';
-  const appreciationsPath = `/api/school/students/${studentId}/appreciations${qs}`;
-  const { data, loading } = useApi<StudentAppreciationData>(appreciationsPath);
+  const appreciationsPath = `${apiBase}/appreciations${qs}`;
+  const { data, loading, error } = useApi<StudentAppreciationData>(appreciationsPath);
 
   // `termId` is local state, not a URL param, so this component never
   // remounts on term change — gate the auto-seed on `getCache(...) === data`
@@ -66,6 +76,14 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
       setTermId(data.resolvedTermId ?? '');
     }
   }, [data, appreciationsPath]);
+
+  if (!data && error) {
+    return (
+      <Card className="items-center gap-2 p-10 text-center">
+        <p className="text-sm text-destructive-foreground">{t('loadError')}</p>
+      </Card>
+    );
+  }
 
   if (!data) {
     return (
@@ -103,22 +121,26 @@ export function AppreciationsTab({ studentId }: { studentId: string }) {
             </SelectItem>
           ))}
         </FilterSelect>
-        <Link
-          href={editHref}
-          className="ml-auto flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-caption font-semibold text-primary-foreground"
-        >
-          <Pencil size={13} />
-          {t('editLink')}
-        </Link>
+        {!readOnly && (
+          <Link
+            href={editHref}
+            className="ml-auto flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-caption font-semibold text-primary-foreground"
+          >
+            <Pencil size={13} />
+            {t('editLink')}
+          </Link>
+        )}
       </Card>
 
       {!hasContent ? (
         <Card className="items-center gap-2 p-10 text-center">
           <Star size={28} className="text-muted-foreground" />
           <p className="max-w-sm text-sm text-muted-foreground">{t('empty')}</p>
-          <Link href={editHref} className="text-xs font-semibold text-primary">
-            {t('writeLink')}
-          </Link>
+          {!readOnly && (
+            <Link href={editHref} className="text-xs font-semibold text-primary">
+              {t('writeLink')}
+            </Link>
+          )}
         </Card>
       ) : (
         <>

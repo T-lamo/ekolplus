@@ -206,6 +206,12 @@ export default function EmploiDuTempsPage() {
   } = useApi<TimetableResponse>(`/api/school/timetable?from=${range.from}&to=${range.to}`, {
     onError: handleLoadError,
   });
+  // A prior transient failure must not keep the banner up once every piece
+  // needed to render the grid has since loaded successfully (loadError is
+  // otherwise a one-way ratchet: onError sets it, nothing ever clears it).
+  useEffect(() => {
+    if (meta && data) setLoadError(null);
+  }, [meta, data]);
   const error = loadError;
 
   const filtered = useMemo<TimetableSession[]>(() => {

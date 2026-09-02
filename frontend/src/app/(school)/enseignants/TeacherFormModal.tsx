@@ -179,6 +179,7 @@ export function TeacherFormModal({
     if (seededRef.current || !detail) return;
     seededRef.current = true;
     setForm(toForm(detail));
+    setLoadError(null);
   }, [detail]);
 
   function patch(p: Partial<FormState>) {

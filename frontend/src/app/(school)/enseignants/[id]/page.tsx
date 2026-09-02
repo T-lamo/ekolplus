@@ -6,7 +6,7 @@
 // grid of InfoRow cards. Stats and the Matières & Classes tab are real,
 // derived from ClassSubject assignments — never fabricated numbers.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   BookOpen,
@@ -103,6 +103,11 @@ export default function TeacherProfilePage() {
     },
   );
   const teacher = teacherData?.teacher ?? null;
+  // A prior transient failure must not keep the banner up once the teacher
+  // record has since loaded successfully.
+  useEffect(() => {
+    if (teacherData) setLoadError(null);
+  }, [teacherData]);
   const error = loadError;
   const { canSee } = usePermissions();
   if (!canSee('enseignants')) return <AccessDenied />;

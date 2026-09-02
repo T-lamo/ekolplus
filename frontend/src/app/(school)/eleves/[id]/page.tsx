@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Pencil,
@@ -124,6 +124,13 @@ function StudentProfile() {
     `/api/school/students/${params.id}/attendance`,
     { skip: !user, onError: handleLoadError },
   );
+  // A prior transient failure must not keep the banner up once the student
+  // record has since loaded successfully (loadError is otherwise a one-way
+  // ratchet: onError sets it, nothing ever clears it). A genuine 404 never
+  // hits this — `student` stays null in that case.
+  useEffect(() => {
+    if (student) setLoadError(null);
+  }, [student]);
   const error = loadError;
   const { canSee } = usePermissions();
   if (!canSee('eleves')) return <AccessDenied />;

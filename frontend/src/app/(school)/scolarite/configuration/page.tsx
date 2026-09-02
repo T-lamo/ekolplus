@@ -112,6 +112,11 @@ export default function PaymentConfigurationPage() {
   });
   const classes = classesData?.classes ?? null;
   const academicYearLabel = classesData?.academicYearLabel ?? null;
+  // A prior transient failure must not keep the banner up once the class
+  // list has since loaded successfully.
+  useEffect(() => {
+    if (classesData) setLoadError(null);
+  }, [classesData]);
   const error = loadError;
 
   const { data: automationData, mutate: mutateAutomation } = useApi<{

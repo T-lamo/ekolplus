@@ -101,6 +101,9 @@ export default function BulletinsListPage() {
     if (data && getCache(bulletinsPath) === data && keyRef.current !== bulletinsPath) {
       keyRef.current = bulletinsPath;
       setTermId(data.resolvedTermId ?? '');
+      // A prior transient failure must not keep the banner up over data
+      // that has since loaded successfully.
+      setLoadError(null);
     }
   }, [data, bulletinsPath]);
 

@@ -280,6 +280,11 @@ export default function GradeNotebookPage() {
       setUnified(u);
       setTermId(u.resolvedTermId ?? '');
       setPage(1);
+      // A prior transient failure (e.g. a class/subject/term switch that
+      // raced ahead of the notebook fetch) leaves `loadError` set; this run
+      // successfully landed, so the stale banner must not keep showing over
+      // fresh, correct data.
+      setLoadError(null);
     }
   }, [rawNotebook, notebookPath, subjectValue]);
 

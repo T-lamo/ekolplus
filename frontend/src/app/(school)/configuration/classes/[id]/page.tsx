@@ -60,6 +60,12 @@ export default function ClassDetailPage() {
     if (noSchool) router.replace('/');
   }, [noSchool, router]);
 
+  // A prior transient failure must not keep the banner up once the class
+  // record has since loaded successfully.
+  useEffect(() => {
+    if (cls) setLoadError(null);
+  }, [cls]);
+
   const onSaved = useCallback(
     (saved: ClassData) => {
       toast(t('updated'), 'success');

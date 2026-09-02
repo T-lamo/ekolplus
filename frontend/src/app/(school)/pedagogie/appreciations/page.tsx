@@ -115,6 +115,9 @@ export default function AppreciationsListPage() {
       notebookKeyRef.current = notebookPath;
       setTermId(data.resolvedTermId ?? '');
       setPage(1);
+      // A prior transient failure must not keep the banner up over data that
+      // has since loaded successfully.
+      setLoadError(null);
     }
   }, [data, notebookPath]);
 

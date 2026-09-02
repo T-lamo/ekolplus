@@ -19,7 +19,16 @@ import { LOCALE_BCP47 } from '@/lib/locales';
 import { roleLabel } from './role-label';
 import type { MemberData } from './types';
 
-function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['role'] | null }) {
+interface ProfilTabProps {
+  user: User;
+  myRole: MemberData['role'] | null;
+  /** Overrides the card subtitle (the default speaks of an administrator account). */
+  subtitle?: string;
+  /** Read-only role text shown when the account has no org role (teacher/student portals). */
+  roleDisplay?: string;
+}
+
+function ProfileInfoCard({ user, myRole, subtitle, roleDisplay }: ProfilTabProps) {
   const { refresh } = useAuth();
   const { toast } = useToast();
   const t = useTranslations('Settings.profil.info');
@@ -67,7 +76,7 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
     <Card className="gap-3 p-5">
       <div className="border-b border-border pb-3.5">
         <h2 className="text-caption font-bold text-foreground">{t('title')}</h2>
-        <p className="text-2xs text-muted-foreground">{t('subtitle')}</p>
+        <p className="text-2xs text-muted-foreground">{subtitle ?? t('subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="w-32">
@@ -85,7 +94,7 @@ function ProfileInfoCard({ user, myRole }: { user: User; myRole: MemberData['rol
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-xs font-semibold text-foreground">{t('roleLabel')}</span>
             <span className="flex h-10 items-center gap-2 rounded-md border border-border bg-muted px-3 text-foreground">
-              {myRole ? roleLabel(myRole, tRoles) : '—'}
+              {myRole ? roleLabel(myRole, tRoles) : (roleDisplay ?? '—')}
             </span>
           </label>
         </div>
@@ -351,11 +360,11 @@ function PasswordCard({ user }: { user: User }) {
   );
 }
 
-export function ProfilTab({ user, myRole }: { user: User; myRole: MemberData['role'] | null }) {
+export function ProfilTab(props: ProfilTabProps) {
   return (
     <div className="flex flex-col gap-5">
-      <ProfileInfoCard user={user} myRole={myRole} />
-      <PasswordCard user={user} />
+      <ProfileInfoCard {...props} />
+      <PasswordCard user={props.user} />
     </div>
   );
 }

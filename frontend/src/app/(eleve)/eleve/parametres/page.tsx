@@ -28,7 +28,7 @@ export default function EleveParametresPage() {
 
 function EleveParametresForm() {
   const t = useTranslations('Settings');
-  const tPortal = useTranslations('ElevePortal.settings');
+  const tPortal = useTranslations('ElevePortal');
   const user = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,12 +62,19 @@ function EleveParametresForm() {
     <div className="flex max-w-4xl flex-col gap-5">
       <div>
         <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">{tPortal('subtitle')}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{tPortal('settings.subtitle')}</p>
       </div>
 
       <Tabs tabs={TABS} active={tab} onChange={changeTab} />
 
-      {tab === 'profil' && <ProfilTab user={user} myRole={null} />}
+      {tab === 'profil' && (
+        <ProfilTab
+          user={user}
+          myRole={null}
+          subtitle={tPortal('settings.profileSubtitle')}
+          roleDisplay={tPortal('roleLabel')}
+        />
+      )}
       {tab === 'apparence' && <ApparenceTab />}
       {tab === 'langue' && <LangueTab />}
     </div>

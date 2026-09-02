@@ -933,10 +933,11 @@ async function ensureStudentPortalAccount(
   });
   if (!student) return null;
   const email = `${slugName(student.firstName)}.${slugName(student.lastName)}@eleves.lesetoiles.edu.ht`;
+  const name = `${student.firstName} ${student.lastName}`;
   const user = await prisma.user.upsert({
     where: { email },
-    update: { passwordHash, emailVerifiedAt: new Date(), status: 'ACTIVE' },
-    create: { email, passwordHash, emailVerifiedAt: new Date(), role: 'USER' },
+    update: { name, passwordHash, emailVerifiedAt: new Date(), status: 'ACTIVE' },
+    create: { name, email, passwordHash, emailVerifiedAt: new Date(), role: 'USER' },
     select: { id: true },
   });
   // Student.userId is @unique: a previous run may have linked this User to

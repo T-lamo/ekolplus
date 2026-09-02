@@ -36,5 +36,8 @@
       "subjects": "Matières enseignées",
       "students": "Élèves"
     }
+  },
+  "settings": {
+    "profileSubtitle": "Informations de votre compte enseignant"
   }
 }

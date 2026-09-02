@@ -76,6 +76,7 @@
     }
   },
   "settings": {
-    "subtitle": "Votre profil, l'apparence et la langue de votre espace."
+    "subtitle": "Votre profil, l'apparence et la langue de votre espace.",
+    "profileSubtitle": "Informations de votre compte élève"
   }
 }

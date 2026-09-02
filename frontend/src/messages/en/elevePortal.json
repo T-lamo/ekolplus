@@ -76,6 +76,7 @@
     }
   },
   "settings": {
-    "subtitle": "Your profile, the look and the language of your space."
+    "subtitle": "Your profile, the look and the language of your space.",
+    "profileSubtitle": "Your student account information"
   }
 }

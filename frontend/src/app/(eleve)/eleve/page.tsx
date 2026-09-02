@@ -5,11 +5,12 @@
 // glance and the latest published grades, all from the single
 // /api/student/me aggregate. Same building blocks as the teacher home
 // (KpiCard, compact Cards, subject visuals) so the two portals read as one
-// product. The « Voir l'emploi du temps » link and the quick-access cards
-// to the Scolarité screens are added by Plans 2 and 3 with those screens.
+// product. The « Voir l'emploi du temps » link and the Emploi du temps
+// quick-access card are added by Plan 3 with that screen.
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { BarChart2, CalendarCheck, CalendarX2, Trophy } from 'lucide-react';
+import { ArrowRight, BarChart2, CalendarCheck, CalendarX2, FileText, Trophy } from 'lucide-react';
 import { useApi } from '@/lib/useApi';
 import { LOCALE_BCP47, type LocaleKey } from '@/lib/locales';
 import { getSubjectVisual } from '@/lib/subject-visuals';
@@ -249,8 +250,38 @@ export default function EspaceElevePage() {
               </Card>
             )}
           </section>
+
+          <section className="flex flex-col gap-2">
+            <h2 className="text-sm font-bold text-foreground">{t('home.quickActions')}</h2>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <QuickLink href="/eleve/notes" icon={BarChart2} label={t('home.myGrades')} />
+              <QuickLink href="/eleve/bulletins" icon={FileText} label={t('home.myBulletins')} />
+            </div>
+          </section>
         </>
       )}
     </div>
+  );
+}
+
+function QuickLink({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: typeof BarChart2;
+  label: string;
+}) {
+  return (
+    <Link href={href}>
+      <Card className="flex-row items-center gap-3 p-3.5">
+        <div className="flex h-8.5 w-8.5 items-center justify-center rounded-md bg-secondary text-primary">
+          <Icon size={16} />
+        </div>
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <ArrowRight size={14} className="ml-auto text-muted-foreground" />
+      </Card>
+    </Link>
   );
 }

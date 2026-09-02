@@ -6,7 +6,14 @@
 // Mes notes and Mes présences; Plan 3 adds Emploi du temps and drops Mon
 // profil so the bar keeps 5 slots (the profile stays reachable from the
 // drawer).
-import { LayoutDashboard, Menu, UserRound, type LucideIcon } from 'lucide-react';
+import {
+  BarChart2,
+  CalendarCheck,
+  LayoutDashboard,
+  Menu,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,6 +27,8 @@ interface BottomNavLink {
 
 const LINK_DEFS: BottomNavLink[] = [
   { key: 'home', href: '/eleve', icon: LayoutDashboard },
+  { key: 'grades', href: '/eleve/notes', icon: BarChart2 },
+  { key: 'attendance', href: '/eleve/presences', icon: CalendarCheck },
   { key: 'profile', href: '/eleve/profil', icon: UserRound },
 ];
 

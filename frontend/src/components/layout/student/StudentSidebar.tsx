@@ -1,6 +1,14 @@
 'use client';
 
-import { LayoutDashboard, Settings, UserRound } from 'lucide-react';
+import {
+  BarChart2,
+  CalendarCheck,
+  FileText,
+  LayoutDashboard,
+  Settings,
+  Star,
+  UserRound,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useMemo } from 'react';
@@ -25,6 +33,15 @@ export function useStudentSections(): NavSection[] {
         items: [
           { label: t('home'), href: '/eleve', icon: LayoutDashboard },
           { label: t('profile'), href: '/eleve/profil', icon: UserRound },
+        ],
+      },
+      {
+        label: t('schoolSectionLabel'),
+        items: [
+          { label: t('grades'), href: '/eleve/notes', icon: BarChart2 },
+          { label: t('attendance'), href: '/eleve/presences', icon: CalendarCheck },
+          { label: t('bulletins'), href: '/eleve/bulletins', icon: FileText },
+          { label: t('appreciations'), href: '/eleve/appreciations', icon: Star },
         ],
       },
       {

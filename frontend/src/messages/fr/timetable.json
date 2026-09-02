@@ -16,6 +16,7 @@
   "agenda": {
     "emptyTitle": "Aucune séance sur cette période",
     "emptyHint": "Ajoutez un cours ou changez de semaine avec les flèches.",
+    "emptyHintReadOnly": "Changez de semaine avec les flèches.",
     "todayBadge": "Aujourd'hui"
   },
   "month": {

@@ -1,6 +1,103 @@
 {
+  "roleLabel": "Élève",
   "title": "Espace élève",
   "welcome": "Bienvenue, {name}",
-  "comingSoon": "Vos notes, présences, emploi du temps, bulletins et appréciations arrivent bientôt ici.",
-  "logout": "Se déconnecter"
+  "logout": "Se déconnecter",
+  "loadError": "Impossible de charger vos informations pour le moment.",
+  "nav": {
+    "ariaLabel": "Navigation principale",
+    "sectionLabel": "Principal",
+    "home": "Accueil",
+    "profile": "Mon profil",
+    "schoolSectionLabel": "Scolarité",
+    "grades": "Mes notes",
+    "attendance": "Mes présences",
+    "timetable": "Emploi du temps",
+    "bulletins": "Bulletins",
+    "appreciations": "Appréciations",
+    "accountSectionLabel": "Compte",
+    "settings": "Paramètres",
+    "moreAriaLabel": "Ouvrir le menu"
+  },
+  "topbar": {
+    "defaultPageTitle": "Espace élève"
+  },
+  "home": {
+    "subtitle": "{className} · {yearLabel}",
+    "noClass": "Aucune classe pour l'année en cours.",
+    "stats": {
+      "overallAverage": "Moyenne générale",
+      "attendanceRate": "Taux de présence",
+      "absences": "Absences ce trimestre",
+      "rank": "Rang de classe",
+      "rankOf": "{rank} / {count}"
+    },
+    "today": "Cours d'aujourd'hui",
+    "noCoursesToday": "Aucun cours aujourd'hui.",
+    "thisWeek": "Cette semaine",
+    "noSessions": "Aucun cours prévu cette semaine.",
+    "viewTimetable": "Voir l'emploi du temps",
+    "sessionsCount": "{count, plural, =0 {Aucun cours} one {# cours} other {# cours}}",
+    "recentGrades": "Dernières notes",
+    "noRecentGrades": "Aucune note publiée pour le moment.",
+    "absent": "Absent(e)",
+    "quickActions": "Accès rapides",
+    "myGrades": "Mes notes",
+    "myBulletins": "Mes bulletins"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "subtitle": "Vos informations telles qu'enregistrées par l'établissement.",
+    "readOnlyHint": "Pour corriger une information, adressez-vous au secrétariat de l'école.",
+    "homeroomSuffix": "(titulaire)",
+    "ageYears": "{age} ans",
+    "identity": "Identité",
+    "contact": "Coordonnées",
+    "guardians": "Tuteurs",
+    "noGuardian": "Aucun tuteur renseigné.",
+    "primary": "Principal",
+    "fields": {
+      "fullName": "Nom complet",
+      "dateOfBirth": "Date de naissance",
+      "placeOfBirth": "Lieu de naissance",
+      "gender": "Genre",
+      "nationality": "Nationalité",
+      "motherTongue": "Langue maternelle",
+      "class": "Classe",
+      "homeroomTeacher": "Enseignant titulaire",
+      "enrolledAt": "Date d'inscription",
+      "scholarship": "Bourse",
+      "yes": "Oui",
+      "no": "Non",
+      "status": "Statut",
+      "phone": "Téléphone",
+      "email": "Email",
+      "address": "Adresse"
+    }
+  },
+  "settings": {
+    "subtitle": "Votre profil, l'apparence et la langue de votre espace.",
+    "profileSubtitle": "Informations de votre compte élève"
+  },
+  "pages": {
+    "grades": {
+      "title": "Mes notes",
+      "subtitle": "Vos résultats par matière, votre moyenne et votre rang dans la classe."
+    },
+    "attendance": {
+      "title": "Mes présences",
+      "subtitle": "Votre assiduité et le journal de vos présences, période par période."
+    },
+    "bulletins": {
+      "title": "Mes bulletins",
+      "subtitle": "Vos bulletins par période, à consulter à l'écran ou à télécharger en PDF."
+    },
+    "appreciations": {
+      "title": "Appréciations",
+      "subtitle": "Les appréciations de vos enseignants pour chaque période."
+    }
+  },
+  "timetable": {
+    "title": "Emploi du temps"
+  }
 }

@@ -28,6 +28,7 @@ export default function TeacherParametresPage() {
 
 function TeacherParametresForm() {
   const t = useTranslations('Settings');
+  const tPortal = useTranslations('TeacherPortal');
   const user = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,7 +70,14 @@ function TeacherParametresForm() {
 
       <Tabs tabs={TABS} active={tab} onChange={changeTab} />
 
-      {tab === 'profil' && <ProfilTab user={user} myRole={null} />}
+      {tab === 'profil' && (
+        <ProfilTab
+          user={user}
+          myRole={null}
+          subtitle={tPortal('settings.profileSubtitle')}
+          roleDisplay={tPortal('roleLabel')}
+        />
+      )}
       {tab === 'apparence' && <ApparenceTab />}
       {tab === 'langue' && <LangueTab />}
     </div>

@@ -17,6 +17,7 @@
   "agenda": {
     "emptyTitle": "Pa gen seyans pou peryòd sa a",
     "emptyHint": "Ajoute yon kou oswa chanje semèn ak flèch yo.",
+    "emptyHintReadOnly": "Chanje semèn nan ak flèch yo.",
     "todayBadge": "Jodi a"
   },
   "month": {

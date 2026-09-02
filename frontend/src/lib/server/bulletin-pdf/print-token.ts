@@ -16,11 +16,17 @@
 import 'server-only';
 import crypto from 'node:crypto';
 import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
+import type { ViewAudience } from '@/lib/server/student-views/audience';
 
 export interface PrintTokenPayload {
   schoolId: string;
   studentId: string;
   termId: string;
+  // Who the bulletin is rendered for (see student-views/audience.ts).
+  // Signed into the token so the print page applies the same rules as the
+  // on-screen viewer that requested the PDF; absent = `staff` (tokens
+  // minted before this field existed, and every staff-side caller).
+  audience?: ViewAudience;
   exp: number;
 }
 

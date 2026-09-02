@@ -308,7 +308,8 @@
       "teacher": "Teacher"
     },
     "overallAverage": "Overall average",
-    "rank": "· Rank: {rank} / {rankedCount}"
+    "rank": "· Rank: {rank} / {rankedCount}",
+    "loadError": "Unable to load comments."
   },
   "attendanceTab": {
     "journal": "Attendance log",
@@ -317,7 +318,8 @@
       "date": "Date",
       "status": "Status",
       "justification": "Justification"
-    }
+    },
+    "loadError": "Unable to load attendance."
   },
   "bulletins": {
     "loadError": "Unable to load report cards.",

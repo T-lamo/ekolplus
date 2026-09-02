@@ -37,6 +37,7 @@ const OWNER_PASSWORD = 'TestEcole2026!';
 // in TEACHERS below) gets a real, already-active login so local testing
 // doesn't require going through the invite/accept-code flow each time.
 const TEACHER_PASSWORD = 'TeacherTest2026!';
+const STUDENT_PASSWORD = 'StudentTest2026!';
 export const ETOILES = {
   // Same id as before the wipe so bookmarks / notes keep pointing at it.
   schoolId: 'cmsovzjgv00059xpfilkr2lyh',
@@ -829,6 +830,14 @@ export async function main(args: string[] = [], deps: SeedDeps = {}): Promise<vo
       await seedEtoiles(prisma, owner.id, now, today);
     }
 
+    // 4b. Espace Élève test account — idempotent, also on an existing dataset.
+    const studentEmail = await ensureStudentPortalAccount(
+      prisma,
+      ETOILES.schoolId,
+      await bcrypt.hash(STUDENT_PASSWORD, 12),
+    );
+    if (studentEmail) console.log(`— Compte espace élève : ${studentEmail}`);
+
     // 5. Second (empty) school.
     const existing2 = await prisma.organization.findUnique({
       where: { slug: HELP.slug },
@@ -847,6 +856,9 @@ export async function main(args: string[] = [], deps: SeedDeps = {}): Promise<vo
     console.log(
       '  carline.michel@lesetoiles.edu.ht  → espace enseignant (Mme Michel, Les Étoiles)',
     );
+    if (studentEmail) {
+      console.log(`  ${studentEmail}  → espace élève (premier élève de Les Étoiles)`);
+    }
   } finally {
     if (!deps.prisma) await prisma.$disconnect();
   }
@@ -898,6 +910,45 @@ async function upsertTeacherPortalAccount(
     create: { organizationId, userId: user.id, role: 'MEMBER' },
   });
   await prisma.teacher.update({ where: { id: teacherId }, data: { userId: user.id } });
+}
+
+// Espace Élève test account — the first student (by matricule) of Les
+// Étoiles gets a real, already-active login, the same seed-time shortcut
+// as the teacher account above (no invite code). Runs on every invocation,
+// with or without --reset, so an existing dev dataset gains the account
+// without being rebuilt. A student account never gets an
+// OrganizationMember row (Phase 1 design: that is exactly what keeps every
+// /api/school/* route closed to it). Idempotent: upsert the User by email,
+// then (re)link Student.userId. The PRNG is seeded, so the first student's
+// name (hence the email) is stable across --reset runs.
+async function ensureStudentPortalAccount(
+  prisma: PrismaClient,
+  schoolId: string,
+  passwordHash: string,
+): Promise<string | null> {
+  const student = await prisma.student.findFirst({
+    where: { schoolId },
+    orderBy: { studentNumber: 'asc' },
+    select: { id: true, firstName: true, lastName: true },
+  });
+  if (!student) return null;
+  const email = `${slugName(student.firstName)}.${slugName(student.lastName)}@eleves.lesetoiles.edu.ht`;
+  const name = `${student.firstName} ${student.lastName}`;
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { name, passwordHash, emailVerifiedAt: new Date(), status: 'ACTIVE' },
+    create: { name, email, passwordHash, emailVerifiedAt: new Date(), role: 'USER' },
+    select: { id: true },
+  });
+  // Student.userId is @unique: a previous run may have linked this User to
+  // a Student row that still exists (no --reset) — unlink it first so the
+  // update below cannot collide.
+  await prisma.student.updateMany({
+    where: { userId: user.id, NOT: { id: student.id } },
+    data: { userId: null },
+  });
+  await prisma.student.update({ where: { id: student.id }, data: { email, userId: user.id } });
+  return email;
 }
 
 async function createTenant(

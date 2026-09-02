@@ -16,6 +16,7 @@ import { signPrintToken, signTemplatePreviewToken } from './print-token';
 import { resolvePrintBaseUrl } from './print-base-url';
 import { getPageWidthPx, getPageHeightPx } from '@/components/bulletin/page-size';
 import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
+import type { ViewAudience } from '@/lib/server/student-views/audience';
 
 const logger = createLogger();
 
@@ -134,13 +135,17 @@ async function renderPdfFromUrl(url: string, options: GeneratePdfOptions): Promi
   }
 }
 
+// `audience` is signed into the print token so the print page builds the
+// same view the requesting screen showed (a student's PDF never carries a
+// draft appreciation). Defaults to `staff`, the historical behaviour.
 export async function generateBulletinPdf(
   schoolId: string,
   studentId: string,
   termId: string,
   options: GeneratePdfOptions,
+  audience: ViewAudience = 'staff',
 ): Promise<Buffer> {
-  const token = signPrintToken({ schoolId, studentId, termId });
+  const token = signPrintToken({ schoolId, studentId, termId, audience });
   const base = resolvePrintBaseUrl();
   const url = `${base}/print/bulletin/${studentId}/${termId}?token=${encodeURIComponent(token)}`;
   return renderPdfFromUrl(url, options);

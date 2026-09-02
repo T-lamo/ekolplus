@@ -5,6 +5,12 @@
 // docs/superpowers/specs/2026-08-13-bulletin-pdf-and-editor-design.md).
 // Extracted so both callers share one query path rather than risking drift
 // between "what the Viewer shows" and "what the PDF prints".
+//
+// `audience` (default `staff`, the historical behaviour): the Espace Élève
+// passes `student` (GET /api/student/bulletin and, through the print
+// token, its PDF) to apply the portal rules — no prev/next classmate ids
+// or roster index, and only PUBLISHED appreciations and evaluations, so a
+// teacher's draft comment never reaches a student, on screen or on paper.
 import 'server-only';
 import { prisma } from '@/lib/server/prisma';
 import {
@@ -13,6 +19,7 @@ import {
   resolveCurrentTerm,
   subjectAverageFor,
 } from '@/lib/server/grades';
+import type { ViewAudience } from '@/lib/server/student-views/audience';
 
 export interface StudentBulletinView {
   studentId: string;
@@ -58,9 +65,11 @@ export async function getStudentBulletinView(
   schoolId: string,
   studentId: string,
   termIdParam: string | null,
+  audience: ViewAudience = 'staff',
 ): Promise<StudentBulletinView | null> {
   const student = await prisma.student.findUnique({ where: { id: studentId } });
   if (!student || student.schoolId !== schoolId) return null;
+  const publishedOnly = audience === 'student' ? { status: 'PUBLISHED' as const } : {};
 
   const [school, enrollment] = await Promise.all([
     prisma.school.findUnique({ where: { id: schoolId } }),
@@ -98,9 +107,15 @@ export async function getStudentBulletinView(
     orderBy: [{ student: { lastName: 'asc' } }, { student: { firstName: 'asc' } }],
   });
   const idx = classmates.findIndex((cm) => cm.studentId === studentId);
-  const prevStudentId = idx > 0 ? classmates[idx - 1]!.studentId : null;
-  const nextStudentId =
-    idx >= 0 && idx < classmates.length - 1 ? classmates[idx + 1]!.studentId : null;
+  const rosterNav =
+    audience === 'student'
+      ? { studentIndex: null, prevStudentId: null, nextStudentId: null }
+      : {
+          studentIndex: idx >= 0 ? idx + 1 : null,
+          prevStudentId: idx > 0 ? classmates[idx - 1]!.studentId : null,
+          nextStudentId:
+            idx >= 0 && idx < classmates.length - 1 ? classmates[idx + 1]!.studentId : null,
+        };
 
   const [activeTemplate, fallbackTemplate] = await Promise.all([
     prisma.bulletinTemplate.findFirst({ where: { schoolId, isActive: true } }),
@@ -130,9 +145,7 @@ export async function getStudentBulletinView(
     academicYearLabel: academicYear?.label ?? '',
     terms: terms.map((t) => ({ id: t.id, label: t.label, order: t.order })),
     resolvedTermId: term?.id ?? null,
-    studentIndex: idx >= 0 ? idx + 1 : null,
-    prevStudentId,
-    nextStudentId,
+    ...rosterNav,
     template: template
       ? {
           id: template.id,
@@ -167,10 +180,10 @@ export async function getStudentBulletinView(
     classSubjectIds.length === 0
       ? Promise.resolve([])
       : prisma.evaluation.findMany({
-          where: { classSubjectId: { in: classSubjectIds }, termId: term.id },
+          where: { classSubjectId: { in: classSubjectIds }, termId: term.id, ...publishedOnly },
           include: { grades: true },
         }),
-    prisma.appreciation.findMany({ where: { studentId, termId: term.id } }),
+    prisma.appreciation.findMany({ where: { studentId, termId: term.id, ...publishedOnly } }),
   ]);
 
   const evalsByClassSubject = new Map<string, typeof evaluations>();

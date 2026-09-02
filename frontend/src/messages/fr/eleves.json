@@ -308,7 +308,8 @@
       "teacher": "Enseignant"
     },
     "overallAverage": "Moyenne générale",
-    "rank": "· Rang : {rank} / {rankedCount}"
+    "rank": "· Rang : {rank} / {rankedCount}",
+    "loadError": "Impossible de charger les appréciations."
   },
   "attendanceTab": {
     "journal": "Journal de présence",
@@ -317,7 +318,8 @@
       "date": "Date",
       "status": "Statut",
       "justification": "Justification"
-    }
+    },
+    "loadError": "Impossible de charger les présences."
   },
   "bulletins": {
     "loadError": "Impossible de charger les bulletins.",

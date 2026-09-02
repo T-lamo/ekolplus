@@ -27,6 +27,13 @@ const SECTIONS: NavSection[] = [
 ];
 
 describe('isActiveRoute', () => {
+  it('treats /eleve as an exact-match home, like /espace-enseignant', () => {
+    expect(isActiveRoute('/eleve', '/eleve')).toBe(true);
+    expect(isActiveRoute('/eleve/notes', '/eleve')).toBe(false);
+    expect(isActiveRoute('/eleve/notes', '/eleve/notes')).toBe(true);
+    expect(isActiveRoute('/eleve/bulletins/term_1', '/eleve/bulletins')).toBe(true);
+  });
+
   it('matches nested/dynamic routes via prefix', () => {
     expect(isActiveRoute('/eleves/123', '/eleves')).toBe(true);
   });

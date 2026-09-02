@@ -262,7 +262,7 @@ export function NotesResultatsTab({
 
           <div className={ASIDE_GRID}>
             {/* Left column */}
-            <div className="flex flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-4">
               <Card className="gap-3.5 p-4.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-caption font-semibold text-foreground">

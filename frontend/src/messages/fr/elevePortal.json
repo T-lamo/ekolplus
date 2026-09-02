@@ -96,5 +96,8 @@
       "title": "Appréciations",
       "subtitle": "Les appréciations de vos enseignants pour chaque période."
     }
+  },
+  "timetable": {
+    "title": "Emploi du temps"
   }
 }

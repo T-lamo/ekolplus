@@ -96,5 +96,8 @@
       "title": "Comments",
       "subtitle": "Your teachers' comments for each term."
     }
+  },
+  "timetable": {
+    "title": "Timetable"
   }
 }

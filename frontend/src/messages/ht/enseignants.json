@@ -128,8 +128,7 @@
     "access": {
       "title": "Aksè nan platfòm nan",
       "subtitle": "Kont itilizatè ak pèmisyon",
-      "body": "Kont koneksyon pou pwofesè yo ap vini nan yon pwochen vèsyon.",
-      "soon": "Pral disponib byento"
+      "body": "Ou ka envite pwofesè sa a konekte apati fich li, yon fwa pwofil la anrejistre."
     }
   },
   "profile": {
@@ -175,5 +174,15 @@
       "weeklyHours": "Èdtan / sem.",
       "coefficient": "Kowefisyan"
     }
+  },
+  "invite": {
+    "button": "Envite pou konekte",
+    "buttonDisabledNoEmail": "Ajoute yon imèl pou envite pwofesè sa a",
+    "resendButton": "Voye envitasyon an ankò",
+    "pendingSince": "Envitasyon voye {date}",
+    "activeSince": "Kont aktif depi {date}",
+    "sentToast": "Envitasyon voye.",
+    "resentToast": "Envitasyon voye ankò.",
+    "errorEmailInUse": "Imèl sa a deja itilize pa yon lòt kont."
   }
 }

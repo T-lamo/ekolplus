@@ -31,6 +31,17 @@ import type gradebook from '@/messages/fr/gradebook.json';
 import type fees from '@/messages/fr/fees.json';
 import type appreciations from '@/messages/fr/appreciations.json';
 import type timetable from '@/messages/fr/timetable.json';
+import type setPassword from '@/messages/fr/setPassword.json';
+import type teacherPortal from '@/messages/fr/teacherPortal.json';
+import type teacherClasses from '@/messages/fr/teacherClasses.json';
+import type teacherTimetable from '@/messages/fr/teacherTimetable.json';
+import type teacherStudents from '@/messages/fr/teacherStudents.json';
+import type teacherGradebook from '@/messages/fr/teacherGradebook.json';
+import type teacherAppreciations from '@/messages/fr/teacherAppreciations.json';
+import type setPasswordEleve from '@/messages/fr/setPasswordEleve.json';
+import type elevePortal from '@/messages/fr/elevePortal.json';
+import type permissions from '@/messages/fr/permissions.json';
+import type spaces from '@/messages/fr/spaces.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -63,6 +74,17 @@ declare module 'next-intl' {
       Fees: typeof fees;
       Appreciations: typeof appreciations;
       Timetable: typeof timetable;
+      SetPassword: typeof setPassword;
+      TeacherPortal: typeof teacherPortal;
+      TeacherClasses: typeof teacherClasses;
+      TeacherTimetable: typeof teacherTimetable;
+      TeacherStudents: typeof teacherStudents;
+      TeacherGradebook: typeof teacherGradebook;
+      TeacherAppreciations: typeof teacherAppreciations;
+      SetPasswordEleve: typeof setPasswordEleve;
+      ElevePortal: typeof elevePortal;
+      Permissions: typeof permissions;
+      Spaces: typeof spaces;
     };
   }
 }

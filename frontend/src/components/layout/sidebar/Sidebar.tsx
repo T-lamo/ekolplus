@@ -10,6 +10,7 @@ import { SidebarSection } from './SidebarSection';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import type { NavSection } from './types';
 import { SIDEBAR_WIDTH } from './width';
+import type { SpaceKey } from '../SpaceSwitcher';
 
 const COLLAPSED_WIDTH = 72;
 
@@ -30,6 +31,9 @@ interface SidebarProps {
   /** Icon-only counterpart of `footer` for the 72px collapsed rail. */
   footerCollapsed?: ReactNode;
   onNavigate?: (() => void) | undefined;
+  /** Espace courant du shell : active le bloc « Mes espaces » dans le menu
+   * utilisateur. Absent = pas de sélecteur (shell admin plateforme). */
+  currentSpace?: SpaceKey | undefined;
 }
 
 export function Sidebar({
@@ -45,6 +49,7 @@ export function Sidebar({
   footer,
   footerCollapsed,
   onNavigate,
+  currentSpace,
 }: SidebarProps) {
   const pathname = usePathname();
   const [openSection, setOpenSection] = useState<string | null>(() =>
@@ -140,6 +145,7 @@ export function Sidebar({
             collapsed={collapsed}
             roleLabel={roleLabel}
             profileHref={profileHref}
+            currentSpace={currentSpace}
           />
         </div>
       </aside>

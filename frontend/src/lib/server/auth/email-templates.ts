@@ -97,6 +97,33 @@ function resetPasswordUrl(email: string, code: string): string {
   return `${base}/reset-password?${qs}`;
 }
 
+export interface PortalInviteEmailArgs {
+  code: string;
+  email: string;
+  /** Optional ISO-8601 expiry; falls back to "soon" wording when omitted. */
+  expiresAt?: string;
+  /** Human-readable destination, e.g. "espace enseignant". */
+  portalLabel: string;
+  /** Path the invite link points to, e.g. '/definir-mot-de-passe-eleve' for
+   * students, '/definir-mot-de-passe' for teachers. Each portal has its own
+   * accept page posting to its own accept route (which filters on its own
+   * VerificationCode type), so sending the wrong path makes the code look
+   * invalid to the receiving route. */
+  acceptPath: string;
+}
+
+function portalInviteUrl(email: string, code: string, acceptPath: string): string {
+  const base = process.env.APP_URL ?? 'http://localhost:3000';
+  const qs = new URLSearchParams({ email, code }).toString();
+  // Defensive fallback for a deploy-boundary case the type system can't see:
+  // the outbox payload is a JSON column read back with a cast, so an
+  // `email.portal_invite` row enqueued before `acceptPath` existed arrives
+  // here with the field missing and would otherwise render
+  // `${base}undefined?...`. Every such legacy row is a teacher invite, so the
+  // teacher accept page is the correct recovery target.
+  return `${base}${acceptPath || '/definir-mot-de-passe'}?${qs}`;
+}
+
 export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {
   const code = htmlEscape(args.code);
   const ttl = ttlWording(args.expiresAt);
@@ -118,5 +145,18 @@ export function resetPasswordEmail(args: ResetPasswordEmailArgs): EmailTemplate 
     subject: 'Reset your password',
     html: `<p>Hi,</p><p>Your password reset code is <strong>${code}</strong>.</p><p><a href="${urlEscaped}">Click here to reset your password</a> — this takes you to the reset page with your code already filled in, you just need to enter a new password.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
     text: `Your password reset code is ${args.code}. Go to ${url} to enter it (already pre-filled — just set a new password), or open the app and enter the code manually. It expires ${ttl}. If you did not request this, ignore this email.`,
+  };
+}
+
+export function portalInviteEmail(args: PortalInviteEmailArgs): EmailTemplate {
+  const code = htmlEscape(args.code);
+  const portalLabel = htmlEscape(args.portalLabel);
+  const ttl = ttlWording(args.expiresAt);
+  const url = portalInviteUrl(args.email, args.code, args.acceptPath);
+  const urlEscaped = htmlEscape(url);
+  return {
+    subject: `You've been invited to your ${portalLabel}`,
+    html: `<p>Hi,</p><p>You've been invited to sign in to your <strong>${portalLabel}</strong>.</p><p>Your setup code is <strong>${code}</strong>.</p><p><a href="${urlEscaped}">Click here to set your password</a> — this takes you to the setup page with your code already filled in.</p><p>It expires ${ttl}. If you did not expect this invitation, ignore this email.</p>`,
+    text: `You've been invited to your ${args.portalLabel}. Your setup code is ${args.code}. Go to ${url} to set your password (already pre-filled — just confirm), or open the app and enter the code manually. It expires ${ttl}. If you did not expect this invitation, ignore this email.`,
   };
 }

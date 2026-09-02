@@ -24,11 +24,13 @@ import {
 } from 'lucide-react';
 import { ApiError } from '@/lib/api';
 import { invalidateCachePrefix, useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { exportToCsv } from '@/lib/csv-export';
 import type { RoomRow } from '@/lib/rooms';
 import { cn } from '@/lib/utils';
 import { LIST_PAGE } from '@/lib/layout';
 import { useToast } from '@/contexts/ToastContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -204,6 +206,12 @@ export default function EmploiDuTempsPage() {
   } = useApi<TimetableResponse>(`/api/school/timetable?from=${range.from}&to=${range.to}`, {
     onError: handleLoadError,
   });
+  // A prior transient failure must not keep the banner up once every piece
+  // needed to render the grid has since loaded successfully (loadError is
+  // otherwise a one-way ratchet: onError sets it, nothing ever clears it).
+  useEffect(() => {
+    if (meta && data) setLoadError(null);
+  }, [meta, data]);
   const error = loadError;
 
   const filtered = useMemo<TimetableSession[]>(() => {
@@ -238,6 +246,9 @@ export default function EmploiDuTempsPage() {
     },
     [view],
   );
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('emploiDuTemps')) return <AccessDenied />;
 
   const setFilter = (key: keyof TimetableFilters) => (value: string) =>
     setFilters((f) => ({ ...f, [key]: value }));
@@ -327,10 +338,12 @@ export default function EmploiDuTempsPage() {
               </button>
             ))}
           </div>
-          <Button className="w-fit" onClick={() => openCreate()} disabled={noYear}>
-            <Plus size={14} />
-            {t('addSession')}
-          </Button>
+          {can('emploiDuTemps', 'create') && (
+            <Button className="w-fit" onClick={() => openCreate()} disabled={noYear}>
+              <Plus size={14} />
+              {t('addSession')}
+            </Button>
+          )}
           <HelpTooltip label={t('help.createSession')} />
         </div>
       </div>
@@ -438,10 +451,12 @@ export default function EmploiDuTempsPage() {
           </TimetableFilterSelect>
         </div>
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="outline" size="sm" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={13} />
-            {t('export')}
-          </Button>
+          {can('emploiDuTemps', 'export') && (
+            <Button variant="outline" size="sm" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={13} />
+              {t('export')}
+            </Button>
+          )}
           <HelpTooltip label={t('help.exportScope')} />
         </div>
       </div>

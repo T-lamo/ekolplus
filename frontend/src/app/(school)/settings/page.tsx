@@ -162,7 +162,9 @@ function SettingsForm() {
               }}
             />
           )}
-          {tab === 'admins' && data && <AdministrateursTab members={data.members} />}
+          {tab === 'admins' && data && (
+            <AdministrateursTab members={data.members} myRole={myRole} />
+          )}
           {tab === 'notifications' && <NotificationsTab />}
         </>
       )}

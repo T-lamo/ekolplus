@@ -146,7 +146,7 @@ describe('stripe-doctor', () => {
     });
     const c = byLabel(r, 'Price mensuel');
     expect(c?.level).toBe('fail');
-    expect(c?.detail).toMatch(/montant 50 ¢ \(attendu 60 ¢/);
+    expect(c?.detail).toMatch(/montant 50 ¢ \(attendu 40 ¢/);
     expect(r.blockers).toBe(1);
   });
 

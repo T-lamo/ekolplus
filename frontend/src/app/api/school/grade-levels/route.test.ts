@@ -16,10 +16,16 @@ vi.mock('@/lib/server/school', async () => {
   const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
   return { ...actual, resolveMySchool: vi.fn() };
 });
+vi.mock('@/lib/server/school-permissions', () => ({ requireSchoolPermission: vi.fn() }));
 
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import {
+  deniedSchoolPermission,
+  passThroughSchoolPermission,
+} from '@/test-utils/school-permission-mock';
 import { GET, POST } from './route';
 import { PATCH, DELETE } from './[id]/route';
 import { POST as REORDER } from './reorder/route';
@@ -52,6 +58,9 @@ const row = (id: string, name: string, order: number) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireSchoolPermission).mockImplementation(
+    passThroughSchoolPermission(mockResolveMySchool),
+  );
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);
@@ -107,11 +116,12 @@ describe('POST /api/school/grade-levels', () => {
     expect(mockRequireAuth).not.toHaveBeenCalled();
   });
 
-  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+  it('rôle sans configuration.create → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    vi.mocked(requireSchoolPermission).mockResolvedValueOnce(deniedSchoolPermission());
     const res = await POST(req('POST', '/api/school/grade-levels', { name: '6ème' }));
     expect(res.status).toBe(403);
-    expect(((await res.json()) as { error: string }).error).toBe('ORG_ROLE_INSUFFICIENT');
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
     expect(prismaMock.gradeLevel.create).not.toHaveBeenCalled();
   });
 
@@ -173,13 +183,15 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
     expect(res.status).toBe(403);
   });
 
-  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+  it('rôle sans configuration.edit → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    vi.mocked(requireSchoolPermission).mockResolvedValueOnce(deniedSchoolPermission());
     const res = await PATCH(
       req('PATCH', '/api/school/grade-levels/l1', { name: '6e' }),
       params('l1'),
     );
     expect(res.status).toBe(403);
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
     expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
   });
 
@@ -252,10 +264,12 @@ describe('DELETE /api/school/grade-levels/[id]', () => {
     expect(res.status).toBe(403);
   });
 
-  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+  it('rôle sans configuration.delete → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    vi.mocked(requireSchoolPermission).mockResolvedValueOnce(deniedSchoolPermission());
     const res = await DELETE(req('DELETE', '/api/school/grade-levels/l1'), params('l1'));
     expect(res.status).toBe(403);
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
     expect(prismaMock.gradeLevel.delete).not.toHaveBeenCalled();
   });
 
@@ -296,12 +310,14 @@ describe('POST /api/school/grade-levels/reorder', () => {
     expect(res.status).toBe(403);
   });
 
-  it('MEMBER → 403 ORG_ROLE_INSUFFICIENT', async () => {
+  it('rôle sans configuration.edit → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValueOnce(memberSchool);
+    vi.mocked(requireSchoolPermission).mockResolvedValueOnce(deniedSchoolPermission());
     const res = await REORDER(
       req('POST', '/api/school/grade-levels/reorder', { orderedIds: ['l1', 'l2', 'l3'] }),
     );
     expect(res.status).toBe(403);
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 

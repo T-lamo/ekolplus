@@ -19,7 +19,8 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { confirmNameMatches, enforceDangerZoneRateLimit } from '@/lib/server/school-danger-zone';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
@@ -38,8 +39,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const limited = await enforceDangerZoneRateLimit(auth.user.sub, 'reset-year');
     if (limited) return limited;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'OWNER')) {
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'parametres',
+      'delete',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
+    if (!hasMinRole(mySchool.role, 'OWNER')) {
       return NextResponse.json(
         { error: 'NOT_FOUND', message: 'Not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },

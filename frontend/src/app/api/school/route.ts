@@ -23,6 +23,7 @@ import { verifyCsrf, clearAuthCookies, clearCsrfCookie } from '@/lib/server/auth
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { confirmNameMatches, enforceDangerZoneRateLimit } from '@/lib/server/school-danger-zone';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
@@ -67,7 +68,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       select: {
         role: true,
         createdAt: true,
-        user: { select: { id: true, email: true, name: true } },
+        staffRoles: { select: { id: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            // Badge « Enseignant » de l'onglet Administrateurs : signale à
+            // l'admin qu'assigner un rôle ici crée un double profil.
+            teacherProfile: { select: { schoolId: true } },
+          },
+        },
       },
     });
 
@@ -98,6 +109,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           email: m.user.email,
           name: m.user.name,
           role: m.role,
+          staffRoleIds: m.staffRoles.map((r) => r.id),
+          isTeacher: m.user.teacherProfile?.schoolId === mySchool.schoolId,
           joinedAt: m.createdAt,
         })),
       },
@@ -133,19 +146,9 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'parametres', 'edit', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const parsed = UpdateSchoolBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {

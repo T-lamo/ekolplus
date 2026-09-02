@@ -132,6 +132,7 @@ describe('GET /api/school/billing/plan', () => {
     expect(await res.json()).toEqual({
       plan: { plan: 'STARTER', studentCount: 42, studentHardLimit: 50 },
       role: 'ADMIN',
+      permissions: 'ALL',
     });
     expect(getPlanSnapshot).toHaveBeenCalledWith(expect.anything(), 'school_1');
     expect(getBillingSummary).not.toHaveBeenCalled();
@@ -141,7 +142,7 @@ describe('GET /api/school/billing/plan', () => {
     mockResolveMySchool.mockResolvedValueOnce({ ...owner, role: 'MEMBER' });
     const res = await PLAN(req('GET', '/api/school/billing/plan'));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ plan: null, role: 'MEMBER' });
+    expect(await res.json()).toEqual({ plan: null, role: 'MEMBER', permissions: [] });
     expect(getPlanSnapshot).not.toHaveBeenCalled();
   });
 

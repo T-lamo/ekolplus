@@ -123,8 +123,22 @@ export function LanguagePicker({ className }: { className?: string }) {
 
 /** Three text links — for pages reachable before login. No toast, no
  * busy-state chrome: a full page navigation (router.refresh) follows
- * immediately, which is feedback enough on a page this small. */
-export function LocaleQuickSwitcher({ className }: { className?: string }) {
+ * immediately, which is feedback enough on a page this small.
+ *
+ * `variant="dark"` is for placement directly on the dark hero/sidebar
+ * panel (e.g. the login page's branding column): unselected links and the
+ * separator dot use white opacities baked into the component itself,
+ * rather than a caller-supplied class override — an override can't win the
+ * hover state (`hover:text-foreground` from the light variant has higher
+ * specificity than a plain `[&_button]:` selector), which used to render
+ * the hovered link in dark foreground text over the same dark background. */
+export function LocaleQuickSwitcher({
+  className,
+  variant = 'light',
+}: {
+  className?: string;
+  variant?: 'light' | 'dark';
+}) {
   const { locale, setLocale } = useLocalePreference();
   return (
     <div
@@ -133,7 +147,7 @@ export function LocaleQuickSwitcher({ className }: { className?: string }) {
       {LOCALES.map((l, i) => (
         <span key={l.key} className="flex items-center gap-2">
           {i > 0 && (
-            <span aria-hidden className="text-border">
+            <span aria-hidden className={variant === 'dark' ? 'text-white/30' : 'text-border'}>
               ·
             </span>
           )}
@@ -145,9 +159,13 @@ export function LocaleQuickSwitcher({ className }: { className?: string }) {
             aria-current={locale === l.key ? 'true' : undefined}
             className={cn(
               'rounded px-1 py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-primary',
-              locale === l.key
-                ? 'text-foreground underline'
-                : 'text-muted-foreground hover:text-foreground',
+              variant === 'dark'
+                ? locale === l.key
+                  ? 'text-white underline'
+                  : 'text-white/70 hover:text-white'
+                : locale === l.key
+                  ? 'text-foreground underline'
+                  : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {l.nativeName}

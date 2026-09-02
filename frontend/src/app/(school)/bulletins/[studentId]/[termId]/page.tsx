@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -51,6 +51,11 @@ export default function BulletinViewerPage() {
       },
     },
   );
+  // A prior transient failure must not keep the banner up once a later
+  // fetch of the same resource has succeeded.
+  useEffect(() => {
+    if (data) setLoadError(null);
+  }, [data]);
   const error = loadError;
 
   if (!user || (!data && !error)) {

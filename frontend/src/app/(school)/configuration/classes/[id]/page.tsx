@@ -9,9 +9,11 @@ import { useTranslations } from 'next-intl';
 import { Save } from 'lucide-react';
 import { ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ASIDE_GRID } from '@/lib/layout';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ClassPageShell } from '@/components/school/classes/ClassPageShell';
@@ -58,6 +60,12 @@ export default function ClassDetailPage() {
     if (noSchool) router.replace('/');
   }, [noSchool, router]);
 
+  // A prior transient failure must not keep the banner up once the class
+  // record has since loaded successfully.
+  useEffect(() => {
+    if (cls) setLoadError(null);
+  }, [cls]);
+
   const onSaved = useCallback(
     (saved: ClassData) => {
       toast(t('updated'), 'success');
@@ -77,6 +85,9 @@ export default function ClassDetailPage() {
     subjects: options?.subjects ?? [],
     onSaved,
   });
+
+  const { canSee } = usePermissions();
+  if (!canSee('configuration')) return <AccessDenied />;
 
   const done = classSectionsDone(form);
   const doneKeys = doneSectionKeys(done);

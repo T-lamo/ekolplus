@@ -1,0 +1,23 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "title": "Klas mwen yo",
+  "mySubjects": "Matyè mwen yo",
+  "myHomerooms": "Klas mwen se titilè a",
+  "noSubjects": "Poko gen matyè ki asiyen pou ou.",
+  "noHomerooms": "Ou pa titilè okenn klas.",
+  "plural": {
+    "students": {
+      "one": "{count} elèv",
+      "other": "{count} elèv"
+    }
+  },
+  "roster": {
+    "back": "Tounen nan klas mwen yo",
+    "noStudents": "Pa gen elèv enskri nan klas sa a.",
+    "studentNumber": "N° {number}"
+  },
+  "table": {
+    "student": "Elèv",
+    "studentNumber": "Nimewo elèv"
+  }
+}

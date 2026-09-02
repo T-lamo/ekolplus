@@ -1,0 +1,11 @@
+{
+  "title": "Appréciations",
+  "subtitle": "Saisie des appréciations de vos matières et de vos classes.",
+  "empty": "Aucune classe ne vous est encore assignée.",
+  "loadError": "Impossible de charger les appréciations pour le moment.",
+  "studentCount": "{count} élèves",
+  "homeroomBadge": "Titulaire",
+  "subjectProgress": "{subject} · {count}/{total} saisies",
+  "generalProgress": "Générale · {count}/{total} saisies",
+  "noStudents": "Aucun élève inscrit"
+}

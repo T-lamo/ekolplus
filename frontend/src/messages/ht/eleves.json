@@ -327,5 +327,16 @@
     "pending": "An atant",
     "summary": "Mwayèn {average}/20 · Ran {rank}/{rankedCount}",
     "view": "Wè"
+  },
+  "invite": {
+    "button": "Envite pou konekte",
+    "buttonDisabledNoEmail": "Ajoute yon imèl (elèv oswa tutè prensipal) pou envite elèv sa a",
+    "resendButton": "Voye envitasyon an ankò",
+    "pendingSince": "Envitasyon voye",
+    "activeSince": "Kont aktif",
+    "sentToast": "Envitasyon voye.",
+    "resentToast": "Envitasyon voye ankò.",
+    "errorEmailInUse": "Imèl sa a deja itilize pa yon lòt kont.",
+    "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite."
   }
 }

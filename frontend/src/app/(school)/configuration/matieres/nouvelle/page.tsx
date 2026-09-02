@@ -3,7 +3,7 @@
 // /configuration/matieres/nouvelle — Banani « Add Matière » (add-matiere.md).
 // Full-page create form inside the shared subject shell; on success the user
 // lands on the new subject's detail page (Informations tab, banner active).
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
@@ -67,6 +67,12 @@ export default function NouvelleMatierePage() {
   const teachers = teachersData?.teachers ?? [];
   const classes = classesData?.classes ?? [];
   const yearLabel = classesData?.activeYearLabel ?? null;
+  // A prior transient failure must not keep the banner up once all three
+  // lists have since loaded successfully (loadError is otherwise a one-way
+  // ratchet: onError sets it, nothing ever clears it).
+  useEffect(() => {
+    if (subjectsData && teachersData && classesData) setLoadError(null);
+  }, [subjectsData, teachersData, classesData]);
   const error = loadError;
 
   const onSaved = useCallback(

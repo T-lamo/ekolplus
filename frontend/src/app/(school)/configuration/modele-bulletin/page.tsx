@@ -17,9 +17,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
@@ -80,6 +82,9 @@ export default function BulletinTemplatesPage() {
     },
   });
   const error = dataErr ? t('loadError') : null;
+
+  const { canSee } = usePermissions();
+  if (!canSee('configuration')) return <AccessDenied />;
 
   async function fork(id: string) {
     try {

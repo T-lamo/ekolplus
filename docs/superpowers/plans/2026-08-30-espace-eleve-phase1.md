@@ -33,7 +33,7 @@ New files this plan creates:
 - `frontend/src/app/api/school/students/[id]/invite/route.test.ts`
 - `frontend/src/app/api/auth/student-invite/accept/route.ts` — public accept + set-password.
 - `frontend/src/app/api/auth/student-invite/accept/route.test.ts`
-- `frontend/src/app/(auth)/definir-mot-de-passe-eleve/page.tsx` — public accept page.
+- `frontend/src/app/definir-mot-de-passe-eleve/page.tsx` — public accept page (flat, no `(auth)` group — confirmed against the merged teacher-portal code, whose own accept page lives flat at `frontend/src/app/definir-mot-de-passe/page.tsx`).
 - `frontend/src/app/(eleve)/eleve/layout.tsx` — mobile-first shell (bare for Phase 1).
 - `frontend/src/app/(eleve)/eleve/page.tsx` — bare home page.
 - `frontend/src/messages/{fr,en,ht}/setPasswordEleve.json`
@@ -293,7 +293,8 @@ describe('requireStudent', () => {
     mockRequireAuth.mockResolvedValue({ user: { sub: 'user_1', email: 'x@test.local' } } as never);
     mockResolveMyStudentProfile.mockResolvedValue(null);
     const result = await requireStudent(req());
-    expect(result).not.toBeInstanceOf(Object); // placeholder replaced below
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(404);
   });
 
   it('returns the student context when linked', async () => {
@@ -316,18 +317,6 @@ describe('requireStudent', () => {
     });
   });
 });
-```
-
-Fix the second test's placeholder assertion before running it — replace with a real check:
-
-```ts
-  it('returns 404 when the account has no linked Student', async () => {
-    mockRequireAuth.mockResolvedValue({ user: { sub: 'user_1', email: 'x@test.local' } } as never);
-    mockResolveMyStudentProfile.mockResolvedValue(null);
-    const result = await requireStudent(req());
-    expect(result).toBeInstanceOf(NextResponse);
-    expect((result as NextResponse).status).toBe(404);
-  });
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -735,6 +724,13 @@ export async function POST(
         portalLabel: 'espace élève',
         expiresInMs: INVITE_TTL_MS,
         createOrgMembership: false,
+        // Resend: resolve the existing account by id, not by the freshly
+        // re-resolved target email. Student.email/Guardian.email can drift
+        // after the first invite without User.email being kept in sync —
+        // looking up by the new email would miss the linked User and
+        // silently create an orphaned second account (the same bug fixed
+        // in the teacher-portal plan, commit 0692b7c).
+        existingUserId: student.userId,
         linkExisting: async () => {}, // already linked
       });
       if (!result.ok) {
@@ -1250,17 +1246,16 @@ git commit -m "feat(eleves): add invite-to-login action on the student fiche"
 ### Task 8: `/definir-mot-de-passe-eleve` public page
 
 **Files:**
-- Create: `frontend/src/app/(auth)/definir-mot-de-passe-eleve/page.tsx` (check first, per Task 8's own Step 1, whether `(auth)` exists as a route group in this codebase — if `/login`/`/reset-password` live ungrouped at the app root, create this ungrouped too, at `frontend/src/app/definir-mot-de-passe-eleve/page.tsx`)
+- Create: `frontend/src/app/definir-mot-de-passe-eleve/page.tsx` — flat, no `(auth)` group. Confirmed against the merged Espace Enseignant code: its own accept page lives at `frontend/src/app/definir-mot-de-passe/page.tsx` (flat), matching `login/page.tsx` and the other auth pages, which all live ungrouped directly under `frontend/src/app/`. There is no `(auth)` route group anywhere in this codebase.
 - Create: `frontend/src/messages/{fr,en,ht}/setPasswordEleve.json`
 - Modify: `frontend/src/lib/locales.ts` (register `setPasswordEleve` in `MESSAGE_NAMESPACES`)
 
 **Interfaces:**
 - Consumes: `POST /api/auth/student-invite/accept` (Task 6) via `@/lib/api`'s `api()` wrapper.
 
-- [ ] **Step 1: Check the existing auth pages' location**
+- [ ] **Step 1: Read the sibling accept page for its exact shape**
 
-Run: `find frontend/src/app -maxdepth 1 -iname "reset-password" -o -maxdepth 1 -iname "verify-email"`
-Use whatever structure that reveals (route group or flat) — and check whether the Espace Enseignant plan's own Task 9 already created a `(auth)` group when its `/definir-mot-de-passe` page landed; if so, put this page as a sibling inside that same group.
+Read `frontend/src/app/definir-mot-de-passe/page.tsx` (the merged teacher-portal accept page) to match its exact `Suspense`/layout wrapper and `Field`/`Card`/`Button` usage before writing Step 4's page below.
 
 - [ ] **Step 2: Create the message files**
 
@@ -1275,7 +1270,7 @@ Use whatever structure that reveals (route group or flat) — and check whether 
   "success": "Compte créé, vous êtes connecté(e).",
   "errors": {
     "VERIFICATION_CODE_INVALID": "Ce lien n'est plus valide.",
-    "VERIFICATION_CODE_EXPIRED": "Ce lien a expiré — demandez une nouvelle invitation.",
+    "VERIFICATION_CODE_EXPIRED": "Ce lien a expiré. Demandez une nouvelle invitation.",
     "PASSWORD_TOO_SHORT": "Mot de passe trop court.",
     "PASSWORD_BANNED": "Ce mot de passe est trop courant.",
     "PASSWORD_PWNED": "Ce mot de passe est apparu dans une fuite de données connue.",
@@ -1295,7 +1290,7 @@ Use whatever structure that reveals (route group or flat) — and check whether 
   "success": "Account created, you're signed in.",
   "errors": {
     "VERIFICATION_CODE_INVALID": "This link is no longer valid.",
-    "VERIFICATION_CODE_EXPIRED": "This link has expired — ask for a new invitation.",
+    "VERIFICATION_CODE_EXPIRED": "This link has expired. Ask for a new invitation.",
     "PASSWORD_TOO_SHORT": "Password too short.",
     "PASSWORD_BANNED": "This password is too common.",
     "PASSWORD_PWNED": "This password appeared in a known data breach.",
@@ -1316,7 +1311,7 @@ Use whatever structure that reveals (route group or flat) — and check whether 
   "success": "Kont kreye, ou konekte.",
   "errors": {
     "VERIFICATION_CODE_INVALID": "Lyen sa a pa valab ankò.",
-    "VERIFICATION_CODE_EXPIRED": "Lyen sa a ekspire — mande yon nouvo envitasyon.",
+    "VERIFICATION_CODE_EXPIRED": "Lyen sa a ekspire. Mande yon nouvo envitasyon.",
     "PASSWORD_TOO_SHORT": "Modpas twò kout.",
     "PASSWORD_BANNED": "Modpas sa a twò komen.",
     "PASSWORD_PWNED": "Modpas sa a parèt nan yon fuit done li te ye.",
@@ -1423,7 +1418,7 @@ Run: `pnpm format && pnpm lint && pnpm typecheck`
 Expected: all clean.
 
 ```bash
-git add "frontend/src/app/(auth)/definir-mot-de-passe-eleve" frontend/src/messages/*/setPasswordEleve.json frontend/src/lib/locales.ts
+git add frontend/src/app/definir-mot-de-passe-eleve frontend/src/messages/*/setPasswordEleve.json frontend/src/lib/locales.ts
 git commit -m "feat(auth): add /definir-mot-de-passe-eleve accept page"
 ```
 
@@ -1448,7 +1443,7 @@ it('reports isStudentOnly=true for a student-linked account', async () => {
   prismaMock.user.findUnique.mockResolvedValue({
     id: 'user_1',
     email: 'student@school.test',
-    role: 'STUDENT',
+    role: 'USER',
   } as never);
   mockResolveMyStudentProfile.mockResolvedValue({
     studentId: 's1',

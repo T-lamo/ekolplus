@@ -1,151 +1,142 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import {
-  BookOpenCheck,
-  BookUser,
-  Building2,
-  HeartHandshake,
-  UsersRound,
-  type LucideIcon,
-} from 'lucide-react';
-import { IconPlate, SectionHead } from './landing-ui';
+import { BookOpenCheck, Building2, Calculator, GraduationCap, type LucideIcon } from 'lucide-react';
+import { SectionHead } from './landing-ui';
 import { fadeUp, staggerContainer, viewportOnce } from './landing-motion';
+import { useSpotlight } from './use-spotlight';
+import { useTilt } from './use-tilt';
 
-// Hosted locally (public/images/people.jpg) — see hero-section.tsx's
-// DASHBOARD_MOCKUP_IMG comment for why this moved off the Banani
-// storage.googleapis.com URL.
-const ROLE_PHOTO_IMG = '/images/people.jpg';
+/**
+ * Banani `#roles` — 4 glass cards on the same navy→blue gradient as the
+ * hero. The mock's AI-generated placeholder avatars are replaced by icon
+ * plates (user decision, consistent with the app's own visual language).
+ */
 
 interface Role {
   icon: LucideIcon;
-  name: string;
+  title: string;
+  sub: string;
   desc: string;
+  pills: string[];
 }
 
-// `#rolesWrap` — kicker kept from Banani ("Une scène par rôle"); the
-// section body text was Banani's own design rationale ("verre dépoli",
-// "scène humaine crédible") describing the visual treatment, not
-// user-facing copy — replaced with real content about the section.
 const ROLES: Role[] = [
   {
     icon: Building2,
-    name: 'Direction & administration',
-    desc: 'Vision 360° sur les effectifs, les paiements, les résultats et les opérations sensibles.',
-  },
-  {
-    icon: BookUser,
-    name: 'Secrétariat & scolarité',
-    desc: 'Inscriptions, édition de documents, organisation des classes et suivi des règlements.',
+    title: 'Direction & administration',
+    sub: "Vision globale de l'établissement",
+    desc: 'Suivez les effectifs, les performances, les finances et les opérations clés depuis un tableau de bord unifié.',
+    pills: ['Dashboard', 'Rapports', 'Année scolaire'],
   },
   {
     icon: BookOpenCheck,
-    name: 'Enseignants',
-    desc: 'Saisie rapide des notes, présences, appréciations et programme annuel.',
+    title: 'Corps enseignant',
+    sub: 'Usage simple au quotidien',
+    desc: 'Saisissez les notes, prenez les présences et gérez le programme annuel sans surcharge inutile.',
+    pills: ['Notes', 'Présences', 'Programme'],
   },
   {
-    icon: HeartHandshake,
-    name: 'Parents & élèves',
-    desc: 'Consultation fluide des bulletins, des présences, des échéances et du parcours scolaire.',
+    icon: GraduationCap,
+    title: 'Élèves & apprenants',
+    sub: 'Repères clairs pour le parcours',
+    desc: 'Consultez les emplois du temps, les notes, les bulletins et les informations clés du parcours scolaire depuis un espace lisible.',
+    pills: ['Emploi du temps', 'Résultats', 'Bulletins'],
+  },
+  {
+    icon: Calculator,
+    title: 'Secrétariat & comptabilité',
+    sub: 'Gestion rapide des opérations',
+    desc: 'Gérez les inscriptions, les paiements, les reçus et les relances dans des écrans pensés pour aller vite.',
+    pills: ['Paiements', 'Inscriptions', 'Relances'],
   },
 ];
 
-const KPIS = [
-  { label: 'Élèves', value: '342' },
-  { label: 'Paiements', value: '87%' },
-  { label: 'Présences', value: '96%' },
-];
+function RoleCard({ role }: { role: Role }) {
+  const Icon = role.icon;
+  const { onMouseMove, background } = useSpotlight('rgba(255,255,255,0.10)', 260);
+  const tilt = useTilt(6);
+  return (
+    <motion.div
+      variants={fadeUp}
+      whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+      onMouseMove={(e) => {
+        onMouseMove(e);
+        tilt.onMouseMove(e);
+      }}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
+      className="group relative flex flex-col overflow-hidden rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-6"
+    >
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background }}
+      />
+      <div className="relative z-10 flex flex-1 flex-col">
+        <div className="mb-3.5 flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+            <Icon className="h-6 w-6 text-white" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-base font-bold text-white">{role.title}</div>
+            <div className="mt-1 text-[13px] text-white/[0.64]">{role.sub}</div>
+          </div>
+        </div>
+        <div className="text-sm leading-[1.7] text-white/[0.76]">{role.desc}</div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {role.pills.map((pill) => (
+            <span
+              key={pill}
+              className="rounded-full bg-white/10 px-2.5 py-1.5 text-xs whitespace-nowrap text-white/[0.78]"
+            >
+              {pill}
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export function RolesSection() {
   return (
-    <section id="roles" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24 lg:px-10 lg:py-28">
+    <section
+      id="roles"
+      className="scroll-mt-24 bg-[linear-gradient(135deg,#0f172a_0%,#0f172a_65%,#2563eb_100%)] px-6 py-16 lg:px-12 lg:py-[92px]"
+    >
       <div className="mx-auto max-w-[1280px]">
-        <SectionHead
-          icon={UsersRound}
-          kicker="Une scène par rôle"
-          title={
-            <>
-              Expérience sur-mesure
-              <br />
-              pour chaque rôle
-            </>
-          }
-          text="Direction, secrétariat, enseignants, parents : chacun accède uniquement aux informations et outils utiles à son rôle, sans se perdre dans des fonctions qui ne le concernent pas."
-        />
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          variants={fadeUp}
+        >
+          <SectionHead
+            kicker="Conçu pour toute l'équipe"
+            tone="dark"
+            title={
+              <>
+                Une plateforme,
+                <br className="hidden sm:block" /> tous les acteurs de l'école
+              </>
+            }
+            text="Direction, enseignants, élèves, familles et comptabilité travaillent avec la même base d'information, chacun avec des accès clairs et adaptés à son rôle."
+            centered
+          />
+        </motion.div>
 
-        <div className="mt-10 grid grid-cols-1 items-center gap-8 sm:mt-14 lg:grid-cols-2 lg:gap-11">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={viewportOnce}
-            variants={staggerContainer(0.08)}
-            className="order-2 rounded-[34px_22px_30px_20px] bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(232,226,246,0.92))] p-5 text-[#1c1328] shadow-[0_26px_60px_rgba(0,0,0,0.16)] sm:p-6 lg:order-1"
-          >
-            <div className="flex flex-col gap-3">
-              {ROLES.map((role, i) => (
-                <motion.div
-                  key={role.name}
-                  variants={fadeUp}
-                  whileHover={{ x: 6, scale: 1.015 }}
-                  transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-                  className={`flex items-start gap-3.5 rounded-[18px] border border-[rgba(20,15,30,0.08)] p-3.5 ${
-                    i === 0
-                      ? 'bg-[linear-gradient(135deg,rgba(155,107,255,0.18),rgba(199,167,255,0.12))]'
-                      : 'bg-white/60'
-                  }`}
-                >
-                  <IconPlate icon={role.icon} size="md" />
-                  <div>
-                    <div className="text-sm font-bold text-[#23182f]">{role.name}</div>
-                    <div className="mt-0.5 text-xs text-[#5b526a]">{role.desc}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={viewportOnce}
-            variants={fadeUp}
-            whileHover={{ scale: 1.015 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 24 }}
-            className="relative order-1 h-[320px] sm:h-[420px] lg:order-2 lg:h-[520px]"
-          >
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-2 inset-y-6 rounded-[36%_64%_48%_52%/54%_46%_54%_46%] bg-[radial-gradient(circle_at_50%_50%,rgba(155,107,255,0.30),transparent_60%)] blur-xl"
-            />
-            <div className="absolute inset-0 overflow-hidden rounded-[28px] border border-border bg-white/5 shadow-[0_34px_90px_rgba(0,0,0,0.28)] backdrop-blur-md sm:rotate-1 lg:rounded-[34px_54px_26px_38px] lg:p-[18px]">
-              <div className="relative h-full w-full overflow-hidden rounded-[24px] lg:rounded-[24px_40px_22px_30px]">
-                <Image
-                  src={ROLE_PHOTO_IMG}
-                  alt="Équipe pédagogique consultant SchoolGesti sur des tablettes, ambiance violette"
-                  fill
-                  sizes="(min-width: 1024px) 560px, 90vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute right-4 bottom-4 left-4 rounded-[22px] border border-white/20 bg-white/[0.16] p-3.5 backdrop-blur-xl sm:right-8 sm:bottom-6 sm:left-8">
-                <div className="grid grid-cols-3 gap-2.5">
-                  {KPIS.map((kpi) => (
-                    <div
-                      key={kpi.label}
-                      className="rounded-[18px] border border-white/[0.14] bg-white/[0.12] p-2.5 sm:p-3"
-                    >
-                      <div className="text-[10px] text-white/80 sm:text-[11px]">{kpi.label}</div>
-                      <div className="mt-1 text-base font-extrabold text-foreground sm:text-lg">
-                        {kpi.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          variants={staggerContainer(0.08)}
+          className="mt-9 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4"
+        >
+          {ROLES.map((role) => (
+            <RoleCard key={role.title} role={role} />
+          ))}
+        </motion.div>
       </div>
     </section>
   );

@@ -14,10 +14,16 @@ vi.mock('@/lib/server/school', async () => {
   const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
   return { ...actual, resolveMySchool: vi.fn() };
 });
+vi.mock('@/lib/server/school-permissions', () => ({ requireSchoolPermission: vi.fn() }));
 
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import {
+  deniedSchoolPermission,
+  passThroughSchoolPermission,
+} from '@/test-utils/school-permission-mock';
 import { GET, POST } from './route';
 import { PUT as REORDER } from './reorder/route';
 import { PATCH, DELETE } from './[chapterId]/route';
@@ -67,6 +73,9 @@ function req(method: string, url: string, body?: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireSchoolPermission).mockImplementation(
+    passThroughSchoolPermission(mockResolveMySchool),
+  );
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);
@@ -155,13 +164,16 @@ describe('POST /api/school/subjects/[id]/chapters', () => {
     expect(prismaMock.subjectChapter.create).not.toHaveBeenCalled();
   });
 
-  it('MEMBER cannot write (404, existence not leaked)', async () => {
+  it('rôle sans configuration.create → 403 PERMISSION_DENIED', async () => {
     mockResolveMySchool.mockResolvedValue(memberSchool);
+    vi.mocked(requireSchoolPermission).mockResolvedValueOnce(deniedSchoolPermission());
     const res = await POST(
       req('POST', '/api/school/subjects/subj_1/chapters', { termId: 'term_1', title: 'X' }),
       params(),
     );
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
+    expect(((await res.json()) as { error: string }).error).toBe('PERMISSION_DENIED');
+    expect(prismaMock.subjectChapter.create).not.toHaveBeenCalled();
   });
 
   it('CSRF failure short-circuits', async () => {

@@ -193,6 +193,7 @@ export function StudentFormModal({
       if (classesData) {
         seededRef.current = true;
         setForm(emptyForm(classesData.classes[0]?.id ?? ''));
+        setLoadError(null);
       }
     } else if (studentData) {
       seededRef.current = true;
@@ -203,6 +204,7 @@ export function StudentFormModal({
         setGuardian2(s.guardians[1]);
         setShowGuardian2(true);
       }
+      setLoadError(null);
     }
   }, [studentId, classesData, studentData]);
 

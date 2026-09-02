@@ -3,8 +3,11 @@
 // + the known rooms (class rooms ∪ session rooms) for the filter/modal.
 // POST — create one session or a weekly series (recurrence expanded into one
 // row per occurrence sharing a seriesId); 409 TIMETABLE_CONFLICT when the
-// class, teacher or room is already busy on any occurrence. Read = any
-// member, write = ADMIN+. See .planning/banani/emploi-du-temps.md.
+// class, teacher or room is already busy on any occurrence. Read = compte lié
+// à un Teacher (vue scopée à ses propres séances) ou grant emploiDuTemps.view ;
+// un enseignant qui détient AUSSI ce grant obtient la vue pleine école (le
+// grant prime sur le scoping enseignant). Write requires emploiDuTemps.create
+// grant (OWNER/ADMIN pass automatically). See .planning/banani/emploi-du-temps.md.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -14,7 +17,13 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, resolveActiveAcademicYear, hasMinRole } from '@/lib/server/school';
+import {
+  resolveMySchoolIncludingTeacher,
+  resolveMyTeacherProfile,
+  resolveActiveAcademicYear,
+} from '@/lib/server/school';
+import { requireSchoolPermission, resolveGrantsFor } from '@/lib/server/school-permissions';
+import { hasGrant } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { DAY_MS, MAX_OCCURRENCES, expandRecurrence, parseDay } from '@/lib/server/timetable';
 import {
@@ -44,12 +53,36 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
+    const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
     if (!mySchool) {
       return NextResponse.json(
         { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
+    }
+    const myTeacher =
+      mySchool.role === 'MEMBER'
+        ? await resolveMyTeacherProfile(auth.user.sub, mySchool.schoolId)
+        : null;
+    // Garde RBAC manuelle + raffinement multi-espaces (spec 2026-09-01 §4) :
+    // un MEMBER non enseignant doit détenir emploiDuTemps.view ; un MEMBER
+    // enseignant SANS ce grant garde la vue scopée à ses propres séances ;
+    // AVEC ce grant, la vue pleine école prime (le rôle donne ce qu'il
+    // accorde). Même refus que requireSchoolPermission.
+    let forcedTeacherId: string | null = myTeacher?.teacherId ?? null;
+    if (mySchool.role === 'MEMBER') {
+      const grants = await resolveGrantsFor(mySchool, auth.user.sub);
+      const hasTimetableView = hasGrant(grants, 'emploiDuTemps', 'view');
+      if (!myTeacher && !hasTimetableView) {
+        return NextResponse.json(
+          {
+            error: 'PERMISSION_DENIED',
+            message: 'You do not have permission to perform this action.',
+          },
+          { status: 403, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      if (hasTimetableView) forcedTeacherId = null;
     }
 
     const sp = req.nextUrl.searchParams;
@@ -91,7 +124,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           academicYearId: activeYear.id,
           date: { gte: from, lte: to },
           ...(parsed.data.classId ? { classId: parsed.data.classId } : {}),
-          ...(parsed.data.teacherId ? { teacherId: parsed.data.teacherId } : {}),
+          ...(forcedTeacherId
+            ? { teacherId: forcedTeacherId }
+            : parsed.data.teacherId
+              ? { teacherId: parsed.data.teacherId }
+              : {}),
           ...(parsed.data.subjectId ? { subjectId: parsed.data.subjectId } : {}),
           ...(parsed.data.room
             ? { room: { equals: parsed.data.room, mode: 'insensitive' as const } }
@@ -158,19 +195,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'emploiDuTemps',
+      'create',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const activeYear = await resolveActiveAcademicYear(mySchool.schoolId);
     if (!activeYear) {

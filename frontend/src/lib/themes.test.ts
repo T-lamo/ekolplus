@@ -175,7 +175,7 @@ describe('themes registry', () => {
       fn({ getItem: () => stored }, { documentElement });
       return el.attrs[THEME_ATTR] ?? null;
     };
-    expect(run('ocean')).toBe('ocean');
+    expect(run('lavande')).toBe('lavande');
     expect(run(DEFAULT_THEME)).toBeNull();
     expect(run('garbage')).toBeNull();
     expect(run(null)).toBeNull();

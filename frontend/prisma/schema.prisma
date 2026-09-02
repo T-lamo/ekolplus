@@ -67,6 +67,8 @@ model User {
   oauthAccounts       OAuthAccount[]
   adminActions        AdminAction[]
   appreciations       Appreciation[]
+  teacherProfile      Teacher?
+  studentProfile      Student?
   attendanceMarks     Attendance[]
   recordedFeePayments FeePayment[]
   openedFeeDisputes   FeeDispute[]
@@ -192,6 +194,7 @@ model School {
   gradeLevels           GradeLevel[]
   timetableSessions     TimetableSession[]
   rooms                 Room[]
+  staffRoles StaffRole[]
 
   @@index([organizationId])
 }
@@ -304,10 +307,33 @@ model OrganizationMember {
   userId         String
   user           User         @relation("OrgMembership", fields: [userId], references: [id], onDelete: Cascade)
   role           String       @default("MEMBER") // OWNER | ADMIN | MEMBER
+  // Rôles staff cumulables (multi-espaces 2026-09-01) : droits effectifs =
+  // union des grants de tous les rôles. Supprimer un rôle ne retire que ses
+  // lignes de jointure ; les autres rôles du membre restent.
+  staffRoles     StaffRole[]
   createdAt      DateTime     @default(now())
 
   @@unique([organizationId, userId])
   @@index([userId])
+}
+
+// Rôle personnalisé de staff école (RBAC — spec 2026-09-01-permission-manager).
+// grants = permissions "module.action" du registre lib/permissions.ts.
+// OWNER/ADMIN n'utilisent pas de StaffRole (accès total implicite).
+// m2m implicite avec OrganizationMember (table _OrganizationMemberToStaffRole).
+model StaffRole {
+  id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  grants      String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     OrganizationMember[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -432,6 +458,9 @@ model Teacher {
   responsibleSubjects Subject[]      @relation("SubjectResponsible")
 
   timetableSessions TimetableSession[]
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
 }
@@ -558,6 +587,8 @@ model Student {
   feePayments     FeePayment[]
   feeDisputes     FeeDispute[]
   feeReminderLogs FeeReminderLog[]
+  userId          String? @unique
+  user            User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
 }

@@ -27,6 +27,8 @@
     "db:seed-bulletin-templates": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-bulletin-templates.ts",
     "db:seed-plans": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-subscription-plans.ts",
     "stripe:setup-prices": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-setup-prices.ts",
+    "stripe:migrate-price": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-migrate-pro-price.ts",
+    "stripe:migrate-price:live": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-migrate-pro-price.ts",
     "stripe:doctor": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-doctor.ts",
     "stripe:doctor:live": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-doctor.ts --live",
     "stripe:sync-coupons": "tsx --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/stripe-sync-coupons.ts",

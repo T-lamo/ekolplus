@@ -35,10 +35,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
@@ -264,6 +266,9 @@ export default function NiveauxPage() {
   const levels = levelsData?.levels ?? null;
   const error = levelsErr ? t('loadError') : null;
 
+  const { can, canSee } = usePermissions();
+  if (!canSee('configuration')) return <AccessDenied />;
+
   async function addLevel(name: string) {
     const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
       method: 'POST',
@@ -336,10 +341,12 @@ export default function NiveauxPage() {
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Button className="w-fit" onClick={() => setAdding(true)}>
-          <Plus size={14} />
-          {t('addLevel')}
-        </Button>
+        {can('configuration', 'create') && (
+          <Button className="w-fit" onClick={() => setAdding(true)}>
+            <Plus size={14} />
+            {t('addLevel')}
+          </Button>
+        )}
       </div>
 
       {error && (

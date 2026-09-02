@@ -22,9 +22,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { ListCard, ListCardPerson, ListCardTile } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -121,6 +123,9 @@ export default function MatieresPage() {
       teachers: new Set(all.flatMap((s) => s.teacherNames)).size,
     };
   }, [subjects]);
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('configuration')) return <AccessDenied />;
 
   async function onDelete(subject: SubjectData) {
     if (!(await confirm({ message: t('deleteConfirm', { name: subject.name }), danger: true })))
@@ -256,14 +261,21 @@ export default function MatieresPage() {
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
-          <Button className="w-fit" onClick={() => router.push('/configuration/matieres/nouvelle')}>
-            <Plus size={14} />
-            {t('addSubject')}
-          </Button>
+          {can('configuration', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
+          {can('configuration', 'create') && (
+            <Button
+              className="w-fit"
+              onClick={() => router.push('/configuration/matieres/nouvelle')}
+            >
+              <Plus size={14} />
+              {t('addSubject')}
+            </Button>
+          )}
         </div>
       </div>
 

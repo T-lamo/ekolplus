@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { FileSpreadsheet } from 'lucide-react';
 import { ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Skeleton, SkeletonStatCards } from '@/components/ui/Skeleton';
@@ -34,6 +36,8 @@ export default function DashboardPage() {
       }
     },
   });
+  const { can, canSee } = usePermissions();
+  if (!canSee('dashboard')) return <AccessDenied />;
   const displayError = error ? t('loadError') : null;
 
   function onExport() {
@@ -83,10 +87,12 @@ export default function DashboardPage() {
               <HelpTooltip label={t('help.academicYearScope')} />
             </span>
           )}
-          <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
+          {can('dashboard', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport} disabled={!data}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
         </div>
       </div>
 

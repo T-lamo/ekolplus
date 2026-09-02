@@ -28,6 +28,11 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+import {
+  resolveMySchoolIncludingTeacher,
+  resolveMyStudentProfile,
+  resolveMySpaces,
+} from '@/lib/server/school';
 import { zPhone } from '@/lib/server/zod-helpers';
 import { THEME_KEYS, isThemeKey } from '@/lib/themes';
 import { LOCALE_KEYS, isLocaleKey } from '@/lib/locales';
@@ -73,6 +78,33 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       },
     });
 
+    const mySchool = await resolveMySchoolIncludingTeacher(auth.user.sub);
+    // Multi-espaces (spec 2026-09-01 §5) : « purement enseignant » = lié
+    // enseignant sans aucun espace école. Un double profil (rôle staff avec
+    // au moins un droit) garde les deux espaces et n'est plus rebondi hors
+    // de l'app école par (school)/layout.tsx ni par le login.
+    const spaces = await resolveMySpaces(auth.user.sub);
+    const isTeacherOnly = spaces.teacher && !spaces.school;
+    const studentProfile = await resolveMyStudentProfile(auth.user.sub);
+    // Defense in depth: an ADMIN/SUPERADMIN account with an incidentally-linked
+    // Student.userId must not be flagged isStudentOnly. Not exploitable via
+    // the current invite flow (createPortalInvite refuses to link a Student to
+    // an account that already has a passwordHash), but Task 10 builds real
+    // redirect/bounce logic on top of this field, so gate it here too. Can't
+    // mirror isTeacherOnly's `spaces.teacher && !spaces.school` derivation
+    // literally — students never get an OrganizationMember row, so
+    // `spaces.school` would always be false for genuine students. Gate on
+    // the platform-wide User.role instead.
+    // Second gate, same spirit: a non-null `mySchool` means this account
+    // really does hold an org role (director, secretary, teacher...), which a
+    // genuine student account never has by design. That covers the case the
+    // User.role check alone misses — a Google-OAuth account has no
+    // passwordHash, so createPortalInvite's passwordHash guard would not stop
+    // a school director who is also a guardian from being linked to a Student
+    // row, yet their `role` may still be plain USER.
+    const isStudentOnly =
+      (dbUser?.role ?? 'USER') === 'USER' && mySchool === null && studentProfile !== null;
+
     const user = {
       // Keep `sub` for back-compat with the AuthContext payload contract
       // (older callers may still read it). New code should use `id`.
@@ -103,6 +135,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           : dbUser.updatedAt
         : null,
       hasPassword: !!dbUser?.passwordHash,
+      isTeacherOnly,
+      isStudentOnly,
+      spaces,
       passwordChangedAt: dbUser?.passwordChangedAt
         ? dbUser.passwordChangedAt instanceof Date
           ? dbUser.passwordChangedAt.toISOString()

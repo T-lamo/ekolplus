@@ -14,10 +14,29 @@ vi.mock('@/lib/server/auth', async () => {
     verifyToken: vi.fn(),
   };
 });
+vi.mock('@/lib/server/school', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/server/school')>('@/lib/server/school');
+  return {
+    ...actual,
+    resolveMySchoolIncludingTeacher: vi.fn(),
+    resolveMyTeacherProfile: vi.fn(),
+    resolveMyStudentProfile: vi.fn(),
+    resolveMySpaces: vi.fn(),
+  };
+});
 
 import { verifyToken } from '@/lib/server/auth';
+import {
+  resolveMySchoolIncludingTeacher,
+  resolveMyStudentProfile,
+  resolveMySpaces,
+} from '@/lib/server/school';
 import { GET, PATCH } from './route';
 import { NextRequest } from 'next/server';
+
+const mockResolveMySchoolIncludingTeacher = vi.mocked(resolveMySchoolIncludingTeacher);
+const mockResolveMyStudentProfile = vi.mocked(resolveMyStudentProfile);
+const mockResolveMySpaces = vi.mocked(resolveMySpaces);
 
 function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequest {
   const headers: Record<string, string> = {};
@@ -28,9 +47,17 @@ function makeReq(opts: { tokenCookie?: string; bearer?: string } = {}): NextRequ
   });
 }
 
+// Bearer-header pattern already used by the other GET tests in this file.
+function reqWithAuthHeader(): NextRequest {
+  return makeReq({ bearer: 'valid-access-token' });
+}
+
 beforeEach(() => {
   __cookieStore.clear();
   vi.mocked(verifyToken).mockReset();
+  // Default: a plain school-side staff account with no teacher/student link.
+  // Individual tests override this via mockResolveMySpaces.mockResolvedValue(...).
+  mockResolveMySpaces.mockResolvedValue({ school: true, teacher: false, student: false });
 });
 
 describe('GET /api/auth/me', () => {
@@ -91,6 +118,142 @@ describe('GET /api/auth/me', () => {
 
     const res = await GET(makeReq({ bearer: 'orphan-jwt' }));
     expect(res.status).toBe(401);
+  });
+});
+
+describe('GET /api/auth/me — isTeacherOnly (multi-espaces)', () => {
+  beforeEach(() => {
+    // Module-scoped mock, never reset by the file-level beforeEach — clear
+    // call history only (each test below sets its own .mockResolvedValue).
+    mockResolveMySchoolIncludingTeacher.mockClear();
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: 'user_1',
+      email: 'teach@school.test',
+      tokenVersion: 0,
+    });
+    // requireAuth() re-reads the user via prisma.user.findUnique to check
+    // tokenVersion — this "once" satisfies THAT call. The route handler's
+    // own richer `dbUser` query is the *second* call to the same mock and
+    // falls through to whatever `.mockResolvedValue` a given test below
+    // configures (or stays unconfigured — isTeacherOnly never reads dbUser).
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      id: 'user_1',
+      email: 'teach@school.test',
+      tokenVersion: 0,
+    } as never);
+  });
+
+  it('reports isTeacherOnly=true for a purely teacher-linked account', async () => {
+    mockResolveMySpaces.mockResolvedValue({ school: false, teacher: true, student: false });
+    const res = await GET(reqWithAuthHeader());
+    const body = await res.json();
+    expect(body.user.isTeacherOnly).toBe(true);
+    expect(body.user.spaces).toEqual({ school: false, teacher: true, student: false });
+  });
+
+  it('reports isTeacherOnly=false for a double profile (teacher + granted staff role)', async () => {
+    mockResolveMySpaces.mockResolvedValue({ school: true, teacher: true, student: false });
+    const res = await GET(reqWithAuthHeader());
+    const body = await res.json();
+    expect(body.user.isTeacherOnly).toBe(false);
+    expect(body.user.spaces).toEqual({ school: true, teacher: true, student: false });
+  });
+});
+
+describe('GET /api/auth/me — isStudentOnly (Espace Élève Phase 1)', () => {
+  beforeEach(() => {
+    // Same rationale as the isTeacherOnly describe above: this mock is
+    // module-scoped and never reset by the file-level beforeEach, so clear
+    // call history only (each test below sets its own .mockResolvedValue).
+    mockResolveMyStudentProfile.mockClear();
+    // A genuine student account holds no OrganizationMember row by design, so
+    // the org lookup resolves null. Set it explicitly: this mock is
+    // module-scoped and would otherwise carry over whatever the isTeacherOnly
+    // describe above left configured.
+    mockResolveMySchoolIncludingTeacher.mockClear();
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue(null);
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: 'user_1',
+      email: 'student@school.test',
+      tokenVersion: 0,
+    });
+    // requireAuth()'s internal tokenVersion re-check — the route handler's
+    // own richer `dbUser` query is the *second* call to the same mock and
+    // falls through to whatever a given test below configures.
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      id: 'user_1',
+      email: 'student@school.test',
+      tokenVersion: 0,
+    } as never);
+  });
+
+  it('reports isStudentOnly=true for a student-linked account', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'student@school.test',
+      role: 'USER',
+    } as never);
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(true);
+  });
+
+  it('reports isStudentOnly=false for a plain staff account', async () => {
+    mockResolveMyStudentProfile.mockResolvedValue(null);
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
+  });
+
+  it('reports isStudentOnly=false for an ADMIN account even with a linked student profile', async () => {
+    // Not reachable today via createPortalInvite (it refuses to link a
+    // Student to an account that already has a passwordHash, which every
+    // admin/staff account has), but this documents and enforces the
+    // platform-role gate as defense in depth for Task 10's redirect logic.
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'admin@school.test',
+      role: 'ADMIN',
+    } as never);
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
+  });
+
+  it('reports isStudentOnly=false when the account holds an org membership', async () => {
+    // The OAuth edge the User.role check alone misses: a Google account has
+    // no passwordHash, so createPortalInvite's passwordHash guard would not
+    // stop a school director who is also a guardian from being linked to a
+    // Student row, and their platform role can still be a plain USER. Holding
+    // an OrganizationMember row (which a real student never does) is the
+    // second gate.
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'user_1',
+      email: 'director@school.test',
+      role: 'USER',
+    } as never);
+    mockResolveMySchoolIncludingTeacher.mockResolvedValue({
+      organizationId: 'org_1',
+      schoolId: 'school_1',
+      role: 'ADMIN',
+    });
+    mockResolveMyStudentProfile.mockResolvedValue({
+      studentId: 's1',
+      schoolId: 'school_1',
+      classId: 'class_1',
+      academicYearId: 'year_1',
+    });
+    const res = await GET(reqWithAuthHeader());
+    expect((await res.json()).user.isStudentOnly).toBe(false);
   });
 });
 

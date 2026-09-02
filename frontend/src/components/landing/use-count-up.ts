@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
 
 /** Counts from 0 to `target` once the returned `ref` scrolls into view —
- * used by StatsBand's 4 numbers. Honors prefers-reduced-motion (jumps
- * straight to `target`, no animation). */
-export function useCountUp(target: number, duration = 1400) {
+ * used by the proof strip's 5 numbers. The low `amount` threshold starts
+ * the count as soon as the number peeks into the viewport, and the
+ * quadratic ease keeps digits visibly ticking through the whole duration
+ * (a sharper ease finishes most of the movement before the eye catches
+ * it). Honors prefers-reduced-motion (jumps straight to `target`). */
+export function useCountUp(target: number, duration = 2400) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
+  const inView = useInView(ref, { once: true, amount: 0.15 });
   const reduceMotion = useReducedMotion();
   const [value, setValue] = useState(0);
 
@@ -22,7 +25,7 @@ export function useCountUp(target: number, duration = 1400) {
     const start = performance.now();
     const tick = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - (1 - progress) ** 3;
+      const eased = 1 - (1 - progress) ** 2;
       setValue(Math.round(target * eased));
       if (progress < 1) raf = requestAnimationFrame(tick);
     };

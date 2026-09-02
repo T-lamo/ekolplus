@@ -12,7 +12,7 @@ import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import {
   competitionRank,
   resolveCurrentTerm,
@@ -30,13 +30,9 @@ export async function GET(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'notes', 'view', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id: classId } = await params;
     const cls = await prisma.class.findUnique({ where: { id: classId } });

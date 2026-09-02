@@ -1,0 +1,11 @@
+{
+  "title": "Appreciations",
+  "subtitle": "Enter appreciations for your subjects and your classes.",
+  "empty": "No class has been assigned to you yet.",
+  "loadError": "Unable to load appreciations right now.",
+  "studentCount": "{count} students",
+  "homeroomBadge": "Homeroom",
+  "subjectProgress": "{subject} · {count}/{total} entered",
+  "generalProgress": "General · {count}/{total} entered",
+  "noStudents": "No enrolled students"
+}

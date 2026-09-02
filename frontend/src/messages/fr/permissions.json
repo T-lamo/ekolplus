@@ -1,0 +1,106 @@
+{
+  "title": "Gestion des permissions",
+  "subtitle": "Définissez les droits d'accès par rôle pour chaque module de l'application.",
+  "rolesLabel": "Rôles",
+  "newRole": "Nouveau rôle",
+  "duplicateRole": "Dupliquer le rôle",
+  "duplicateSuffix": "(copie)",
+  "systemBadge": "Système",
+  "usersCount": { "one": "{count} utilisateur", "other": "{count} utilisateurs" },
+  "note": {
+    "title": "Note",
+    "body": "Les modifications s'appliquent immédiatement aux utilisateurs ayant ce rôle."
+  },
+  "systemRoleHint": "Rôle système : accès complet, non modifiable.",
+  "ownerRole": "Propriétaire",
+  "adminRole": "Administrateur",
+  "modifiedOn": "Modifié le {date}",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "matrix": {
+    "module": "Module",
+    "view": "Voir",
+    "create": "Créer",
+    "editAction": "Modifier",
+    "deleteAction": "Supprimer",
+    "export": "Exporter"
+  },
+  "sections": {
+    "general": "Général",
+    "academic": "Académique",
+    "finance": "Finance",
+    "config": "Configuration"
+  },
+  "modules": {
+    "dashboard": { "label": "Tableau de bord", "sub": "Accueil & Vue d'ensemble" },
+    "eleves": { "label": "Élèves", "sub": "Dossiers & Inscriptions" },
+    "enseignants": { "label": "Enseignants", "sub": "Personnel & Affectations" },
+    "notes": { "label": "Notes & Bulletins", "sub": "Évaluations & Résultats" },
+    "appreciations": { "label": "Appréciations", "sub": "Commentaires de bulletin" },
+    "presences": { "label": "Présences", "sub": "Absences & Retards" },
+    "emploiDuTemps": { "label": "Emploi du temps", "sub": "Planning & Séances" },
+    "paiements": { "label": "Paiements", "sub": "Frais & Encaissements" },
+    "configuration": { "label": "Configuration", "sub": "Classes, matières, salles" },
+    "parametres": { "label": "Paramètres établissement", "sub": "Année scolaire & Périodes" }
+  },
+  "footer": {
+    "meta": "Rôle : {name} · {count} utilisateurs concernés · Dernière mise à jour le {date}",
+    "deleteRole": "Supprimer ce rôle",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  "toasts": {
+    "saved": "Permissions enregistrées.",
+    "created": "Rôle créé. Configurez maintenant ses permissions.",
+    "updated": "Rôle mis à jour.",
+    "deleted": "Rôle supprimé.",
+    "duplicated": "Rôle dupliqué."
+  },
+  "deleteConfirm": {
+    "one": "Supprimer le rôle « {name} » ? {count} utilisateur perdra les accès donnés par ce rôle. Ses autres rôles, s'il en a, restent actifs.",
+    "other": "Supprimer le rôle « {name} » ? {count} utilisateurs perdront les accès donnés par ce rôle. Leurs autres rôles, s'ils en ont, restent actifs.",
+    "zero": "Supprimer le rôle « {name} » ? Aucun utilisateur ne l'utilise actuellement."
+  },
+  "unsaved": "Modifications non enregistrées",
+  "unsavedSwitchConfirm": "Des modifications ne sont pas enregistrées. Changer de rôle sans enregistrer ?",
+  "emptyRoles": "Aucun rôle personnalisé pour l'instant. Créez le premier pour déléguer des accès.",
+  "loadError": "Impossible de charger les rôles.",
+  "form": {
+    "createTitle": "Créer un nouveau rôle",
+    "editTitle": "Modifier le rôle",
+    "createSubtitle": "Définissez d'abord les informations de base du rôle. Les permissions détaillées se configurent dans la matrice après l'enregistrement.",
+    "badgeNew": "Nouveau rôle",
+    "badgeStep": "Étape 1/2",
+    "nameLabel": "Nom du rôle",
+    "nameHint": "Exemples : Comptable, Surveillant, Secrétaire.",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Décrivez brièvement l'usage de ce rôle dans l'établissement.",
+    "descriptionHint": "Optionnel. Vous pourrez configurer les permissions dans l'écran suivant.",
+    "previewTitle": "Aperçu du rôle",
+    "previewBody": "Le rôle sera créé immédiatement puis complété avec ses permissions détaillées.",
+    "previewBadgePending": "Permissions à définir plus tard",
+    "previewBadgeActive": "Actif",
+    "footerNote": "La gestion des permissions se fait dans la matrice après la création du rôle.",
+    "cancel": "Annuler",
+    "submitCreate": "Créer le rôle",
+    "submitEdit": "Enregistrer",
+    "nameTaken": "Un rôle porte déjà ce nom.",
+    "nameRequired": "Le nom du rôle est requis."
+  },
+  "accessDenied": {
+    "title": "Accès non autorisé",
+    "body": "Votre rôle ne permet pas d'accéder à cette page. Contactez un administrateur de l'établissement si vous pensez qu'il s'agit d'une erreur."
+  },
+  "adminsTab": {
+    "roleColumn": "Rôles",
+    "fullAccess": "Accès complet",
+    "noRole": "Aucun rôle (aucun accès)",
+    "noRolePlaceholder": "Aucun rôle",
+    "searchRoles": "Rechercher un rôle",
+    "noRoleResults": "Aucun rôle trouvé",
+    "roleAssigned": "Rôle attribué",
+    "roleUpdated": "Rôles mis à jour.",
+    "teacherBadge": "Enseignant",
+    "manageLink": "Gérer les rôles et permissions"
+  }
+}

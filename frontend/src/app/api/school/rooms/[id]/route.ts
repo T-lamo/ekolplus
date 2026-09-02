@@ -1,7 +1,7 @@
-// PATCH /api/school/rooms/[id] — edit a room (ADMIN); renaming also rewrites
+// PATCH /api/school/rooms/[id] — edit a room (configuration.edit grant; OWNER/ADMIN pass automatically); renaming also rewrites
 // the label copied into Class.room / TimetableSession.room (same tx) so the
 // catalogue and the displayed text never drift. DELETE — remove the room
-// (ADMIN): links are set to null (Prisma SetNull) but the text label stays on
+// (configuration.delete grant; OWNER/ADMIN pass automatically): links are set to null (Prisma SetNull) but the text label stays on
 // classes / sessions, so nothing else breaks. Other schools' rooms are 404.
 export const runtime = 'nodejs';
 
@@ -10,7 +10,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { ROOM_INCLUDE, RoomBody, serializeRoom } from '@/lib/server/rooms';
 
@@ -18,22 +19,12 @@ type Params = { params: Promise<{ id: string }> };
 
 const PatchBody = RoomBody.partial();
 
-async function guard(requestId: string, id: string) {
+async function guard(requestId: string, id: string, action: PermissionAction) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
-  const mySchool = await resolveMySchool(auth.user.sub);
-  if (!mySchool) {
-    return NextResponse.json(
-      { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-      { status: 404, headers: { 'x-request-id': requestId } },
-    );
-  }
-  if (!hasMinRole(mySchool.role, 'ADMIN')) {
-    return NextResponse.json(
-      { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-      { status: 403, headers: { 'x-request-id': requestId } },
-    );
-  }
+  const perm = await requireSchoolPermission(auth.user.sub, 'configuration', action, requestId);
+  if (!perm.ok) return perm.response;
+  const mySchool = perm.mySchool;
   const room = await prisma.room.findUnique({ where: { id }, include: ROOM_INCLUDE });
   if (!room || room.schoolId !== mySchool.schoolId) {
     return NextResponse.json(
@@ -50,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(ctx.requestId, id);
+    const g = await guard(ctx.requestId, id, 'edit');
     if (g instanceof NextResponse) return g;
     const { mySchool, room } = g;
 
@@ -115,7 +106,7 @@ export async function DELETE(req: NextRequest, { params }: Params): Promise<Next
     const csrfFail = verifyCsrf(req);
     if (csrfFail) return csrfFail;
     const { id } = await params;
-    const g = await guard(ctx.requestId, id);
+    const g = await guard(ctx.requestId, id, 'delete');
     if (g instanceof NextResponse) return g;
     await prisma.room.delete({ where: { id: g.room.id } });
     return new NextResponse(null, { status: 204, headers: { 'x-request-id': ctx.requestId } });

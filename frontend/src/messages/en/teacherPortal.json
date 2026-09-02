@@ -1,0 +1,40 @@
+{
+  "roleLabel": "Teacher",
+  "title": "Teacher space",
+  "welcome": "Welcome, {name}",
+  "logout": "Log out",
+  "loadError": "We could not load your information right now.",
+  "nav": {
+    "ariaLabel": "Main navigation",
+    "sectionLabel": "Main",
+    "home": "Home",
+    "classes": "Classes",
+    "students": "My students",
+    "gradebook": "Grade book",
+    "appreciations": "Appreciations",
+    "pedagogySectionLabel": "Teaching",
+    "timetable": "Timetable",
+    "accountSectionLabel": "Account",
+    "settings": "Settings",
+    "more": "More",
+    "moreAriaLabel": "Open menu"
+  },
+  "topbar": {
+    "defaultPageTitle": "Teacher portal"
+  },
+  "home": {
+    "today": "Today's classes",
+    "noCoursesToday": "No classes today.",
+    "thisWeek": "This week",
+    "noSessions": "No classes scheduled this week.",
+    "myClasses": "My classes",
+    "viewTimetable": "View timetable",
+    "quickActions": "Quick actions",
+    "sessionsCount": "{count, plural, =0 {No classes} one {# class} other {# classes}}",
+    "stats": {
+      "classes": "Classes",
+      "subjects": "Subjects taught",
+      "students": "Students"
+    }
+  }
+}

@@ -38,7 +38,8 @@ export function TimetableGrid({
   sessions: TimetableSession[];
   today: string;
   showClass: boolean;
-  onSessionClick: (session: TimetableSession) => void;
+  /** Absent → read-only grid (teacher portal): cards render without button semantics. */
+  onSessionClick?: (session: TimetableSession) => void;
   /** Click on the empty part of a cell → create a session there. */
   onSlotClick?: (day: string, startMinutes: number) => void;
 }) {
@@ -124,7 +125,7 @@ export function TimetableGrid({
                         key={s.id}
                         session={s}
                         showClass={showClass}
-                        onClick={onSessionClick}
+                        {...(onSessionClick ? { onClick: onSessionClick } : {})}
                       />
                     ))}
                   </div>

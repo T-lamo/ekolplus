@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { zEmail, zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -53,13 +53,9 @@ export async function GET(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'enseignants', 'view', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const teacher = await prisma.teacher.findUnique({
@@ -71,6 +67,15 @@ export async function GET(
             class: { select: { id: true, name: true } },
           },
         },
+        // Linked portal account (Espace Enseignant invite) — `userId` is
+        // already a scalar Teacher column and flows through via `...fields`
+        // below; `emailVerifiedAt` and `createdAt` live on User so they
+        // need this include. The teacher fiche's invite/resend/active UI
+        // branches on all three. `createdAt` (exposed as `userCreatedAt`
+        // below) is the "pending since" date — Teacher.updatedAt would be
+        // wrong here: it changes on any unrelated profile edit and does
+        // NOT change on an invite resend (resend never touches Teacher).
+        user: { select: { emailVerifiedAt: true, createdAt: true } },
       },
     });
     if (!teacher || teacher.schoolId !== mySchool.schoolId) {
@@ -80,11 +85,13 @@ export async function GET(
       );
     }
 
-    const { classSubjects, ...fields } = teacher;
+    const { classSubjects, user, ...fields } = teacher;
     return NextResponse.json(
       {
         teacher: {
           ...fields,
+          emailVerifiedAt: user?.emailVerifiedAt ?? null,
+          userCreatedAt: user?.createdAt ?? null,
           subjects: [...new Map(classSubjects.map((cs) => [cs.subject.id, cs.subject])).values()],
           classes: [...new Map(classSubjects.map((cs) => [cs.class.id, cs.class])).values()],
           weeklyHours: classSubjects.reduce((sum, cs) => sum + (cs.weeklyHours ?? 0), 0),
@@ -115,13 +122,9 @@ export async function PATCH(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'enseignants', 'edit', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const existing = await assertOwnedTeacher(id, mySchool.schoolId);
@@ -158,13 +161,14 @@ export async function DELETE(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'enseignants',
+      'delete',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const existing = await assertOwnedTeacher(id, mySchool.schoolId);
@@ -190,7 +194,24 @@ export async function DELETE(
       );
     }
 
-    await prisma.teacher.delete({ where: { id } });
+    // A Teacher.userId link also carries an OrganizationMember(MEMBER) row
+    // from the original invite (see /invite/route.ts). Teacher.userId is
+    // one of the signals isPortalLocked() (lib/server/school.ts) checks to
+    // decide whether resolveMySchool() should deny this account — unless
+    // the member already holds a staff role with a non-empty grant union
+    // (a "double profile", unlocked regardless) — so deleting the Teacher
+    // row alone (FK is ON DELETE SET NULL, so the User survives) would
+    // leave that membership behind and silently upgrade the ex-teacher's
+    // still-working account to full admin-shell access on their next
+    // login. Remove the membership in the same operation.
+    await prisma.$transaction(async (tx) => {
+      if (existing.userId) {
+        await tx.organizationMember.deleteMany({
+          where: { userId: existing.userId, organizationId: mySchool.organizationId },
+        });
+      }
+      await tx.teacher.delete({ where: { id } });
+    });
     return new NextResponse(null, { status: 204, headers: { 'x-request-id': ctx.requestId } });
   });
 }

@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import {
   SUBJECT_PROFILE_SELECT,
   SubjectProfileBody,
@@ -38,13 +38,14 @@ export async function GET(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'view',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const subject = await getSubjectDetail(mySchool.schoolId, id);
@@ -70,13 +71,14 @@ export async function PATCH(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'edit',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const existing = await assertOwnedSubject(id, mySchool.schoolId);
@@ -156,13 +158,14 @@ export async function DELETE(
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool || !hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'NOT_FOUND', message: 'Not found' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'delete',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const { id } = await params;
     const existing = await assertOwnedSubject(id, mySchool.schoolId);

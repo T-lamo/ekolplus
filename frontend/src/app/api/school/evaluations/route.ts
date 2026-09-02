@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -21,13 +21,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'notes', 'view', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const classSubjectId = req.nextUrl.searchParams.get('classSubjectId');
     const termId = req.nextUrl.searchParams.get('termId');
@@ -69,7 +65,9 @@ const CreateEvaluationBody = z.object({
   countsTowardAverage: z.boolean().optional(),
   notes: z.string().trim().max(500).nullable().optional(),
   order: z.number().int().min(0).optional(),
-  date: z.coerce.date().optional(),
+  // nullable: the creation modal sends date: null when the field is left
+  // empty; bare z.coerce.date() would coerce null to epoch (1970-01-01).
+  date: z.coerce.date().nullable().optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -81,19 +79,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(auth.user.sub, 'notes', 'create', ctx.requestId);
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const parsed = CreateEvaluationBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {

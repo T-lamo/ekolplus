@@ -36,8 +36,8 @@ function sum(over: Partial<BillingSummary> = {}): BillingSummary {
     billedSeats: null,
     studentHardLimit: 50,
     studentSoftLimit: null,
-    rates: { monthlyCents: 60, annualCents: 648, trialDays: 30, annualAvailable: true },
-    estimate: { monthlyCents: 2520, annualCents: 27216 },
+    rates: { monthlyCents: 40, annualCents: 432, trialDays: 30, annualAvailable: true },
+    estimate: { monthlyCents: 1680, annualCents: 18144 },
     stripeConfigured: true,
     transactions: [],
     ...over,
@@ -91,7 +91,7 @@ describe('planTransition — same plan selected', () => {
       bcp47,
     );
     expect(tr.hint).toMatch(/essai jusqu’au 17 septembre 2026/);
-    expect(tr.hint).toMatch(/≈ 25,20 \$ \/ mois pour 42 élèves/);
+    expect(tr.hint).toMatch(/≈ 16,80 \$ \/ mois pour 42 élèves/);
   });
   it('Pro on Pro with a scheduled downgrade: resume (gold)', () => {
     const tr = planTransition(
@@ -156,7 +156,7 @@ describe('planTransition — Starter → Pro', () => {
       disabledReason: null,
     });
     expect(tr.hint).toMatch(/Essai gratuit 30 jours/);
-    expect(tr.hint).toMatch(/≈ 25,20 \$ \/ mois pour 42 élèves/);
+    expect(tr.hint).toMatch(/≈ 16,80 \$ \/ mois pour 42 élèves/);
   });
   it('annual toggle: the estimate switches to « / an »', () => {
     const tr = planTransition(
@@ -170,14 +170,14 @@ describe('planTransition — Starter → Pro', () => {
       tPlan,
       bcp47,
     );
-    expect(tr.hint).toMatch(/≈ 272,16 \$ \/ an pour 42 élèves/);
+    expect(tr.hint).toMatch(/≈ 181,44 \$ \/ an pour 42 élèves/);
   });
   it('annual toggle without an annual Price: stays monthly', () => {
     const tr = planTransition(
       {
         selected: 'PRO',
         billing: sum({
-          rates: { monthlyCents: 60, annualCents: 648, trialDays: 30, annualAvailable: false },
+          rates: { monthlyCents: 40, annualCents: 432, trialDays: 30, annualAvailable: false },
         }),
         canManage: true,
         interval: 'YEAR',
@@ -195,7 +195,7 @@ describe('planTransition — Starter → Pro', () => {
       tPlan,
       bcp47,
     );
-    expect(tr.hint).toMatch(/≈ 0,60 \$ \/ mois pour 1 élève/);
+    expect(tr.hint).toMatch(/≈ 0,40 \$ \/ mois pour 1 élève/);
   });
   it('after a canceled Pro: reactivate, no trial', () => {
     const tr = planTransition(

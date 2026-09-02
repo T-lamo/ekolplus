@@ -17,9 +17,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { ListCard } from '@/components/school/ListCard';
 import { Button } from '@/components/ui/Button';
@@ -108,6 +110,9 @@ export default function TeachersPage() {
   useEffect(() => {
     setPage(1);
   }, [search, subjectFilter, status]);
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('enseignants')) return <AccessDenied />;
 
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -255,14 +260,18 @@ export default function TeachersPage() {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
-          <Button className="w-fit" onClick={() => setEditing('new')}>
-            <UserPlus size={14} />
-            {t('addTeacher')}
-          </Button>
+          {can('enseignants', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
+          {can('enseignants', 'create') && (
+            <Button className="w-fit" onClick={() => setEditing('new')}>
+              <UserPlus size={14} />
+              {t('addTeacher')}
+            </Button>
+          )}
         </div>
       </div>
 

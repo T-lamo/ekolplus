@@ -14,7 +14,8 @@ import type { Prisma } from '@prisma/client';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole, resolveActiveAcademicYear } from '@/lib/server/school';
+import { resolveActiveAcademicYear } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const INCLUDE = {
@@ -29,13 +30,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'view',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const classId = req.nextUrl.searchParams.get('classId');
     if (classId) {
@@ -94,19 +96,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'create',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const parsed = UpsertBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {

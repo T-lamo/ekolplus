@@ -1,0 +1,33 @@
+{
+  "list": {
+    "title": "Mes élèves",
+    "count": "{count, plural, =0 {Aucun élève} one {# élève} other {# élèves}}",
+    "allSubjects": "Toutes les matières",
+    "emptyNone": "Aucun élève dans vos classes pour le moment."
+  },
+  "profile": {
+    "back": "Retour à mes élèves",
+    "notFound": "Cet élève n'est pas ou plus dans vos classes.",
+    "homeroom": "Titulaire",
+    "notesTitle": "Notes du trimestre",
+    "average": "Moyenne",
+    "noEvaluations": "Aucune évaluation pour ce trimestre.",
+    "table": {
+      "evaluation": "Évaluation",
+      "type": "Type",
+      "date": "Date",
+      "score": "Note",
+      "coefficient": "Coef.",
+      "status": "Statut"
+    },
+    "notGraded": "Non noté",
+    "absent": "Absent(e)",
+    "appreciationsTitle": "Appréciations",
+    "appreciationsEdit": "Saisir",
+    "general": "Appréciation générale",
+    "noAppreciations": "Aucune appréciation saisie pour ce trimestre.",
+    "comportement": "Comportement",
+    "investissement": "Investissement",
+    "assiduite": "Assiduité"
+  }
+}

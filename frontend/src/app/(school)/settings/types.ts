@@ -41,6 +41,8 @@ export interface MemberData {
   email: string;
   name: string | null;
   role: 'OWNER' | 'ADMIN' | 'MEMBER';
+  staffRoleIds: string[];
+  isTeacher: boolean;
   joinedAt: string;
 }
 

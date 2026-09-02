@@ -67,11 +67,25 @@ export default function LoginPage() {
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       const me = await refresh();
-      // Platform staff (ADMIN/SUPERADMIN) land on the SaaS back-office;
-      // school users land on their dashboard. `/` stays the public
-      // marketing landing — a logged-in user must never land there.
+      // Multi-espaces (spec 2026-09-01 §6) : plateforme (ADMIN/SUPERADMIN)
+      // d'abord ; 1 seul espace → entrée directe (l'onglet est ignoré) ;
+      // ≥ 2 espaces → page « Choisissez votre espace », l'onglet du login
+      // pré-sélectionnant la carte ; 0 espace → /dashboard (écran « pas
+      // d'école » existant). `/` reste la landing publique.
       const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
-      router.push(isPlatformStaff ? '/admin' : '/dashboard');
+      const spaces = me?.spaces;
+      const available = [
+        ...(spaces?.school ? ['/dashboard'] : []),
+        ...(spaces?.teacher ? ['/espace-enseignant'] : []),
+        ...(spaces?.student ? ['/eleve'] : []),
+      ];
+      const pref = role === 'studentParent' ? 'student' : role;
+      const destination = isPlatformStaff
+        ? '/admin'
+        : available.length >= 2
+          ? `/espaces?pref=${pref}`
+          : (available[0] ?? '/dashboard');
+      router.push(destination);
     } catch (err) {
       if (err instanceof ApiError) {
         // Static, literal keys on purpose — next-intl's typed t() (see
@@ -123,7 +137,7 @@ export default function LoginPage() {
         />
 
         <div className="absolute top-4 right-4 z-20 hidden lg:top-6 lg:right-8 lg:block">
-          <LocaleQuickSwitcher className="[&_button]:text-white/70 [&_button[aria-current]]:text-white" />
+          <LocaleQuickSwitcher variant="dark" />
         </div>
 
         <div className="relative z-10 flex w-full max-w-md flex-col items-start">
@@ -166,7 +180,7 @@ export default function LoginPage() {
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="mb-2 flex flex-col items-start gap-2">
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"
@@ -284,7 +298,7 @@ export default function LoginPage() {
 
           <p className="mb-3.5 text-center text-xs leading-relaxed text-muted-foreground">
             {t('noAccount')}{' '}
-            <Link href="/#contact-demo" className="font-semibold text-primary">
+            <Link href="/#contact" className="font-semibold text-primary">
               {t('contactAdmin')}
             </Link>
           </p>

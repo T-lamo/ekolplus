@@ -37,6 +37,7 @@ export function MultiSelect({
   emptyLabel = 'Aucun résultat',
   disabled = false,
   className,
+  ariaLabel,
 }: {
   options: MultiSelectOption[];
   value: string[];
@@ -47,11 +48,13 @@ export function MultiSelect({
   emptyLabel?: string;
   disabled?: boolean;
   className?: string;
+  ariaLabel?: string | undefined;
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.filter((o) => value.includes(o.id));
 
   function toggle(option: MultiSelectOption) {
+    if (disabled) return;
     const isOn = value.includes(option.id);
     if (isOn && option.locked) return;
     onChange(isOn ? value.filter((v) => v !== option.id) : [...value, option.id]);
@@ -64,6 +67,7 @@ export function MultiSelect({
           id={id}
           type="button"
           disabled={disabled}
+          aria-label={ariaLabel}
           className={cn(
             'flex min-h-9 w-full items-center justify-between gap-2 rounded-md border border-border bg-input px-3 py-1.5 text-left text-caption outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-70 data-[state=open]:border-primary',
             className,

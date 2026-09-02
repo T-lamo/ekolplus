@@ -29,6 +29,7 @@ vi.mock('@/lib/server/school', async () => {
     resolveActiveAcademicYear: vi.fn(),
   };
 });
+vi.mock('@/lib/server/school-permissions', () => ({ requireSchoolPermission: vi.fn() }));
 vi.mock('@/lib/server/school-danger-zone', () => ({
   confirmNameMatches: vi.fn(),
   enforceDangerZoneRateLimit: vi.fn(),
@@ -55,6 +56,8 @@ vi.mock('@/lib/server/admin/audit', () => ({
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import { passThroughSchoolPermission } from '@/test-utils/school-permission-mock';
 import { confirmNameMatches, enforceDangerZoneRateLimit } from '@/lib/server/school-danger-zone';
 import {
   executeRollover,
@@ -112,6 +115,9 @@ const validBody = { confirmName: 'École Awa Diop' };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireSchoolPermission).mockImplementation(
+    passThroughSchoolPermission(mockResolveMySchool),
+  );
   mockRequireAuth.mockResolvedValue(authUser);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(ownerSchool);

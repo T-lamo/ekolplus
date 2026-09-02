@@ -1,5 +1,5 @@
 // GET /api/school/grade-levels — the school's ordered grade-level catalog.
-// POST — append a level at the end (order = max+1). ADMIN+ for mutations,
+// POST — append a level at the end (order = max+1). configuration.create grant for mutations,
 // any school member may read. Names are unique per school (409
 // LEVEL_NAME_TAKEN). Spec: docs/superpowers/specs/2026-08-17-grade-level-ordering-design.md
 export const runtime = 'nodejs';
@@ -11,7 +11,7 @@ import { Prisma } from '@prisma/client';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { resolveMySchool, hasMinRole } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export const LEVEL_SELECT = { id: true, name: true, order: true } as const;
@@ -26,13 +26,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'view',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const levels = await prisma.gradeLevel.findMany({
       where: { schoolId: mySchool.schoolId },
@@ -53,19 +54,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
-    const mySchool = await resolveMySchool(auth.user.sub);
-    if (!mySchool) {
-      return NextResponse.json(
-        { error: 'NO_SCHOOL', message: 'No school membership found for this account.' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    if (!hasMinRole(mySchool.role, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-        { status: 403, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const perm = await requireSchoolPermission(
+      auth.user.sub,
+      'configuration',
+      'create',
+      ctx.requestId,
+    );
+    if (!perm.ok) return perm.response;
+    const mySchool = perm.mySchool;
 
     const parsed = LevelNameBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {

@@ -25,7 +25,11 @@ import { useMemo } from 'react';
 import { SidebarPlanCard } from '@/components/school/billing/SidebarPlanCard';
 import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
 import { Sidebar } from './sidebar/Sidebar';
-import { filterSectionsByRole, type NavSection } from './sidebar/types';
+import {
+  filterSectionsByPermissions,
+  filterSectionsByRole,
+  type NavSection,
+} from './sidebar/types';
 
 // Spec: .planning/banani/epic-0-shell.md — school shell sidebar (light).
 // SCHOOL_SECTIONS used to be a static module-level array; translated
@@ -39,9 +43,19 @@ export function useSchoolSections(): NavSection[] {
       {
         label: t('main.label'),
         items: [
-          { label: t('main.dashboard'), href: '/dashboard', icon: LayoutDashboard },
-          { label: t('main.students'), href: '/eleves', icon: Users },
-          { label: t('main.teachers'), href: '/enseignants', icon: UserCheck },
+          {
+            label: t('main.dashboard'),
+            href: '/dashboard',
+            icon: LayoutDashboard,
+            module: 'dashboard',
+          },
+          { label: t('main.students'), href: '/eleves', icon: Users, module: 'eleves' },
+          {
+            label: t('main.teachers'),
+            href: '/enseignants',
+            icon: UserCheck,
+            module: 'enseignants',
+          },
         ],
       },
       {
@@ -51,20 +65,44 @@ export function useSchoolSections(): NavSection[] {
             label: t('pedagogy.timetable'),
             href: '/pedagogie/emploi-du-temps',
             icon: CalendarDays,
+            module: 'emploiDuTemps',
           },
-          { label: t('pedagogy.attendance'), href: '/pedagogie/presences', icon: CalendarCheck },
+          {
+            label: t('pedagogy.attendance'),
+            href: '/pedagogie/presences',
+            icon: CalendarCheck,
+            module: 'presences',
+          },
           {
             label: t('pedagogy.gradebook'),
             href: '/pedagogie/carnet-de-notes',
             icon: NotebookPen,
+            module: 'notes',
           },
-          { label: t('pedagogy.reportCards'), href: '/bulletins', icon: FileText },
-          { label: t('pedagogy.assessments'), href: '/pedagogie/appreciations', icon: Star },
+          {
+            label: t('pedagogy.reportCards'),
+            href: '/bulletins',
+            icon: FileText,
+            module: 'notes',
+          },
+          {
+            label: t('pedagogy.assessments'),
+            href: '/pedagogie/appreciations',
+            icon: Star,
+            module: 'appreciations',
+          },
         ],
       },
       {
         label: t('tuition.label'),
-        items: [{ label: t('tuition.feesAndTuition'), href: '/scolarite', icon: Wallet }],
+        items: [
+          {
+            label: t('tuition.feesAndTuition'),
+            href: '/scolarite',
+            icon: Wallet,
+            module: 'paiements',
+          },
+        ],
       },
       {
         label: t('configuration.label'),
@@ -73,14 +111,31 @@ export function useSchoolSections(): NavSection[] {
             label: t('configuration.gradeLevels'),
             href: '/configuration/niveaux',
             icon: ListOrdered,
+            module: 'configuration',
           },
-          { label: t('configuration.classes'), href: '/configuration/classes', icon: SchoolIcon },
-          { label: t('configuration.rooms'), href: '/configuration/salles', icon: DoorOpen },
-          { label: t('configuration.subjects'), href: '/configuration/matieres', icon: BookOpen },
+          {
+            label: t('configuration.classes'),
+            href: '/configuration/classes',
+            icon: SchoolIcon,
+            module: 'configuration',
+          },
+          {
+            label: t('configuration.rooms'),
+            href: '/configuration/salles',
+            icon: DoorOpen,
+            module: 'configuration',
+          },
+          {
+            label: t('configuration.subjects'),
+            href: '/configuration/matieres',
+            icon: BookOpen,
+            module: 'configuration',
+          },
           {
             label: t('configuration.reportCardTemplate'),
             href: '/configuration/modele-bulletin',
             icon: LayoutTemplate,
+            module: 'configuration',
           },
         ],
       },
@@ -114,9 +169,12 @@ export function SchoolSidebar({
   onToggleCollapse,
 }: SchoolSidebarProps) {
   const t = useTranslations('SchoolSidebar');
-  const { role } = useSchoolPlan();
+  const { role, permissions } = useSchoolPlan();
   const sections = useSchoolSections();
-  const filteredSections = useMemo(() => filterSectionsByRole(sections, role), [sections, role]);
+  const filteredSections = useMemo(
+    () => filterSectionsByPermissions(filterSectionsByRole(sections, role), permissions),
+    [sections, role, permissions],
+  );
   return (
     <Sidebar
       sections={filteredSections}
@@ -136,6 +194,7 @@ export function SchoolSidebar({
       }
       roleLabel={t('roleLabel')}
       profileHref="/settings"
+      currentSpace="school"
       collapsed={collapsed}
       onToggleCollapse={onToggleCollapse}
       onNavigate={onNavigate}

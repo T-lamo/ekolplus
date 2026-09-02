@@ -326,5 +326,16 @@
     "pending": "En attente",
     "summary": "Moyenne {average}/20 · Rang {rank}/{rankedCount}",
     "view": "Voir"
+  },
+  "invite": {
+    "button": "Inviter à se connecter",
+    "buttonDisabledNoEmail": "Ajoutez un email (élève ou tuteur principal) pour pouvoir inviter cet élève",
+    "resendButton": "Renvoyer l'invitation",
+    "pendingSince": "Invitation envoyée",
+    "activeSince": "Compte actif",
+    "sentToast": "Invitation envoyée.",
+    "resentToast": "Invitation renvoyée.",
+    "errorEmailInUse": "Cette adresse email est déjà utilisée par un autre compte.",
+    "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter."
   }
 }

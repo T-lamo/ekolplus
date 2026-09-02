@@ -24,9 +24,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { getCache, useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { HelpTooltip } from '@/components/ui/HelpTooltip';
@@ -278,6 +280,11 @@ export default function GradeNotebookPage() {
       setUnified(u);
       setTermId(u.resolvedTermId ?? '');
       setPage(1);
+      // A prior transient failure (e.g. a class/subject/term switch that
+      // raced ahead of the notebook fetch) leaves `loadError` set; this run
+      // successfully landed, so the stale banner must not keep showing over
+      // fresh, correct data.
+      setLoadError(null);
     }
   }, [rawNotebook, notebookPath, subjectValue]);
 
@@ -301,6 +308,9 @@ export default function GradeNotebookPage() {
   }, [unified, search]);
   const pageCount = Math.max(1, Math.ceil(filteredStudents.length / PAGE_SIZE));
   const pageStudents = filteredStudents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('notes')) return <AccessDenied />;
 
   async function clearStudentGrades(student: UnifiedStudentRow) {
     if (!unified) return;
@@ -468,18 +478,22 @@ export default function GradeNotebookPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="w-fit" onClick={onExport}>
-            <FileSpreadsheet size={14} />
-            {t('export')}
-          </Button>
-          <Button
-            className="w-fit"
-            onClick={() => setShowNew(true)}
-            disabled={combined || !subjectValue}
-          >
-            <Plus size={14} />
-            {t('newEvaluation')}
-          </Button>
+          {can('notes', 'export') && (
+            <Button variant="outline" className="w-fit" onClick={onExport}>
+              <FileSpreadsheet size={14} />
+              {t('export')}
+            </Button>
+          )}
+          {can('notes', 'create') && (
+            <Button
+              className="w-fit"
+              onClick={() => setShowNew(true)}
+              disabled={combined || !subjectValue}
+            >
+              <Plus size={14} />
+              {t('newEvaluation')}
+            </Button>
+          )}
         </div>
       </div>
 

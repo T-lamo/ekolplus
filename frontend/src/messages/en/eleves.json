@@ -326,5 +326,16 @@
     "pending": "Pending",
     "summary": "Average {average}/20 · Rank {rank}/{rankedCount}",
     "view": "View"
+  },
+  "invite": {
+    "button": "Invite to log in",
+    "buttonDisabledNoEmail": "Add an email (student or primary guardian) to invite this student",
+    "resendButton": "Resend invitation",
+    "pendingSince": "Invitation sent",
+    "activeSince": "Account active",
+    "sentToast": "Invitation sent.",
+    "resentToast": "Invitation resent.",
+    "errorEmailInUse": "This email is already used by another account.",
+    "errorNoTarget": "Add an email (student or primary guardian) before inviting."
   }
 }

@@ -5,12 +5,14 @@ import { resolvePrintBaseUrl } from '@/lib/server/bulletin-pdf/print-base-url';
 // (no user data, worth being discoverable), and the legal pages
 // (`/confidentialite`, `/cgu`) — everything else is either the
 // authenticated app (dashboard/configuration/pedagogie/eleves/enseignants/
-// scolarite/settings/bulletins), the back-office (/admin), the JSON API,
-// print-only renders meant for the PDF pipeline, or an auth flow that can
-// carry a one-time token in the URL (reset-password, verify-email) — none
-// of those should ever be crawled or indexed. Static assets (images,
-// /_next/*) are left allowed by omission so Google can still render and
-// index the landing page itself.
+// scolarite/settings/bulletins/espace-enseignant), the back-office
+// (/admin), the JSON API, print-only renders meant for the PDF pipeline,
+// or an auth flow that can carry a one-time token in the URL
+// (reset-password, verify-email, definir-mot-de-passe — the Espace
+// Enseignant invite-acceptance page, carrying a 7-day-valid invite code in
+// its query string) — none of those should ever be crawled or indexed.
+// Static assets (images, /_next/*) are left allowed by omission so Google
+// can still render and index the landing page itself.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
@@ -25,12 +27,14 @@ export default function robots(): MetadataRoute.Robots {
         '/scolarite',
         '/settings',
         '/bulletins',
+        '/espace-enseignant',
         '/admin',
         '/api',
         '/print',
         '/forgot-password',
         '/reset-password',
         '/verify-email',
+        '/definir-mot-de-passe',
         '/auth',
       ],
     },

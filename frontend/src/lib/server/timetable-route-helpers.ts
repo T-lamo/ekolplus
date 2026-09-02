@@ -18,7 +18,7 @@ export const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 export const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 export const SESSION_INCLUDE = {
-  subject: { select: { id: true, name: true, abbreviation: true, color: true } },
+  subject: { select: { id: true, name: true, abbreviation: true, color: true, icon: true } },
   teacher: { select: { id: true, name: true, photoUrl: true } },
   class: { select: { id: true, name: true, color: true } },
 } as const;

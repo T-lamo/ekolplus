@@ -15,8 +15,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ApiError } from '@/lib/api';
 import { getCache, useApi } from '@/lib/useApi';
+import { usePermissions } from '@/lib/usePermissions';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { FilterSelect } from '@/components/ui/FilterSelect';
@@ -99,6 +101,9 @@ export default function BulletinsListPage() {
     if (data && getCache(bulletinsPath) === data && keyRef.current !== bulletinsPath) {
       keyRef.current = bulletinsPath;
       setTermId(data.resolvedTermId ?? '');
+      // A prior transient failure must not keep the banner up over data
+      // that has since loaded successfully.
+      setLoadError(null);
     }
   }, [data, bulletinsPath]);
 
@@ -108,6 +113,9 @@ export default function BulletinsListPage() {
     if (!q) return data.students;
     return data.students.filter((s) => `${s.firstName} ${s.lastName}`.toLowerCase().includes(q));
   }, [data, search]);
+
+  const { can, canSee } = usePermissions();
+  if (!canSee('notes')) return <AccessDenied />;
 
   function exportCsv() {
     if (!data) return;
@@ -165,14 +173,16 @@ export default function BulletinsListPage() {
             Génération et suivi des bulletins — {data.className}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
-        >
-          <FileSpreadsheet size={14} />
-          Exporter tout
-        </button>
+        {can('notes', 'export') && (
+          <button
+            type="button"
+            onClick={exportCsv}
+            className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground"
+          >
+            <FileSpreadsheet size={14} />
+            Exporter tout
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">

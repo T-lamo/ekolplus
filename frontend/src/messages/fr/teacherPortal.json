@@ -1,0 +1,40 @@
+{
+  "roleLabel": "Enseignant",
+  "title": "Espace enseignant",
+  "welcome": "Bienvenue, {name}",
+  "logout": "Se déconnecter",
+  "loadError": "Impossible de charger vos informations pour le moment.",
+  "nav": {
+    "ariaLabel": "Navigation principale",
+    "sectionLabel": "Principal",
+    "home": "Accueil",
+    "classes": "Classes",
+    "students": "Mes élèves",
+    "gradebook": "Carnet de notes",
+    "appreciations": "Appréciations",
+    "pedagogySectionLabel": "Pédagogie",
+    "timetable": "Emploi du temps",
+    "accountSectionLabel": "Compte",
+    "settings": "Paramètres",
+    "more": "Plus",
+    "moreAriaLabel": "Ouvrir le menu"
+  },
+  "topbar": {
+    "defaultPageTitle": "Espace enseignant"
+  },
+  "home": {
+    "today": "Cours d'aujourd'hui",
+    "noCoursesToday": "Aucun cours aujourd'hui.",
+    "thisWeek": "Cette semaine",
+    "noSessions": "Aucun cours prévu cette semaine.",
+    "myClasses": "Mes classes",
+    "viewTimetable": "Voir l'emploi du temps",
+    "quickActions": "Accès rapides",
+    "sessionsCount": "{count, plural, =0 {Aucun cours} one {# cours} other {# cours}}",
+    "stats": {
+      "classes": "Classes",
+      "subjects": "Matières enseignées",
+      "students": "Élèves"
+    }
+  }
+}

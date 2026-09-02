@@ -26,6 +26,7 @@ vi.mock('@/lib/server/school', async () => {
     resolveActiveAcademicYear: vi.fn(),
   };
 });
+vi.mock('@/lib/server/school-permissions', () => ({ requireSchoolPermission: vi.fn() }));
 // `validateMappingOwnership` is left as the REAL implementation (via
 // importActual) so the cross-tenant ownership tests below exercise the
 // actual logic against `prismaMock.class.count` / `prismaMock.teacher.count`
@@ -44,6 +45,8 @@ vi.mock('@/lib/server/academic-year-rollover', async () => {
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool, resolveActiveAcademicYear } from '@/lib/server/school';
+import { requireSchoolPermission } from '@/lib/server/school-permissions';
+import { passThroughSchoolPermission } from '@/test-utils/school-permission-mock';
 import { getPromotionData } from '@/lib/server/academic-year-rollover';
 import { GET, POST, PATCH, DELETE } from './route';
 
@@ -85,6 +88,9 @@ const URL = 'http://test/api/school/academic-year-rollover';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireSchoolPermission).mockImplementation(
+    passThroughSchoolPermission(mockResolveMySchool),
+  );
   mockRequireAuth.mockResolvedValue(authUser);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(ownerSchool);

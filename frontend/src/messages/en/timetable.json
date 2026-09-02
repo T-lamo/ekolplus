@@ -16,6 +16,7 @@
   "agenda": {
     "emptyTitle": "No session in this period",
     "emptyHint": "Add a course or change week with the arrows.",
+    "emptyHintReadOnly": "Use the arrows to change week.",
     "todayBadge": "Today"
   },
   "month": {

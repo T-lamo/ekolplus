@@ -5,12 +5,19 @@
 // glance and the latest published grades, all from the single
 // /api/student/me aggregate. Same building blocks as the teacher home
 // (KpiCard, compact Cards, subject visuals) so the two portals read as one
-// product. The « Voir l'emploi du temps » link and the Emploi du temps
-// quick-access card are added by Plan 3 with that screen.
+// product.
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowRight, BarChart2, CalendarCheck, CalendarX2, FileText, Trophy } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart2,
+  CalendarCheck,
+  CalendarDays,
+  CalendarX2,
+  FileText,
+  Trophy,
+} from 'lucide-react';
 import { useApi } from '@/lib/useApi';
 import { LOCALE_BCP47, type LocaleKey } from '@/lib/locales';
 import { getSubjectVisual } from '@/lib/subject-visuals';
@@ -184,7 +191,16 @@ export default function EspaceElevePage() {
           </section>
 
           <section className="flex flex-col gap-2">
-            <h2 className="text-sm font-bold text-foreground">{t('home.thisWeek')}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-foreground">{t('home.thisWeek')}</h2>
+              <Link
+                href="/eleve/emploi-du-temps"
+                className="flex items-center gap-1 text-xs font-medium text-primary"
+              >
+                {t('home.viewTimetable')}
+                <ArrowRight size={12} />
+              </Link>
+            </div>
             {data.thisWeekSessions.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t('home.noSessions')}</p>
             ) : (
@@ -253,9 +269,14 @@ export default function EspaceElevePage() {
 
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-bold text-foreground">{t('home.quickActions')}</h2>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               <QuickLink href="/eleve/notes" icon={BarChart2} label={t('home.myGrades')} />
               <QuickLink href="/eleve/bulletins" icon={FileText} label={t('home.myBulletins')} />
+              <QuickLink
+                href="/eleve/emploi-du-temps"
+                icon={CalendarDays}
+                label={t('home.viewTimetable')}
+              />
             </div>
           </section>
         </>

@@ -3,6 +3,7 @@
 import {
   BarChart2,
   CalendarCheck,
+  CalendarDays,
   FileText,
   LayoutDashboard,
   Settings,
@@ -19,8 +20,8 @@ import type { NavSection } from '../sidebar/types';
 // (SchoolSidebar, AdminSidebar and TeacherSidebar are the other three).
 // Same `light` variant as the school and teacher shells so every surface
 // reads as one product. Sections: Principal (Accueil, Mon profil) /
-// Scolarité (added by Plan 2: Mes notes, Mes présences, Bulletins,
-// Appréciations; Plan 3: Emploi du temps) / Compte (Paramètres). No role
+// Scolarité (Mes notes, Mes présences, Emploi du temps, Bulletins,
+// Appréciations) / Compte (Paramètres). No role
 // filtering: every student sees the same entries. Exposed as a hook for
 // the same reason useTeacherSections is one — StudentTopbar needs the same
 // translated sections for breadcrumbs and the command palette.
@@ -40,6 +41,7 @@ export function useStudentSections(): NavSection[] {
         items: [
           { label: t('grades'), href: '/eleve/notes', icon: BarChart2 },
           { label: t('attendance'), href: '/eleve/presences', icon: CalendarCheck },
+          { label: t('timetable'), href: '/eleve/emploi-du-temps', icon: CalendarDays },
           { label: t('bulletins'), href: '/eleve/bulletins', icon: FileText },
           { label: t('appreciations'), href: '/eleve/appreciations', icon: Star },
         ],

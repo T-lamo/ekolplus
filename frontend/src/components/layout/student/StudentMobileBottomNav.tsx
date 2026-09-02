@@ -1,17 +1,15 @@
 'use client';
 
 // Student twin of teacher/TeacherMobileBottomNav — same phone-native bottom
-// bar. Plan 1 ships Accueil + Mon profil + « Plus » (opens the sidebar
-// drawer, where profile + logout live via SidebarUserProfile); Plan 2 adds
-// Mes notes and Mes présences; Plan 3 adds Emploi du temps and drops Mon
-// profil so the bar keeps 5 slots (the profile stays reachable from the
-// drawer).
+// bar: Accueil, Mes notes, Mes présences, Emploi du temps and « Plus »
+// (opens the sidebar drawer, where Mon profil, Bulletins, Appréciations,
+// Paramètres and logout live). Five slots, like the teacher bar.
 import {
   BarChart2,
   CalendarCheck,
+  CalendarDays,
   LayoutDashboard,
   Menu,
-  UserRound,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -29,7 +27,7 @@ const LINK_DEFS: BottomNavLink[] = [
   { key: 'home', href: '/eleve', icon: LayoutDashboard },
   { key: 'grades', href: '/eleve/notes', icon: BarChart2 },
   { key: 'attendance', href: '/eleve/presences', icon: CalendarCheck },
-  { key: 'profile', href: '/eleve/profil', icon: UserRound },
+  { key: 'timetable', href: '/eleve/emploi-du-temps', icon: CalendarDays },
 ];
 
 // Icon-only: a label under each narrow tab made the row read unevenly on

@@ -64,7 +64,7 @@ function SettingsForm() {
     router.replace(next === 'profil' ? '/settings' : `/settings?tab=${next}`, { scroll: false });
   }
   const [error, setError] = useState<string | null>(null);
-  const { data, loading, mutate } = useApi<SchoolResponse>('/api/school', {
+  const { data, loading, mutate, refresh } = useApi<SchoolResponse>('/api/school', {
     skip: !user,
     onError: (err) => {
       if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -163,7 +163,12 @@ function SettingsForm() {
             />
           )}
           {tab === 'admins' && data && (
-            <AdministrateursTab members={data.members} myRole={myRole} />
+            <AdministrateursTab
+              members={data.members}
+              myRole={myRole}
+              myUserId={user.id}
+              onChanged={() => void refresh()}
+            />
           )}
           {tab === 'notifications' && <NotificationsTab />}
         </>

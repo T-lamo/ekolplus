@@ -74,6 +74,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             id: true,
             email: true,
             name: true,
+            avatarUrl: true,
+            // « Invitation en attente » (onglet Administrateurs) : un compte
+            // invité n'a ni mot de passe ni email vérifié tant qu'il n'a pas
+            // accepté ; un compte OAuth n'a pas de mot de passe mais un
+            // email vérifié, il reste ACTIVE.
+            passwordHash: true,
+            emailVerifiedAt: true,
             // Badge « Enseignant » de l'onglet Administrateurs : signale à
             // l'admin qu'assigner un rôle ici crée un double profil.
             teacherProfile: { select: { schoolId: true } },
@@ -108,6 +115,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           userId: m.user.id,
           email: m.user.email,
           name: m.user.name,
+          avatarUrl: m.user.avatarUrl,
+          status:
+            m.user.passwordHash === null && m.user.emailVerifiedAt === null ? 'INVITED' : 'ACTIVE',
           role: m.role,
           staffRoleIds: m.staffRoles.map((r) => r.id),
           isTeacher: m.user.teacherProfile?.schoolId === mySchool.schoolId,

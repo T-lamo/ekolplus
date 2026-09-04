@@ -121,7 +121,10 @@ function portalInviteUrl(email: string, code: string, acceptPath: string): strin
   // here with the field missing and would otherwise render
   // `${base}undefined?...`. Every such legacy row is a teacher invite, so the
   // teacher accept page is the correct recovery target.
-  return `${base}${acceptPath || '/definir-mot-de-passe'}?${qs}`;
+  const path = acceptPath || '/definir-mot-de-passe';
+  // `/definir-mot-de-passe?portal=staff` (staff invitations) already carries
+  // a query string: append with `&` instead of a second `?`.
+  return `${base}${path}${path.includes('?') ? '&' : '?'}${qs}`;
 }
 
 export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {

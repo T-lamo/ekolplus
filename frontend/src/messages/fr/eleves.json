@@ -205,7 +205,8 @@
       "grades": "Notes & Résultats",
       "attendance": "Présences",
       "appreciations": "Appréciations",
-      "bulletins": "Bulletins"
+      "bulletins": "Bulletins",
+      "documents": "Documents"
     },
     "stats": {
       "overallAverage": "Moyenne générale",
@@ -350,5 +351,22 @@
     "resentToast": "Invitation renvoyée.",
     "errorEmailInUse": "Cette adresse email est déjà utilisée par un autre compte.",
     "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter."
+  },
+  "documents": {
+    "types": {
+      "BIRTH_CERTIFICATE": "Acte de naissance",
+      "VACCINATION_RECORD": "Carnet de vaccination",
+      "PREVIOUS_SCHOOL_RECORD": "Dossier de l'ancienne école"
+    },
+    "provided": "Fourni",
+    "missing": "Manquant",
+    "upload": "Téléverser",
+    "replace": "Remplacer",
+    "uploading": "Envoi en cours",
+    "download": "Télécharger",
+    "unsupportedFormat": "Format non supporté. PDF, JPG ou PNG uniquement.",
+    "tooLarge": "Fichier trop volumineux, {maxSizeMb} Mo maximum.",
+    "uploadError": "L'envoi a échoué. Réessayez.",
+    "loadError": "Impossible de charger les documents."
   }
 }

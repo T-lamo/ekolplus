@@ -128,7 +128,10 @@ export async function clearCsrfCookie(): Promise<void> {
 
 export interface TokenPayload {
   sub: string;
-  email: string;
+  // Null for a username-only account (module Personnel, no-email schools —
+  // spec 2026-09-04-personnel-module-design.md). Every reader of a decoded
+  // token or of Context.user.email must tolerate null.
+  email: string | null;
   /** Bumped on password change so old tokens are rejected. */
   tokenVersion?: number;
 }

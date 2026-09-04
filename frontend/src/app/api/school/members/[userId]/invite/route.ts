@@ -56,6 +56,18 @@ export async function POST(
       );
     }
 
+    // A pending member (reached this line: no passwordHash, no
+    // emailVerifiedAt) is always email-based — a username account gets its
+    // password immediately at creation, never goes through this pending
+    // state. Defensive guard rather than a cast: a null email here would
+    // mean the invariant broke somewhere upstream.
+    if (!target.user.email) {
+      return NextResponse.json(
+        { error: 'NOT_FOUND', message: 'This account has no email invite to resend.' },
+        { status: 404, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     await prisma.verificationCode.updateMany({
       where: { userId: target.user.id, type: 'STAFF_INVITE', usedAt: null },
       data: { usedAt: new Date() },

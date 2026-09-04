@@ -10,7 +10,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { resolveMyStudentProfile, type MyStudentProfile } from '@/lib/server/school';
 
 export interface StudentContext {
-  user: { sub: string; email: string };
+  user: { sub: string; email: string | null };
   student: MyStudentProfile;
 }
 

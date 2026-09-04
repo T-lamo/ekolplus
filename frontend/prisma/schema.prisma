@@ -10,10 +10,20 @@ datasource db {
 
 model User {
   id                String    @id @default(cuid())
-  email             String    @unique
+  // Nullable: a username-only staff/teacher/student account (Personnel
+  // module, no-email schools) never sets one. App-level invariant: email
+  // and username are never both null (enforced in the routes that create
+  // or edit either — see lib/username.ts and lib/server/personnel/).
+  email             String?   @unique
+  // Nullable: a username-only account logs in with this instead of email.
+  // Normalized lowercase (lib/username.ts), never contains "@" so a login
+  // identifier can be routed to the right lookup by that character alone.
+  username          String?   @unique
   // Nullable: OAuth-only users (e.g. signed up with Google) never set a
   // password. Email/password signup still requires it; the auth route
-  // enforces presence at runtime.
+  // enforces presence at runtime. A username-only account gets one
+  // immediately at creation (system-generated, shown once — never null
+  // for that kind of account).
   passwordHash      String?
   // Set on every successful change-password/set-password — "Dernière
   // modification" on the Profil tab's password card. Not touched by any

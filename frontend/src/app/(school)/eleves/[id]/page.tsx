@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Pencil,
   FileText,
+  FolderOpen,
   Hash,
   School as SchoolIcon,
   Calendar,
@@ -31,6 +32,7 @@ import { NotesResultatsTab } from './NotesResultatsTab';
 import { AppreciationsTab } from './AppreciationsTab';
 import { PresencesTab } from './PresencesTab';
 import { BulletinsTab } from './BulletinsTab';
+import { DocumentsTab } from './DocumentsTab';
 import { StudentFormModal } from '../StudentFormModal';
 import { studentStatusLabel } from '../status-label';
 import { formatOrdinal } from '../ordinal';
@@ -70,7 +72,14 @@ function ageFrom(dateOfBirth: string): number {
   return age;
 }
 
-const TAB_KEYS = ['info', 'grades', 'attendance', 'appreciations', 'bulletins'] as const;
+const TAB_KEYS = [
+  'info',
+  'grades',
+  'attendance',
+  'appreciations',
+  'bulletins',
+  'documents',
+] as const;
 
 export default function StudentProfilePage() {
   return (
@@ -141,6 +150,7 @@ function StudentProfile() {
     { key: 'attendance' as const, label: t('tabs.attendance'), icon: CalendarCheck },
     { key: 'appreciations' as const, label: t('tabs.appreciations'), icon: Star },
     { key: 'bulletins' as const, label: t('tabs.bulletins'), icon: FileText },
+    { key: 'documents' as const, label: t('tabs.documents'), icon: FolderOpen },
   ];
 
   if (!user || (student === null && !error)) {
@@ -482,6 +492,7 @@ function StudentProfile() {
       {tab === 'attendance' && <PresencesTab studentId={student.id} />}
       {tab === 'appreciations' && <AppreciationsTab studentId={student.id} />}
       {tab === 'bulletins' && <BulletinsTab studentId={student.id} />}
+      {tab === 'documents' && <DocumentsTab studentId={student.id} />}
 
       {editing && (
         <StudentFormModal

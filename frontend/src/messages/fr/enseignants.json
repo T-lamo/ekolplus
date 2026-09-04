@@ -98,8 +98,14 @@
       "genderSelect": "Sélectionner",
       "nationality": "Nationalité",
       "nationalityPlaceholder": "ex: Haïtienne",
-      "idNumber": "Numéro d'identification",
-      "idNumberPlaceholder": "ex: NIF-2024-0042"
+      "birthPlace": "Lieu de naissance",
+      "birthPlacePlaceholder": "ex: Port-au-Prince",
+      "diploma": "Diplôme",
+      "diplomaPlaceholder": "ex: Licence en Sciences de l'Éducation",
+      "nif": "NIF",
+      "nifPlaceholder": "Numéro d'identification fiscale",
+      "niu": "NIU",
+      "niuPlaceholder": "Numéro d'identifiant unique"
     },
     "contact": {
       "title": "Coordonnées",
@@ -157,7 +163,10 @@
       "dateOfBirth": "Date de naissance",
       "gender": "Genre",
       "nationality": "Nationalité",
-      "idNumber": "N° d'identification",
+      "birthPlace": "Lieu de naissance",
+      "diploma": "Diplôme",
+      "nif": "NIF",
+      "niu": "NIU",
       "address": "Adresse",
       "status": "Statut",
       "email": "Adresse e-mail",

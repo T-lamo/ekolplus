@@ -375,10 +375,10 @@ export default function PersonnelFichePage() {
               <div className="text-xl font-bold text-foreground">{displayName}</div>
               {teacher && (
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  {teacher.idNumber && (
+                  {teacher.nif && (
                     <span className="flex items-center gap-1">
                       <Hash size={12} />
-                      {teacher.idNumber}
+                      {teacher.nif}
                     </span>
                   )}
                   {teacher.email && (

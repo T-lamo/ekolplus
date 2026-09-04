@@ -81,6 +81,7 @@ export async function GET(
           enrollmentType: student.enrollmentType,
           previousSchool: student.previousSchool,
           transferNumber: student.transferNumber,
+          nisu: student.nisu,
           notes: student.notes,
           scholarship: student.scholarship,
           enrolledAt: student.enrolledAt,
@@ -102,6 +103,9 @@ const GuardianInput = z.object({
   email: zEmail.nullable().optional(),
   profession: z.string().trim().max(80).nullable().optional(),
   isPrimary: z.boolean().optional(),
+  nif: z.string().trim().max(40).nullable().optional(),
+  niu: z.string().trim().max(40).nullable().optional(),
+  vitalStatus: z.enum(['VIVANT', 'DECEDE']).nullable().optional(),
 });
 
 const UpdateStudentBody = z.object({
@@ -124,6 +128,7 @@ const UpdateStudentBody = z.object({
   enrolledAt: z.coerce.date().optional(),
   previousSchool: z.string().trim().max(120).nullable().optional(),
   transferNumber: z.string().trim().max(60).nullable().optional(),
+  nisu: z.string().trim().max(40).nullable().optional(),
   notes: z.string().trim().max(1000).nullable().optional(),
   scholarship: z.boolean().optional(),
 });
@@ -205,6 +210,9 @@ export async function PATCH(
                 email: g.email ?? null,
                 profession: g.profession ?? null,
                 isPrimary: g.isPrimary ?? false,
+                nif: g.nif ?? null,
+                niu: g.niu ?? null,
+                vitalStatus: g.vitalStatus ?? null,
               })),
             });
           }

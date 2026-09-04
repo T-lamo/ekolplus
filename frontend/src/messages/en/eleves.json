@@ -141,6 +141,8 @@
       "previousSchoolPlaceholder": "Name of the previous school...",
       "transferNumber": "Transfer number",
       "transferNumberPlaceholder": "Optional",
+      "nisu": "NISU",
+      "nisuPlaceholder": "Unique school identification number",
       "notes": "Notes / Internal remarks"
     },
     "statusSection": {
@@ -158,7 +160,16 @@
       "relationship": "Relationship",
       "phone": "Phone",
       "email": "Email",
-      "profession": "Occupation"
+      "profession": "Occupation",
+      "nif": "NIF",
+      "nifPlaceholder": "Tax identification number",
+      "niu": "NIU",
+      "niuPlaceholder": "Unique identification number",
+      "vitalStatus": "Status",
+      "vitalStatusOptions": {
+        "VIVANT": "Living",
+        "DECEDE": "Deceased"
+      }
     },
     "options": {
       "title": "Options & Access",
@@ -194,7 +205,8 @@
       "grades": "Grades & Results",
       "attendance": "Attendance",
       "appreciations": "Appreciations",
-      "bulletins": "Report cards"
+      "bulletins": "Report cards",
+      "documents": "Documents"
     },
     "stats": {
       "overallAverage": "Overall average",
@@ -339,5 +351,22 @@
     "resentToast": "Invitation resent.",
     "errorEmailInUse": "This email is already used by another account.",
     "errorNoTarget": "Add an email (student or primary guardian) before inviting."
+  },
+  "documents": {
+    "types": {
+      "BIRTH_CERTIFICATE": "Birth certificate",
+      "VACCINATION_RECORD": "Vaccination record",
+      "PREVIOUS_SCHOOL_RECORD": "Previous school record"
+    },
+    "provided": "Provided",
+    "missing": "Missing",
+    "upload": "Upload",
+    "replace": "Replace",
+    "uploading": "Uploading",
+    "download": "Download",
+    "unsupportedFormat": "Unsupported format. PDF, JPG or PNG only.",
+    "tooLarge": "File too large, {maxSizeMb} MB maximum.",
+    "uploadError": "Upload failed. Try again.",
+    "loadError": "Could not load the documents."
   }
 }

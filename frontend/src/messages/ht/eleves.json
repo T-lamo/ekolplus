@@ -142,6 +142,8 @@
       "previousSchoolPlaceholder": "Non ansyen lekòl la...",
       "transferNumber": "Nimewo transfè",
       "transferNumberPlaceholder": "Opsyonèl",
+      "nisu": "NISU",
+      "nisuPlaceholder": "Nimewo idantifikasyon eskolè inik",
       "notes": "Obsèvasyon / Nòt entèn"
     },
     "statusSection": {
@@ -159,7 +161,16 @@
       "relationship": "Lyen fanmi",
       "phone": "Telefòn",
       "email": "Imèl",
-      "profession": "Pwofesyon"
+      "profession": "Pwofesyon",
+      "nif": "NIF",
+      "nifPlaceholder": "Nimewo idantifikasyon fiskal",
+      "niu": "NIU",
+      "niuPlaceholder": "Nimewo idantifikasyon inik",
+      "vitalStatus": "Estati",
+      "vitalStatusOptions": {
+        "VIVANT": "Vivan(t)",
+        "DECEDE": "Dekede"
+      }
     },
     "options": {
       "title": "Opsyon & Aksè",
@@ -195,7 +206,8 @@
       "grades": "Nòt & Rezilta",
       "attendance": "Prezans",
       "appreciations": "Apresyasyon",
-      "bulletins": "Bilten"
+      "bulletins": "Bilten",
+      "documents": "Dokiman"
     },
     "stats": {
       "overallAverage": "Mwayèn jeneral",
@@ -340,5 +352,22 @@
     "resentToast": "Envitasyon voye ankò.",
     "errorEmailInUse": "Imèl sa a deja itilize pa yon lòt kont.",
     "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite."
+  },
+  "documents": {
+    "types": {
+      "BIRTH_CERTIFICATE": "Batistè",
+      "VACCINATION_RECORD": "Kanè vaksinasyon",
+      "PREVIOUS_SCHOOL_RECORD": "Dosye ansyen lekòl la"
+    },
+    "provided": "Bay",
+    "missing": "Manke",
+    "upload": "Voye",
+    "replace": "Ranplase",
+    "uploading": "N ap voye",
+    "download": "Telechaje",
+    "unsupportedFormat": "Fòma pa sipòte. Sèlman PDF, JPG oswa PNG.",
+    "tooLarge": "Fichye twò gwo, {maxSizeMb} Mo maksimòm.",
+    "uploadError": "Voye a echwe. Eseye ankò.",
+    "loadError": "Pa ka chaje dokiman yo."
   }
 }

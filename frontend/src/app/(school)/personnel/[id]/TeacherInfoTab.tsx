@@ -74,7 +74,10 @@ export function TeacherInfoTab({
         />
         <InfoRow label={t('fields.gender')} value={teacher.gender ?? '—'} />
         <InfoRow label={t('fields.nationality')} value={teacher.nationality ?? '—'} />
-        <InfoRow label={t('fields.idNumber')} value={teacher.idNumber ?? '—'} />
+        <InfoRow label={t('fields.birthPlace')} value={teacher.birthPlace ?? '—'} />
+        <InfoRow label={t('fields.diploma')} value={teacher.diploma ?? '—'} />
+        <InfoRow label={t('fields.nif')} value={teacher.nif ?? '—'} />
+        <InfoRow label={t('fields.niu')} value={teacher.niu ?? '—'} />
         <InfoRow label={t('fields.address')} value={teacher.address ?? '—'} />
         <InfoRow
           label={t('fields.status')}

@@ -46,7 +46,10 @@ interface FormState {
   dateOfBirth: string;
   gender: string;
   nationality: string;
-  idNumber: string;
+  birthPlace: string;
+  diploma: string;
+  nif: string;
+  niu: string;
   email: string;
   phone: string;
   secondaryPhone: string;
@@ -65,7 +68,10 @@ const EMPTY_FORM: FormState = {
   dateOfBirth: '',
   gender: '',
   nationality: '',
-  idNumber: '',
+  birthPlace: '',
+  diploma: '',
+  nif: '',
+  niu: '',
   email: '',
   phone: '',
   secondaryPhone: '',
@@ -87,7 +93,10 @@ function toForm(t: TeacherDetail): FormState {
     dateOfBirth: t.dateOfBirth?.slice(0, 10) ?? '',
     gender: t.gender ?? '',
     nationality: t.nationality ?? '',
-    idNumber: t.idNumber ?? '',
+    birthPlace: t.birthPlace ?? '',
+    diploma: t.diploma ?? '',
+    nif: t.nif ?? '',
+    niu: t.niu ?? '',
     email: t.email ?? '',
     phone: t.phone ?? '',
     secondaryPhone: t.secondaryPhone ?? '',
@@ -260,7 +269,10 @@ export function TeacherFormModal({
         dateOfBirth: form.dateOfBirth || null,
         gender: form.gender || null,
         nationality: form.nationality.trim() || null,
-        idNumber: form.idNumber.trim() || null,
+        birthPlace: form.birthPlace.trim() || null,
+        diploma: form.diploma.trim() || null,
+        nif: form.nif.trim() || null,
+        niu: form.niu.trim() || null,
         email: form.email.trim() || null,
         phone: form.phone.trim() || null,
         secondaryPhone: form.secondaryPhone.trim() || null,
@@ -399,10 +411,30 @@ export function TeacherFormModal({
                     onChange={(e) => patch({ nationality: e.target.value })}
                   />
                   <Field
-                    label={t('identity.idNumber')}
-                    placeholder={t('identity.idNumberPlaceholder')}
-                    value={form.idNumber}
-                    onChange={(e) => patch({ idNumber: e.target.value })}
+                    label={t('identity.birthPlace')}
+                    placeholder={t('identity.birthPlacePlaceholder')}
+                    value={form.birthPlace}
+                    onChange={(e) => patch({ birthPlace: e.target.value })}
+                  />
+                </div>
+                <Field
+                  label={t('identity.diploma')}
+                  placeholder={t('identity.diplomaPlaceholder')}
+                  value={form.diploma}
+                  onChange={(e) => patch({ diploma: e.target.value })}
+                />
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                  <Field
+                    label={t('identity.nif')}
+                    placeholder={t('identity.nifPlaceholder')}
+                    value={form.nif}
+                    onChange={(e) => patch({ nif: e.target.value })}
+                  />
+                  <Field
+                    label={t('identity.niu')}
+                    placeholder={t('identity.niuPlaceholder')}
+                    value={form.niu}
+                    onChange={(e) => patch({ niu: e.target.value })}
                   />
                 </div>
               </div>

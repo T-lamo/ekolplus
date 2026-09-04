@@ -12,6 +12,8 @@ export interface StudentListItem {
   guardianCount: number;
 }
 
+export type GuardianVitalStatus = 'VIVANT' | 'DECEDE';
+
 export interface GuardianData {
   id?: string;
   name: string;
@@ -20,6 +22,9 @@ export interface GuardianData {
   email: string | null;
   profession: string | null;
   isPrimary: boolean;
+  nif: string | null;
+  niu: string | null;
+  vitalStatus: GuardianVitalStatus | null;
 }
 
 export interface StudentDetail {
@@ -40,6 +45,7 @@ export interface StudentDetail {
   enrollmentType: string | null;
   previousSchool: string | null;
   transferNumber: string | null;
+  nisu: string | null;
   notes: string | null;
   scholarship: boolean;
   enrolledAt: string;

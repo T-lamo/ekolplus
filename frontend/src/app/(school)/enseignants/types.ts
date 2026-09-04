@@ -32,7 +32,10 @@ export interface TeacherDetail extends TeacherListItem {
   dateOfBirth: string | null;
   gender: string | null;
   nationality: string | null;
-  idNumber: string | null;
+  birthPlace: string | null;
+  diploma: string | null;
+  nif: string | null;
+  niu: string | null;
   secondaryPhone: string | null;
   address: string | null;
   contractType: string | null;

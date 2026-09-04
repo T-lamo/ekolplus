@@ -99,8 +99,14 @@
       "genderSelect": "Chwazi",
       "nationality": "Nasyonalite",
       "nationalityPlaceholder": "egz: Ayisyen",
-      "idNumber": "Nimewo idantifikasyon",
-      "idNumberPlaceholder": "egz: NIF-2024-0042"
+      "birthPlace": "Kote li fèt",
+      "birthPlacePlaceholder": "egz: Pòtoprens",
+      "diploma": "Diplòm",
+      "diplomaPlaceholder": "egz: Lisans an Syans Edikasyon",
+      "nif": "NIF",
+      "nifPlaceholder": "Nimewo idantifikasyon fiskal",
+      "niu": "NIU",
+      "niuPlaceholder": "Nimewo idantifikasyon inik"
     },
     "contact": {
       "title": "Kontak",
@@ -158,7 +164,10 @@
       "dateOfBirth": "Dat nesans",
       "gender": "Sèks",
       "nationality": "Nasyonalite",
-      "idNumber": "Nimewo idantifikasyon",
+      "birthPlace": "Kote li fèt",
+      "diploma": "Diplòm",
+      "nif": "NIF",
+      "niu": "NIU",
       "address": "Adrès",
       "status": "Estati",
       "email": "Adrès imèl",

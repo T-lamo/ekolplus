@@ -1,7 +1,8 @@
-// Shared by AdministrateursTab.tsx, ProfilTab.tsx, and EtablissementTab.tsx
-// — all three display a member's role and previously imported a shared
-// `ROLE_LABEL` constant from AdministrateursTab.tsx directly. Extracted to
-// its own file so none of the three imports from another tab's module.
+// Shared by ProfilTab.tsx and EtablissementTab.tsx (both display a
+// member's role) and formerly also by the now-retired AdministrateursTab.tsx,
+// which previously held a shared `ROLE_LABEL` constant the other two
+// imported directly. Extracted to its own file so neither imports from
+// another tab's module.
 import type { MemberData } from './types';
 
 export type RoleLabelT = (key: 'OWNER' | 'ADMIN' | 'MEMBER') => string;

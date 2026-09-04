@@ -9,26 +9,10 @@
     "langue": "Lang",
     "etablissement": "Lekòl",
     "annee": "Ane eskolè",
-    "admins": "Administratè yo",
     "notifications": "Notifikasyon"
   },
   "administrateurs": {
-    "title": "Administratè yo",
-    "description": "Kont ki gen aksè nan espas jesyon lekòl la.",
-    "since": "Depi {date}",
-    "inviteButton": "Envite yon manm",
-    "you": "Ou menm",
-    "status": {
-      "invited": "Envitasyon an ap tann"
-    },
-    "inviteCard": {
-      "title": "Envite yon nouvo administratè",
-      "description": "Voye yon envitasyon pa imèl bay yon manm ekip ou pou li rantre nan espas jesyon an.",
-      "cta": "Voye yon envitasyon"
-    },
     "actions": {
-      "resend": "Voye envitasyon an ankò",
-      "resent": "Envitasyon an voye ankò.",
       "promote": "Fè l vin administratè",
       "promoteTitle": "Fè l vin administratè",
       "promoteBody": "{name} ap gen aksè konplè nan espas jesyon an. Wòl li genyen kounye a yo ap retire.",
@@ -36,33 +20,16 @@
       "demote": "Fè l tounen manm",
       "demoteTitle": "Fè l tounen manm",
       "demoteBody": "{name} ap pèdi aksè konplè a. Bay li youn oswa plizyè wòl apre sa.",
-      "demoted": "Administratè a tounen manm.",
-      "remove": "Retire aksè a",
-      "removeTitle": "Retire aksè a",
-      "removeBody": "{name} p ap gen aksè nan espas jesyon lekòl la ankò. Aksyon sa a aplike imedyatman.",
-      "removed": "Aksè a retire.",
-      "cannotRemoveTeacher": "Kont sa a lye ak yon anseyan : jere aksè li nan fich anseyan an."
+      "demoted": "Administratè a tounen manm."
     },
     "modal": {
-      "title": "Envite yon manm",
-      "subtitle": "N ap voye yon imèl ak yon lyen aktivasyon (valab 7 jou).",
-      "emailLabel": "Adrès imèl",
-      "emailPlaceholder": "prenon.non@lekol.ht",
       "roleLabel": "Kalite kont",
       "roleAdmin": "Administratè",
       "roleAdminHint": "Aksè konplè nan tout modil yo.",
       "roleMember": "Manm",
       "roleMemberHint": "Aksè limite ak wòl ou bay anba a.",
       "staffRolesLabel": "Wòl",
-      "staffRolesHint": "San wòl, manm lan p ap wè okenn ekran jiskaske yo ba li youn.",
-      "cancel": "Anile",
-      "submit": "Voye envitasyon an",
-      "submitting": "Ap voye…",
-      "sent": "Envitasyon voye bay {email}.",
-      "errors": {
-        "EMAIL_ALREADY_IN_USE": "Adrès imèl sa a deja itilize pa yon lòt kont.",
-        "ALREADY_MEMBER": "Kont sa a deja fè pati lekòl la."
-      }
+      "staffRolesHint": "San wòl, manm lan p ap wè okenn ekran jiskaske yo ba li youn."
     }
   },
   "anneeScolaire": {

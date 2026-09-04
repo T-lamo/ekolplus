@@ -48,12 +48,16 @@ import { AssignmentChipPicker } from '@/components/personnel/AssignmentChipPicke
 import { TemporaryPasswordPanel } from '@/components/personnel/TemporaryPasswordPanel';
 import { UsernameField, type UsernameFieldStatus } from '@/components/personnel/UsernameField';
 import { normalizeUsername } from '@/lib/username';
-import type { StaffRoleOption } from '../../settings/InviteMemberModal';
 
 const FORM_ID = 'personnel-wizard';
 
 type StaffOrgRole = 'ADMIN' | 'MEMBER';
 type LoginMode = 'none' | 'email' | 'username';
+
+interface StaffRoleOption {
+  id: string;
+  name: string;
+}
 
 interface RolesResponse {
   roles: StaffRoleOption[];

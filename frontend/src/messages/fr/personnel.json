@@ -37,5 +37,61 @@
     "loadError": "Impossible de charger le personnel.",
     "emptyNone": "Aucun membre du personnel pour le moment.",
     "emptyFiltered": "Aucun résultat pour cette recherche."
+  },
+  "fiche": {
+    "backToList": "Retour au personnel",
+    "notFound": "Membre du personnel introuvable.",
+    "noTabAccess": "Vous n'avez pas accès aux détails de ce profil.",
+    "header": {
+      "giveTeachingAccess": "Donner un accès enseignement",
+      "giveManagementAccess": "Donner un accès de gestion",
+      "confirmTeachingTitle": "Donner un accès enseignement",
+      "confirmTeachingBody": "{name} pourra être assigné(e) à des matières et des classes comme un enseignant.",
+      "confirmTeachingButton": "Donner l'accès",
+      "confirmManagementTitle": "Donner un accès de gestion",
+      "confirmManagementBody": "{name} pourra se voir attribuer un rôle dans l'espace de gestion de l'établissement.",
+      "confirmManagementButton": "Donner l'accès",
+      "teachingGranted": "Accès enseignement ajouté.",
+      "managementGranted": "Accès de gestion ajouté."
+    },
+    "tabs": {
+      "access": "Accès & rôles",
+      "compte": "Compte"
+    },
+    "accesRoles": {
+      "sectionTitle": "Accès système",
+      "summaryTitle": "Résumé des droits"
+    },
+    "compte": {
+      "noAccount": {
+        "description": "Cette personne n'a pas encore de compte de connexion."
+      },
+      "pending": {
+        "title": "Invitation envoyée",
+        "description": "Un e-mail d'activation a été envoyé à {email}. En attente de confirmation.",
+        "resendButton": "Renvoyer l'invitation",
+        "resent": "Invitation renvoyée."
+      },
+      "usernameOnly": {
+        "title": "Connexion par identifiant",
+        "description": "Cette personne utilise un nom d'utilisateur pour se connecter.",
+        "resetButton": "Réinitialiser le mot de passe",
+        "confirmTitle": "Réinitialiser le mot de passe",
+        "confirmBody": "Un nouveau mot de passe temporaire sera généré pour {name}. L'ancien mot de passe cessera immédiatement de fonctionner.",
+        "confirmButton": "Réinitialiser"
+      },
+      "emailActive": {
+        "description": "Compte actif et vérifié.",
+        "footerNote": "Cette personne peut réinitialiser son mot de passe elle-même via « Mot de passe oublié »."
+      },
+      "tempPasswordPanel": {
+        "title": "Compte prêt pour {name}",
+        "usernameLabel": "Nom d'utilisateur",
+        "passwordLabel": "Mot de passe temporaire",
+        "copyButton": "Copier",
+        "warning": "Ce mot de passe ne sera plus affiché. Transmettez-le à la personne, elle pourra le changer dans ses paramètres.",
+        "closeButton": "J'ai noté, fermer"
+      }
+    }
   }
 }

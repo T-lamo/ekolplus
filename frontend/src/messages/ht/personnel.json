@@ -38,5 +38,61 @@
     "loadError": "Nou pa ka chaje pèsonèl la.",
     "emptyNone": "Pa gen pèsonèl pou kounye a.",
     "emptyFiltered": "Pa gen rezilta pou rechèch sa a."
+  },
+  "fiche": {
+    "backToList": "Tounen nan pèsonèl",
+    "notFound": "Nou pa jwenn manm pèsonèl sa a.",
+    "noTabAccess": "Ou pa gen aksè a detay pwofil sa a.",
+    "header": {
+      "giveTeachingAccess": "Bay yon aksè ansèyman",
+      "giveManagementAccess": "Bay yon aksè jesyon",
+      "confirmTeachingTitle": "Bay yon aksè ansèyman",
+      "confirmTeachingBody": "Y ap ka asiyen {name} nan matyè ak klas tankou yon pwofesè.",
+      "confirmTeachingButton": "Bay aksè a",
+      "confirmManagementTitle": "Bay yon aksè jesyon",
+      "confirmManagementBody": "Y ap ka bay {name} yon wòl nan espas jesyon lekòl la.",
+      "confirmManagementButton": "Bay aksè a",
+      "teachingGranted": "Aksè ansèyman ajoute.",
+      "managementGranted": "Aksè jesyon ajoute."
+    },
+    "tabs": {
+      "access": "Aksè & wòl",
+      "compte": "Kont"
+    },
+    "accesRoles": {
+      "sectionTitle": "Aksè sistèm",
+      "summaryTitle": "Rezime dwa yo"
+    },
+    "compte": {
+      "noAccount": {
+        "description": "Moun sa a poko gen yon kont pou konekte."
+      },
+      "pending": {
+        "title": "Envitasyon voye",
+        "description": "Yon imèl aktivasyon voye bay {email}. N ap tann konfimasyon.",
+        "resendButton": "Voye envitasyon an ankò",
+        "resent": "Envitasyon an voye ankò."
+      },
+      "usernameOnly": {
+        "title": "Koneksyon ak non itilizatè",
+        "description": "Moun sa a itilize yon non itilizatè pou konekte.",
+        "resetButton": "Reyajiste modpas la",
+        "confirmTitle": "Reyajiste modpas la",
+        "confirmBody": "Y ap jenere yon nouvo modpas tanporè pou {name}. Ansyen modpas la ap sispann fonksyone touswit.",
+        "confirmButton": "Reyajiste"
+      },
+      "emailActive": {
+        "description": "Kont lan aktif e verifye.",
+        "footerNote": "Moun sa a ka reyajiste modpas li menm avèk « Modpas bliye »."
+      },
+      "tempPasswordPanel": {
+        "title": "Kont lan pare pou {name}",
+        "usernameLabel": "Non itilizatè",
+        "passwordLabel": "Modpas tanporè",
+        "copyButton": "Kopye",
+        "warning": "Modpas sa a pap parèt ankò. Bay moun lan li, l ap ka chanje l nan paramèt li yo.",
+        "closeButton": "Mwen note, fèmen"
+      }
+    }
   }
 }

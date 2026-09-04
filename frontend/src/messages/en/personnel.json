@@ -37,5 +37,61 @@
     "loadError": "We couldn't load the staff list.",
     "emptyNone": "No staff members yet.",
     "emptyFiltered": "No results for this search."
+  },
+  "fiche": {
+    "backToList": "Back to staff",
+    "notFound": "Staff member not found.",
+    "noTabAccess": "You don't have access to this profile's details.",
+    "header": {
+      "giveTeachingAccess": "Give teaching access",
+      "giveManagementAccess": "Give management access",
+      "confirmTeachingTitle": "Give teaching access",
+      "confirmTeachingBody": "{name} will be assignable to subjects and classes like a teacher.",
+      "confirmTeachingButton": "Give access",
+      "confirmManagementTitle": "Give management access",
+      "confirmManagementBody": "{name} will be assignable a role in the school's management space.",
+      "confirmManagementButton": "Give access",
+      "teachingGranted": "Teaching access added.",
+      "managementGranted": "Management access added."
+    },
+    "tabs": {
+      "access": "Access & roles",
+      "compte": "Account"
+    },
+    "accesRoles": {
+      "sectionTitle": "System access",
+      "summaryTitle": "Rights summary"
+    },
+    "compte": {
+      "noAccount": {
+        "description": "This person doesn't have a login account yet."
+      },
+      "pending": {
+        "title": "Invitation sent",
+        "description": "An activation email was sent to {email}. Waiting for confirmation.",
+        "resendButton": "Resend invitation",
+        "resent": "Invitation resent."
+      },
+      "usernameOnly": {
+        "title": "Username login",
+        "description": "This person uses a username to sign in.",
+        "resetButton": "Reset password",
+        "confirmTitle": "Reset password",
+        "confirmBody": "A new temporary password will be generated for {name}. The previous password will stop working immediately.",
+        "confirmButton": "Reset"
+      },
+      "emailActive": {
+        "description": "Account active and verified.",
+        "footerNote": "This person can reset their own password through \"Forgot password\"."
+      },
+      "tempPasswordPanel": {
+        "title": "Account ready for {name}",
+        "usernameLabel": "Username",
+        "passwordLabel": "Temporary password",
+        "copyButton": "Copy",
+        "warning": "This password will not be shown again. Pass it on to the person, they'll be able to change it in their settings.",
+        "closeButton": "Got it, close"
+      }
+    }
   }
 }

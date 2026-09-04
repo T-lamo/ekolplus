@@ -13,6 +13,16 @@
 // rôles tabs. The one exception (§6.3's Compte tab rule): a teacher with
 // no genuine staff profile can be managed by a caller holding
 // `enseignants.edit` alone, without ADMIN rank.
+//
+// `canManageAccount` mirrors `canSeeAccount` back to the client so the
+// Personnel fiche can gate its Compte tab on the SAME decision this route
+// already made, instead of re-deriving it from `organizationMember` — a
+// caller who isn't ADMIN+ never sees the true `organizationMember` for a
+// genuine staff person (it's nulled below), so inferring "no staff profile"
+// from "organizationMember is null" would wrongly re-derive `true` for
+// exactly the double-profile case this route's masking exists to protect
+// (found during Task 5's manual QA, fixed here rather than left as a
+// client-side gap).
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -56,6 +66,9 @@ export async function GET(
       ? detail
       : { ...detail, email: null, username: null, organizationMember: null };
 
-    return NextResponse.json({ personnel }, { headers: { 'x-request-id': ctx.requestId } });
+    return NextResponse.json(
+      { personnel, canManageAccount: canSeeAccount },
+      { headers: { 'x-request-id': ctx.requestId } },
+    );
   });
 }

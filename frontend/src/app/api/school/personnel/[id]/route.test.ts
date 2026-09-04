@@ -63,6 +63,7 @@ describe('GET /api/school/personnel/[id]', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.personnel.email).toBe('gina@school.test');
+    expect(body.canManageAccount).toBe(true);
   });
 
   it('a MEMBER with enseignants.view only (no edit) never sees email/username/organizationMember', async () => {
@@ -81,6 +82,7 @@ describe('GET /api/school/personnel/[id]', () => {
     // Base fields (already ungated in the list) stay visible.
     expect(body.personnel.accountStatus).toBe('ACTIVE');
     expect(body.personnel.teacher).toEqual(fullDetail.teacher);
+    expect(body.canManageAccount).toBe(false);
   });
 
   it('a MEMBER with enseignants.edit sees the account block for a teacher-only person (no staff profile)', async () => {
@@ -93,6 +95,7 @@ describe('GET /api/school/personnel/[id]', () => {
     const res = await GET(req(), params);
     const body = await res.json();
     expect(body.personnel.email).toBe('gina@school.test');
+    expect(body.canManageAccount).toBe(true);
   });
 
   it('enseignants.edit does NOT unlock the account block for a genuine double-profile person', async () => {
@@ -110,5 +113,10 @@ describe('GET /api/school/personnel/[id]', () => {
     const body = await res.json();
     expect(body.personnel.organizationMember).toBeNull();
     expect(body.personnel.email).toBeNull();
+    // This is exactly the case the Personnel fiche's Compte tab must stay
+    // hidden for — the caller can't distinguish "no staff profile" from
+    // "has one, hidden from me" via the masked organizationMember alone,
+    // so the tab-gating client reads this flag instead (see route.ts).
+    expect(body.canManageAccount).toBe(false);
   });
 });

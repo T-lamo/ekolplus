@@ -81,6 +81,7 @@ export async function GET(
           enrollmentType: student.enrollmentType,
           previousSchool: student.previousSchool,
           transferNumber: student.transferNumber,
+          nisu: student.nisu,
           notes: student.notes,
           scholarship: student.scholarship,
           enrolledAt: student.enrolledAt,

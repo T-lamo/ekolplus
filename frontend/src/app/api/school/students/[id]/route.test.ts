@@ -85,6 +85,7 @@ describe('GET /api/school/students/[id]', () => {
       enrollmentType: null,
       previousSchool: null,
       transferNumber: null,
+      nisu: 'NISU-2026-0099',
       notes: null,
       scholarship: false,
       enrolledAt: null,
@@ -99,6 +100,7 @@ describe('GET /api/school/students/[id]', () => {
     expect(json.student.studentNumber).toBe('EL-1');
     expect(json.student.userId).toBeNull();
     expect(json.student.userEmailVerifiedAt).toBeNull();
+    expect(json.student.nisu).toBe('NISU-2026-0099');
   });
 
   it("includes userId and the linked user's emailVerifiedAt in the response", async () => {

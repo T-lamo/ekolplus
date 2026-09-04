@@ -186,5 +186,13 @@ describe('POST /api/school/students — grants du rôle personnalisé', () => {
       data: { nisu?: string };
     };
     expect(createArgs.data.nisu).toBe('NISU-2026-0001');
+    const createManyArgs = prismaMock.guardian.createMany.mock.calls[0]?.[0] as {
+      data: { nif?: string; niu?: string; vitalStatus?: string }[];
+    };
+    expect(createManyArgs.data[0]).toMatchObject({
+      nif: 'NIF-1',
+      niu: 'NIU-1',
+      vitalStatus: 'VIVANT',
+    });
   });
 });

@@ -1,6 +1,6 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { mockCloudinaryClient } from '@/test-utils/cloudinary-mock';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const cl = mockCloudinaryClient();
@@ -9,6 +9,7 @@ vi.mock('@/lib/server/upload/cloudinary-client', () => ({
   getSignedDocumentUrl: vi.fn((id: string, rt: string, exp?: number) =>
     cl.getSignedDocumentUrl(id, rt, exp),
   ),
+  StorageNotConfiguredError: class StorageNotConfiguredError extends Error {},
 }));
 vi.mock('@/lib/server/middleware', () => ({ requireAuth: vi.fn() }));
 vi.mock('@/lib/server/school', async () => {
@@ -18,6 +19,10 @@ vi.mock('@/lib/server/school', async () => {
 
 import { requireAuth } from '@/lib/server/middleware';
 import { resolveMySchool } from '@/lib/server/school';
+import {
+  getSignedDocumentUrl,
+  StorageNotConfiguredError,
+} from '@/lib/server/upload/cloudinary-client';
 import { GET } from './route';
 
 const authUser = { user: { sub: 'user_1', email: 'staff@test.local' } };
@@ -79,5 +84,37 @@ describe('GET /api/school/students/[id]/documents/[type]/file', () => {
       'raw',
       300,
     );
+  });
+
+  it('returns 503 STORAGE_NOT_CONFIGURED when Cloudinary is not configured', async () => {
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/birth_certificate-1',
+      resourceType: 'raw',
+    } as never);
+    (getSignedDocumentUrl as unknown as Mock).mockImplementationOnce(() => {
+      throw new StorageNotConfiguredError();
+    });
+
+    const res = await GET(req(), params('BIRTH_CERTIFICATE'));
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.error).toBe('STORAGE_NOT_CONFIGURED');
+  });
+
+  it('returns 502 DOWNLOAD_FAILED when Cloudinary throws a non-config error', async () => {
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/birth_certificate-1',
+      resourceType: 'raw',
+    } as never);
+    (getSignedDocumentUrl as unknown as Mock).mockImplementationOnce(() => {
+      throw new Error('Cloudinary down');
+    });
+
+    const res = await GET(req(), params('BIRTH_CERTIFICATE'));
+    const body = await res.json();
+
+    expect(res.status).toBe(502);
+    expect(body.error).toBe('DOWNLOAD_FAILED');
   });
 });

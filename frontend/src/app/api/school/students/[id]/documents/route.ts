@@ -10,10 +10,15 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
-import { deleteAsset, uploadBuffer } from '@/lib/server/upload/cloudinary-client';
+import {
+  deleteAsset,
+  uploadBuffer,
+  StorageNotConfiguredError,
+} from '@/lib/server/upload/cloudinary-client';
 import { verifyMagicBytes } from '@/lib/server/upload/sniff';
 import { sanitizeFilename } from '@/lib/server/upload/sanitize-filename';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { log } from '@/lib/server/observability/log';
 
 const DOCUMENT_TYPES = [
   'BIRTH_CERTIFICATE',
@@ -143,12 +148,30 @@ export async function POST(
     });
 
     const publicId = `students/${id}/${type.toLowerCase()}-${Date.now()}`;
-    const uploaded = await uploadBuffer(publicId, buf, { deliveryType: 'authenticated' });
 
-    if (existing) {
-      await deleteAsset(existing.fileKey, existing.resourceType, { deliveryType: 'authenticated' });
+    let uploaded;
+    try {
+      uploaded = await uploadBuffer(publicId, buf, { deliveryType: 'authenticated' });
+    } catch (e) {
+      if (e instanceof StorageNotConfiguredError) {
+        return NextResponse.json(
+          { error: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
+          { status: 503, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      return NextResponse.json(
+        { error: 'UPLOAD_FAILED', message: 'Storage write failed' },
+        { status: 502, headers: { 'x-request-id': ctx.requestId } },
+      );
     }
 
+    // Point the DB row at the new asset BEFORE deleting the old one. If the
+    // upsert throws (e.g. a transient DB error), the previous document row
+    // still points at the previous, still-existing Cloudinary asset — it
+    // stays servable. Deleting the old asset only after the upsert succeeds
+    // means the worst case on a later failure is a harmless orphaned
+    // Cloudinary asset, never a StudentDocument row pointing at a deleted
+    // fileKey (which would 404 a subsequent download).
     const row = await prisma.studentDocument.upsert({
       where: { studentId_type: { studentId: id, type } },
       create: {
@@ -172,6 +195,23 @@ export async function POST(
       },
       select: { type: true, fileName: true, mimeType: true, sizeBytes: true, uploadedAt: true },
     });
+
+    if (existing) {
+      // Best-effort cleanup — the new document is already stored and
+      // servable at this point, so a failure here only leaves a harmless
+      // orphaned Cloudinary asset behind rather than breaking anything for
+      // the caller.
+      try {
+        await deleteAsset(existing.fileKey, existing.resourceType, {
+          deliveryType: 'authenticated',
+        });
+      } catch (e) {
+        log.warn('failed to delete replaced student document asset', {
+          fileKey: existing.fileKey,
+          err: e instanceof Error ? e.message : String(e),
+        });
+      }
+    }
 
     return NextResponse.json(
       { document: row },

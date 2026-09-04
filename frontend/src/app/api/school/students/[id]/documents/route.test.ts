@@ -1,6 +1,6 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { mockCloudinaryClient } from '@/test-utils/cloudinary-mock';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const cl = mockCloudinaryClient();
@@ -27,6 +27,7 @@ vi.mock('@/lib/server/school', async () => {
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
+import { uploadBuffer, StorageNotConfiguredError } from '@/lib/server/upload/cloudinary-client';
 import { GET, POST } from './route';
 
 const authUser = { user: { sub: 'user_1', email: 'staff@test.local' } };
@@ -163,5 +164,72 @@ describe('POST /api/school/students/[id]/documents', () => {
     expect(cl.deleteAsset).toHaveBeenCalledWith('students/student_1/old-key', 'raw', {
       deliveryType: 'authenticated',
     });
+  });
+
+  it('upserts the DB row to point at the new asset before deleting the old asset', async () => {
+    // Reordering invariant: if the upsert throws after the old asset were
+    // already deleted, a subsequent download would 302 to a signed URL for
+    // an asset that no longer exists. Upserting first means the worst case
+    // on a later failure is a harmless orphaned Cloudinary asset instead.
+    const file = new File(['%PDF-1.4 v3'], 'acte-v3.pdf', { type: 'application/pdf' });
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/old-key',
+      resourceType: 'raw',
+    } as never);
+    prismaMock.studentDocument.upsert.mockResolvedValue({
+      type: 'BIRTH_CERTIFICATE',
+      fileName: 'acte-v3.pdf',
+      mimeType: 'application/pdf',
+      sizeBytes: file.size,
+      uploadedAt: new Date('2026-01-03'),
+    } as never);
+
+    await POST(uploadReq({ type: 'BIRTH_CERTIFICATE', file }), params);
+
+    const upsertOrder = prismaMock.studentDocument.upsert.mock.invocationCallOrder[0];
+    const deleteOrder = (cl.deleteAsset as unknown as Mock).mock.invocationCallOrder[0];
+    expect(upsertOrder).toBeDefined();
+    expect(deleteOrder).toBeDefined();
+    expect(upsertOrder as number).toBeLessThan(deleteOrder as number);
+  });
+
+  it('leaves the old document referenced (does not delete it) when the upsert throws', async () => {
+    // A DB-write failure after a successful upload must not leave the old,
+    // still-servable document deleted out from under it.
+    const file = new File(['%PDF-1.4 v4'], 'acte-v4.pdf', { type: 'application/pdf' });
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/old-key',
+      resourceType: 'raw',
+    } as never);
+    prismaMock.studentDocument.upsert.mockRejectedValueOnce(new Error('transient DB error'));
+
+    await expect(POST(uploadReq({ type: 'BIRTH_CERTIFICATE', file }), params)).rejects.toThrow(
+      'transient DB error',
+    );
+
+    expect(cl.deleteAsset).not.toHaveBeenCalled();
+  });
+
+  it('returns 503 STORAGE_NOT_CONFIGURED when Cloudinary is not configured', async () => {
+    const file = new File(['%PDF-1.4'], 'acte.pdf', { type: 'application/pdf' });
+    (uploadBuffer as unknown as Mock).mockRejectedValueOnce(new StorageNotConfiguredError());
+
+    const res = await POST(uploadReq({ type: 'BIRTH_CERTIFICATE', file }), params);
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.error).toBe('STORAGE_NOT_CONFIGURED');
+    expect(prismaMock.studentDocument.upsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 502 UPLOAD_FAILED when Cloudinary throws a non-config error', async () => {
+    const file = new File(['%PDF-1.4'], 'acte.pdf', { type: 'application/pdf' });
+    (uploadBuffer as unknown as Mock).mockRejectedValueOnce(new Error('Cloudinary down'));
+
+    const res = await POST(uploadReq({ type: 'BIRTH_CERTIFICATE', file }), params);
+    const body = await res.json();
+
+    expect(res.status).toBe(502);
+    expect(body.error).toBe('UPLOAD_FAILED');
   });
 });

@@ -9,7 +9,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
-import { getSignedDocumentUrl } from '@/lib/server/upload/cloudinary-client';
+import {
+  getSignedDocumentUrl,
+  StorageNotConfiguredError,
+} from '@/lib/server/upload/cloudinary-client';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const DOCUMENT_TYPES = [
@@ -58,10 +61,25 @@ export async function GET(
       );
     }
 
+    let url: string;
+    try {
+      url = getSignedDocumentUrl(doc.fileKey, doc.resourceType, 300);
+    } catch (e) {
+      if (e instanceof StorageNotConfiguredError) {
+        return NextResponse.json(
+          { error: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
+          { status: 503, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      return NextResponse.json(
+        { error: 'DOWNLOAD_FAILED', message: 'Could not generate a signed URL' },
+        { status: 502, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     // Explicit 302: NextResponse.redirect() defaults to 307 when the status
     // is omitted, which is fine for a browser GET but not what the spec
     // documents — pin it so behavior doesn't depend on a framework default.
-    const url = getSignedDocumentUrl(doc.fileKey, doc.resourceType, 300);
     return NextResponse.redirect(url, { status: 302, headers: { 'x-request-id': ctx.requestId } });
   });
 }

@@ -214,10 +214,10 @@ export default function TeacherProfilePage() {
             <div>
               <div className="text-xl font-bold text-foreground">{displayName}</div>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                {teacher.idNumber && (
+                {teacher.nif && (
                   <span className="flex items-center gap-1">
                     <Hash size={12} />
-                    {teacher.idNumber}
+                    {teacher.nif}
                   </span>
                 )}
                 {teacher.email && (
@@ -308,7 +308,10 @@ export default function TeacherProfilePage() {
             />
             <InfoRow label={t('fields.gender')} value={teacher.gender ?? '—'} />
             <InfoRow label={t('fields.nationality')} value={teacher.nationality ?? '—'} />
-            <InfoRow label={t('fields.idNumber')} value={teacher.idNumber ?? '—'} />
+            <InfoRow label={t('fields.birthPlace')} value={teacher.birthPlace ?? '—'} />
+            <InfoRow label={t('fields.diploma')} value={teacher.diploma ?? '—'} />
+            <InfoRow label={t('fields.nif')} value={teacher.nif ?? '—'} />
+            <InfoRow label={t('fields.niu')} value={teacher.niu ?? '—'} />
             <InfoRow label={t('fields.address')} value={teacher.address ?? '—'} />
             <InfoRow
               label={t('fields.status')}

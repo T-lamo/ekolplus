@@ -16,15 +16,19 @@
 // no outbox row, password hashed right away and returned once as
 // `temporaryPassword`.
 //
-// Deliberate scope note: `teacherProfile.matiereIds`/`classIds` are
-// accepted and validated as cuids per the plan's schema, but this route
-// does not create ClassSubject rows from them — a class+subject pair is
-// unique (`@@unique([classId, subjectId])`), so a naive cross-product
-// would either silently overwrite an existing assignment or require data
-// this endpoint doesn't have (weeklyHours/coefficient per pair). Real
-// matière/classe assignment continues through the existing, unchanged
-// `/api/school/class-subjects` route (Configuration module) and the
-// Enseignement tab. Flagged in the Task 3 report as an open question.
+// `teacherProfile.matiereIds`/`classIds` (Task 6) ARE wired to real
+// ClassSubject rows via `assignTeacherToClassSubjects()` below, called
+// inside the same transaction as the Teacher creation in all three login
+// branches. A class+subject pair is a single global assignment slot, not
+// one per teacher (`@@unique([classId, subjectId])`), so the full
+// cross-product of the wizard's selections is resolved pair by pair: no
+// existing row → create one for this teacher (coefficient/weeklyHours left
+// null, exactly like a manually-created assignment, editable later from
+// the Enseignement tab / `/configuration/matieres`); an existing row with
+// `teacherId: null` → claim it for this teacher; an existing row already
+// held by a DIFFERENT teacher → skip it silently, never overwrite. Ids are
+// validated as owned by the caller's school (404 anti-fuite, same
+// reasoning as `staffRoleIds` below) before the transaction starts.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -51,6 +55,55 @@ function jsonError(requestId: string, status: number, error: string, message: st
 }
 function notFound(requestId: string) {
   return jsonError(requestId, 404, 'NOT_FOUND', 'Not found');
+}
+
+// Claims or creates ClassSubject pivot rows for a freshly-created teacher,
+// one per (classId, subjectId) pair in the full cross-product of the
+// wizard's selections. See the header comment above for the semantic;
+// callers pass the SAME tx that created the Teacher row so the assignment
+// commits atomically with it.
+async function assignTeacherToClassSubjects(
+  tx: Prisma.TransactionClient,
+  teacherId: string,
+  classIds: string[],
+  subjectIds: string[],
+): Promise<void> {
+  if (classIds.length === 0 || subjectIds.length === 0) return;
+  const pairs = classIds.flatMap((classId) =>
+    subjectIds.map((subjectId) => ({ classId, subjectId })),
+  );
+  const existing = await tx.classSubject.findMany({
+    where: { OR: pairs.map((p) => ({ classId: p.classId, subjectId: p.subjectId })) },
+    select: { id: true, classId: true, subjectId: true, teacherId: true },
+  });
+  const existingByKey = new Map(existing.map((cs) => [`${cs.classId}:${cs.subjectId}`, cs]));
+
+  const toCreate: { classId: string; subjectId: string }[] = [];
+  const toClaim: string[] = [];
+  for (const pair of pairs) {
+    const row = existingByKey.get(`${pair.classId}:${pair.subjectId}`);
+    if (!row) {
+      toCreate.push(pair);
+    } else if (row.teacherId === null) {
+      toClaim.push(row.id);
+    }
+    // else: already held by a different teacher — skip, never overwrite.
+  }
+  if (toCreate.length > 0) {
+    await tx.classSubject.createMany({
+      data: toCreate.map((p) => ({
+        classId: p.classId,
+        subjectId: p.subjectId,
+        teacherId,
+        coefficient: null,
+        weeklyHours: null,
+      })),
+      skipDuplicates: true,
+    });
+  }
+  if (toClaim.length > 0) {
+    await tx.classSubject.updateMany({ where: { id: { in: toClaim } }, data: { teacherId } });
+  }
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -170,11 +223,33 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (count !== staffRoleIds.length) return notFound(ctx.requestId);
     }
 
+    const matiereIds = teacherProfile ? Array.from(new Set(teacherProfile.matiereIds)) : [];
+    const classIds = teacherProfile ? Array.from(new Set(teacherProfile.classIds)) : [];
+    if (matiereIds.length > 0) {
+      // 404 anti-fuite, same reasoning as staffRoleIds above.
+      const count = await prisma.subject.count({
+        where: { id: { in: matiereIds }, schoolId: mySchool.schoolId },
+      });
+      if (count !== matiereIds.length) return notFound(ctx.requestId);
+    }
+    if (classIds.length > 0) {
+      const count = await prisma.class.count({
+        where: { id: { in: classIds }, schoolId: mySchool.schoolId },
+      });
+      if (count !== classIds.length) return notFound(ctx.requestId);
+    }
+
     const name = `${firstName} ${lastName}`.trim();
 
     if (login.mode === 'none') {
-      const teacher = await prisma.teacher.create({
-        data: { schoolId: mySchool.schoolId, name, phone: phone ?? null },
+      const teacher = await prisma.$transaction(async (tx) => {
+        const created = await tx.teacher.create({
+          data: { schoolId: mySchool.schoolId, name, phone: phone ?? null },
+        });
+        if (teacherProfile) {
+          await assignTeacherToClassSubjects(tx, created.id, classIds, matiereIds);
+        }
+        return created;
       });
       return NextResponse.json(
         { ok: true, id: teacher.id, userId: null },
@@ -197,7 +272,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         createOrgMembership: true,
         linkExisting: async (tx, userId) => {
           if (teacherProfile) {
-            await tx.teacher.create({
+            const teacher = await tx.teacher.create({
               data: {
                 schoolId: mySchool.schoolId,
                 name,
@@ -206,6 +281,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 userId,
               },
             });
+            await assignTeacherToClassSubjects(tx, teacher.id, classIds, matiereIds);
           }
           if (staffProfile) {
             await tx.organizationMember.update({
@@ -271,6 +347,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           const teacher = await tx.teacher.create({
             data: { schoolId: mySchool.schoolId, name, phone: phone ?? null, userId: user.id },
           });
+          await assignTeacherToClassSubjects(tx, teacher.id, classIds, matiereIds);
           return { id: teacher.id, userId: user.id };
         }
         return { id: user.id, userId: user.id };

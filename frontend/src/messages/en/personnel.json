@@ -86,12 +86,104 @@
       },
       "tempPasswordPanel": {
         "title": "Account ready for {name}",
+        "subtitle": "Note these credentials before closing this panel.",
         "usernameLabel": "Username",
         "passwordLabel": "Temporary password",
         "copyButton": "Copy",
         "warning": "This password will not be shown again. Pass it on to the person, they'll be able to change it in their settings.",
         "closeButton": "Got it, close"
       }
+    }
+  },
+  "usernameField": {
+    "label": "Username",
+    "placeholder": "firstname.lastname",
+    "available": "Available",
+    "taken": "This username is already taken.",
+    "invalidFormat": "Must start with a letter and contain only letters, digits, dots, hyphens or underscores (3 to 30 characters)."
+  },
+  "nouveau": {
+    "title": "Add a staff member",
+    "subtitle": "Personnel → New member",
+    "backToList": "Back to staff",
+    "steps": {
+      "identite": "Identity",
+      "profils": "Profiles",
+      "connexion": "Login"
+    },
+    "identite": {
+      "title": "Member identity",
+      "subtitle": "Enter the basic information for the person you want to add.",
+      "firstName": "First name",
+      "firstNamePlaceholder": "Marie",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Kevin",
+      "phone": "Phone",
+      "email": "Email",
+      "emailOptional": "(optional)",
+      "emailPlaceholder": "e.g. marie.k@school.edu.ht",
+      "emailHint": "If provided, this field can be used in the Login step.",
+      "nameRequired": "First and last name are required."
+    },
+    "profils": {
+      "title": "Member profiles",
+      "subtitle": "Select the profiles that match this person's role at the school.",
+      "teacherCard": {
+        "title": "Teaches at the school",
+        "description": "This member teaches subjects to school classes.",
+        "picker": {
+          "matieresLabel": "Assigned subjects",
+          "matieresSearchPlaceholder": "Search a subject…",
+          "matieresEmpty": "No subjects",
+          "classesLabel": "Classes",
+          "classesSearchPlaceholder": "Search a class…",
+          "classesEmpty": "No classes",
+          "add": "Add",
+          "unavailable": "You'll be able to assign subjects and classes from this member's profile after creation."
+        }
+      },
+      "staffCard": {
+        "title": "Has access to the management app",
+        "description": "This member can sign in to the school's management space.",
+        "roleLabel": "Organization role",
+        "roleMember": "Member",
+        "roleAdmin": "Administrator",
+        "roleAdminHint": "Full access to school management.",
+        "roleMemberHint": "Access limited to the staff roles assigned below.",
+        "staffRolesLabel": "Staff roles",
+        "staffRolesHint": "Optional. Effective rights are the union of every assigned role."
+      },
+      "atLeastOneError": "Select at least one profile to continue."
+    },
+    "connexion": {
+      "title": "Login method",
+      "subtitle": "Choose how this member will access their space. You can change this later from their profile.",
+      "noneCard": {
+        "title": "No account for now",
+        "description": "No digital access. The profile will be created without credentials.",
+        "disabledHint": "Only available when the member has no management access."
+      },
+      "emailCard": {
+        "title": "By email",
+        "description": "An activation link will be sent to the email address provided.",
+        "disabledHint": "Enter an email in the Identity step to enable this option.",
+        "inviteLabel": "Invitation email"
+      },
+      "usernameCard": {
+        "title": "By username",
+        "description": "The member signs in with a local username and password."
+      },
+      "modeRequiredError": "Choose a login method."
+    },
+    "submit": "Create the account",
+    "submitting": "Creating...",
+    "successEmail": "Invitation sent to {email}.",
+    "successNone": "Profile created without a login account.",
+    "errors": {
+      "USERNAME_TAKEN": "This username is already taken.",
+      "EMAIL_ALREADY_IN_USE": "This email is already used by another account.",
+      "PERMISSION_DENIED": "You don't have permission to perform this action.",
+      "VALIDATION_FAILED": "Some information is invalid. Check the form."
     }
   }
 }

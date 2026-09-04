@@ -137,6 +137,7 @@ describe('POST /api/school/personnel', () => {
   it('creates a teacher via email invite, reusing createPortalInvite with the connective membership', async () => {
     mockCreatePortalInvite.mockResolvedValue({ ok: true, userId: 'user_new' });
     prismaMock.teacher.findFirst.mockResolvedValue({ id: 'teach_2' } as never);
+    prismaMock.teacher.create.mockResolvedValue({ id: 'teach_2' } as never);
 
     const res = await POST(
       postReq({
@@ -283,5 +284,88 @@ describe('POST /api/school/personnel', () => {
       }),
     );
     expect(res.status).toBe(404);
+  });
+});
+
+describe('POST /api/school/personnel — matière/classe assignment (Task 6)', () => {
+  const SUBJECT_ID = 'csubjectaaaaaaaaaaaaaa1';
+  const CLASS_ID = 'cclassaaaaaaaaaaaaaaaa2';
+
+  function teacherPickerReq() {
+    return postReq({
+      firstName: 'Alice',
+      lastName: 'Pierre',
+      teacherProfile: { matiereIds: [SUBJECT_ID], classIds: [CLASS_ID] },
+      login: { mode: 'none' },
+    });
+  }
+
+  it('404s when a matiereId does not belong to the caller school (anti-fuite)', async () => {
+    prismaMock.subject.count.mockResolvedValue(0 as never);
+    const res = await POST(teacherPickerReq());
+    expect(res.status).toBe(404);
+    expect(prismaMock.teacher.create).not.toHaveBeenCalled();
+  });
+
+  it('404s when a classId does not belong to the caller school (anti-fuite)', async () => {
+    prismaMock.subject.count.mockResolvedValue(1 as never);
+    prismaMock.class.count.mockResolvedValue(0 as never);
+    const res = await POST(teacherPickerReq());
+    expect(res.status).toBe(404);
+    expect(prismaMock.teacher.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a ClassSubject row for the new teacher when the pair has no existing assignment', async () => {
+    prismaMock.subject.count.mockResolvedValue(1 as never);
+    prismaMock.class.count.mockResolvedValue(1 as never);
+    prismaMock.teacher.create.mockResolvedValue({ id: 'teach_new' } as never);
+    prismaMock.classSubject.findMany.mockResolvedValue([] as never);
+
+    const res = await POST(teacherPickerReq());
+    expect(res.status).toBe(201);
+    expect(prismaMock.classSubject.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          classId: CLASS_ID,
+          subjectId: SUBJECT_ID,
+          teacherId: 'teach_new',
+          coefficient: null,
+          weeklyHours: null,
+        },
+      ],
+      skipDuplicates: true,
+    });
+    expect(prismaMock.classSubject.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('skips a pair already assigned to a different teacher, without overwriting it', async () => {
+    prismaMock.subject.count.mockResolvedValue(1 as never);
+    prismaMock.class.count.mockResolvedValue(1 as never);
+    prismaMock.teacher.create.mockResolvedValue({ id: 'teach_new' } as never);
+    prismaMock.classSubject.findMany.mockResolvedValue([
+      { id: 'cs_1', classId: CLASS_ID, subjectId: SUBJECT_ID, teacherId: 'teach_other' },
+    ] as never);
+
+    const res = await POST(teacherPickerReq());
+    expect(res.status).toBe(201);
+    expect(prismaMock.classSubject.createMany).not.toHaveBeenCalled();
+    expect(prismaMock.classSubject.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('claims a pair that has no teacher assigned yet (teacherId null)', async () => {
+    prismaMock.subject.count.mockResolvedValue(1 as never);
+    prismaMock.class.count.mockResolvedValue(1 as never);
+    prismaMock.teacher.create.mockResolvedValue({ id: 'teach_new' } as never);
+    prismaMock.classSubject.findMany.mockResolvedValue([
+      { id: 'cs_2', classId: CLASS_ID, subjectId: SUBJECT_ID, teacherId: null },
+    ] as never);
+
+    const res = await POST(teacherPickerReq());
+    expect(res.status).toBe(201);
+    expect(prismaMock.classSubject.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['cs_2'] } },
+      data: { teacherId: 'teach_new' },
+    });
+    expect(prismaMock.classSubject.createMany).not.toHaveBeenCalled();
   });
 });

@@ -11,6 +11,7 @@
 // sees it as plain text.
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowDownCircle,
   ArrowRight,
@@ -33,7 +34,13 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { LOCALE_BCP47 } from '@/lib/locales';
-import { InviteMemberModal, type StaffRoleOption } from './InviteMemberModal';
+// Runtime InviteMemberModal import intentionally dropped — the buttons
+// below now route to /personnel/nouveau (spec §6.4). The type import stays
+// (RolesResponse's shape still mirrors StaffRoleOption). The component
+// itself is left in place (still exported, unused by anything after this
+// task) for Task 8's cleanup pass to delete alongside the Administrateurs
+// tab itself, per the implementation plan.
+import type { StaffRoleOption } from './InviteMemberModal';
 import { roleLabel } from './role-label';
 import type { MemberData } from './types';
 
@@ -64,6 +71,7 @@ export function AdministrateursTab({
   const tCommon = useTranslations('Common');
   const tRoles = useTranslations('Common.roles');
   const locale = useLocale();
+  const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
 
@@ -83,7 +91,6 @@ export function AdministrateursTab({
   }, [members]);
   const [savingIds, setSavingIds] = useState<ReadonlySet<string>>(new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [inviteOpen, setInviteOpen] = useState(false);
 
   function fmt(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString(LOCALE_BCP47[locale], {
@@ -244,7 +251,7 @@ export function AdministrateursTab({
               type="button"
               size="sm"
               className="w-full shrink-0 sm:w-fit"
-              onClick={() => setInviteOpen(true)}
+              onClick={() => router.push('/personnel/nouveau')}
             >
               <UserPlus size={14} />
               {t('inviteButton')}
@@ -372,21 +379,12 @@ export function AdministrateursTab({
             type="button"
             size="sm"
             className="w-full shrink-0 sm:w-fit"
-            onClick={() => setInviteOpen(true)}
+            onClick={() => router.push('/personnel/nouveau')}
           >
             <Send size={14} />
             {t('inviteCard.cta')}
           </Button>
         </div>
-      )}
-
-      {inviteOpen && (
-        <InviteMemberModal
-          roles={roles}
-          canInviteAdmin={isOwner}
-          onClose={() => setInviteOpen(false)}
-          onInvited={onChanged}
-        />
       )}
     </div>
   );

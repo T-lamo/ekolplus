@@ -1,0 +1,41 @@
+{
+  "list": {
+    "title": "Staff",
+    "subtitle": "Manage your school's teachers and administrative staff.",
+    "searchPlaceholder": "Search by name, email or username...",
+    "filter": {
+      "all": "All",
+      "teacher": "Teachers",
+      "staff": "Administrative staff"
+    },
+    "table": {
+      "name": "Name",
+      "profiles": "Profile(s)",
+      "account": "Account status",
+      "login": "Login",
+      "actions": "Actions"
+    },
+    "profileBadge": {
+      "teacher": "Teacher",
+      "admin": "Administrator"
+    },
+    "accountStatus": {
+      "none": "No account",
+      "pending": "Pending",
+      "pendingFull": "Pending activation",
+      "active": "Active"
+    },
+    "loginMode": {
+      "email": "Email",
+      "username": "Username",
+      "both": "Both"
+    },
+    "menu": {
+      "viewProfile": "View profile"
+    },
+    "addButton": "Add",
+    "loadError": "We couldn't load the staff list.",
+    "emptyNone": "No staff members yet.",
+    "emptyFiltered": "No results for this search."
+  }
+}

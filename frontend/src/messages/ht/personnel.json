@@ -1,0 +1,42 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "list": {
+    "title": "Pèsonèl",
+    "subtitle": "Jere pwofesè ak pèsonèl administratif lekòl la.",
+    "searchPlaceholder": "Chèche pa non, imèl oswa non itilizatè...",
+    "filter": {
+      "all": "Tout",
+      "teacher": "Pwofesè",
+      "staff": "Pèsonèl administratif"
+    },
+    "table": {
+      "name": "Non",
+      "profiles": "Pwofil",
+      "account": "Estati kont lan",
+      "login": "Koneksyon",
+      "actions": "Aksyon"
+    },
+    "profileBadge": {
+      "teacher": "Pwofesè",
+      "admin": "Administratè"
+    },
+    "accountStatus": {
+      "none": "Pa gen kont",
+      "pending": "N ap tann",
+      "pendingFull": "N ap tann aktivasyon",
+      "active": "Aktif"
+    },
+    "loginMode": {
+      "email": "Imèl",
+      "username": "Non itilizatè",
+      "both": "Tou de"
+    },
+    "menu": {
+      "viewProfile": "Wè pwofil la"
+    },
+    "addButton": "Ajoute",
+    "loadError": "Nou pa ka chaje pèsonèl la.",
+    "emptyNone": "Pa gen pèsonèl pou kounye a.",
+    "emptyFiltered": "Pa gen rezilta pou rechèch sa a."
+  }
+}

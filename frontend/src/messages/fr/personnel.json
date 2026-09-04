@@ -1,0 +1,41 @@
+{
+  "list": {
+    "title": "Personnel",
+    "subtitle": "Gérez les enseignants et le personnel administratif de votre établissement.",
+    "searchPlaceholder": "Rechercher par nom, email ou nom d'utilisateur...",
+    "filter": {
+      "all": "Tous",
+      "teacher": "Enseignants",
+      "staff": "Personnel administratif"
+    },
+    "table": {
+      "name": "Nom",
+      "profiles": "Profil(s)",
+      "account": "Statut du compte",
+      "login": "Connexion",
+      "actions": "Actions"
+    },
+    "profileBadge": {
+      "teacher": "Enseignant",
+      "admin": "Administrateur"
+    },
+    "accountStatus": {
+      "none": "Aucun compte",
+      "pending": "En attente",
+      "pendingFull": "En attente d'activation",
+      "active": "Actif"
+    },
+    "loginMode": {
+      "email": "E-mail",
+      "username": "Identifiant",
+      "both": "Les deux"
+    },
+    "menu": {
+      "viewProfile": "Voir le profil"
+    },
+    "addButton": "Ajouter",
+    "loadError": "Impossible de charger le personnel.",
+    "emptyNone": "Aucun membre du personnel pour le moment.",
+    "emptyFiltered": "Aucun résultat pour cette recherche."
+  }
+}

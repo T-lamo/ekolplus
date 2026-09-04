@@ -34,7 +34,7 @@
   "modules": {
     "dashboard": { "label": "Tableau de bord", "sub": "Accueil & Vue d'ensemble" },
     "eleves": { "label": "Élèves", "sub": "Dossiers & Inscriptions" },
-    "enseignants": { "label": "Enseignants", "sub": "Personnel & Affectations" },
+    "enseignants": { "label": "Personnel", "sub": "Personnel & Affectations" },
     "notes": { "label": "Notes & Bulletins", "sub": "Évaluations & Résultats" },
     "appreciations": { "label": "Appréciations", "sub": "Commentaires de bulletin" },
     "presences": { "label": "Présences", "sub": "Absences & Retards" },

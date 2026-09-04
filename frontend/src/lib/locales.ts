@@ -80,6 +80,7 @@ export const MESSAGE_NAMESPACES = [
   'elevePortal',
   'permissions',
   'spaces',
+  'personnel',
 ] as const;
 export type MessageNamespace = (typeof MESSAGE_NAMESPACES)[number];
 

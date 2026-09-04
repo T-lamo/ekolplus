@@ -60,6 +60,7 @@ export default getRequestConfig(async () => {
     elevePortal,
     permissions,
     spaces,
+    personnel,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/login.json`),
@@ -98,6 +99,7 @@ export default getRequestConfig(async () => {
     import(`../messages/${locale}/elevePortal.json`),
     import(`../messages/${locale}/permissions.json`),
     import(`../messages/${locale}/spaces.json`),
+    import(`../messages/${locale}/personnel.json`),
   ]);
 
   return {
@@ -140,6 +142,7 @@ export default getRequestConfig(async () => {
       ElevePortal: elevePortal.default,
       Permissions: permissions.default,
       Spaces: spaces.default,
+      Personnel: personnel.default,
     },
   };
 });

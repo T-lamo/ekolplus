@@ -31,7 +31,7 @@
   "modules": {
     "dashboard": { "label": "Dashboard", "sub": "Home & Overview" },
     "eleves": { "label": "Students", "sub": "Records & Enrollment" },
-    "enseignants": { "label": "Teachers", "sub": "Staff & Assignments" },
+    "enseignants": { "label": "Staff", "sub": "Staff & Assignments" },
     "notes": { "label": "Grades & Report cards", "sub": "Assessments & Results" },
     "appreciations": { "label": "Assessments", "sub": "Report card comments" },
     "presences": { "label": "Attendance", "sub": "Absences & Lateness" },

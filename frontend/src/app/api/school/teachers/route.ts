@@ -87,7 +87,7 @@ const CreateTeacherBody = z.object({
   nationality: z.string().trim().max(60).nullable().optional(),
   birthPlace: z.string().trim().max(120).nullable().optional(),
   diploma: z.string().trim().max(120).nullable().optional(),
-  nif: z.string().trim().max(40).nullable().optional(),
+  nif: z.string().trim().max(60).nullable().optional(),
   niu: z.string().trim().max(40).nullable().optional(),
   secondaryPhone: zPhone.nullable().optional(),
   address: z.string().trim().max(200).nullable().optional(),

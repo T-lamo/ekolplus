@@ -33,6 +33,7 @@ export interface MockCloudinaryClient {
   getSignedDocumentUrl: (
     publicId: string,
     resourceType: string,
+    format: string,
     expiresInSeconds?: number,
   ) => string;
   deleteAsset: (
@@ -46,7 +47,7 @@ export interface MockCloudinaryClient {
  * Build a mock Cloudinary uploader. Inject via:
  * `vi.mock('@/lib/server/upload/cloudinary-client', () => ({
  *   uploadBuffer: vi.fn((id, body, opts) => mockCloudinaryClient().uploadBuffer(id, body, opts)),
- *   getSignedDocumentUrl: vi.fn((id, rt, exp) => mockCloudinaryClient().getSignedDocumentUrl(id, rt, exp)),
+ *   getSignedDocumentUrl: vi.fn((id, rt, fmt, exp) => mockCloudinaryClient().getSignedDocumentUrl(id, rt, fmt, exp)),
  *   deleteAsset: vi.fn((id, rt, opts) => mockCloudinaryClient().deleteAsset(id, rt, opts)),
  *   StorageNotConfiguredError: class extends Error { ... },
  * }))`.

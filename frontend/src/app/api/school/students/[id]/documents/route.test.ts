@@ -24,6 +24,7 @@ vi.mock('@/lib/server/school', async () => {
   return { ...actual, resolveMySchool: vi.fn() };
 });
 
+import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
@@ -32,6 +33,7 @@ import { GET, POST } from './route';
 
 const authUser = { user: { sub: 'user_1', email: 'staff@test.local' } };
 const ownerSchool = { organizationId: 'org_1', schoolId: 'school_1', role: 'OWNER' as const };
+const memberSchool = { organizationId: 'org_1', schoolId: 'school_1', role: 'MEMBER' as const };
 const params = { params: Promise.resolve({ id: 'student_1' }) };
 
 function uploadReq(fields: { type: string; file?: File }) {
@@ -59,6 +61,19 @@ beforeEach(() => {
 });
 
 describe('GET /api/school/students/[id]/documents', () => {
+  it('unauthenticated → passes the middleware response through', async () => {
+    const unauthorized = NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
+    vi.mocked(requireAuth).mockResolvedValue(unauthorized as never);
+
+    const res = await GET(
+      new NextRequest('http://localhost/api/school/students/student_1/documents'),
+      params,
+    );
+
+    expect(res.status).toBe(401);
+    expect(prismaMock.student.findUnique).not.toHaveBeenCalled();
+  });
+
   it('returns 404 when the student does not belong to the caller school', async () => {
     prismaMock.student.findUnique.mockResolvedValue({
       id: 'student_1',
@@ -106,6 +121,20 @@ describe('GET /api/school/students/[id]/documents', () => {
 });
 
 describe('POST /api/school/students/[id]/documents', () => {
+  it('MEMBER without the eleves.edit grant → 403 PERMISSION_DENIED', async () => {
+    vi.mocked(resolveMySchool).mockResolvedValue(memberSchool);
+    prismaMock.organizationMember.findFirst.mockResolvedValue(null as never);
+    const file = new File(['%PDF-1.4'], 'a.pdf', { type: 'application/pdf' });
+
+    const res = await POST(uploadReq({ type: 'BIRTH_CERTIFICATE', file }), params);
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe('PERMISSION_DENIED');
+    expect(cl.uploadBuffer).not.toHaveBeenCalled();
+    expect(prismaMock.student.findUnique).not.toHaveBeenCalled();
+  });
+
   it('rejects a MIME type outside the local allowlist', async () => {
     const file = new File(['x'], 'evil.exe', { type: 'application/x-msdownload' });
 

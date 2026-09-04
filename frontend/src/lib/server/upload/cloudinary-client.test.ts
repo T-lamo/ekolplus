@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const uploadStreamMock = vi.fn();
 const destroyMock = vi.fn(async () => ({ result: 'ok' }));
-const urlMock = vi.fn(
-  (_publicId?: string, _options?: Record<string, unknown>) =>
-    'https://res.cloudinary.com/test-cloud/signed',
+const privateDownloadUrlMock = vi.fn(
+  (_publicId?: string, _format?: string, _options?: Record<string, unknown>) =>
+    'https://res.cloudinary.com/test-cloud/download-signed',
 );
 const configMock = vi.fn();
 
@@ -12,7 +12,7 @@ vi.mock('cloudinary', () => ({
   v2: {
     config: configMock,
     uploader: { upload_stream: uploadStreamMock, destroy: destroyMock },
-    url: urlMock,
+    utils: { private_download_url: privateDownloadUrlMock },
   },
 }));
 
@@ -69,17 +69,29 @@ describe('uploadBuffer', () => {
 });
 
 describe('getSignedDocumentUrl', () => {
-  it('generates a signed authenticated URL with an expiry', async () => {
+  // cloudinary@2.10.0's `cloudinary.url({ sign_url: true, expires_at })`
+  // silently drops `expires_at` (verified empirically: two different
+  // expiries produce byte-identical URLs), so this function must go through
+  // `cloudinary.utils.private_download_url()` (the Download API) instead,
+  // which does embed a real expiry. This test only proves OUR code calls it
+  // with the right shape — real expiry behavior against the actual SDK is
+  // inherently untestable against a mock and was verified separately.
+  it('calls private_download_url with the public id, format, and an authenticated/expiring options object', async () => {
     const { getSignedDocumentUrl, __resetCloudinarySingleton } =
       await import('./cloudinary-client');
     __resetCloudinarySingleton();
 
-    getSignedDocumentUrl('students/s1/doc', 'raw', 300);
+    getSignedDocumentUrl('students/s1/doc', 'raw', 'pdf', 300);
 
-    const optionsArg = urlMock.mock.calls[0]?.[1] as Record<string, unknown>;
-    expect(urlMock.mock.calls[0]?.[0]).toBe('students/s1/doc');
+    expect(privateDownloadUrlMock).toHaveBeenCalledTimes(1);
+    const [publicIdArg, formatArg, optionsArg] = privateDownloadUrlMock.mock.calls[0] as [
+      string,
+      string,
+      Record<string, unknown>,
+    ];
+    expect(publicIdArg).toBe('students/s1/doc');
+    expect(formatArg).toBe('pdf');
     expect(optionsArg.type).toBe('authenticated');
-    expect(optionsArg.sign_url).toBe(true);
     expect(optionsArg.resource_type).toBe('raw');
     expect(typeof optionsArg.expires_at).toBe('number');
   });

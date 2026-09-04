@@ -6,8 +6,8 @@ import { NextRequest } from 'next/server';
 const cl = mockCloudinaryClient();
 
 vi.mock('@/lib/server/upload/cloudinary-client', () => ({
-  getSignedDocumentUrl: vi.fn((id: string, rt: string, exp?: number) =>
-    cl.getSignedDocumentUrl(id, rt, exp),
+  getSignedDocumentUrl: vi.fn((id: string, rt: string, fmt: string, exp?: number) =>
+    cl.getSignedDocumentUrl(id, rt, fmt, exp),
   ),
   StorageNotConfiguredError: class StorageNotConfiguredError extends Error {},
 }));
@@ -17,6 +17,7 @@ vi.mock('@/lib/server/school', async () => {
   return { ...actual, resolveMySchool: vi.fn() };
 });
 
+import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { resolveMySchool } from '@/lib/server/school';
 import {
@@ -27,6 +28,7 @@ import { GET } from './route';
 
 const authUser = { user: { sub: 'user_1', email: 'staff@test.local' } };
 const ownerSchool = { organizationId: 'org_1', schoolId: 'school_1', role: 'OWNER' as const };
+const memberSchool = { organizationId: 'org_1', schoolId: 'school_1', role: 'MEMBER' as const };
 const params = (type: string) => ({ params: Promise.resolve({ id: 'student_1', type }) });
 const req = () =>
   new NextRequest(
@@ -44,6 +46,28 @@ beforeEach(() => {
 });
 
 describe('GET /api/school/students/[id]/documents/[type]/file', () => {
+  it('unauthenticated → passes the middleware response through', async () => {
+    const unauthorized = NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
+    vi.mocked(requireAuth).mockResolvedValue(unauthorized as never);
+
+    const res = await GET(req(), params('BIRTH_CERTIFICATE'));
+
+    expect(res.status).toBe(401);
+    expect(prismaMock.student.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('MEMBER without the eleves.view grant → 403 PERMISSION_DENIED', async () => {
+    vi.mocked(resolveMySchool).mockResolvedValue(memberSchool);
+    prismaMock.organizationMember.findFirst.mockResolvedValue(null as never);
+
+    const res = await GET(req(), params('BIRTH_CERTIFICATE'));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe('PERMISSION_DENIED');
+    expect(prismaMock.student.findUnique).not.toHaveBeenCalled();
+  });
+
   it('returns 400 for a type outside the fixed enum', async () => {
     const res = await GET(req(), params('NOT_A_TYPE'));
     expect(res.status).toBe(400);
@@ -68,6 +92,7 @@ describe('GET /api/school/students/[id]/documents/[type]/file', () => {
     prismaMock.studentDocument.findUnique.mockResolvedValue({
       fileKey: 'students/student_1/birth_certificate-1',
       resourceType: 'raw',
+      mimeType: 'application/pdf',
     } as never);
 
     const res = await GET(req(), params('BIRTH_CERTIFICATE'));
@@ -82,14 +107,63 @@ describe('GET /api/school/students/[id]/documents/[type]/file', () => {
     expect(cl.getSignedDocumentUrl).toHaveBeenCalledWith(
       'students/student_1/birth_certificate-1',
       'raw',
+      'pdf',
       300,
     );
+  });
+
+  it('derives the Cloudinary format from the stored mimeType for jpeg and png too', async () => {
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/vaccination-1',
+      resourceType: 'image',
+      mimeType: 'image/jpeg',
+    } as never);
+
+    await GET(req(), params('BIRTH_CERTIFICATE'));
+
+    expect(cl.getSignedDocumentUrl).toHaveBeenCalledWith(
+      'students/student_1/vaccination-1',
+      'image',
+      'jpg',
+      300,
+    );
+
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/vaccination-2',
+      resourceType: 'image',
+      mimeType: 'image/png',
+    } as never);
+
+    await GET(req(), params('BIRTH_CERTIFICATE'));
+
+    expect(cl.getSignedDocumentUrl).toHaveBeenCalledWith(
+      'students/student_1/vaccination-2',
+      'image',
+      'png',
+      300,
+    );
+  });
+
+  it('returns 502 DOWNLOAD_FAILED when the stored mimeType has no known format mapping', async () => {
+    prismaMock.studentDocument.findUnique.mockResolvedValue({
+      fileKey: 'students/student_1/birth_certificate-1',
+      resourceType: 'raw',
+      mimeType: 'application/x-msdownload',
+    } as never);
+
+    const res = await GET(req(), params('BIRTH_CERTIFICATE'));
+    const body = await res.json();
+
+    expect(res.status).toBe(502);
+    expect(body.error).toBe('DOWNLOAD_FAILED');
+    expect(cl.getSignedDocumentUrl).not.toHaveBeenCalled();
   });
 
   it('returns 503 STORAGE_NOT_CONFIGURED when Cloudinary is not configured', async () => {
     prismaMock.studentDocument.findUnique.mockResolvedValue({
       fileKey: 'students/student_1/birth_certificate-1',
       resourceType: 'raw',
+      mimeType: 'application/pdf',
     } as never);
     (getSignedDocumentUrl as unknown as Mock).mockImplementationOnce(() => {
       throw new StorageNotConfiguredError();
@@ -106,6 +180,7 @@ describe('GET /api/school/students/[id]/documents/[type]/file', () => {
     prismaMock.studentDocument.findUnique.mockResolvedValue({
       fileKey: 'students/student_1/birth_certificate-1',
       resourceType: 'raw',
+      mimeType: 'application/pdf',
     } as never);
     (getSignedDocumentUrl as unknown as Mock).mockImplementationOnce(() => {
       throw new Error('Cloudinary down');

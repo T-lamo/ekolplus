@@ -22,6 +22,16 @@ const DOCUMENT_TYPES = [
 ] as const;
 type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
+// Cloudinary's Download API (`private_download_url`) needs an explicit file
+// extension — it doesn't infer one from the asset. This route owns the local
+// MIME allowlist for these 3 document types (mirrored from the POST route),
+// so the mapping belongs here rather than in the generic cloudinary-client.
+const MIME_TO_FORMAT: Record<string, string> = {
+  'application/pdf': 'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+};
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; type: string }> },
@@ -52,7 +62,7 @@ export async function GET(
 
     const doc = await prisma.studentDocument.findUnique({
       where: { studentId_type: { studentId: id, type: typeParam as DocumentType } },
-      select: { fileKey: true, resourceType: true },
+      select: { fileKey: true, resourceType: true, mimeType: true },
     });
     if (!doc) {
       return NextResponse.json(
@@ -61,9 +71,19 @@ export async function GET(
       );
     }
 
+    const format = MIME_TO_FORMAT[doc.mimeType];
+    if (!format) {
+      // Should be unreachable — the upload route only ever stores one of the
+      // 3 allowlisted MIME types — but a stale/corrupt row must not throw.
+      return NextResponse.json(
+        { error: 'DOWNLOAD_FAILED', message: 'Could not generate a signed URL' },
+        { status: 502, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     let url: string;
     try {
-      url = getSignedDocumentUrl(doc.fileKey, doc.resourceType, 300);
+      url = getSignedDocumentUrl(doc.fileKey, doc.resourceType, format, 300);
     } catch (e) {
       if (e instanceof StorageNotConfiguredError) {
         return NextResponse.json(

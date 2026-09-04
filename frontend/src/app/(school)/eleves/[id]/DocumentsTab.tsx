@@ -57,7 +57,7 @@ export function DocumentsTab({ studentId }: { studentId: string }) {
       setRowError((prev) => ({ ...prev, [type]: t('unsupportedFormat') }));
       return;
     }
-    if (file.size > MAX_SIZE_MB * 1_000_000) {
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       setRowError((prev) => ({ ...prev, [type]: t('tooLarge', { maxSizeMb: MAX_SIZE_MB }) }));
       return;
     }

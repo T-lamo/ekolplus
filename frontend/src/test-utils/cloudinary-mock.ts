@@ -11,7 +11,7 @@ import { vi, type Mock } from 'vitest';
 export interface MockCloudinaryOptions {
   /**
    * Override for `uploadBuffer`. If omitted, returns a happy
-   * `{ publicId, secureUrl: 'https://res.cloudinary.com/test-cloud/image/upload/<id>', bytes }`.
+   * `{ publicId, secureUrl: 'https://res.cloudinary.com/test-cloud/image/upload/<id>', bytes, resourceType: 'image' }`.
    * Throw to simulate upload failure.
    */
   onUpload?: Mock;
@@ -21,16 +21,33 @@ export interface MockUploadResult {
   publicId: string;
   secureUrl: string;
   bytes: number;
+  resourceType: string;
 }
 
 export interface MockCloudinaryClient {
-  uploadBuffer: (publicId: string, body: Buffer) => Promise<MockUploadResult>;
+  uploadBuffer: (
+    publicId: string,
+    body: Buffer,
+    options?: { deliveryType?: 'authenticated' },
+  ) => Promise<MockUploadResult>;
+  getSignedDocumentUrl: (
+    publicId: string,
+    resourceType: string,
+    expiresInSeconds?: number,
+  ) => string;
+  deleteAsset: (
+    publicId: string,
+    resourceType: string,
+    options?: { deliveryType?: 'authenticated' },
+  ) => Promise<void>;
 }
 
 /**
  * Build a mock Cloudinary uploader. Inject via:
  * `vi.mock('@/lib/server/upload/cloudinary-client', () => ({
- *   uploadBuffer: vi.fn((id, body) => mockCloudinaryClient().uploadBuffer(id, body)),
+ *   uploadBuffer: vi.fn((id, body, opts) => mockCloudinaryClient().uploadBuffer(id, body, opts)),
+ *   getSignedDocumentUrl: vi.fn((id, rt, exp) => mockCloudinaryClient().getSignedDocumentUrl(id, rt, exp)),
+ *   deleteAsset: vi.fn((id, rt, opts) => mockCloudinaryClient().deleteAsset(id, rt, opts)),
  *   StorageNotConfiguredError: class extends Error { ... },
  * }))`.
  */
@@ -42,7 +59,13 @@ export function mockCloudinaryClient(opts: MockCloudinaryOptions = {}): MockClou
         publicId,
         secureUrl: `https://res.cloudinary.com/test-cloud/image/upload/${publicId}`,
         bytes: body.length,
+        resourceType: 'image',
       };
     }),
+    getSignedDocumentUrl: vi.fn(
+      (publicId: string) =>
+        `https://res.cloudinary.com/test-cloud/authenticated/${publicId}?signed=1`,
+    ),
+    deleteAsset: vi.fn(async () => undefined),
   };
 }

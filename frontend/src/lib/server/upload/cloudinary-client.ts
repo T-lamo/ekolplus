@@ -49,6 +49,20 @@ export interface UploadResult {
   secureUrl: string;
   /** Stored byte length. */
   bytes: number;
+  /** "image" | "video" | "raw" — Cloudinary's own classification of the
+   * uploaded bytes, needed later to rebuild a delivery/signed URL for the
+   * same asset (the URL shape differs by resource type). */
+  resourceType: string;
+}
+
+export interface UploadOptions {
+  /**
+   * Pass 'authenticated' to store the asset under Cloudinary's private
+   * delivery type — the resulting `secureUrl` (and any URL built from
+   * `publicId` afterward) is NOT servable without a signed request. Omit
+   * for the existing public-upload behavior (avatars, photos).
+   */
+  deliveryType?: 'authenticated';
 }
 
 let _configured = false;
@@ -84,7 +98,11 @@ function configureOnce(): void {
  * `publicId` is supplied by the caller (the upload route builds a path-like
  * key, `{userId}/{cuid}`) so we don't depend on Cloudinary's random ID.
  */
-export async function uploadBuffer(publicId: string, body: Buffer): Promise<UploadResult> {
+export async function uploadBuffer(
+  publicId: string,
+  body: Buffer,
+  uploadOptions?: UploadOptions,
+): Promise<UploadResult> {
   configureOnce();
 
   // resource_type 'auto' lets Cloudinary pick image/video/raw from the bytes,
@@ -95,6 +113,7 @@ export async function uploadBuffer(publicId: string, body: Buffer): Promise<Uplo
     resource_type: 'auto',
   };
   if (_preset) options.upload_preset = _preset;
+  if (uploadOptions?.deliveryType) options.type = uploadOptions.deliveryType;
 
   const res = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(options, (err, response) => {
@@ -109,7 +128,41 @@ export async function uploadBuffer(publicId: string, body: Buffer): Promise<Uplo
     publicId: res.public_id,
     secureUrl: res.secure_url,
     bytes: typeof res.bytes === 'number' ? res.bytes : body.length,
+    resourceType: res.resource_type,
   };
+}
+
+/**
+ * Generate a short-lived signed URL for an asset stored with `type:
+ * 'authenticated'`. The unsigned URL for such an asset is not servable at
+ * all — the signature plus `expires_at` are what make this URL work, and
+ * only for the next `expiresInSeconds`.
+ */
+export function getSignedDocumentUrl(
+  publicId: string,
+  resourceType: string,
+  expiresInSeconds = 300,
+): string {
+  configureOnce();
+  return cloudinary.url(publicId, {
+    type: 'authenticated',
+    resource_type: resourceType,
+    sign_url: true,
+    expires_at: Math.floor(Date.now() / 1000) + expiresInSeconds,
+  });
+}
+
+/** Permanently removes an asset — used when a document of a given type is replaced. */
+export async function deleteAsset(
+  publicId: string,
+  resourceType: string,
+  deleteOptions?: UploadOptions,
+): Promise<void> {
+  configureOnce();
+  await cloudinary.uploader.destroy(publicId, {
+    resource_type: resourceType,
+    ...(deleteOptions?.deliveryType ? { type: deleteOptions.deliveryType } : {}),
+  });
 }
 
 /**

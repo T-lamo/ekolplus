@@ -154,4 +154,37 @@ describe('POST /api/school/students — grants du rôle personnalisé', () => {
     expect((await res.json()).error).toBe('PERMISSION_DENIED');
     expect(prismaMock.student.create).not.toHaveBeenCalled();
   });
+
+  it('persists nisu and guardian nif/niu/vitalStatus on creation', async () => {
+    mockResolveMySchool.mockResolvedValue(ownerSchool);
+
+    const res = await POST(
+      new NextRequest('http://localhost/api/school/students', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          firstName: 'Marie',
+          lastName: 'Joseph',
+          dateOfBirth: '2014-05-02',
+          classId: 'cls_1',
+          nisu: 'NISU-2026-0001',
+          guardians: [
+            {
+              name: 'Jean Joseph',
+              relationship: 'Père',
+              nif: 'NIF-1',
+              niu: 'NIU-1',
+              vitalStatus: 'VIVANT',
+            },
+          ],
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const createArgs = prismaMock.student.create.mock.calls[0]?.[0] as {
+      data: { nisu?: string };
+    };
+    expect(createArgs.data.nisu).toBe('NISU-2026-0001');
+  });
 });

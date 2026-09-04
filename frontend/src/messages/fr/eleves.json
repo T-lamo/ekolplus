@@ -141,6 +141,8 @@
       "previousSchoolPlaceholder": "Nom de l'école précédente...",
       "transferNumber": "Numéro de transfert",
       "transferNumberPlaceholder": "Optionnel",
+      "nisu": "NISU",
+      "nisuPlaceholder": "Numéro d'identification scolaire unique",
       "notes": "Observations / Notes internes"
     },
     "statusSection": {
@@ -158,7 +160,16 @@
       "relationship": "Lien de parenté",
       "phone": "Téléphone",
       "email": "Email",
-      "profession": "Profession"
+      "profession": "Profession",
+      "nif": "NIF",
+      "nifPlaceholder": "Numéro d'identification fiscale",
+      "niu": "NIU",
+      "niuPlaceholder": "Numéro d'identifiant unique",
+      "vitalStatus": "Statut",
+      "vitalStatusOptions": {
+        "VIVANT": "Vivant(e)",
+        "DECEDE": "Décédé(e)"
+      }
     },
     "options": {
       "title": "Options & Accès",

@@ -49,6 +49,9 @@ const EMPTY_GUARDIAN: GuardianData = {
   email: '',
   profession: '',
   isPrimary: false,
+  nif: '',
+  niu: '',
+  vitalStatus: null,
 };
 
 interface FormState {
@@ -68,6 +71,7 @@ interface FormState {
   enrolledAt: string;
   previousSchool: string;
   transferNumber: string;
+  nisu: string;
   notes: string;
   scholarship: boolean;
   status: StudentStatus;
@@ -91,6 +95,7 @@ function emptyForm(defaultClassId: string): FormState {
     enrolledAt: new Date().toISOString().slice(0, 10),
     previousSchool: '',
     transferNumber: '',
+    nisu: '',
     notes: '',
     scholarship: false,
     status: 'ENROLLED',
@@ -115,6 +120,7 @@ function toForm(s: StudentDetail): FormState {
     enrolledAt: s.enrolledAt.slice(0, 10),
     previousSchool: s.previousSchool ?? '',
     transferNumber: s.transferNumber ?? '',
+    nisu: s.nisu ?? '',
     notes: s.notes ?? '',
     scholarship: s.scholarship,
     status: s.status,
@@ -282,6 +288,9 @@ export function StudentFormModal({
           email: g.email || null,
           profession: g.profession || null,
           isPrimary: g.isPrimary,
+          nif: g.nif || null,
+          niu: g.niu || null,
+          vitalStatus: g.vitalStatus,
         }));
 
       const body = {
@@ -301,6 +310,7 @@ export function StudentFormModal({
         enrolledAt: form.enrolledAt,
         previousSchool: form.previousSchool.trim() || null,
         transferNumber: form.transferNumber.trim() || null,
+        nisu: form.nisu.trim() || null,
         notes: form.notes.trim() || null,
         scholarship: form.scholarship,
         status: form.status,
@@ -542,6 +552,12 @@ export function StudentFormModal({
                       onChange={(e) => patch({ transferNumber: e.target.value })}
                     />
                   </div>
+                  <Field
+                    label={t('schooling.nisu')}
+                    placeholder={t('schooling.nisuPlaceholder')}
+                    value={form.nisu}
+                    onChange={(e) => patch({ nisu: e.target.value })}
+                  />
                   <label className="flex flex-col gap-1.5 text-sm">
                     <span className="text-xs font-semibold text-foreground">
                       {t('schooling.notes')}
@@ -697,7 +713,14 @@ type GuardianFieldsT = (
     | 'guardians.relationship'
     | 'guardians.phone'
     | 'guardians.email'
-    | 'guardians.profession',
+    | 'guardians.profession'
+    | 'guardians.nif'
+    | 'guardians.nifPlaceholder'
+    | 'guardians.niu'
+    | 'guardians.niuPlaceholder'
+    | 'guardians.vitalStatus'
+    | 'guardians.vitalStatusOptions.VIVANT'
+    | 'guardians.vitalStatusOptions.DECEDE',
 ) => string;
 
 function GuardianFields({
@@ -747,6 +770,31 @@ function GuardianFields({
         value={value.profession ?? ''}
         onChange={(e) => onChange({ ...value, profession: e.target.value })}
       />
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+        <Field
+          label={t('guardians.nif')}
+          placeholder={t('guardians.nifPlaceholder')}
+          value={value.nif ?? ''}
+          onChange={(e) => onChange({ ...value, nif: e.target.value })}
+        />
+        <Field
+          label={t('guardians.niu')}
+          placeholder={t('guardians.niuPlaceholder')}
+          value={value.niu ?? ''}
+          onChange={(e) => onChange({ ...value, niu: e.target.value })}
+        />
+      </div>
+      <Select
+        label={t('guardians.vitalStatus')}
+        value={value.vitalStatus ?? ''}
+        onValueChange={(v) =>
+          onChange({ ...value, vitalStatus: v === '' ? null : (v as 'VIVANT' | 'DECEDE') })
+        }
+      >
+        <SelectItem value="">—</SelectItem>
+        <SelectItem value="VIVANT">{t('guardians.vitalStatusOptions.VIVANT')}</SelectItem>
+        <SelectItem value="DECEDE">{t('guardians.vitalStatusOptions.DECEDE')}</SelectItem>
+      </Select>
     </>
   );
 }

@@ -11,8 +11,12 @@
 //   5. No-user branch: dummy bcrypt compare → INVALID_CREDENTIALS (no recordFailure)
 //   6. verifyPassword → on fail recordFailure → LOCKED_OUT or INVALID_CREDENTIALS
 //   7. emailVerifiedAt check (after credential match — D-24; skipped for a
-//      username-only account, which has no email to verify — see spec
-//      2026-09-04-personnel-module-design.md §5.1)
+//      username-only account, which has no email to verify, AND skipped
+//      when the login itself was resolved via username even if that same
+//      account also has an unverified email on file — see spec
+//      2026-09-04-personnel-module-design.md §5.1/§5.4: "la connexion par
+//      nom d'utilisateur continue de fonctionner" while an added-after-the-
+//      fact email awaits verification)
 //   8. recordSuccess + issue 3 cookies
 export const runtime = 'nodejs';
 
@@ -160,8 +164,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // 7. emailVerifiedAt check — after credential match (D-24). A
     //    username-only account (no email at all) has nothing to verify and
-    //    is active immediately; it never reaches this gate.
-    if (user.email && !user.emailVerifiedAt) {
+    //    is active immediately; it never reaches this gate. A double-profile
+    //    account (username + email both set) that logs in BY USERNAME also
+    //    never reaches this gate — only an actual email-path login is
+    //    blocked by its own unverified email (spec §5.4).
+    const loggedInViaEmail = lookup !== null && 'email' in lookup;
+    if (loggedInViaEmail && user.email && !user.emailVerifiedAt) {
       return NextResponse.json(
         { error: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email first.' },
         { status: 403, headers: { 'x-request-id': ctx.requestId } },

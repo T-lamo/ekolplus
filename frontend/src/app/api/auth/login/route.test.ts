@@ -257,6 +257,41 @@ describe('POST /api/auth/login', () => {
     expect(__cookieStore.has('app-token')).toBe(true);
   });
 
+  it('Test 6c: a double-profile account (username + unverified email) logs in fine BY USERNAME — EMAIL_NOT_VERIFIED only blocks the email path', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u3',
+      email: 'added-later@b.com',
+      username: 'marie.k',
+      passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
+      emailVerifiedAt: null,
+      tokenVersion: 0,
+    } as never);
+    vi.mocked(verifyPassword).mockResolvedValue(true);
+
+    const res = await POST(makeReq({ identifier: 'marie.k', password: 'longenough' }));
+
+    expect(res.status).toBe(200);
+    expect(__cookieStore.has('app-token')).toBe(true);
+  });
+
+  it('Test 6d: that same double-profile account IS blocked with EMAIL_NOT_VERIFIED when logging in BY EMAIL', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u3',
+      email: 'added-later@b.com',
+      username: 'marie.k',
+      passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
+      emailVerifiedAt: null,
+      tokenVersion: 0,
+    } as never);
+    vi.mocked(verifyPassword).mockResolvedValue(true);
+
+    const res = await POST(makeReq({ identifier: 'added-later@b.com', password: 'longenough' }));
+
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('EMAIL_NOT_VERIFIED');
+    expect(__cookieStore.has('app-token')).toBe(false);
+  });
+
   it('Test 7: per-identifier rate limit — 11th attempt returns 429 TOO_MANY_LOGIN_ATTEMPTS', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
 

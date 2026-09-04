@@ -12,6 +12,7 @@ const WHITELIST = [
   'roles/',
   'members/',
   'timetable/route.ts', // GET opt-in enseignant : garde manuelle documentée
+  'accounts/', // résolution de compte (requireAccountAccess) : rang de rôle + resolveSchoolAccount, pas un grant unique — module Personnel §7
 ];
 
 function walk(dir: string): string[] {
@@ -30,5 +31,21 @@ describe('school routes enforce staff permissions (RBAC-01)', () => {
       })
       .filter((p) => !readFileSync(p, 'utf8').includes('requireSchoolPermission('));
     expect(offenders).toEqual([]);
+  });
+
+  // Witness for the `accounts/` whitelist exemption (module Personnel §7):
+  // these two routes deliberately authorize via role-rank +
+  // `resolveSchoolAccount`/`requireAccountAccess`, not a single
+  // `requireSchoolPermission` grant — same exemption reasoning as
+  // `members/`. If either route starts calling requireSchoolPermission,
+  // this test should be revisited (the whitelist entry would then be
+  // stale) rather than silently passing.
+  it('accounts/[userId] routes do NOT call requireSchoolPermission (documented exemption)', () => {
+    const accountsRoot = join(ROOT, 'accounts');
+    const files = walk(accountsRoot);
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      expect(readFileSync(file, 'utf8')).not.toContain('requireSchoolPermission(');
+    }
   });
 });

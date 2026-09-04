@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { usePathname } from 'next/navigation';
@@ -56,9 +56,19 @@ export function Sidebar({
     findActiveSection(pathname, sections),
   );
 
+  // `sections` is rebuilt (new array/object references) whenever the role or
+  // permission-derived filtering recomputes — e.g. the school plan snapshot
+  // resolving right after login — which happens independently of navigation.
+  // Resyncing on every `sections` change (rather than only on real pathname
+  // changes) closed a section the user had just manually opened, the instant
+  // one of those unrelated recomputes landed. A ref keeps this effect scoped
+  // to actual navigation while still reading the latest sections.
+  const sectionsRef = useRef(sections);
+  sectionsRef.current = sections;
+
   useEffect(() => {
-    setOpenSection(findActiveSection(pathname, sections));
-  }, [pathname, sections]);
+    setOpenSection(findActiveSection(pathname, sectionsRef.current));
+  }, [pathname]);
 
   const activeHref = findActiveItem(pathname, sections)?.href ?? null;
   const bgClass =

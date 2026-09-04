@@ -38,6 +38,14 @@ const OWNER_PASSWORD = 'TestEcole2026!';
 // doesn't require going through the invite/accept-code flow each time.
 const TEACHER_PASSWORD = 'TeacherTest2026!';
 const STUDENT_PASSWORD = 'StudentTest2026!';
+// Personnel module test account (secrétariat) — a username-only staff
+// login (no email), the account shape POST /api/school/personnel's
+// username-mode branch produces: User.username/passwordHash set,
+// User.email left null, an OrganizationMember role MEMBER holding a
+// StaffRole. Manual QA account for the no-email login path (Task 9,
+// 2026-09-04 Personnel module spec).
+const SECRETARIAT_USERNAME = 'secretaire.demo';
+const SECRETARIAT_PASSWORD = 'SecretaireTest2026!';
 export const ETOILES = {
   // Same id as before the wipe so bookmarks / notes keep pointing at it.
   schoolId: 'cmsovzjgv00059xpfilkr2lyh',
@@ -912,6 +920,54 @@ async function upsertTeacherPortalAccount(
   await prisma.teacher.update({ where: { id: teacherId }, data: { userId: user.id } });
 }
 
+// Personnel module test account (secrétariat) — a username-only staff
+// login: no email at all, modeled on how POST /api/school/personnel's
+// username-mode branch creates one (see that route's header comment) —
+// User.username/passwordHash set, User.email left null, an
+// OrganizationMember role MEMBER holding a StaffRole with a couple of
+// real grants (lib/permissions.ts). Only created when the school itself
+// is (same as the teacher portal account above); upserts by username so
+// a re-run without --reset still re-links it if the User row survived a
+// previous reset.
+async function ensureSecretariatStaffAccount(
+  prisma: PrismaClient,
+  organizationId: string,
+  schoolId: string,
+  passwordHash: string,
+): Promise<string> {
+  const user = await prisma.user.upsert({
+    where: { username: SECRETARIAT_USERNAME },
+    update: { passwordHash, name: 'Nadège Similien' },
+    create: {
+      username: SECRETARIAT_USERNAME,
+      name: 'Nadège Similien',
+      passwordHash,
+      role: 'USER',
+    },
+    select: { id: true },
+  });
+  const role = await prisma.staffRole.create({
+    data: {
+      schoolId,
+      name: 'Secrétariat',
+      description: 'Suivi des dossiers élèves — compte de démonstration sans email.',
+      grants: ['dashboard.view', 'eleves.view', 'eleves.edit'],
+    },
+    select: { id: true },
+  });
+  await prisma.organizationMember.upsert({
+    where: { organizationId_userId: { organizationId, userId: user.id } },
+    update: { role: 'MEMBER', staffRoles: { set: [{ id: role.id }] } },
+    create: {
+      organizationId,
+      userId: user.id,
+      role: 'MEMBER',
+      staffRoles: { connect: [{ id: role.id }] },
+    },
+  });
+  return SECRETARIAT_USERNAME;
+}
+
 // Espace Élève test account — the first student (by matricule) of Les
 // Étoiles gets a real, already-active login, the same seed-time shortcut
 // as the teacher account above (no invite code). Runs on every invocation,
@@ -1100,7 +1156,7 @@ async function seedEtoiles(
         phone: PHONE(),
         gender: t.civility === 'Mme' ? 'Féminin' : 'Masculin',
         nationality: 'Haïtienne',
-        idNumber: `NIF-${int(2010, 2024)}-${String(int(1, 999)).padStart(4, '0')}`,
+        nif: `NIF-${int(2010, 2024)}-${String(int(1, 999)).padStart(4, '0')}`,
         address: `${pick(NEIGHBOURHOODS)}, Port-au-Prince`,
         contractType: t.contractType,
         hiredAt: utc(now.getUTCFullYear() - t.hiredYearsAgo, 9, 1),
@@ -1132,6 +1188,15 @@ async function seedEtoiles(
     teacherPasswordHash,
   );
   console.log(`  compte espace enseignant : ${michelEmail}`);
+
+  const secretariatPasswordHash = await bcrypt.hash(SECRETARIAT_PASSWORD, 12);
+  const secretariatUsername = await ensureSecretariatStaffAccount(
+    prisma,
+    organizationId,
+    schoolId,
+    secretariatPasswordHash,
+  );
+  console.log(`  compte staff sans email (Personnel) : ${secretariatUsername}`);
 
   // Subjects.
   const subjectId = new Map<string, string>();

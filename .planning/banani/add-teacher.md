@@ -1,5 +1,22 @@
 # Add Teacher — Banani → Next.js 16 / Tailwind v4
 
+> **SUPERSEDED 2026-09-05** — creation and the fiche described below were
+> absorbed into the unified Personnel module (`docs/superpowers/plans/2026-09-04-personnel-module.md`,
+> spec `docs/superpowers/specs/2026-09-04-personnel-module-design.md`).
+> `TeacherFormModal` (the "Révision 2026-08-14" wizard modal below) is
+> replaced by the standalone `/personnel/nouveau` 3-step wizard (Identité /
+> Profils / Connexion), which also creates a staff-only or dual profile in
+> the same call, not just a teacher; the `/enseignants/[id]` fiche is
+> replaced by `/personnel/[id]` (same tabs — Informations / Matières &
+> Classes — plus Accès & rôles / Compte for a staff profile). Section 6
+> below ("Accès à la plateforme") was an honest deferred placeholder at the
+> time ("carte Bientôt disponible") — it is now for real the wizard's
+> Connexion step (none/email/username login modes). `/enseignants/nouveau`
+> and `/enseignants/[id]` still exist as same-id redirects to their
+> `/personnel*` equivalents (old bookmarks/links never 404). See
+> `STATUS.md`'s `personnel-fiche`/`ajouter-personnel` entry. This file is
+> kept for historical reference, not deleted.
+
 ## Source
 - Banani screen ID : `HmgFVw_38Y6C` — fetché 2026-08-14 — `fetches/epic4-forms/add-teacher.html`
 - Route : `/enseignants/nouveau` (création) + `/enseignants/[id]/modifier` (édition, même composant prérempli)

@@ -1,5 +1,16 @@
 # Teachers List — Banani → Next.js
 
+> **SUPERSEDED 2026-09-05** — the standalone `/enseignants` list below was
+> absorbed into the unified Personnel module (`docs/superpowers/plans/2026-09-04-personnel-module.md`,
+> spec `docs/superpowers/specs/2026-09-04-personnel-module-design.md`). The
+> merged list now lives at `/personnel` (see `STATUS.md`'s `personnel-list`
+> entry) — one screen for teachers AND staff, filterable by profile.
+> `/enseignants` itself still exists as a same-path `redirect('/personnel')`
+> (kept for old bookmarks/links, never 404s). This file is kept for
+> historical reference (the Structure map below is still an accurate
+> description of what the merged screen's "Enseignants" filter view shows),
+> not deleted.
+
 ## Source
 - Banani screen ID: `OyxtQcFdbEC9`
 - Fetched: 2026-08-11

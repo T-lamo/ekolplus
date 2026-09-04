@@ -58,21 +58,22 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  verificationCodes   VerificationCode[]
-  uploads             FileUpload[]
-  notifications       Notification[]
-  notifPrefs          NotificationPreferences?
-  orders              Order[]
-  withdrawals         Withdrawal[]
-  oauthAccounts       OAuthAccount[]
-  adminActions        AdminAction[]
-  appreciations       Appreciation[]
-  teacherProfile      Teacher?
-  studentProfile      Student?
-  attendanceMarks     Attendance[]
-  recordedFeePayments FeePayment[]
-  openedFeeDisputes   FeeDispute[]
-  loginEvents         LoginEvent[]
+  verificationCodes        VerificationCode[]
+  uploads                  FileUpload[]
+  notifications            Notification[]
+  notifPrefs               NotificationPreferences?
+  orders                   Order[]
+  withdrawals              Withdrawal[]
+  oauthAccounts            OAuthAccount[]
+  adminActions             AdminAction[]
+  appreciations            Appreciation[]
+  teacherProfile           Teacher?
+  studentProfile           Student?
+  attendanceMarks          Attendance[]
+  recordedFeePayments      FeePayment[]
+  uploadedStudentDocuments StudentDocument[]
+  openedFeeDisputes        FeeDispute[]
+  loginEvents              LoginEvent[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -194,7 +195,7 @@ model School {
   gradeLevels           GradeLevel[]
   timetableSessions     TimetableSession[]
   rooms                 Room[]
-  staffRoles StaffRole[]
+  staffRoles            StaffRole[]
 
   @@index([organizationId])
 }
@@ -322,14 +323,14 @@ model OrganizationMember {
 // OWNER/ADMIN n'utilisent pas de StaffRole (accès total implicite).
 // m2m implicite avec OrganizationMember (table _OrganizationMemberToStaffRole).
 model StaffRole {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school      School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  grants      String[] @default([])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  grants      String[]             @default([])
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
   members     OrganizationMember[]
 
   @@unique([schoolId, name])
@@ -442,7 +443,10 @@ model Teacher {
   dateOfBirth       DateTime?
   gender            String?
   nationality       String?
-  idNumber          String? // ex "NIF-2024-0042"
+  birthPlace        String? // aligné sur Student.placeOfBirth
+  diploma           String? // texte libre, ex. "Licence en Sciences de l'Éducation"
+  nif               String? // Numéro d'Identification Fiscale — anciennement idNumber
+  niu               String? // Numéro d'Identifiant Unique
   secondaryPhone    String?
   address           String?
   contractType      String? // Temps plein | Temps partiel | Vacataire — free text
@@ -573,12 +577,14 @@ model Student {
   enrollmentType String? // Nouvelle inscription | Réinscription | Transfert — free text
   previousSchool String?
   transferNumber String?
+  nisu           String? // Numéro d'Identification Scolaire Unique (MENFP)
   notes          String? // internal observations, staff-only
   scholarship    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   guardians       Guardian[]
+  documents       StudentDocument[]
   enrollments     Enrollment[]
   grades          Grade[]
   goals           Goal[]
@@ -587,10 +593,43 @@ model Student {
   feePayments     FeePayment[]
   feeDisputes     FeeDispute[]
   feeReminderLogs FeeReminderLog[]
-  userId          String? @unique
-  user            User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?           @unique
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
+}
+
+enum StudentDocumentType {
+  BIRTH_CERTIFICATE
+  VACCINATION_RECORD
+  PREVIOUS_SCHOOL_RECORD
+}
+
+// Documents administratifs scannés de l'élève (spec 2026-09-02-dossiers-enrichis).
+// Un seul fichier "courant" par type et par élève — un nouvel upload sur un
+// type déjà présent REMPLACE la ligne (upsert), même convention à un seul
+// slot que Student.photoUrl. `fileKey` est le public_id Cloudinary,
+// JAMAIS une URL : ces documents sont uploadés en delivery type
+// "authenticated" et ne sont servis qu'au travers d'une route serveur
+// authentifiée qui génère une URL signée à courte durée. `resourceType`
+// (image | raw) est celui renvoyé par Cloudinary à l'upload — nécessaire
+// pour reconstruire l'URL signée au téléchargement.
+model StudentDocument {
+  id           String              @id @default(cuid())
+  studentId    String
+  student      Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type         StudentDocumentType
+  fileKey      String
+  fileName     String
+  mimeType     String
+  resourceType String
+  sizeBytes    Int
+  uploadedAt   DateTime            @default(now())
+  uploadedById String?
+  uploadedBy   User?               @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, type])
+  @@index([studentId])
 }
 
 model Guardian {
@@ -603,6 +642,9 @@ model Guardian {
   email        String?
   profession   String?
   isPrimary    Boolean  @default(false)
+  nif          String? // Numéro d'Identification Fiscale
+  niu          String? // Numéro d'Identifiant Unique
+  vitalStatus  String? // "VIVANT" | "DECEDE" — texte libre, pas de catalogue fixe
   createdAt    DateTime @default(now())
 
   @@index([studentId])
@@ -881,16 +923,16 @@ model FeeDispute {
 // are the granular rules (Relances' "Automatisation" card) that only fire
 // once the master switch is on.
 model FeeAutomationSettings {
-  id                      String  @id @default(cuid())
-  schoolId                String  @unique
-  school                  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  lateFeeEnabled          Boolean @default(true)
-  autoRemindersEnabled    Boolean @default(false)
-  reminderBefore5Days     Boolean @default(true)
-  reminderOnDueDate       Boolean @default(true)
-  reminderWeeklyOverdue   Boolean @default(false)
-  reminderCriticalOverdue Boolean @default(true)
-  currency                String  @default("HTG")
+  id                       String  @id @default(cuid())
+  schoolId                 String  @unique
+  school                   School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  lateFeeEnabled           Boolean @default(true)
+  autoRemindersEnabled     Boolean @default(false)
+  reminderBefore5Days      Boolean @default(true)
+  reminderOnDueDate        Boolean @default(true)
+  reminderWeeklyOverdue    Boolean @default(false)
+  reminderCriticalOverdue  Boolean @default(true)
+  currency                 String  @default("HTG")
   // Email is the default/free channel (Resend, already wired for the rest of
   // the app). WhatsApp costs a per-message Meta fee on top of Twilio's own
   // fee — schools opt in per school, not a global switch, since the platform

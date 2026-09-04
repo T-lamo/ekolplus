@@ -15,7 +15,8 @@
     "teacher": "Teacher",
     "studentParent": "Student / Parent"
   },
-  "emailLabel": "Email address",
+  "identifierLabel": "Email or username",
+  "identifierPlaceholder": "you@school.com or marie.k",
   "passwordLabel": "Password",
   "showPassword": "Show password",
   "hidePassword": "Hide password",
@@ -29,7 +30,7 @@
   "errors": {
     "TOO_MANY_LOGIN_ATTEMPTS": "Too many attempts. Try again in a few minutes.",
     "LOCKED_OUT": "Account temporarily locked after several failed attempts. Try again in a few minutes.",
-    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "INVALID_CREDENTIALS": "Incorrect identifier or password.",
     "EMAIL_NOT_VERIFIED": "Please verify your email address before signing in.",
     "ACCOUNT_SUSPENDED": "This account has been suspended. Contact support."
   }

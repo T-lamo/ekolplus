@@ -1,9 +1,11 @@
-// Tests for POST /api/auth/login (AUTH-02 + AUTH-10 lockout integration).
+// Tests for POST /api/auth/login (AUTH-02 + AUTH-10 lockout integration,
+// + username-only login — spec 2026-09-04-personnel-module-design.md §5.1).
 // Order: prisma-mock + cookie-mock at module level so vi.mock auto-hoists
 // above any module that imports `@/lib/server/prisma` or `next/headers`.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { mockNextCookies, __cookieStore } from '@/test-utils/mock-cookies';
+import { verifyToken } from '@/lib/server/auth';
 
 mockNextCookies();
 
@@ -57,31 +59,74 @@ beforeEach(() => {
 });
 
 describe('POST /api/auth/login', () => {
-  it('Test 1: happy path — issues 3 cookies and returns user', async () => {
+  it('Test 1: happy path (email) — issues 3 cookies and returns user', async () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'u1',
       email: 'a@b.com',
+      username: null,
       passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
       emailVerifiedAt: new Date(),
       tokenVersion: 0,
     } as never);
     vi.mocked(verifyPassword).mockResolvedValue(true);
 
-    const res = await POST(makeReq({ email: 'a@b.com', password: 'longenough' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com', password: 'longenough' }));
 
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toMatchObject({ ok: true, user: { sub: 'u1', email: 'a@b.com' } });
+    expect(prismaMock.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: 'a@b.com' } }),
+    );
     expect(recordSuccess).toHaveBeenCalledWith('a@b.com');
     expect(__cookieStore.has('app-token')).toBe(true);
     expect(__cookieStore.has('app-refresh')).toBe(true);
     expect(__cookieStore.has('app-csrf')).toBe(true);
   });
 
-  it('Test 2: no user — INVALID_CREDENTIALS, dummy compare called, no recordFailure', async () => {
+  it('Test 1b: happy path (username) — issues cookies, JWT email claim is null', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u2',
+      email: null,
+      username: 'marie.k',
+      passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
+      emailVerifiedAt: null,
+      tokenVersion: 0,
+    } as never);
+    vi.mocked(verifyPassword).mockResolvedValue(true);
+
+    const res = await POST(makeReq({ identifier: 'Marie.K', password: 'longenough' }));
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      ok: true,
+      user: { sub: 'u2', email: null, username: 'marie.k' },
+    });
+    expect(prismaMock.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { username: 'marie.k' } }),
+    );
+    const accessCookie = __cookieStore.get('app-token');
+    expect(accessCookie).toBeDefined();
+    const payload = await verifyToken(accessCookie!.value);
+    expect(payload?.email).toBeNull();
+    expect(payload?.sub).toBe('u2');
+  });
+
+  it('Test 1c: an identifier containing "@" always takes the email path, even if the local part alone would pass USERNAME_REGEX', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
 
-    const res = await POST(makeReq({ email: 'noone@b.com', password: 'longenough' }));
+    await POST(makeReq({ identifier: 'marie.k@school.example', password: 'longenough' }));
+
+    expect(prismaMock.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: 'marie.k@school.example' } }),
+    );
+  });
+
+  it('Test 2: no user (email-shaped) — INVALID_CREDENTIALS, dummy compare called, no recordFailure', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+
+    const res = await POST(makeReq({ identifier: 'noone@b.com', password: 'longenough' }));
 
     expect(res.status).toBe(400);
     expect((await res.json()).error).toBe('INVALID_CREDENTIALS');
@@ -89,10 +134,31 @@ describe('POST /api/auth/login', () => {
     expect(recordFailure).not.toHaveBeenCalled();
   });
 
+  it('Test 2b: unknown username — same INVALID_CREDENTIALS/timing path as an unknown email', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+
+    const res = await POST(makeReq({ identifier: 'nosuchuser', password: 'longenough' }));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('INVALID_CREDENTIALS');
+    expect(dummyBcryptCompare).toHaveBeenCalledWith('longenough');
+    expect(recordFailure).not.toHaveBeenCalled();
+  });
+
+  it('Test 2c: an identifier matching neither email nor username format never reaches the DB — same INVALID_CREDENTIALS path', async () => {
+    const res = await POST(makeReq({ identifier: '1', password: 'longenough' }));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('INVALID_CREDENTIALS');
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
+    expect(dummyBcryptCompare).toHaveBeenCalledWith('longenough');
+  });
+
   it('Test 3: wrong password — INVALID_CREDENTIALS + recordFailure called', async () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'u1',
       email: 'a@b.com',
+      username: null,
       passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
       emailVerifiedAt: new Date(),
       tokenVersion: 0,
@@ -100,17 +166,36 @@ describe('POST /api/auth/login', () => {
     vi.mocked(verifyPassword).mockResolvedValue(false);
     vi.mocked(recordFailure).mockResolvedValue({ count: 1, locked: false });
 
-    const res = await POST(makeReq({ email: 'a@b.com', password: 'wrong' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com', password: 'wrong' }));
 
     expect(res.status).toBe(400);
     expect((await res.json()).error).toBe('INVALID_CREDENTIALS');
     expect(recordFailure).toHaveBeenCalledWith('a@b.com');
   });
 
+  it('Test 3b: wrong password on a username account — INVALID_CREDENTIALS + recordFailure keyed by the username', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u2',
+      email: null,
+      username: 'marie.k',
+      passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
+      emailVerifiedAt: null,
+      tokenVersion: 0,
+    } as never);
+    vi.mocked(verifyPassword).mockResolvedValue(false);
+    vi.mocked(recordFailure).mockResolvedValue({ count: 1, locked: false });
+
+    const res = await POST(makeReq({ identifier: 'marie.k', password: 'wrong' }));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('INVALID_CREDENTIALS');
+    expect(recordFailure).toHaveBeenCalledWith('marie.k');
+  });
+
   it('Test 4: lockout already active — 423 LOCKED_OUT, no bcrypt', async () => {
     vi.mocked(isLockedOut).mockResolvedValue(true);
 
-    const res = await POST(makeReq({ email: 'a@b.com', password: 'whatever' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com', password: 'whatever' }));
 
     expect(res.status).toBe(423);
     expect((await res.json()).error).toBe('LOCKED_OUT');
@@ -122,6 +207,7 @@ describe('POST /api/auth/login', () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'u1',
       email: 'a@b.com',
+      username: null,
       passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
       emailVerifiedAt: new Date(),
       tokenVersion: 0,
@@ -129,23 +215,24 @@ describe('POST /api/auth/login', () => {
     vi.mocked(verifyPassword).mockResolvedValue(false);
     vi.mocked(recordFailure).mockResolvedValue({ count: 5, locked: true });
 
-    const res = await POST(makeReq({ email: 'a@b.com', password: 'wrong' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com', password: 'wrong' }));
 
     expect(res.status).toBe(423);
     expect((await res.json()).error).toBe('LOCKED_OUT');
   });
 
-  it('Test 6: EMAIL_NOT_VERIFIED — credentials valid but emailVerifiedAt is null', async () => {
+  it('Test 6: EMAIL_NOT_VERIFIED — credentials valid but emailVerifiedAt is null (email account)', async () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'u1',
       email: 'a@b.com',
+      username: null,
       passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
       emailVerifiedAt: null,
       tokenVersion: 0,
     } as never);
     vi.mocked(verifyPassword).mockResolvedValue(true);
 
-    const res = await POST(makeReq({ email: 'a@b.com', password: 'longenough' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com', password: 'longenough' }));
 
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('EMAIL_NOT_VERIFIED');
@@ -153,20 +240,37 @@ describe('POST /api/auth/login', () => {
     expect(__cookieStore.has('app-token')).toBe(false);
   });
 
-  it('Test 7: per-email rate limit — 11th attempt returns 429 TOO_MANY_LOGIN_ATTEMPTS', async () => {
+  it('Test 6b: a username-only account (no email) is never blocked by EMAIL_NOT_VERIFIED', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u2',
+      email: null,
+      username: 'marie.k',
+      passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
+      emailVerifiedAt: null,
+      tokenVersion: 0,
+    } as never);
+    vi.mocked(verifyPassword).mockResolvedValue(true);
+
+    const res = await POST(makeReq({ identifier: 'marie.k', password: 'longenough' }));
+
+    expect(res.status).toBe(200);
+    expect(__cookieStore.has('app-token')).toBe(true);
+  });
+
+  it('Test 7: per-identifier rate limit — 11th attempt returns 429 TOO_MANY_LOGIN_ATTEMPTS', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
 
     let last: Response | undefined;
     // D-08 default = 10/15m. The 11th attempt must be 429.
     for (let i = 0; i < 11; i++) {
-      last = await POST(makeReq({ email: 'rl@b.com', password: 'longenough' }));
+      last = await POST(makeReq({ identifier: 'rl@b.com', password: 'longenough' }));
     }
     expect(last?.status).toBe(429);
     expect((await last!.json()).error).toBe('TOO_MANY_LOGIN_ATTEMPTS');
   });
 
   it('Test 8: VALIDATION_FAILED — missing password', async () => {
-    const res = await POST(makeReq({ email: 'a@b.com' }));
+    const res = await POST(makeReq({ identifier: 'a@b.com' }));
     expect(res.status).toBe(400);
     expect((await res.json()).error).toBe('VALIDATION_FAILED');
   });
@@ -175,6 +279,7 @@ describe('POST /api/auth/login', () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'u_susp',
       email: 'suspended@b.com',
+      username: null,
       passwordHash: '$2a$12$hashhashhashhashhashhashhashhashhashhashhashhashhashhha',
       emailVerifiedAt: new Date(),
       tokenVersion: 0,
@@ -182,7 +287,7 @@ describe('POST /api/auth/login', () => {
     } as never);
     vi.mocked(verifyPassword).mockResolvedValue(true);
 
-    const res = await POST(makeReq({ email: 'suspended@b.com', password: 'longenough' }));
+    const res = await POST(makeReq({ identifier: 'suspended@b.com', password: 'longenough' }));
 
     expect(res.status).toBe(403);
     const body = await res.json();

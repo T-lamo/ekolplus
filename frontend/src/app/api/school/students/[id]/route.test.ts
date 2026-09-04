@@ -100,6 +100,8 @@ describe('GET /api/school/students/[id]', () => {
     expect(json.student.studentNumber).toBe('EL-1');
     expect(json.student.userId).toBeNull();
     expect(json.student.userEmailVerifiedAt).toBeNull();
+    expect(json.student.userEmail).toBeNull();
+    expect(json.student.username).toBeNull();
     expect(json.student.nisu).toBe('NISU-2026-0099');
   });
 
@@ -121,6 +123,26 @@ describe('GET /api/school/students/[id]', () => {
 
     expect(json.student.userId).toBe('user_1');
     expect(json.student.userEmailVerifiedAt).toBe('2026-08-01T00:00:00.000Z');
+  });
+
+  it("includes the linked user's email and username when set (Task 7 - bloc Accès)", async () => {
+    prismaMock.student.findUnique.mockResolvedValue({
+      id: 's1',
+      schoolId: 'school_1',
+      userId: 'user_1',
+      user: { email: null, username: 'marie.k', emailVerifiedAt: null },
+      guardians: [],
+      enrollments: [],
+      studentNumber: 'EL-1',
+      firstName: 'A',
+      lastName: 'B',
+    } as never);
+
+    const res = await GET(req(), params);
+    const json = await res.json();
+
+    expect(json.student.userEmail).toBeNull();
+    expect(json.student.username).toBe('marie.k');
   });
 });
 

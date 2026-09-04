@@ -49,7 +49,7 @@ export async function GET(
           },
           take: 1,
         },
-        user: { select: { emailVerifiedAt: true } },
+        user: { select: { email: true, username: true, emailVerifiedAt: true } },
       },
     });
     if (!student || student.schoolId !== mySchool.schoolId) {
@@ -66,6 +66,13 @@ export async function GET(
           id: student.id,
           studentNumber: student.studentNumber,
           userId: student.userId,
+          // The linked login account's own email/username (Task 7 of the
+          // personnel module plan) - distinct from `email` below, which is
+          // the student's own contact address used to resolve the
+          // email-invite target, not necessarily what the account logs in
+          // with (the invite can land on a guardian's address instead).
+          userEmail: student.user?.email ?? null,
+          username: student.user?.username ?? null,
           userEmailVerifiedAt: student.user?.emailVerifiedAt ?? null,
           firstName: student.firstName,
           lastName: student.lastName,

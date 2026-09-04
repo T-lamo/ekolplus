@@ -350,7 +350,26 @@
     "sentToast": "Invitation sent.",
     "resentToast": "Invitation resent.",
     "errorEmailInUse": "This email is already used by another account.",
-    "errorNoTarget": "Add an email (student or primary guardian) before inviting."
+    "errorNoTarget": "Add an email (student or primary guardian) before inviting.",
+    "emailOption": {
+      "label": "Invite by email",
+      "description": "An activation link is sent by email. The student sets their own password."
+    },
+    "usernameOption": {
+      "label": "Create a username access",
+      "description": "Best for students without an email. A username and a temporary password are generated.",
+      "button": "Create access",
+      "submitButton": "Create account",
+      "cancelButton": "Cancel",
+      "errorTaken": "This username is already taken."
+    },
+    "usernameActive": {
+      "status": "Signed in with the username {username}",
+      "resetButton": "Reset password",
+      "resetConfirmTitle": "Reset the password?",
+      "resetConfirmBody": "A new temporary password will be generated for {name}. You will need to hand it to the student yourself.",
+      "resetConfirmButton": "Reset"
+    }
   },
   "documents": {
     "types": {

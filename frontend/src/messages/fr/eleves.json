@@ -350,7 +350,26 @@
     "sentToast": "Invitation envoyée.",
     "resentToast": "Invitation renvoyée.",
     "errorEmailInUse": "Cette adresse email est déjà utilisée par un autre compte.",
-    "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter."
+    "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter.",
+    "emailOption": {
+      "label": "Inviter par email",
+      "description": "Un lien d'activation est envoyé par email. L'élève choisit lui-même son mot de passe."
+    },
+    "usernameOption": {
+      "label": "Créer un accès par nom d'utilisateur",
+      "description": "Idéal pour les élèves sans email. Un identifiant et un mot de passe temporaire sont générés.",
+      "button": "Créer l'accès",
+      "submitButton": "Créer le compte",
+      "cancelButton": "Annuler",
+      "errorTaken": "Ce nom d'utilisateur est déjà pris."
+    },
+    "usernameActive": {
+      "status": "Connecté avec le nom d'utilisateur {username}",
+      "resetButton": "Réinitialiser le mot de passe",
+      "resetConfirmTitle": "Réinitialiser le mot de passe ?",
+      "resetConfirmBody": "Un nouveau mot de passe temporaire sera généré pour {name}. Transmettez-le lui manuellement.",
+      "resetConfirmButton": "Réinitialiser"
+    }
   },
   "documents": {
     "types": {

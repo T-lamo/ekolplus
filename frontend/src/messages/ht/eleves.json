@@ -351,7 +351,26 @@
     "sentToast": "Envitasyon voye.",
     "resentToast": "Envitasyon voye ankò.",
     "errorEmailInUse": "Imèl sa a deja itilize pa yon lòt kont.",
-    "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite."
+    "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite.",
+    "emailOption": {
+      "label": "Envite pa imèl",
+      "description": "Yon lyen aktivasyon voye nan imèl la. Elèv la chwazi pwòp modpas li."
+    },
+    "usernameOption": {
+      "label": "Kreye yon aksè ak non itilizatè",
+      "description": "Ideyal pou elèv ki pa gen imèl. Yo jenere yon non itilizatè ak yon modpas tanporè.",
+      "button": "Kreye aksè a",
+      "submitButton": "Kreye kont lan",
+      "cancelButton": "Anile",
+      "errorTaken": "Non itilizatè sa a deja pran."
+    },
+    "usernameActive": {
+      "status": "Konekte ak non itilizatè {username}",
+      "resetButton": "Reyajiste modpas la",
+      "resetConfirmTitle": "Reyajiste modpas la?",
+      "resetConfirmBody": "Y ap jenere yon nouvo modpas tanporè pou {name}. W ap oblije bay elèv la li nan men.",
+      "resetConfirmButton": "Reyajiste"
+    }
   },
   "documents": {
     "types": {

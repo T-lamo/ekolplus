@@ -696,7 +696,10 @@ export default function BulletinEditorPage() {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setCurrentPageId(p.id)}
+                    onClick={() => {
+                      setCurrentPageId(p.id);
+                      setSelected(null);
+                    }}
                     className={`flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium ${
                       currentPageId === p.id
                         ? 'border-primary/40 bg-secondary text-primary'

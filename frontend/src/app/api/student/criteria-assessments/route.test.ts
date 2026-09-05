@@ -43,4 +43,15 @@ describe('GET /api/student/criteria-assessments', () => {
     await GET(new NextRequest('http://localhost/api/student/criteria-assessments'));
     expect(vi.mocked(getStudentQualitativeGrids).mock.calls[1]?.[0]?.termId).toBeNull();
   });
+
+  it('returns empty grids without a current enrollment and never calls the lib', async () => {
+    vi.mocked(requireStudent).mockResolvedValue({
+      ...studentCtx,
+      student: { ...studentCtx.student, classId: null, academicYearId: null },
+    } as never);
+    const res = await GET(new NextRequest('http://localhost/api/student/criteria-assessments'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ terms: [], term: null, grids: [] });
+    expect(getStudentQualitativeGrids).not.toHaveBeenCalled();
+  });
 });

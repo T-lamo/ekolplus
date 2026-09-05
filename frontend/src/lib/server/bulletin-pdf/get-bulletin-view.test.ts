@@ -3,6 +3,7 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getStudentBulletinView } from './get-bulletin-view';
+import { DEFAULT_PAGE_NUMBER_FORMAT } from '@/lib/server/bulletin-templates';
 
 const T_START = new Date('2025-09-01T00:00:00.000Z');
 // Ends far in the future so resolveCurrentTerm picks it whatever the run date.
@@ -44,10 +45,24 @@ beforeEach(() => {
     { studentId: 'stu_1', student: { id: 'stu_1', firstName: 'Nadia', lastName: 'Joseph' } },
     { studentId: 'stu_2', student: { id: 'stu_2', firstName: 'Paul', lastName: 'Louis' } },
   ] as never);
+  // Already pages-shaped (post-migration) so normalizeConfig short-circuits
+  // and returns it unchanged — the legacy-shape path is exercised by its own
+  // dedicated test below.
   prismaMock.bulletinTemplate.findFirst.mockResolvedValue({
     id: 'tpl_1',
     name: 'Standard',
-    config: { pageFormat: 'A4', orientation: 'PORTRAIT' },
+    config: {
+      pageFormat: 'A4',
+      orientation: 'PORTRAIT',
+      pages: [
+        {
+          id: 'page-1',
+          layout: 'full',
+          showPageNumber: false,
+          blocks: [{ id: 'header', type: 'header', visible: true }],
+        },
+      ],
+    },
     isActive: true,
   } as never);
   prismaMock.classSubject.findMany.mockResolvedValue([
@@ -184,5 +199,45 @@ describe('getStudentBulletinView', () => {
     >;
     expect(where.status).toBe('PUBLISHED');
     expect(where.termId).toBe('term_1');
+  });
+
+  it('normalizes a template still stored in the old flat-blocks shape (Ruling: normalizeConfig is mandatory here)', async () => {
+    prismaMock.bulletinTemplate.findFirst.mockResolvedValue({
+      id: 'tpl_legacy',
+      name: 'Ancien modèle',
+      config: {
+        primaryColor: '#000000',
+        pageFormat: 'LETTER',
+        orientation: 'LANDSCAPE',
+        blocks: [{ id: 'header', visible: true }],
+        columns: {},
+        signatures: {},
+        typography: {},
+        content: { title: 'X', footerMessage: null },
+        layout: {},
+      },
+      isActive: true,
+    } as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+
+    expect(view?.template?.config).toEqual({
+      primaryColor: '#000000',
+      pageFormat: 'LETTER',
+      orientation: 'LANDSCAPE',
+      pages: [
+        {
+          id: 'page-1',
+          layout: 'full',
+          showPageNumber: false,
+          blocks: [{ id: 'header', type: 'header', visible: true }],
+        },
+      ],
+      columns: {},
+      signatures: {},
+      typography: {},
+      content: { title: 'X', footerMessage: null, pageNumberFormat: DEFAULT_PAGE_NUMBER_FORMAT },
+      layout: {},
+    });
   });
 });

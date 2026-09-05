@@ -20,6 +20,7 @@ import {
   subjectAverageFor,
 } from '@/lib/server/grades';
 import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
+import { normalizeConfig } from '@/lib/server/bulletin-templates';
 import { loadPublishedGrids } from '@/lib/server/student-views/criteria';
 import type { ViewAudience } from '@/lib/server/student-views/audience';
 
@@ -161,7 +162,7 @@ export async function getStudentBulletinView(
       ? {
           id: template.id,
           name: template.name,
-          config: template.config,
+          config: normalizeConfig(template.config),
           isActive: template.isActive,
         }
       : null,

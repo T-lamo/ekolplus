@@ -130,6 +130,7 @@ function translateErrors(codes: ClassFormErrorCodes, t: ClassFormErrorsT): Class
 export function useClassForm({
   cls,
   levelCatalog,
+  levelCatalogRows,
   roomIds,
   subjects,
   onSaved,
@@ -137,6 +138,8 @@ export function useClassForm({
   /** null/undefined = create mode. */
   cls?: ClassDetail | null;
   levelCatalog: string[];
+  /** Id/name rows of the school's grade-level catalog, for resolving `gradeLevelId` at submit. */
+  levelCatalogRows: { id: string; name: string }[];
   /** Ids of the catalogue rooms offered by the form (configuration/salles). */
   roomIds: string[];
   subjects: ClassFormSubject[];
@@ -316,6 +319,7 @@ export function useClassForm({
       const body = {
         name: values.name.trim(),
         level: effectiveLevel(values),
+        gradeLevelId: levelCatalogRows.find((l) => l.name === effectiveLevel(values))?.id ?? null,
         // Catalogue room → roomId (the API copies its name into `room`) ;
         // « Autre lieu… » / no catalogue → free text, roomId cleared.
         roomId: values.roomId && values.roomId !== OTHER_ROOM ? values.roomId : null,
@@ -346,7 +350,7 @@ export function useClassForm({
     } finally {
       setSubmitting(false);
     }
-  }, [values, cls, onSaved, t, tCommon]);
+  }, [values, cls, onSaved, t, tCommon, levelCatalogRows]);
 
   return {
     mode,

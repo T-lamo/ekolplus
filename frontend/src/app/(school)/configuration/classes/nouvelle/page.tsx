@@ -28,7 +28,7 @@ export default function NouvelleClassePage() {
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations('Configuration.classes.create');
-  const { options, error, noSchool } = useClassFormData(!!user);
+  const { options, levelCatalogRows, error, noSchool } = useClassFormData(!!user);
 
   useEffect(() => {
     if (noSchool) router.replace('/');
@@ -46,6 +46,7 @@ export default function NouvelleClassePage() {
   const form = useClassForm({
     cls: null,
     levelCatalog: options?.levelCatalog ?? [],
+    levelCatalogRows,
     roomIds,
     subjects: options?.subjects ?? [],
     onSaved,

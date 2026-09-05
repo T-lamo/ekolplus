@@ -41,6 +41,7 @@ export function BulletinPage({
 }) {
   const interactive = onSelect != null;
   const draggingEnabled = onDragStart != null && onDrop != null;
+  const halves = page.layout === 'halves';
 
   const headerBlock = page.blocks.find((b) => b.type === 'header');
   const studentInfoBlock = page.blocks.find((b) => b.type === 'studentInfo');
@@ -54,6 +55,7 @@ export function BulletinPage({
     return (
       <div
         key={block.id}
+        data-block-id={block.id}
         onClick={() => onSelect?.(page.id, block.id)}
         draggable={reorderable}
         onDragStart={reorderable ? () => onDragStart?.(block.id) : undefined}
@@ -62,11 +64,11 @@ export function BulletinPage({
         onDragEnd={reorderable ? onDragEnd : undefined}
         style={{
           marginBottom: config.layout.blockSpacing,
-          marginTop: block.type === 'signatures' && isLastVisible ? 'auto' : undefined,
+          marginTop: !halves && block.type === 'signatures' && isLastVisible ? 'auto' : undefined,
           opacity: dragBlockId === block.id ? 0.4 : 1,
           breakInside: block.breakBefore ? undefined : 'avoid',
           breakBefore: block.breakBefore === 'column' ? 'column' : undefined,
-          flexShrink: 0,
+          flexShrink: halves ? undefined : 0,
         }}
         className={`relative rounded ${interactive ? 'cursor-pointer' : ''} ${reorderable ? 'cursor-grab' : ''} ${
           selected?.pageId === page.id && selected.blockId === block.id
@@ -113,11 +115,11 @@ export function BulletinPage({
       )}
 
       <div
-        className="flex flex-1 flex-col"
+        data-testid="bulletin-page-blocks"
+        className={halves ? 'flex-1' : 'flex flex-1 flex-col'}
         style={{
           padding: config.layout.pageMargin,
-          columnCount: page.layout === 'halves' ? 2 : undefined,
-          columnGap: page.layout === 'halves' ? config.layout.blockSpacing * 2 : undefined,
+          ...(halves ? { columnCount: 2, columnGap: config.layout.blockSpacing * 2 } : {}),
         }}
       >
         {restBlocks.map((block) => wrap(block, renderBlock({ block, config, data })))}

@@ -79,6 +79,7 @@ beforeEach(() => {
     { id: 'ap_gen', subjectId: null, text: 'Bon trimestre.', status: 'PUBLISHED' },
     { id: 'ap_math', subjectId: 'sub_1', text: 'Excellent.', status: 'PUBLISHED' },
   ] as never);
+  prismaMock.criteriaAssessment.findMany.mockResolvedValue([] as never);
 });
 
 describe('getStudentBulletinView', () => {
@@ -145,5 +146,41 @@ describe('getStudentBulletinView', () => {
     );
     expect(view?.overallAverage).toBe(14);
     expect(view?.rank).toBe(2);
+  });
+
+  it('carries the published qualitative grids of the student as qualitativeSubjects', async () => {
+    prismaMock.criteriaAssessment.findMany.mockResolvedValue([
+      {
+        classSubjectId: 'cs_q',
+        classSubject: {
+          subject: {
+            name: 'Comportement',
+            ratingScale: ['Toujours', 'Souvent', 'Parfois', 'Jamais'],
+            criteria: [
+              { id: 'cr_1', label: 'Respecte les consignes' },
+              { id: 'cr_2', label: 'Partage' },
+            ],
+          },
+        },
+        ratings: [{ criterionId: 'cr_1', level: 0 }],
+      },
+    ] as never);
+    const view = await getStudentBulletinView('school_1', 'stu_1', null, 'student');
+    expect(view?.qualitativeSubjects).toEqual([
+      {
+        subjectName: 'Comportement',
+        ratingScale: ['Toujours', 'Souvent', 'Parfois', 'Jamais'],
+        criteria: [
+          { label: 'Respecte les consignes', level: 0 },
+          { label: 'Partage', level: null },
+        ],
+      },
+    ]);
+    const where = prismaMock.criteriaAssessment.findMany.mock.calls[0]?.[0]?.where as Record<
+      string,
+      unknown
+    >;
+    expect(where.status).toBe('PUBLISHED');
+    expect(where.termId).toBe('term_1');
   });
 });

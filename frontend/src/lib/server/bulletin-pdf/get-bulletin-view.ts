@@ -20,6 +20,7 @@ import {
   subjectAverageFor,
 } from '@/lib/server/grades';
 import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
+import { loadPublishedGrids } from '@/lib/server/student-views/criteria';
 import type { ViewAudience } from '@/lib/server/student-views/audience';
 
 export interface StudentBulletinView {
@@ -58,6 +59,13 @@ export interface StudentBulletinView {
     min: number | null;
     max: number | null;
     appreciation: string | null;
+  }[];
+  // Published qualitative grids of this student for the resolved term
+  // (spec §10.2 shape; plan 2 renders them). Empty when no term resolves.
+  qualitativeSubjects: {
+    subjectName: string;
+    ratingScale: string[];
+    criteria: { label: string; level: number | null }[];
   }[];
   generalAppreciation: string | null;
 }
@@ -165,6 +173,7 @@ export async function getStudentBulletinView(
       rank: null,
       rankedCount: 0,
       subjects: [],
+      qualitativeSubjects: [],
       generalAppreciation: null,
     };
   }
@@ -236,6 +245,14 @@ export async function getStudentBulletinView(
   const ranks = competitionRank(ranked, (r) => r.average);
   const rankEntry = ranked.findIndex((r) => r.studentId === studentId);
 
+  const qualitativeSubjects = (
+    await loadPublishedGrids({ classId: enrollment.classId, studentId, termId: term.id })
+  ).map((g) => ({
+    subjectName: g.subjectName,
+    ratingScale: g.ratingScale,
+    criteria: g.criteria.map((c) => ({ label: c.label, level: c.level })),
+  }));
+
   return {
     ...shell,
     overallAverage,
@@ -243,6 +260,7 @@ export async function getStudentBulletinView(
     rank: rankEntry >= 0 ? ranks[rankEntry]! : null,
     rankedCount: ranked.length,
     subjects,
+    qualitativeSubjects,
     generalAppreciation: generalRow?.text ?? null,
   };
 }

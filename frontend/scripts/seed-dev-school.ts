@@ -486,6 +486,15 @@ const TEACHERS: TeacherSeed[] = [
     hiredYearsAgo: 3,
     weeklyHoursTarget: 24,
   },
+  {
+    key: 'silien',
+    civility: 'Mme',
+    firstName: 'Nadège',
+    lastName: 'Silien',
+    contractType: 'Temps plein',
+    hiredYearsAgo: 3,
+    weeklyHoursTarget: 30,
+  },
 ];
 // Per-level splits so no teacher exceeds the 30 weekly slots: maths collège →
 // M. Augustin / lycée → M. Pierre-Louis; français collège → Mme Dorcélus /
@@ -615,6 +624,14 @@ export const ROOMS: RoomSeed[] = [
     building: 'Bâtiment A',
     floor: 'Rez-de-chaussée',
     equipment: 'Instruments, matériel de dessin',
+  },
+  {
+    name: 'Salle Maternelle',
+    type: 'CLASSROOM',
+    capacity: 20,
+    building: 'Bâtiment A',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Tapis, coin lecture, tableau blanc',
   },
 ];
 
@@ -1747,6 +1764,312 @@ async function seedEtoiles(
     data: { schoolId, lateFeeEnabled: true, autoRemindersEnabled: true, currency: 'HTG' },
   });
   console.log(`  ${payments.length} paiements, ${disputes.length} litiges`);
+
+  // Kindergarten (livret préscolaire) — spec §8/§12/§13. Deliberately built
+  // outside LEVELS/CLASSES/SUBJECTS (Ruling R1): the birth-year formula, the
+  // GradeLevel.order = 0 requirement, and "a qualitative subject must never
+  // get a numeric Evaluation" would each need special-casing inside the
+  // generic pipeline otherwise. teacherId/roomId reuse the 'silien'/'Salle
+  // Maternelle' entries appended to TEACHERS/ROOMS above.
+  const livretTemplate = await prisma.bulletinTemplate.findFirst({
+    where: { schoolId: null, name: 'Livret préscolaire' },
+    select: { id: true },
+  });
+  const kinderLevel = await prisma.gradeLevel.create({
+    data: {
+      schoolId,
+      name: 'Kindergarten',
+      order: 0,
+      bulletinTemplateId: livretTemplate?.id ?? null,
+    },
+    select: { id: true },
+  });
+  const kinderClass = await prisma.class.create({
+    data: {
+      schoolId,
+      academicYearId: yearId,
+      name: 'Kindergarten A',
+      level: 'Kindergarten',
+      gradeLevelId: kinderLevel.id,
+      room: 'Salle Maternelle',
+      roomId: roomId.get('Salle Maternelle') ?? null,
+      capacity: 20,
+      color: '#fbbf24',
+      track: null,
+      homeroomTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+
+  const COMPORTEMENT_CRITERIA = [
+    'Serviable',
+    'Obéissant',
+    'Attentif (ve)',
+    'Généreux (se)',
+    'Ordonné (e)',
+    'Propre',
+    'Poli (e)',
+    'Agressif (ve)',
+    'Timide',
+    'Gai (e)',
+    'Bavard (e)',
+    'Remuant (e)',
+    'Somnolent (e)',
+  ];
+  const PHYSIQUE_CRITERIA = [
+    'Exercices physiques',
+    'Rythmique',
+    'Perception visuelle',
+    'Perception auditive',
+    'Sens du toucher, du goût de l’odorat',
+    'Dessin – peinture',
+    'Coloriage',
+    'Découpage - collage',
+    'Modelage',
+    'Travaux manuels',
+  ];
+  const INTELLECTUEL_CRITERIA = [
+    'Langage',
+    'Poésie',
+    'Chant',
+    'Imagination',
+    'Observation',
+    'Schéma corporel',
+    'Exercices sensoriels',
+    'Connaissances des formes',
+    'Orientation spatiale',
+    'Orientation temporelle',
+    'Pré-lecture',
+    'Pré-écriture',
+    'Graphisme',
+    'Pré-calcul',
+    'Comptage',
+    'Bible',
+  ];
+  const COMPORTEMENT_SCALE = ['Toujours', 'Souvent', 'Parfois', 'Jamais'];
+  const DEVELOPPEMENT_SCALE = ['Excellent', 'Très bien', 'Bien', 'Assez bien'];
+
+  const comportement = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Comportement',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: COMPORTEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const developpementPhysique = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Développement physique',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: DEVELOPPEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const developpementIntellectuel = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Développement intellectuel',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: DEVELOPPEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+
+  await prisma.subjectCriterion.createMany({
+    data: [
+      ...COMPORTEMENT_CRITERIA.map((label, i) => ({
+        subjectId: comportement.id,
+        label,
+        order: i + 1,
+      })),
+      ...PHYSIQUE_CRITERIA.map((label, i) => ({
+        subjectId: developpementPhysique.id,
+        label,
+        order: i + 1,
+      })),
+      ...INTELLECTUEL_CRITERIA.map((label, i) => ({
+        subjectId: developpementIntellectuel.id,
+        label,
+        order: i + 1,
+      })),
+    ],
+  });
+  const [comportementCriteria, physiqueCriteria, intellectuelCriteria] = await Promise.all([
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: comportement.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: developpementPhysique.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: developpementIntellectuel.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+  ]);
+
+  const [csComportement, csPhysique, csIntellectuel] = await Promise.all([
+    prisma.classSubject.create({
+      data: { classId: kinderClass.id, subjectId: comportement.id, teacherId: tid('silien') },
+      select: { id: true },
+    }),
+    prisma.classSubject.create({
+      data: {
+        classId: kinderClass.id,
+        subjectId: developpementPhysique.id,
+        teacherId: tid('silien'),
+      },
+      select: { id: true },
+    }),
+    prisma.classSubject.create({
+      data: {
+        classId: kinderClass.id,
+        subjectId: developpementIntellectuel.id,
+        teacherId: tid('silien'),
+      },
+      select: { id: true },
+    }),
+  ]);
+
+  const kinderBirthYear = yearStart - 5;
+  const kinderStudentInputs: Prisma.StudentCreateManyInput[] = [];
+  for (let i = 0; i < 6; i++) {
+    const female = chance(0.5);
+    let firstName = '';
+    let lastName = '';
+    do {
+      firstName = pick(female ? FIRST_NAMES_F : FIRST_NAMES_M);
+      lastName = pick(LAST_NAMES);
+    } while (usedNames.has(`${firstName} ${lastName}`));
+    usedNames.add(`${firstName} ${lastName}`);
+    counter += 1;
+    kinderStudentInputs.push({
+      schoolId,
+      studentNumber: `EL-${yearStart}-${String(counter).padStart(3, '0')}`,
+      firstName,
+      lastName,
+      gender: female ? 'Féminin' : 'Masculin',
+      dateOfBirth: utc(kinderBirthYear - (chance(0.25) ? 1 : 0), int(1, 12), int(1, 28)),
+      placeOfBirth: pick([
+        'Port-au-Prince',
+        'Pétion-Ville',
+        'Cap-Haïtien',
+        'Les Cayes',
+        'Jacmel',
+        'Gonaïves',
+      ]),
+      nationality: 'Haïtienne',
+      address: `${pick(NEIGHBOURHOODS)}, Port-au-Prince`,
+      motherTongue: pick(['Créole', 'Créole', 'Français']),
+      enrollmentType: 'Nouvelle inscription',
+      scholarship: chance(0.08),
+      enrolledAt: addDays(cal.start, int(-20, 10)),
+      status: 'ENROLLED',
+    });
+  }
+  await prisma.student.createMany({ data: kinderStudentInputs });
+  const kinderStudents = await prisma.student.findMany({
+    where: { schoolId, studentNumber: { in: kinderStudentInputs.map((s) => s.studentNumber) } },
+    orderBy: { studentNumber: 'asc' },
+    select: { id: true, firstName: true, lastName: true },
+  });
+
+  const kinderGuardians: Prisma.GuardianCreateManyInput[] = kinderStudents.map((s) => {
+    const motherFirst = pick(GUARDIAN_FIRST_F);
+    return {
+      studentId: s.id,
+      name: `${motherFirst} ${s.lastName}`,
+      relationship: 'Mère',
+      phone: PHONE(),
+      email: chance(0.6) ? `${slugName(motherFirst)}.${slugName(s.lastName)}@gmail.com` : null,
+      profession: pick(PROFESSIONS),
+      isPrimary: true,
+    };
+  });
+  await prisma.guardian.createMany({ data: kinderGuardians });
+  await prisma.enrollment.createMany({
+    data: kinderStudents.map((s) => ({
+      studentId: s.id,
+      classId: kinderClass.id,
+      academicYearId: yearId,
+      enrolledAt: cal.start,
+    })),
+  });
+  console.log(
+    `  Kindergarten : niveau, classe, 3 matières qualitatives, ${kinderStudents.length} élèves`,
+  );
+
+  const term1 = at(terms, 0);
+  const [assessComportement, assessPhysique, assessIntellectuel] = await Promise.all([
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csComportement.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csPhysique.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csIntellectuel.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+  ]);
+  const kinderRatings: Prisma.CriteriaRatingCreateManyInput[] = [];
+  for (const grid of [
+    { assessmentId: assessComportement.id, criteria: comportementCriteria },
+    { assessmentId: assessPhysique.id, criteria: physiqueCriteria },
+    { assessmentId: assessIntellectuel.id, criteria: intellectuelCriteria },
+  ]) {
+    for (const student of kinderStudents) {
+      for (const criterion of grid.criteria) {
+        kinderRatings.push({
+          assessmentId: grid.assessmentId,
+          studentId: student.id,
+          criterionId: criterion.id,
+          level: int(0, 3),
+        });
+      }
+    }
+  }
+  await prisma.criteriaRating.createMany({ data: kinderRatings });
+
+  const KINDER_APPRECIATIONS = [
+    'Une session bien remplie : l’enfant participe avec entrain et progresse à son rythme.',
+    'Bon trimestre dans l’ensemble, de la curiosité et de bons progrès au fil des semaines.',
+  ];
+  await prisma.appreciation.createMany({
+    data: kinderStudents.map((s) => ({
+      studentId: s.id,
+      termId: term1.id,
+      subjectId: null,
+      mention: 'BIEN',
+      text: pick(KINDER_APPRECIATIONS),
+      comportement: pick(['Excellent', 'Satisfaisant']),
+      investissement: pick(['Excellent', 'Satisfaisant']),
+      assiduite: 'Régulier',
+      status: 'PUBLISHED',
+      authorId: ownerId,
+    })),
+  });
+  console.log('  feuilles de critères publiées, trimestre 1');
 
   // Active bulletin template = a fork of the global "Académique Vert".
   const source = await prisma.bulletinTemplate.findFirst({

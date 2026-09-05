@@ -5,6 +5,7 @@
 // (id null, status DRAFT). Spec 2026-09-05 §5.1.
 import 'server-only';
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/server/prisma';
 import { resolveCurrentTerm } from '@/lib/server/grades';
@@ -169,8 +170,54 @@ export type SaveSheetError =
   | 'LEVEL_OUT_OF_RANGE';
 
 /**
+ * One transaction: upsert the sheet, then replace every tick the payload
+ * mentions with two bulk statements instead of one round-trip per rating
+ * (the payload holds up to 5000). Duplicate targets in the same payload are
+ * de-duplicated last-one-wins, matching the sequential upserts this replaced.
+ */
+async function runSaveTransaction(
+  ctx: SheetContext,
+  termId: string,
+  input: SaveSheetInput,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const sheet = await tx.criteriaAssessment.upsert({
+      where: { classSubjectId_termId: { classSubjectId: ctx.id, termId } },
+      create: { classSubjectId: ctx.id, termId, status: input.status },
+      update: { status: input.status },
+      select: { id: true },
+    });
+
+    if (input.ratings.length === 0) return;
+
+    await tx.criteriaRating.deleteMany({
+      where: {
+        assessmentId: sheet.id,
+        OR: input.ratings.map((r) => ({ studentId: r.studentId, criterionId: r.criterionId })),
+      },
+    });
+
+    const toCreate = new Map<string, { studentId: string; criterionId: string; level: number }>();
+    for (const r of input.ratings) {
+      if (r.level !== null) {
+        toCreate.set(`${r.studentId}:${r.criterionId}`, {
+          studentId: r.studentId,
+          criterionId: r.criterionId,
+          level: r.level,
+        });
+      }
+    }
+    if (toCreate.size > 0) {
+      await tx.criteriaRating.createMany({
+        data: [...toCreate.values()].map((r) => ({ assessmentId: sheet.id, ...r })),
+      });
+    }
+  });
+}
+
+/**
  * Upserts the sheet (status) and replaces the ticks it receives: `level`
- * null erases, otherwise the tick is upserted. Ticks not mentioned are
+ * null erases, otherwise the tick is written. Ticks not mentioned are
  * left as they are, so a per-student screen can save one student at a time.
  */
 export async function saveSheet(
@@ -194,38 +241,18 @@ export async function saveSheet(
     }
   }
 
-  await prisma.$transaction(async (tx) => {
-    const sheet = await tx.criteriaAssessment.upsert({
-      where: { classSubjectId_termId: { classSubjectId: ctx.id, termId: term.id } },
-      create: { classSubjectId: ctx.id, termId: term.id, status: input.status },
-      update: { status: input.status },
-      select: { id: true },
-    });
-    for (const r of input.ratings) {
-      if (r.level === null) {
-        await tx.criteriaRating.deleteMany({
-          where: { assessmentId: sheet.id, studentId: r.studentId, criterionId: r.criterionId },
-        });
-      } else {
-        await tx.criteriaRating.upsert({
-          where: {
-            assessmentId_studentId_criterionId: {
-              assessmentId: sheet.id,
-              studentId: r.studentId,
-              criterionId: r.criterionId,
-            },
-          },
-          create: {
-            assessmentId: sheet.id,
-            studentId: r.studentId,
-            criterionId: r.criterionId,
-            level: r.level,
-          },
-          update: { level: r.level },
-        });
-      }
+  try {
+    await runSaveTransaction(ctx, term.id, input);
+  } catch (err) {
+    // Two concurrent saves of the same sheet race the upsert's unique
+    // constraint; the losing transaction rolls back cleanly, so a single
+    // retry sees the now-committed row and proceeds normally.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      await runSaveTransaction(ctx, term.id, input);
+    } else {
+      throw err;
     }
-  });
+  }
 
   const sheet = await loadSheet(ctx, term.id);
   return sheet ? { ok: true, sheet } : { ok: false, error: 'TERM_NOT_FOUND' };

@@ -59,14 +59,23 @@ export const QUALITATIVE_CONFLICT_MESSAGES: Record<QualitativeConflict, string> 
   SCALE_LEVEL_IN_USE: "Un niveau de l'échelle que vous retirez est déjà utilisé par une coche.",
 };
 
+/** Same labels, any order — a true reorder, not a rename. */
+function sameLabelSet(a: string[], b: string[]): boolean {
+  return a.length === b.length && [...a].sort().join(' ') === [...b].sort().join(' ');
+}
+
 /**
  * §4 transition rules, checked by PATCH before writing:
  * - NUMERIC to QUALITATIVE is refused while any evaluation exists on one of
  *   the subject's class-subjects;
  * - QUALITATIVE to NUMERIC is refused while any rating exists;
  * - shrinking the scale is refused while a rating uses a removed level
- *   (ratings store the index, so "removed" means index >= new length).
- * Renaming levels and growing the scale are always allowed and never query.
+ *   (ratings store the index, so "removed" means index >= new length);
+ * - reordering the scale at the same length is refused while any rating
+ *   exists, because a rating stores the index: moving a label would
+ *   silently change what every existing tick means.
+ * Renaming levels in place and growing the scale are always allowed and
+ * never query.
  */
 export async function findQualitativeConflict(
   subjectId: string,
@@ -90,6 +99,16 @@ export async function findQualitativeConflict(
     const inUse = await prisma.criteriaRating.count({
       where: { criterion: { subjectId }, level: { gte: next.ratingScale.length } },
     });
+    return inUse > 0 ? 'SCALE_LEVEL_IN_USE' : null;
+  }
+  if (
+    current.evaluationMode === 'QUALITATIVE' &&
+    next.evaluationMode === 'QUALITATIVE' &&
+    next.ratingScale.length === current.ratingScale.length &&
+    next.ratingScale.some((label, i) => label !== current.ratingScale[i]) &&
+    sameLabelSet(next.ratingScale, current.ratingScale)
+  ) {
+    const inUse = await prisma.criteriaRating.count({ where: { criterion: { subjectId } } });
     return inUse > 0 ? 'SCALE_LEVEL_IN_USE' : null;
   }
   return null;

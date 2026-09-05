@@ -73,6 +73,19 @@ describe('findQualitativeConflict', () => {
     expect(await findQualitativeConflict('subj_1', qualitative, toQualitative)).toBeNull();
   });
 
+  it('reordering the scale (same labels, different order) is refused while any rating exists', async () => {
+    prismaMock.criteriaRating.count.mockResolvedValue(1);
+    const reordered = { evaluationMode: 'QUALITATIVE' as const, ratingScale: ['B', 'A', 'C'] };
+    expect(await findQualitativeConflict('subj_1', qualitative, reordered)).toBe(
+      'SCALE_LEVEL_IN_USE',
+    );
+    expect(prismaMock.criteriaRating.count).toHaveBeenCalledWith({
+      where: { criterion: { subjectId: 'subj_1' } },
+    });
+    prismaMock.criteriaRating.count.mockResolvedValue(0);
+    expect(await findQualitativeConflict('subj_1', qualitative, reordered)).toBeNull();
+  });
+
   it('renaming or growing the scale never queries', async () => {
     expect(
       await findQualitativeConflict('subj_1', qualitative, {

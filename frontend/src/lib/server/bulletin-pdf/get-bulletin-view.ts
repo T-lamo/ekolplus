@@ -245,6 +245,9 @@ export async function getStudentBulletinView(
   const ranks = competitionRank(ranked, (r) => r.average);
   const rankEntry = ranked.findIndex((r) => r.studentId === studentId);
 
+  // Deliberately audience-blind: unlike `subjects`/`publishedOnly` above,
+  // both staff and student read PUBLISHED-only grids here, since a
+  // criteria sheet is always the student's own ticks either way.
   const qualitativeSubjects = (
     await loadPublishedGrids({ classId: enrollment.classId, studentId, termId: term.id })
   ).map((g) => ({

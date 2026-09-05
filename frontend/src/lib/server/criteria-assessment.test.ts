@@ -1,6 +1,7 @@
 // prismaMock first (auto-hoists vi.mock for '@/lib/server/prisma').
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 import { loadSheet, loadSheetContext, saveSheet, type SheetContext } from './criteria-assessment';
 
 const ctx: SheetContext = {
@@ -159,7 +160,7 @@ describe('saveSheet', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
-  it('upserts the sheet, upserts ticks, deletes null ticks, then reloads', async () => {
+  it('upserts the sheet, then batch-deletes and batch-creates ratings, then reloads', async () => {
     const result = await saveSheet(ctx, {
       termId: 'term_1',
       status: 'PUBLISHED',
@@ -174,21 +175,43 @@ describe('saveSheet', () => {
       update: { status: 'PUBLISHED' },
       select: { id: true },
     });
-    expect(prismaMock.criteriaRating.upsert).toHaveBeenCalledWith({
-      where: {
-        assessmentId_studentId_criterionId: {
-          assessmentId: 'ca_1',
-          studentId: 'stu_1',
-          criterionId: 'cr_1',
-        },
-      },
-      create: { assessmentId: 'ca_1', studentId: 'stu_1', criterionId: 'cr_1', level: 1 },
-      update: { level: 1 },
-    });
     expect(prismaMock.criteriaRating.deleteMany).toHaveBeenCalledWith({
-      where: { assessmentId: 'ca_1', studentId: 'stu_1', criterionId: 'cr_2' },
+      where: {
+        assessmentId: 'ca_1',
+        OR: [
+          { studentId: 'stu_1', criterionId: 'cr_1' },
+          { studentId: 'stu_1', criterionId: 'cr_2' },
+        ],
+      },
     });
+    expect(prismaMock.criteriaRating.createMany).toHaveBeenCalledWith({
+      data: [{ assessmentId: 'ca_1', studentId: 'stu_1', criterionId: 'cr_1', level: 1 }],
+    });
+    expect(prismaMock.criteriaRating.upsert).not.toHaveBeenCalled();
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.sheet.students[1]?.ratings).toEqual({ cr_1: 1 });
+  });
+
+  it('retries the transaction once when a concurrent save raises P2002', async () => {
+    const conflict = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: '5.0.0',
+    });
+    prismaMock.$transaction
+      .mockImplementationOnce(() => Promise.reject(conflict))
+      .mockImplementationOnce((cb: unknown) =>
+        typeof cb === 'function'
+          ? ((cb as (tx: typeof prismaMock) => unknown)(prismaMock) as Promise<unknown>)
+          : Promise.resolve(cb),
+      );
+    const result = await saveSheet(ctx, valid);
+    expect(result.ok).toBe(true);
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(2);
+  });
+
+  it('rethrows a non-P2002 transaction error without retrying', async () => {
+    prismaMock.$transaction.mockImplementationOnce(() => Promise.reject(new Error('boom')));
+    await expect(saveSheet(ctx, valid)).rejects.toThrow('boom');
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
   });
 });

@@ -7,6 +7,7 @@
 import 'server-only';
 import { z } from 'zod';
 import { prisma } from '@/lib/server/prisma';
+import { EVALUATION_MODES, type EvaluationMode } from '@/lib/qualitative';
 
 export const SUBJECT_STATUSES = ['ACTIVE', 'DRAFT', 'ARCHIVED'] as const;
 export type SubjectStatus = (typeof SUBJECT_STATUSES)[number];
@@ -43,6 +44,10 @@ export const SubjectProfileBody = z.object({
   maxCapacity: optionalInt(1, 500),
   includeInAverage: z.boolean().optional(),
   showOnBulletin: z.boolean().optional(),
+  evaluationMode: z.enum(EVALUATION_MODES).optional(),
+  // Raw labels; trimmed and rule-checked by resolveQualitativeProfile
+  // (lib/server/qualitative.ts) before anything is written.
+  ratingScale: z.array(z.string().max(200)).max(20).optional(),
   room: optionalText(80),
   eliminatoryScore: optionalInt(0, 100),
   icon: optionalText(40),
@@ -69,9 +74,13 @@ export function validateScoreBounds(row: {
   return null;
 }
 
-/** Splits the validated body into scalar Prisma data + relation ids. */
+/**
+ * Splits the validated body into scalar Prisma data + relation ids.
+ * `evaluationMode` / `ratingScale` are kept apart: the routes only write them
+ * after `resolveQualitativeProfile` + `findQualitativeConflict`.
+ */
 export function splitSubjectInput(input: SubjectProfileInput) {
-  const { prerequisiteIds, status, ...scalars } = input;
+  const { prerequisiteIds, status, evaluationMode, ratingScale, ...scalars } = input;
   const data: Record<string, unknown> = Object.fromEntries(
     Object.entries(scalars).filter(([, v]) => v !== undefined),
   );
@@ -79,7 +88,14 @@ export function splitSubjectInput(input: SubjectProfileInput) {
     data.status = status;
     data.isActive = isActiveFromStatus(status);
   }
-  return { data, prerequisiteIds };
+  const qualitativeInput: {
+    evaluationMode: EvaluationMode | undefined;
+    ratingScale: string[] | undefined;
+  } | null =
+    evaluationMode !== undefined || ratingScale !== undefined
+      ? { evaluationMode, ratingScale }
+      : null;
+  return { data, prerequisiteIds, qualitativeInput };
 }
 
 /**
@@ -135,6 +151,8 @@ export const SUBJECT_PROFILE_SELECT = {
   maxCapacity: true,
   includeInAverage: true,
   showOnBulletin: true,
+  evaluationMode: true,
+  ratingScale: true,
   room: true,
   eliminatoryScore: true,
   icon: true,
@@ -161,6 +179,10 @@ export async function getSubjectDetail(schoolId: string, subjectId: string) {
       responsibleTeacher: { select: { id: true, name: true, photoUrl: true } },
       prerequisites: { select: { id: true, name: true, code: true } },
       _count: { select: { chapters: true } },
+      criteria: {
+        orderBy: { order: 'asc' },
+        select: { id: true, label: true, order: true, _count: { select: { ratings: true } } },
+      },
     },
   });
   if (!subject) return null;
@@ -250,13 +272,23 @@ export async function getSubjectDetail(schoolId: string, subjectId: string) {
     });
   }
 
-  const { _count, responsibleTeacher, prerequisites, ...profile } = subject;
+  const { _count, responsibleTeacher, prerequisites, criteria, ...profile } = subject;
+  const criteriaRows = criteria.map((c) => ({
+    id: c.id,
+    label: c.label,
+    order: c.order,
+    ratingCount: c._count.ratings,
+  }));
   return {
     ...profile,
     responsibleTeacher,
     prerequisites,
     prerequisiteIds: prerequisites.map((p) => p.id),
     chapterCount: _count.chapters,
+    criteria: criteriaRows,
+    // Drives the form: scale levels can be renamed but not reordered once a
+    // rating exists (§4), so the move arrows hide.
+    hasRatings: criteriaRows.some((c) => c.ratingCount > 0),
     activeYear,
     classSubjects: classSubjects.map((cs) => ({
       id: cs.id,

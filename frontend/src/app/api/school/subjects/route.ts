@@ -22,6 +22,7 @@ import {
   splitSubjectInput,
   validateScoreBounds,
 } from '@/lib/server/subjects';
+import { resolveQualitativeProfile } from '@/lib/server/qualitative';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { z } from 'zod';
 
@@ -150,7 +151,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    const { data, prerequisiteIds } = splitSubjectInput(input);
+    const { data, prerequisiteIds, qualitativeInput } = splitSubjectInput(input);
+    if (qualitativeInput) {
+      const resolved = resolveQualitativeProfile({
+        evaluationMode: qualitativeInput.evaluationMode ?? 'NUMERIC',
+        ratingScale: qualitativeInput.ratingScale ?? [],
+      });
+      if (!resolved.ok) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: resolved.message },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      data.evaluationMode = resolved.profile.evaluationMode;
+      data.ratingScale = resolved.profile.ratingScale;
+    }
     const subject = await prisma.$transaction(async (tx) => {
       const created = await tx.subject.create({
         data: {

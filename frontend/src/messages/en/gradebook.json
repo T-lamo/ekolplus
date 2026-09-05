@@ -187,5 +187,27 @@
       "filenamePrefix": "gradebook",
       "allSubjectsSuffix": "all-subjects"
     }
+  },
+  "criteria": {
+    "title": "Criteria grid",
+    "subtitle": "One tick per criterion and per student, on the subject's scale.",
+    "back": "Back to the grade book",
+    "statusDraft": "Draft",
+    "statusPublished": "Validated",
+    "saveDraft": "Save draft",
+    "validate": "Validate",
+    "locked": "Grade entry is disabled for this term.",
+    "scaleHint": "Scale: {scale}",
+    "criterionColumn": "Criterion",
+    "prevStudent": "Previous",
+    "nextStudent": "Next",
+    "noStudents": "No student is enrolled in this class.",
+    "noCriteria": "This subject has no criteria yet. Add them on the subject page.",
+    "loadError": "The grid cannot be loaded right now.",
+    "saveError": "The grid could not be saved.",
+    "draftSavedToast": "Draft saved.",
+    "validatedToast": "Grid validated and published.",
+    "qualitativeSubjectHint": "This subject is assessed by criteria, without grades or an average.",
+    "openSheet": "Open the criteria grid"
   }
 }

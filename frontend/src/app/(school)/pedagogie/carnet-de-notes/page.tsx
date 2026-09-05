@@ -38,6 +38,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PageNumbers } from '@/components/ui/Pager';
+import { QualitativeSubjectCard } from '@/components/gradebook/QualitativeSubjectCard';
 import { exportToCsv } from '@/lib/csv-export';
 import { LIST_PAGE, STICKY_THEAD, TABLE_SCROLL } from '@/lib/layout';
 // Code-split: only shown after clicking "Saisir évaluation" — see the
@@ -229,6 +230,8 @@ export default function GradeNotebookPage() {
   const classSubjects = classSubjectsData?.classSubjects ?? [];
   const terms = schoolData?.academicYear?.terms ?? [];
   const error = loadError ?? (classesErr || classSubjectsErr || schoolErr ? t('loadError') : null);
+  const qualitative =
+    classSubjects.find((cs) => cs.id === subjectValue)?.subject.evaluationMode === 'QUALITATIVE';
 
   // Initial class/subject selection — derived once, the first time this
   // data is available, never again (so a later background revalidation of
@@ -250,7 +253,7 @@ export default function GradeNotebookPage() {
       ? `/api/school/classes/${classId}/notebook${qs}`
       : `/api/school/class-subjects/${subjectValue}/notebook${qs}`;
   const { data: rawNotebook } = useApi<CombinedNotebookData | NotebookData>(notebookPath, {
-    skip: !classId || !subjectValue,
+    skip: !classId || !subjectValue || qualitative,
     onError: () => setLoadError(t('loadError')),
   });
 
@@ -488,7 +491,7 @@ export default function GradeNotebookPage() {
             <Button
               className="w-fit"
               onClick={() => setShowNew(true)}
-              disabled={combined || !subjectValue}
+              disabled={combined || !subjectValue || qualitative}
             >
               <Plus size={14} />
               {t('newEvaluation')}
@@ -646,7 +649,9 @@ export default function GradeNotebookPage() {
             </button>
           </div>
 
-          {!unified ? (
+          {qualitative ? (
+            <QualitativeSubjectCard href={`/pedagogie/carnet-de-notes/criteres/${subjectValue}`} />
+          ) : !unified ? (
             <Card className="gap-0 overflow-visible p-4">
               <div className="flex flex-col gap-2.5">
                 {Array.from({ length: 8 }).map((_, i) => (

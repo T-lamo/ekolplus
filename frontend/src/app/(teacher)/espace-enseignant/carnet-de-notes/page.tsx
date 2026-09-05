@@ -38,6 +38,7 @@ import type {
   TermOption,
   UnifiedNotebookData,
 } from '@/app/(school)/pedagogie/carnet-de-notes/types';
+import { QualitativeSubjectCard } from '@/components/gradebook/QualitativeSubjectCard';
 import { TeacherNewEvaluationModal } from './TeacherNewEvaluationModal';
 
 interface TeacherMeResponse {
@@ -48,6 +49,7 @@ interface TeacherMeResponse {
     classLevel: string;
     subjectId: string;
     subjectName: string;
+    subjectEvaluationMode: string;
   }[];
   terms: TermOption[];
   currentTermId: string | null;
@@ -98,6 +100,8 @@ export default function TeacherGradebookPage() {
 
   const { data: me, error: meErr } = useApi<TeacherMeResponse>('/api/teacher/me');
   const myClassSubjects = useMemo(() => me?.classSubjects ?? [], [me]);
+  const qualitative =
+    myClassSubjects.find((cs) => cs.id === classSubjectId)?.subjectEvaluationMode === 'QUALITATIVE';
 
   useEffect(() => {
     if (!classSubjectId && myClassSubjects.length > 0) {
@@ -112,7 +116,7 @@ export default function TeacherGradebookPage() {
     ? `/api/teacher/class-subjects/${classSubjectId}/notebook${termId ? `?termId=${termId}` : ''}`
     : '';
   const { data: rawNotebook, error: notebookErr } = useApi<NotebookData>(notebookPath, {
-    skip: !classSubjectId,
+    skip: !classSubjectId || qualitative,
   });
 
   // The notebook response names its own classSubjectId, so a stale response
@@ -156,7 +160,7 @@ export default function TeacherGradebookPage() {
         <Button
           className="w-fit"
           onClick={() => setShowNew(true)}
-          disabled={!classSubjectId || !termId}
+          disabled={!classSubjectId || !termId || qualitative}
         >
           <Plus size={14} />
           {tPage('newEvaluation')}
@@ -193,7 +197,11 @@ export default function TeacherGradebookPage() {
             </FilterSelect>
           </Card>
 
-          {!unified ? (
+          {qualitative ? (
+            <QualitativeSubjectCard
+              href={`/espace-enseignant/carnet-de-notes/criteres/${classSubjectId}`}
+            />
+          ) : !unified ? (
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
                 {Array.from({ length: 5 }).map((_, i) => (

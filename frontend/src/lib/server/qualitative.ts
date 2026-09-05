@@ -59,9 +59,15 @@ export const QUALITATIVE_CONFLICT_MESSAGES: Record<QualitativeConflict, string> 
   SCALE_LEVEL_IN_USE: "Un niveau de l'échelle que vous retirez est déjà utilisé par une coche.",
 };
 
-/** Same labels, any order — a true reorder, not a rename. */
+/**
+ * Same labels, any order — a true reorder, not a rename. Joined on a
+ * control character rather than a space: rating labels are free-form
+ * multi-word French text (e.g. «Très bien»), and a space-joined
+ * fingerprint could collide two different multisets that happen to
+ * reflow across word boundaries the same way.
+ */
 function sameLabelSet(a: string[], b: string[]): boolean {
-  return a.length === b.length && [...a].sort().join(' ') === [...b].sort().join(' ');
+  return a.length === b.length && [...a].sort().join('\x00') === [...b].sort().join('\x00');
 }
 
 /**

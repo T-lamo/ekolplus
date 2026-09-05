@@ -197,19 +197,22 @@ async function runSaveTransaction(
       },
     });
 
-    const toCreate = new Map<string, { studentId: string; criterionId: string; level: number }>();
+    // Keyed by the last occurrence regardless of null/non-null, so a
+    // duplicate target's final entry always wins — including a null that
+    // follows an earlier non-null one for the same (studentId, criterionId).
+    const lastByTarget = new Map<
+      string,
+      { studentId: string; criterionId: string; level: number | null }
+    >();
     for (const r of input.ratings) {
-      if (r.level !== null) {
-        toCreate.set(`${r.studentId}:${r.criterionId}`, {
-          studentId: r.studentId,
-          criterionId: r.criterionId,
-          level: r.level,
-        });
-      }
+      lastByTarget.set(`${r.studentId}:${r.criterionId}`, r);
     }
-    if (toCreate.size > 0) {
+    const toCreate = [...lastByTarget.values()].filter(
+      (r): r is { studentId: string; criterionId: string; level: number } => r.level !== null,
+    );
+    if (toCreate.length > 0) {
       await tx.criteriaRating.createMany({
-        data: [...toCreate.values()].map((r) => ({ assessmentId: sheet.id, ...r })),
+        data: toCreate.map((r) => ({ assessmentId: sheet.id, ...r })),
       });
     }
   });

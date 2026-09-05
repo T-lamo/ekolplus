@@ -192,6 +192,28 @@ describe('saveSheet', () => {
     if (result.ok) expect(result.sheet.students[1]?.ratings).toEqual({ cr_1: 1 });
   });
 
+  it('a duplicate target in the payload resolves to its LAST entry, not its last non-null one', async () => {
+    const result = await saveSheet(ctx, {
+      termId: 'term_1',
+      status: 'DRAFT',
+      ratings: [
+        { studentId: 'stu_1', criterionId: 'cr_1', level: 2 },
+        { studentId: 'stu_1', criterionId: 'cr_1', level: null },
+      ],
+    });
+    expect(prismaMock.criteriaRating.deleteMany).toHaveBeenCalledWith({
+      where: {
+        assessmentId: 'ca_1',
+        OR: [
+          { studentId: 'stu_1', criterionId: 'cr_1' },
+          { studentId: 'stu_1', criterionId: 'cr_1' },
+        ],
+      },
+    });
+    expect(prismaMock.criteriaRating.createMany).not.toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+  });
+
   it('retries the transaction once when a concurrent save raises P2002', async () => {
     const conflict = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
       code: 'P2002',

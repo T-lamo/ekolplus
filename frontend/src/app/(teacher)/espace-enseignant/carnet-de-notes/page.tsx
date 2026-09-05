@@ -40,6 +40,7 @@ import type {
 } from '@/app/(school)/pedagogie/carnet-de-notes/types';
 import { QualitativeSubjectCard } from '@/components/gradebook/QualitativeSubjectCard';
 import { TeacherNewEvaluationModal } from './TeacherNewEvaluationModal';
+import type { EvaluationMode } from '@/lib/qualitative';
 
 interface TeacherMeResponse {
   classSubjects: {
@@ -49,7 +50,7 @@ interface TeacherMeResponse {
     classLevel: string;
     subjectId: string;
     subjectName: string;
-    subjectEvaluationMode: string;
+    subjectEvaluationMode: EvaluationMode;
   }[];
   terms: TermOption[];
   currentTermId: string | null;
@@ -136,7 +137,11 @@ export default function TeacherGradebookPage() {
         classId: cs.classId,
         subjectId: cs.subjectId,
         class: { id: cs.classId, name: cs.className },
-        subject: { id: cs.subjectId, name: cs.subjectName },
+        subject: {
+          id: cs.subjectId,
+          name: cs.subjectName,
+          evaluationMode: cs.subjectEvaluationMode,
+        },
         teacher: null,
         coefficient: null,
       })),

@@ -86,6 +86,20 @@ describe('findQualitativeConflict', () => {
     expect(await findQualitativeConflict('subj_1', qualitative, reordered)).toBeNull();
   });
 
+  it('a multi-word relabel that reflows across word boundaries is not mistaken for a reorder', async () => {
+    // Sorted+space-joined, ['A B','C'] and ['A','B C'] both collapse to
+    // "A B C" — a real trap for a naive space-delimited fingerprint. Neither
+    // scale shares a label with the other, so this must stay a free rename.
+    expect(
+      await findQualitativeConflict(
+        'subj_1',
+        { evaluationMode: 'QUALITATIVE', ratingScale: ['A B', 'C'] },
+        { evaluationMode: 'QUALITATIVE', ratingScale: ['A', 'B C'] },
+      ),
+    ).toBeNull();
+    expect(prismaMock.criteriaRating.count).not.toHaveBeenCalled();
+  });
+
   it('renaming or growing the scale never queries', async () => {
     expect(
       await findQualitativeConflict('subj_1', qualitative, {

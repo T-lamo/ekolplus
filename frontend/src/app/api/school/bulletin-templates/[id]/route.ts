@@ -14,7 +14,7 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
-import { bulletinTemplateConfigSchema } from '@/lib/server/bulletin-templates';
+import { bulletinTemplateConfigSchema, normalizeConfig } from '@/lib/server/bulletin-templates';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const PatchBody = z.object({
@@ -47,7 +47,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { ...tpl, isOwn: tpl.schoolId === mySchool.schoolId },
+      { ...tpl, config: normalizeConfig(tpl.config), isOwn: tpl.schoolId === mySchool.schoolId },
       { headers: { 'x-request-id': ctx.requestId } },
     );
   });

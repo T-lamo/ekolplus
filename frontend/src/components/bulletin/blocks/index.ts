@@ -44,5 +44,14 @@ export function renderBlock({
       return renderCover({ block, config, data });
     case 'criteriaGrids':
       return renderCriteriaGrids({ block, config, data });
+    default: {
+      // Exhaustive check — TS will yell if we add a new block type and
+      // forget it here, instead of this compiling silently and rendering
+      // nothing for it (the return type, React.ReactNode, includes
+      // `undefined`, so a missing case was never caught before).
+      const _exhaustive: never = block;
+      void _exhaustive;
+      throw new Error('renderBlock: unknown block type');
+    }
   }
 }

@@ -9,6 +9,9 @@
 // mirror, configuration/modele-bulletin/types.ts).
 import 'server-only';
 import { z } from 'zod';
+import { createLogger } from './logger';
+
+const logger = createLogger();
 
 export const LEGACY_BLOCK_TYPES = [
   'header',
@@ -272,17 +275,54 @@ interface LegacyBulletinTemplateConfig {
 // Converts whatever is stored in the DB into the current `pages`-shaped
 // config, at READ time — the DB itself is never eagerly migrated (see
 // scripts/backfill-bulletin-template-pages.ts for the optional cleanup
-// pass). Called at exactly 3 sites: getStudentBulletinView, the real
-// bulletin print page, and GET /api/school/bulletin-templates/[id] (whose
-// response also seeds the editor's live preview — see Ruling R3 in the
-// plan this function ships with).
+// pass). Called at 3 call sites (2 of which read a template's config
+// directly from a school's real database row: getStudentBulletinView and
+// GET /api/school/bulletin-templates/[id], whose response also seeds the
+// editor's live preview — see Ruling R3 in the plan this function ships
+// with; the third, the real bulletin print page, re-normalizes
+// getStudentBulletinView's ALREADY-normalized output defensively).
+//
+// Defense in depth: a hand-edited or corrupted DB row could hand this
+// function `null`, `{}`, or a `blocks` field that isn't an array. None of
+// that should happen in practice (every writer goes through the schema
+// before saving), but this must never throw a raw TypeError for it — the
+// safe fallback below only fires for genuinely malformed input.
+function isPagesShaped(raw: unknown): raw is { pages: unknown } {
+  return (
+    raw != null && typeof raw === 'object' && Array.isArray((raw as { pages?: unknown }).pages)
+  );
+}
+
 export function normalizeConfig(raw: unknown): BulletinTemplateConfig {
-  const obj = raw as { pages?: unknown };
-  if (Array.isArray(obj.pages)) {
+  if (isPagesShaped(raw)) {
     // Already migrated by a save that went through the current schema —
     // every writer of a `pages`-shaped config already sets
     // content.pageNumberFormat, so no further backfill is needed here.
-    return raw as BulletinTemplateConfig;
+    // Still run it through the real schema rather than a bare cast: an
+    // unvalidated `pages: []` (impossible per the schema's `.min(1)`, but
+    // reachable here before any validation happens) would otherwise flow
+    // through untouched and could make BulletinViewer's
+    // documentNaturalHeight computation go negative downstream.
+    const parsed = bulletinTemplateConfigSchema.safeParse(raw);
+    if (parsed.success) return parsed.data;
+    logger.warn(
+      'bulletin-templates: normalizeConfig received a pages-shaped config that failed schema validation, falling back to the default config',
+      {
+        issues: parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
+      },
+    );
+    return structuredClone(DEFAULT_BULLETIN_CONFIG);
+  }
+
+  if (
+    raw == null ||
+    typeof raw !== 'object' ||
+    !Array.isArray((raw as { blocks?: unknown }).blocks)
+  ) {
+    logger.warn(
+      'bulletin-templates: normalizeConfig received a malformed legacy config (no array blocks field), falling back to the default config',
+    );
+    return structuredClone(DEFAULT_BULLETIN_CONFIG);
   }
 
   const legacy = raw as LegacyBulletinTemplateConfig;

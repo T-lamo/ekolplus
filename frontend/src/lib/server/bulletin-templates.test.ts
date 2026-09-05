@@ -159,4 +159,40 @@ describe('normalizeConfig', () => {
     };
     expect(bulletinTemplateConfigSchema.safeParse(normalizeConfig(legacy)).success).toBe(true);
   });
+
+  // Defense in depth (final review fix wave, item 4): a hand-edited or
+  // corrupted DB row should never crash normalizeConfig with a raw
+  // TypeError. All 3 cases below must degrade to a valid config instead.
+  it('falls back to the default config for null input instead of throwing', () => {
+    const result = normalizeConfig(null);
+    expect(bulletinTemplateConfigSchema.safeParse(result).success).toBe(true);
+  });
+
+  it('falls back to the default config for an empty object instead of throwing', () => {
+    const result = normalizeConfig({});
+    expect(bulletinTemplateConfigSchema.safeParse(result).success).toBe(true);
+  });
+
+  it('falls back to the default config when a legacy-shaped object has a non-array blocks field', () => {
+    const legacy = {
+      primaryColor: '#6c2bd9',
+      pageFormat: 'LETTER',
+      orientation: 'LANDSCAPE',
+      blocks: 'not-an-array',
+      columns: DEFAULT_BULLETIN_CONFIG.columns,
+      signatures: DEFAULT_BULLETIN_CONFIG.signatures,
+      typography: DEFAULT_BULLETIN_CONFIG.typography,
+      content: { title: 'BULLETIN', footerMessage: null },
+      layout: DEFAULT_BULLETIN_CONFIG.layout,
+    };
+    const result = normalizeConfig(legacy);
+    expect(bulletinTemplateConfigSchema.safeParse(result).success).toBe(true);
+  });
+
+  it('falls back to the default config when a pages-shaped object fails schema validation', () => {
+    // pages: [] cannot occur through the schema (.min(1)) but could reach
+    // normalizeConfig from a corrupted row before any validation happens.
+    const result = normalizeConfig({ pages: [] });
+    expect(bulletinTemplateConfigSchema.safeParse(result).success).toBe(true);
+  });
 });

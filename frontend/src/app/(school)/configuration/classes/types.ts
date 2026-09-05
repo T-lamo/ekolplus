@@ -42,4 +42,7 @@ export interface GradeLevelRow {
   id: string;
   name: string;
   order: number;
+  /** Assigned bulletin template (school's own or global) — null = the
+   * school's default template applies (spec 2026-09-05 §8). */
+  bulletinTemplateId: string | null;
 }

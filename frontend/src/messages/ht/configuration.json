@@ -16,6 +16,9 @@
     "levelAdded": "Nivo ajoute.",
     "levelRenamed": "Non nivo a chanje.",
     "levelDeleted": "Nivo efase.",
+    "levelTemplateUpdated": "Modèl bilten an mete ajou.",
+    "templateDefault": "Modèl pa default lekòl la",
+    "templateAria": "Modèl bilten pou {name}",
     "addModalTitle": "Ajoute yon nivo",
     "addModalSubmit": "Ajoute",
     "renameModalTitle": "Chanje non nivo a",
@@ -28,7 +31,8 @@
       "nameTaken": "Nivo sa a egziste deja.",
       "invalidSet": "Lis nivo yo chanje : rechaje paj la epi eseye ankò.",
       "orgRoleInsufficient": "Ou pa gen dwa pou modifye nivo yo.",
-      "validationFailed": "Non envalid (1 rive 40 karaktè)."
+      "validationFailed": "Non envalid (1 rive 40 karaktè).",
+      "templateNotFound": "Nou pa jwenn modèl la."
     },
     "help": {
       "pageOverview": "Trennen yon liy pou reòdone nivo yo, soti nan premye a rive nan dènye a. Lòd sa a sèvi pou sijere pwomosyon yo otomatikman lè n ap pase nan ane eskolè k ap vini an."

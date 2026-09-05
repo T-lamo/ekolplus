@@ -126,6 +126,7 @@ export function BareSelect({
   id,
   className,
   children,
+  'aria-label': ariaLabel,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -134,6 +135,7 @@ export function BareSelect({
   id?: string;
   className?: string;
   children: ReactNode;
+  'aria-label'?: string;
 }) {
   // '' on the Root shows the placeholder; SelectItem maps a '' option to this
   // sentinel (Radix refuses empty item values), so translate it back.
@@ -146,6 +148,7 @@ export function BareSelect({
     >
       <SelectPrimitive.Trigger
         id={id}
+        aria-label={ariaLabel}
         className={cn(
           CONTROL,
           'flex items-center justify-between gap-2 text-left [&>span]:line-clamp-1',

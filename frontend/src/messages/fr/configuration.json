@@ -15,6 +15,9 @@
     "levelAdded": "Niveau ajouté.",
     "levelRenamed": "Niveau renommé.",
     "levelDeleted": "Niveau supprimé.",
+    "levelTemplateUpdated": "Modèle de bulletin mis à jour.",
+    "templateDefault": "Modèle par défaut de l'école",
+    "templateAria": "Modèle de bulletin de {name}",
     "addModalTitle": "Ajouter un niveau",
     "addModalSubmit": "Ajouter",
     "renameModalTitle": "Renommer le niveau",
@@ -27,7 +30,8 @@
       "nameTaken": "Ce niveau existe déjà.",
       "invalidSet": "La liste des niveaux a changé : rechargez la page et réessayez.",
       "orgRoleInsufficient": "Vous n'avez pas les droits pour modifier les niveaux.",
-      "validationFailed": "Nom invalide (1 à 40 caractères)."
+      "validationFailed": "Nom invalide (1 à 40 caractères).",
+      "templateNotFound": "Modèle introuvable."
     },
     "help": {
       "pageOverview": "Glissez une ligne pour réordonner les niveaux, du premier au dernier. Cet ordre sert à suggérer automatiquement les promotions lors du passage à l'année scolaire suivante."

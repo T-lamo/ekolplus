@@ -47,24 +47,22 @@ import { HelpTooltip } from '@/components/ui/HelpTooltip';
 import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
-
-interface GradeLevel {
-  id: string;
-  name: string;
-  order: number;
-}
+import type { GradeLevelRow } from '../classes/types';
+import type { TemplateListData, TemplateRow } from '../modele-bulletin/types';
+import { BareSelect, SelectItem } from '@/components/school/subjects/form-primitives';
 
 type NiveauxErrorT = (
   key:
     | 'errors.nameTaken'
     | 'errors.invalidSet'
     | 'errors.orgRoleInsufficient'
-    | 'errors.validationFailed',
+    | 'errors.validationFailed'
+    | 'errors.templateNotFound',
 ) => string;
 type NetworkErrorT = (key: 'errors.network') => string;
 type LevelRowT = (
-  key: 'reorderAria' | 'renameAria' | 'deleteAria',
-  values: { name: string },
+  key: 'reorderAria' | 'renameAria' | 'deleteAria' | 'templateAria' | 'templateDefault',
+  values?: { name: string },
 ) => string;
 
 /** `ApiError.message` carries the stable server code — switch on it (project
@@ -80,6 +78,8 @@ function errorMessage(err: unknown, t: NiveauxErrorT, tCommon: NetworkErrorT): s
       return t('errors.orgRoleInsufficient');
     case 'VALIDATION_FAILED':
       return t('errors.validationFailed');
+    case 'TEMPLATE_NOT_FOUND':
+      return t('errors.templateNotFound');
     default:
       return err.message;
   }
@@ -160,13 +160,17 @@ function SortableLevelRow({
   disabled,
   onRename,
   onDelete,
+  templates,
+  onTemplateChange,
   t,
 }: {
-  level: GradeLevel;
+  level: GradeLevelRow;
   index: number;
   disabled: boolean;
   onRename: () => void;
   onDelete: () => void;
+  templates: TemplateListData | null;
+  onTemplateChange: (templateId: string | null) => void;
   t: LevelRowT;
 }) {
   const {
@@ -206,6 +210,26 @@ function SortableLevelRow({
         {index + 1}
       </span>
       <span className="flex-1 truncate text-sm font-medium text-foreground">{level.name}</span>
+      <div className="w-36 shrink-0 sm:w-52">
+        <BareSelect
+          value={level.bulletinTemplateId ?? ''}
+          onValueChange={(val) => onTemplateChange(val === '' ? null : val)}
+          placeholder={t('templateDefault')}
+          aria-label={t('templateAria', { name: level.name })}
+        >
+          <SelectItem value="">{t('templateDefault')}</SelectItem>
+          {(templates?.personal ?? []).map((tpl: TemplateRow) => (
+            <SelectItem key={tpl.id} value={tpl.id}>
+              {tpl.name}
+            </SelectItem>
+          ))}
+          {(templates?.global ?? []).map((tpl: TemplateRow) => (
+            <SelectItem key={tpl.id} value={tpl.id}>
+              {`${tpl.name} · Global`}
+            </SelectItem>
+          ))}
+        </BareSelect>
+      </div>
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
@@ -240,7 +264,7 @@ export default function NiveauxPage() {
 
   const [saving, setSaving] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [renaming, setRenaming] = useState<GradeLevel | null>(null);
+  const [renaming, setRenaming] = useState<GradeLevelRow | null>(null);
 
   const sensors = useSensors(
     // Small activation distance so a plain click on the handle doesn't start
@@ -254,7 +278,7 @@ export default function NiveauxPage() {
     data: levelsData,
     error: levelsErr,
     mutate: mutateLevels,
-  } = useApi<{ levels: GradeLevel[] }>('/api/school/grade-levels', {
+  } = useApi<{ levels: GradeLevelRow[] }>('/api/school/grade-levels', {
     skip: !user,
     onError: (err) => {
       if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -266,11 +290,15 @@ export default function NiveauxPage() {
   const levels = levelsData?.levels ?? null;
   const error = levelsErr ? t('loadError') : null;
 
+  const { data: templatesData } = useApi<TemplateListData>('/api/school/bulletin-templates', {
+    skip: !user,
+  });
+
   const { can, canSee } = usePermissions();
   if (!canSee('configuration')) return <AccessDenied />;
 
   async function addLevel(name: string) {
-    const res = await api<{ level: GradeLevel }>('/api/school/grade-levels', {
+    const res = await api<{ level: GradeLevelRow }>('/api/school/grade-levels', {
       method: 'POST',
       body: { name },
     });
@@ -278,8 +306,8 @@ export default function NiveauxPage() {
     toast(t('levelAdded'), 'success');
   }
 
-  async function renameLevel(level: GradeLevel, name: string) {
-    const res = await api<{ level: GradeLevel }>(`/api/school/grade-levels/${level.id}`, {
+  async function renameLevel(level: GradeLevelRow, name: string) {
+    const res = await api<{ level: GradeLevelRow }>(`/api/school/grade-levels/${level.id}`, {
       method: 'PATCH',
       body: { name },
     });
@@ -289,6 +317,29 @@ export default function NiveauxPage() {
         : { levels: [] },
     );
     toast(t('levelRenamed'), 'success');
+  }
+
+  async function updateLevelTemplate(level: GradeLevelRow, templateId: string | null) {
+    const previous = levels;
+    mutateLevels((prev) =>
+      prev
+        ? {
+            levels: prev.levels.map((l) =>
+              l.id === level.id ? { ...l, bulletinTemplateId: templateId } : l,
+            ),
+          }
+        : { levels: [] },
+    );
+    try {
+      await api(`/api/school/grade-levels/${level.id}`, {
+        method: 'PATCH',
+        body: { bulletinTemplateId: templateId },
+      });
+      toast(t('levelTemplateUpdated'), 'success');
+    } catch (err) {
+      mutateLevels(previous ? { levels: previous } : { levels: [] });
+      toast(errorMessage(err, t, tCommon), 'error');
+    }
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -304,7 +355,7 @@ export default function NiveauxPage() {
     mutateLevels({ levels: next });
     setSaving(true);
     try {
-      const res = await api<{ levels: GradeLevel[] }>('/api/school/grade-levels/reorder', {
+      const res = await api<{ levels: GradeLevelRow[] }>('/api/school/grade-levels/reorder', {
         method: 'POST',
         body: { orderedIds: next.map((l) => l.id) },
       });
@@ -317,7 +368,7 @@ export default function NiveauxPage() {
     }
   }
 
-  async function onDelete(level: GradeLevel) {
+  async function onDelete(level: GradeLevelRow) {
     if (!(await confirm({ message: t('deleteConfirm', { name: level.name }), danger: true })))
       return;
     try {
@@ -387,6 +438,8 @@ export default function NiveauxPage() {
                       disabled={saving}
                       onRename={() => setRenaming(level)}
                       onDelete={() => onDelete(level)}
+                      templates={templatesData}
+                      onTemplateChange={(templateId) => updateLevelTemplate(level, templateId)}
                       t={t}
                     />
                   ))}

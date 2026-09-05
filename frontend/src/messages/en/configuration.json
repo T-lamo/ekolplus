@@ -15,6 +15,9 @@
     "levelAdded": "Grade level added.",
     "levelRenamed": "Grade level renamed.",
     "levelDeleted": "Grade level deleted.",
+    "levelTemplateUpdated": "Report card template updated.",
+    "templateDefault": "School's default template",
+    "templateAria": "Report card template for {name}",
     "addModalTitle": "Add a grade level",
     "addModalSubmit": "Add",
     "renameModalTitle": "Rename grade level",
@@ -27,7 +30,8 @@
       "nameTaken": "This grade level already exists.",
       "invalidSet": "The grade level list has changed: reload the page and try again.",
       "orgRoleInsufficient": "You don't have permission to edit grade levels.",
-      "validationFailed": "Invalid name (1 to 40 characters)."
+      "validationFailed": "Invalid name (1 to 40 characters).",
+      "templateNotFound": "Template not found."
     },
     "help": {
       "pageOverview": "Drag a row to reorder grade levels, from first to last. This order is used to automatically suggest promotions when moving to the next school year."

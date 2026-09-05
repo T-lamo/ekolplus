@@ -1,5 +1,5 @@
 import { verifyTemplatePreviewToken } from '@/lib/server/bulletin-pdf/print-token';
-import { BulletinCanvas } from '@/components/bulletin/BulletinCanvas';
+import { BulletinDocument } from '@/components/bulletin/BulletinDocument';
 import { SAMPLE_BULLETIN_DATA } from '@/components/bulletin/sample-bulletin-data';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 // Unlike app/print/bulletin/[studentId]/[termId], the config travels IN the
 // signed token instead of being re-read from the DB — so the exported PDF
 // reflects the editor's current in-memory state even before "Enregistrer".
-// Renders the same BulletinCanvas + sample fixture the editor's live
-// preview shows, so the export is a faithful copy of what the author sees.
+// The editor always sends a config that already validated against the full
+// pages-shaped schema, so no normalizeConfig call is needed here.
 export default async function PrintBulletinTemplatePreviewPage({
   searchParams,
 }: {
@@ -27,14 +27,12 @@ export default async function PrintBulletinTemplatePreviewPage({
 
   return (
     <>
-      {/* Same convention as the real bulletin print page: margin:0, driven
-          by @page size, chrome={false} strips the on-screen card look. */}
       <style
         dangerouslySetInnerHTML={{
           __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:0} body{margin:0}`,
         }}
       />
-      <BulletinCanvas config={config} data={SAMPLE_BULLETIN_DATA} chrome={false} />
+      <BulletinDocument config={config} data={SAMPLE_BULLETIN_DATA} chrome={false} />
     </>
   );
 }

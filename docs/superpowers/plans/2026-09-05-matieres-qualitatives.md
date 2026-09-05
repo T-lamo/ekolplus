@@ -376,6 +376,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Create: `frontend/src/lib/server/qualitative.ts`, `frontend/src/lib/server/qualitative.test.ts`
 - Modify: `frontend/src/lib/server/subjects.ts` (`SubjectProfileBody` lines 27-57, `splitSubjectInput` 73-83, `SUBJECT_PROFILE_SELECT` 116-145, `getSubjectDetail` 156-283)
 - Modify: `frontend/src/app/api/school/subjects/route.ts` (POST, the `splitSubjectInput(input)` line ~153)
+- Modify: `frontend/src/app/api/school/subjects/route.test.ts` (add the direct-creation-as-QUALITATIVE cases)
 - Modify: `frontend/src/app/api/school/subjects/[id]/route.ts` (PATCH, lines 119-145)
 - Create: `frontend/src/app/api/school/subjects/[id]/route.test.ts`
 
@@ -859,9 +860,80 @@ with
 
 (If the existing `splitSubjectInput(input)` line in POST is not exactly `const { data, prerequisiteIds } = splitSubjectInput(input);`, adapt the destructuring but keep the inserted block identical.)
 
-- [ ] **Step 11: Write the failing route test**
+- [ ] **Step 11: Write the failing route tests (PATCH/GET on `[id]`, POST creation on the parent route)**
 
-Create `frontend/src/app/api/school/subjects/[id]/route.test.ts` (preamble from "Conventions", then):
+First, the **creation** path: a school can create a subject directly as QUALITATIVE, not only convert an existing NUMERIC one. Add this `describe` block to the end of the pre-existing `frontend/src/app/api/school/subjects/route.test.ts` (that file already imports `POST` from `./route` and has its own `beforeEach`/`req()`/fixtures per the "Conventions" preamble):
+
+```ts
+describe('POST /api/school/subjects (created directly as QUALITATIVE)', () => {
+  it('creates the subject with a normalized scale', async () => {
+    prismaMock.subject.count.mockResolvedValue(0); // code-uniqueness check, if any
+    prismaMock.subject.create.mockResolvedValue({
+      id: 'subj_new',
+      name: 'Comportement',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: ['Toujours', 'Souvent'],
+    } as never);
+    const res = await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Comportement',
+        code: 'COMP-001',
+        domain: 'Vie scolaire',
+        level: 'Kindergarten',
+        evaluationType: 'Observation continue',
+        evaluationMode: 'QUALITATIVE',
+        ratingScale: [' Toujours ', 'Souvent'],
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect(prismaMock.subject.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          evaluationMode: 'QUALITATIVE',
+          ratingScale: ['Toujours', 'Souvent'],
+        }),
+      }),
+    );
+  });
+
+  it('400s an invalid scale before touching the database', async () => {
+    const res = await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Comportement',
+        code: 'COMP-001',
+        domain: 'Vie scolaire',
+        level: 'Kindergarten',
+        evaluationType: 'Observation continue',
+        evaluationMode: 'QUALITATIVE',
+        ratingScale: ['Seul'],
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: 'VALIDATION_FAILED' });
+    expect(prismaMock.subject.create).not.toHaveBeenCalled();
+  });
+
+  it('a body with neither field still creates a NUMERIC subject unchanged', async () => {
+    prismaMock.subject.create.mockResolvedValue({ id: 'subj_new2' } as never);
+    await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Mathématiques',
+        code: 'MATH-001',
+        domain: 'Sciences',
+        level: '6ème',
+        evaluationType: 'Contrôle continu',
+      }),
+    );
+    const call = prismaMock.subject.create.mock.calls[0]?.[0];
+    expect(call?.data).not.toHaveProperty('evaluationMode');
+    expect(call?.data).not.toHaveProperty('ratingScale');
+  });
+});
+```
+
+(Match the required fields in each `req()` body to whatever the pre-existing file's own passing POST tests already send — this file's `beforeEach` and fixtures dictate the exact minimal valid payload; add only `evaluationMode`/`ratingScale` on top of it. If the route answers something other than 201 on success, assert the status the route actually returns — do not change the route's success status.)
+
+Second, create `frontend/src/app/api/school/subjects/[id]/route.test.ts` (preamble from "Conventions", then):
 
 ```ts
 import { GET, PATCH } from './route';
@@ -983,7 +1055,7 @@ describe('GET /api/school/subjects/[id]', () => {
 - [ ] **Step 12: Run the route tests, expect PASS; run the existing subject tests too**
 
 Run: `pnpm --filter frontend exec vitest run src/app/api/school/subjects`
-Expected: all pass (the new file and the pre-existing `subjects/route.test.ts` and `[id]/chapters/route.test.ts`). If `subjects/route.test.ts` asserted the exact `data` object of `prisma.subject.create`/`update` and now fails, the cause is the new `qualitativeInput` destructuring not being applied; the create/update payload must be unchanged when the body carries neither `evaluationMode` nor `ratingScale`.
+Expected: all pass (the new `[id]/route.test.ts` file, the extended pre-existing `subjects/route.test.ts`, and `[id]/chapters/route.test.ts`). If `subjects/route.test.ts` asserted the exact `data` object of `prisma.subject.create`/`update` in its OTHER (pre-existing) tests and those now fail, the cause is the new `qualitativeInput` destructuring not being applied; the create/update payload must be unchanged when the body carries neither `evaluationMode` nor `ratingScale`.
 
 - [ ] **Step 13: Format, lint, typecheck, commit**
 
@@ -991,7 +1063,7 @@ Run: `pnpm format && pnpm lint && pnpm typecheck`
 Expected: all clean.
 
 ```bash
-git add frontend/src/lib/qualitative.ts frontend/src/lib/qualitative.test.ts frontend/src/lib/server/qualitative.ts frontend/src/lib/server/qualitative.test.ts frontend/src/lib/server/subjects.ts frontend/src/app/api/school/subjects/route.ts "frontend/src/app/api/school/subjects/[id]/route.ts" "frontend/src/app/api/school/subjects/[id]/route.test.ts"
+git add frontend/src/lib/qualitative.ts frontend/src/lib/qualitative.test.ts frontend/src/lib/server/qualitative.ts frontend/src/lib/server/qualitative.test.ts frontend/src/lib/server/subjects.ts frontend/src/app/api/school/subjects/route.ts frontend/src/app/api/school/subjects/route.test.ts "frontend/src/app/api/school/subjects/[id]/route.ts" "frontend/src/app/api/school/subjects/[id]/route.test.ts"
 git commit -m "feat(subjects): evaluationMode + ratingScale on the subject profile
 
 Shared rating-scale rules, NUMERIC_SUBJECT_FILTER, transition guards

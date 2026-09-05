@@ -8,13 +8,6 @@ import {
   Eye,
   LayoutTemplate,
   GripVertical,
-  PanelTop,
-  User,
-  Table,
-  BarChart2,
-  CalendarX,
-  MessageSquare,
-  PenLine,
   CheckCircle2,
   Copy,
   FileText,
@@ -23,7 +16,6 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import type { ComponentType } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
@@ -33,25 +25,22 @@ import { useToast } from '@/contexts/ToastContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { SignaturePad } from '@/components/ui/SignaturePad';
-import {
-  BulletinCanvas,
-  getPageHeightPx,
-  getPageWidthPx,
-  type BulletinRenderData,
-} from '@/components/bulletin/BulletinCanvas';
+import { BulletinPage as BulletinPageCanvas } from '@/components/bulletin/BulletinPage';
+import { getPageHeightPx, getPageWidthPx } from '@/components/bulletin/page-size';
+import type { BulletinRenderData } from '@/components/bulletin/render-data';
 import { SAMPLE_BULLETIN_DATA } from '@/components/bulletin/sample-bulletin-data';
 import { API_URL, COOKIE_PREFIX } from '@/lib/constants';
 import { blockLabel } from '../../block-label';
-import { REORDERABLE_BLOCK_IDS } from '../../types';
-import type { BlockId, BulletinTemplateConfig, TemplateDetail } from '../../types';
+import { BLOCK_TYPES, LEGACY_BLOCK_TYPES, DRAGGABLE_BLOCK_TYPES } from '../../types';
+import type { Block, BlockType, BulletinTemplateConfig, TemplateDetail } from '../../types';
 
-// The editor preview renders BulletinCanvas at its TRUE natural page size
-// (getPageWidthPx/getPageHeightPx — same 96dpi convention the PDF export
-// uses, and the single source of truth BulletinCanvas itself relies on for
-// its own min-height) and only ever visually scales it with CSS
-// `transform: scale()` for zoom — it never resizes the actual box the
+// The editor preview renders the current page's BulletinPage at its TRUE
+// natural page size (getPageWidthPx/getPageHeightPx — same 96dpi convention
+// the PDF export uses, and the single source of truth BulletinPage itself
+// relies on for its own min-height) and only ever visually scales it with
+// CSS `transform: scale()` for zoom — it never resizes the actual box the
 // content is laid out in. That distinction is what fixes the previous zoom
-// bug: shrinking/growing the box itself while BulletinCanvas kept its
+// bug: shrinking/growing the box itself while BulletinPage kept its
 // natural DOM size caused clipping (zoom out) or dead whitespace (zoom in)
 // instead of a faithful scaled reproduction.
 
@@ -66,17 +55,7 @@ const COLOR_SWATCHES = [
   '#0ea5e9',
 ];
 
-const BLOCK_ICON: Record<BlockId, ComponentType<{ size?: number; style?: object }>> = {
-  header: PanelTop,
-  studentInfo: User,
-  stats: BarChart2,
-  notes: Table,
-  absences: CalendarX,
-  appreciation: MessageSquare,
-  signatures: PenLine,
-};
-
-type Tab = 'style' | 'content' | 'spacing';
+type Tab = 'style' | 'content' | 'spacing' | 'block';
 
 export default function BulletinEditorPage() {
   const user = useUser();
@@ -90,12 +69,15 @@ export default function BulletinEditorPage() {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
-  const [selected, setSelected] = useState<BlockId>('header');
+  const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<{ pageId: string; blockId: string } | null>(null);
   const [propTab, setPropTab] = useState<Tab>('style');
-  const [dragId, setDragId] = useState<BlockId | null>(null);
+  const [dragBlockId, setDragBlockId] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [zoom, setZoom] = useState(100);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const pageContentRef = useRef<HTMLDivElement>(null);
+  const [overflowingPages, setOverflowingPages] = useState<Set<string>>(new Set());
 
   const { data, mutate: mutateData } = useApi<TemplateDetail>(
     `/api/school/bulletin-templates/${params.id}`,
@@ -125,6 +107,11 @@ export default function BulletinEditorPage() {
       setConfig(data.config);
       setNameInput(data.name);
       seededForId.current = params.id;
+      const firstPage = data.config.pages[0];
+      if (firstPage) {
+        setCurrentPageId(firstPage.id);
+        setSelected({ pageId: firstPage.id, blockId: firstPage.blocks[0]?.id ?? firstPage.id });
+      }
     }
   }, [data, params.id]);
 
@@ -158,28 +145,205 @@ export default function BulletinEditorPage() {
     setConfig((c) => (c ? { ...c, ...patch } : c));
   }
 
-  function toggleBlock(id: BlockId) {
+  function patchPage(pageId: string, patch: Partial<BulletinTemplateConfig['pages'][number]>) {
+    setConfig((c) =>
+      c ? { ...c, pages: c.pages.map((p) => (p.id === pageId ? { ...p, ...patch } : p)) } : c,
+    );
+  }
+
+  function toggleBlock(pageId: string, blockId: string) {
     setConfig((c) =>
       c
         ? {
             ...c,
-            blocks: c.blocks.map((b) => (b.id === id ? { ...b, visible: !b.visible } : b)),
+            pages: c.pages.map((p) =>
+              p.id !== pageId
+                ? p
+                : {
+                    ...p,
+                    blocks: p.blocks.map((b) =>
+                      b.id === blockId ? { ...b, visible: !b.visible } : b,
+                    ),
+                  },
+            ),
           }
         : c,
     );
   }
 
-  function reorder(targetId: BlockId) {
-    if (!dragId || dragId === targetId || !config) return;
-    const blocks = [...config.blocks];
-    const from = blocks.findIndex((b) => b.id === dragId);
-    const to = blocks.findIndex((b) => b.id === targetId);
+  function reorder(pageId: string, targetBlockId: string) {
+    if (!dragBlockId || dragBlockId === targetBlockId || !config) return;
+    const page = config.pages.find((p) => p.id === pageId);
+    if (!page) return;
+    const blocks = [...page.blocks];
+    const from = blocks.findIndex((b) => b.id === dragBlockId);
+    const to = blocks.findIndex((b) => b.id === targetBlockId);
     if (from < 0 || to < 0) return;
     const [moved] = blocks.splice(from, 1);
     if (!moved) return;
     blocks.splice(to, 0, moved);
-    patchConfig({ blocks });
+    patchPage(pageId, { blocks });
   }
+
+  function addBlock(pageId: string, type: BlockType) {
+    setConfig((c) => {
+      if (!c) return c;
+      const page = c.pages.find((p) => p.id === pageId);
+      if (!page) return c;
+      const id = `${type}-${Date.now()}`;
+      const newBlock: Block =
+        type === 'text'
+          ? {
+              id,
+              type,
+              visible: true,
+              text: '',
+              align: 'left',
+              fontSize: 12,
+              bold: false,
+              italic: false,
+            }
+          : type === 'cover'
+            ? {
+                id,
+                type,
+                visible: true,
+                sectionLabel: '',
+                titlePattern: 'Bulletin du {term}',
+                showLogo: true,
+                framed: true,
+                fields: ['lastName', 'firstName', 'className'],
+              }
+            : type === 'criteriaGrids'
+              ? { id, type, visible: true, showScaleHeader: true }
+              : ({ id, type, visible: true } as Block);
+      return {
+        ...c,
+        pages: c.pages.map((p) =>
+          p.id === pageId ? { ...p, blocks: [...p.blocks, newBlock] } : p,
+        ),
+      };
+    });
+  }
+
+  function removeBlock(pageId: string, blockId: string) {
+    setConfig((c) =>
+      c
+        ? {
+            ...c,
+            pages: c.pages.map((p) =>
+              p.id !== pageId ? p : { ...p, blocks: p.blocks.filter((b) => b.id !== blockId) },
+            ),
+          }
+        : c,
+    );
+  }
+
+  function patchBlock(pageId: string, blockId: string, patch: Partial<Block>) {
+    setConfig((c) =>
+      c
+        ? {
+            ...c,
+            pages: c.pages.map((p) =>
+              p.id !== pageId
+                ? p
+                : {
+                    ...p,
+                    blocks: p.blocks.map((b) =>
+                      b.id === blockId ? ({ ...b, ...patch } as Block) : b,
+                    ),
+                  },
+            ),
+          }
+        : c,
+    );
+  }
+
+  function addPage() {
+    setConfig((c) => {
+      if (!c || c.pages.length >= 6) return c;
+      const id = `page-${Date.now()}`;
+      const newPage = {
+        id,
+        layout: 'full' as const,
+        showPageNumber: false,
+        blocks: [
+          {
+            id: `text-${Date.now()}`,
+            type: 'text' as const,
+            visible: true,
+            text: '',
+            align: 'left' as const,
+            fontSize: 12,
+            bold: false,
+            italic: false,
+          },
+        ],
+      };
+      setCurrentPageId(id);
+      return { ...c, pages: [...c.pages, newPage] };
+    });
+  }
+
+  function duplicatePage(pageId: string) {
+    setConfig((c) => {
+      if (!c || c.pages.length >= 6) return c;
+      const source = c.pages.find((p) => p.id === pageId);
+      if (!source) return c;
+      const suffix = Date.now();
+      const copy = {
+        ...source,
+        id: `${source.id}-copy-${suffix}`,
+        blocks: source.blocks.map((b) => ({ ...b, id: `${b.id}-copy-${suffix}` })),
+      };
+      setCurrentPageId(copy.id);
+      const index = c.pages.findIndex((p) => p.id === pageId);
+      const pages = [...c.pages];
+      pages.splice(index + 1, 0, copy);
+      return { ...c, pages };
+    });
+  }
+
+  function deletePage(pageId: string) {
+    setConfig((c) => {
+      if (!c || c.pages.length <= 1) return c;
+      const index = c.pages.findIndex((p) => p.id === pageId);
+      const pages = c.pages.filter((p) => p.id !== pageId);
+      const fallback = pages[Math.max(0, index - 1)];
+      if (fallback) setCurrentPageId(fallback.id);
+      return { ...c, pages };
+    });
+  }
+
+  const BLOCK_TAB_TYPES: BlockType[] = [
+    'appreciation',
+    'signatures',
+    'text',
+    'cover',
+    'criteriaGrids',
+  ];
+  const selectedBlock = config?.pages
+    .find((p) => p.id === selected?.pageId)
+    ?.blocks.find((b) => b.id === selected?.blockId);
+  const showBlockTab = selectedBlock != null && BLOCK_TAB_TYPES.includes(selectedBlock.type);
+
+  useEffect(() => {
+    if (propTab === 'block' && !showBlockTab) setPropTab('style');
+  }, [propTab, showBlockTab]);
+
+  useEffect(() => {
+    if (!config || !pageContentRef.current) return;
+    const el = pageContentRef.current;
+    const natH = getPageHeightPx(config);
+    setOverflowingPages((prev) => {
+      const next = new Set(prev);
+      const page = config.pages.find((p) => p.id === currentPageId);
+      if (!page) return prev;
+      if (el.scrollHeight > natH) next.add(page.id);
+      else next.delete(page.id);
+      return next;
+    });
+  }, [config, currentPageId, zoom]);
 
   async function save() {
     if (!config) return;
@@ -295,7 +459,6 @@ export default function BulletinEditorPage() {
     }
   }
 
-  const orderedBlocks = useMemo(() => config?.blocks ?? [], [config]);
   const previewData: BulletinRenderData = useMemo(
     () => ({
       ...SAMPLE_BULLETIN_DATA,
@@ -512,60 +675,199 @@ export default function BulletinEditorPage() {
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Left: block list */}
-          {data.isOwn && (
-            <div className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-card p-3.5">
+          {/* Left: pages + current page's blocks */}
+          {data.isOwn && config && (
+            <div className="flex w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-card p-3.5">
               <div className="mb-2.5 text-2xs font-bold tracking-wide text-muted-foreground uppercase">
-                {t('blocksPanel.title')}
+                {t('pagesPanel.title')}
               </div>
-              <p className="mb-2.5 text-2xs text-muted-foreground">{t('blocksPanel.hint')}</p>
-              {orderedBlocks.map((b) => {
-                const Icon = BLOCK_ICON[b.id];
-                const draggable = REORDERABLE_BLOCK_IDS.includes(b.id);
-                return (
-                  <div
-                    key={b.id}
-                    draggable={draggable}
-                    onDragStart={() => draggable && setDragId(b.id)}
-                    onDragOver={(e) => draggable && e.preventDefault()}
-                    onDrop={() => draggable && reorder(b.id)}
-                    onDragEnd={() => setDragId(null)}
-                    onClick={() => setSelected(b.id)}
-                    className={`mb-1 flex cursor-pointer items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs font-medium ${
-                      selected === b.id
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {config.pages.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setCurrentPageId(p.id)}
+                    className={`flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium ${
+                      currentPageId === p.id
                         ? 'border-primary/40 bg-secondary text-primary'
                         : 'border-border bg-background text-foreground'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
+                    {t('pagesPanel.pageLabel', { n: i + 1 })}
+                    {overflowingPages.has(p.id) && (
                       <span
-                        className={
-                          draggable ? 'cursor-grab text-muted-foreground' : 'text-transparent'
-                        }
-                      >
-                        <GripVertical size={13} />
-                      </span>
-                      <span className="flex h-6.5 w-6.5 items-center justify-center rounded bg-secondary">
-                        <Icon size={13} style={{ color: 'var(--color-primary)' }} />
-                      </span>
-                      <span>{blockLabel(b.id, tBlock)}</span>
-                    </div>
+                        className="h-1.5 w-1.5 rounded-full bg-warning"
+                        title={t('pagesPanel.overflowWarning')}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="mb-3 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={addPage}
+                  disabled={config.pages.length >= 6}
+                  className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-foreground disabled:opacity-40"
+                >
+                  {t('pagesPanel.addPage')}
+                </button>
+                {currentPageId && (
+                  <>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleBlock(b.id);
-                      }}
-                      className={b.visible ? 'text-foreground' : 'text-muted-foreground opacity-40'}
-                      aria-label={
-                        b.visible ? t('blocksPanel.hideBlock') : t('blocksPanel.showBlock')
-                      }
+                      onClick={() => duplicatePage(currentPageId)}
+                      disabled={config.pages.length >= 6}
+                      className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-foreground disabled:opacity-40"
                     >
-                      <Eye size={12} />
+                      {t('pagesPanel.duplicatePage')}
                     </button>
-                  </div>
-                );
-              })}
+                    <button
+                      type="button"
+                      onClick={() => deletePage(currentPageId)}
+                      disabled={config.pages.length <= 1}
+                      className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-destructive-foreground disabled:opacity-40"
+                    >
+                      {t('pagesPanel.deletePage')}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {currentPageId &&
+                (() => {
+                  const page = config.pages.find((p) => p.id === currentPageId);
+                  if (!page) return null;
+                  return (
+                    <>
+                      <div className="mb-3 flex flex-col gap-2 border-b border-border pb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground">
+                            {t('pagesPanel.layoutLabel')}
+                          </span>
+                          <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => patchPage(page.id, { layout: 'full' })}
+                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'full' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                            >
+                              {t('pagesPanel.layoutFull')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => patchPage(page.id, { layout: 'halves' })}
+                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'halves' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                            >
+                              {t('pagesPanel.layoutHalves')}
+                            </button>
+                          </div>
+                        </div>
+                        <SwitchRow
+                          label={t('pagesPanel.showPageNumber')}
+                          checked={page.showPageNumber}
+                          onChange={(v) => patchPage(page.id, { showPageNumber: v })}
+                        />
+                      </div>
+
+                      <p className="mb-2.5 text-2xs text-muted-foreground">
+                        {t('blocksPanel.hint')}
+                      </p>
+                      {page.blocks.map((b) => {
+                        const draggable = DRAGGABLE_BLOCK_TYPES.includes(b.type);
+                        const isLegacy = (LEGACY_BLOCK_TYPES as readonly string[]).includes(b.type);
+                        return (
+                          <div
+                            key={b.id}
+                            draggable={draggable}
+                            onDragStart={() => draggable && setDragBlockId(b.id)}
+                            onDragOver={(e) => draggable && e.preventDefault()}
+                            onDrop={() => draggable && reorder(page.id, b.id)}
+                            onDragEnd={() => setDragBlockId(null)}
+                            onClick={() => setSelected({ pageId: page.id, blockId: b.id })}
+                            className={`mb-1 flex cursor-pointer items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs font-medium ${
+                              selected?.pageId === page.id && selected.blockId === b.id
+                                ? 'border-primary/40 bg-secondary text-primary'
+                                : 'border-border bg-background text-foreground'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={
+                                  draggable
+                                    ? 'cursor-grab text-muted-foreground'
+                                    : 'text-transparent'
+                                }
+                              >
+                                <GripVertical size={13} />
+                              </span>
+                              <span>{blockLabel(b.type, tBlock)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleBlock(page.id, b.id);
+                                }}
+                                className={
+                                  b.visible ? 'text-foreground' : 'text-muted-foreground opacity-40'
+                                }
+                                aria-label={
+                                  b.visible
+                                    ? t('blocksPanel.hideBlock')
+                                    : t('blocksPanel.showBlock')
+                                }
+                              >
+                                <Eye size={12} />
+                              </button>
+                              {!isLegacy && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeBlock(page.id, b.id);
+                                    if (selected?.blockId === b.id) setSelected(null);
+                                  }}
+                                  className="text-muted-foreground"
+                                  aria-label={t('pagesPanel.deletePage')}
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div className="mt-3 border-t border-border pt-3">
+                        <div className="mb-2 text-2xs font-bold tracking-wide text-muted-foreground uppercase">
+                          {t('blockPalette.title')}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {BLOCK_TYPES.map((type) => {
+                            const isLegacy = (LEGACY_BLOCK_TYPES as readonly string[]).includes(
+                              type,
+                            );
+                            const alreadyPresent =
+                              isLegacy && page.blocks.some((b) => b.type === type);
+                            return (
+                              <button
+                                key={type}
+                                type="button"
+                                disabled={alreadyPresent}
+                                title={alreadyPresent ? t('blockPalette.alreadyOnPage') : undefined}
+                                onClick={() => addBlock(page.id, type)}
+                                className="rounded-md border border-border bg-background px-2 py-1 text-2xs font-medium text-foreground disabled:opacity-30"
+                              >
+                                {blockLabel(type, tBlock)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
             </div>
           )}
 
@@ -618,12 +920,13 @@ export default function BulletinEditorPage() {
                   sizes correctly; the inner div is the real page at its
                   natural (unscaled) size — transform:scale only changes how
                   it's painted, never its layout box, so nothing inside
-                  BulletinCanvas ever reflows, clips, or overlaps at any
+                  BulletinPageCanvas ever reflows, clips, or overlaps at any
                   zoom level. overflow stays visible (no overflow-hidden) so
                   content taller than one physical page is never silently
                   cropped — it's visible below the page edge instead. */}
                 <div style={{ width: scaledSize.width, height: scaledSize.height }}>
                   <div
+                    ref={pageContentRef}
                     className="rounded-[2px] bg-white shadow-2xl"
                     style={{
                       width: naturalSize.width,
@@ -632,17 +935,28 @@ export default function BulletinEditorPage() {
                       transformOrigin: 'top left',
                     }}
                   >
-                    <BulletinCanvas
-                      config={config}
-                      data={previewData}
-                      selected={selected}
-                      onSelect={setSelected}
-                      chrome={false}
-                      dragId={dragId}
-                      onDragStart={setDragId}
-                      onDrop={reorder}
-                      onDragEnd={() => setDragId(null)}
-                    />
+                    {(() => {
+                      const page =
+                        config.pages.find((p) => p.id === currentPageId) ?? config.pages[0];
+                      if (!page) return null;
+                      const pageIndex = config.pages.findIndex((p) => p.id === page.id);
+                      return (
+                        <BulletinPageCanvas
+                          page={page}
+                          pageIndex={pageIndex}
+                          totalPages={config.pages.length}
+                          config={config}
+                          data={previewData}
+                          chrome={false}
+                          selected={selected ?? undefined}
+                          onSelect={(pageId, blockId) => setSelected({ pageId, blockId })}
+                          dragBlockId={dragBlockId}
+                          onDragStart={setDragBlockId}
+                          onDrop={(blockId) => reorder(page.id, blockId)}
+                          onDragEnd={() => setDragBlockId(null)}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -654,21 +968,22 @@ export default function BulletinEditorPage() {
             <div className="flex w-64 shrink-0 flex-col overflow-y-auto border-l border-border bg-card">
               <div className="border-b border-border p-3.5">
                 <div className="mb-3 flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded bg-secondary">
-                    {(() => {
-                      const Icon = BLOCK_ICON[selected];
-                      return <Icon size={14} style={{ color: 'var(--color-primary)' }} />;
-                    })()}
-                  </span>
                   <div>
                     <div className="text-caption font-bold text-foreground">
-                      {blockLabel(selected, tBlock)}
+                      {selectedBlock ? blockLabel(selectedBlock.type, tBlock) : ''}
                     </div>
                     <div className="text-2xs text-muted-foreground">{t('selectedBlock')}</div>
                   </div>
                 </div>
                 <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
-                  {(['style', 'content', 'spacing'] as Tab[]).map((tabKey) => (
+                  {(
+                    [
+                      'style',
+                      'content',
+                      'spacing',
+                      ...(showBlockTab ? (['block'] as const) : []),
+                    ] as Tab[]
+                  ).map((tabKey) => (
                     <button
                       key={tabKey}
                       type="button"
@@ -1008,6 +1323,220 @@ export default function BulletinEditorPage() {
                       }
                     />
                   </PropSection>
+                </>
+              )}
+
+              {propTab === 'block' && selected && selectedBlock && (
+                <>
+                  {selectedBlock.type === 'appreciation' && (
+                    <PropSection title={t('blockProperties.appreciationTitle')} last>
+                      <PropSelectRow
+                        label={t('blockProperties.appreciationStyle')}
+                        value={selectedBlock.style ?? 'box'}
+                        options={[
+                          { value: 'box', label: t('blockProperties.appreciationStyleBox') },
+                          { value: 'lines', label: t('blockProperties.appreciationStyleLines') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            style: v as 'box' | 'lines',
+                          })
+                        }
+                      />
+                      {selectedBlock.style === 'lines' && (
+                        <PropNumberRow
+                          label={t('blockProperties.appreciationLines')}
+                          value={selectedBlock.lines ?? 3}
+                          min={3}
+                          max={12}
+                          onChange={(v) =>
+                            patchBlock(selected.pageId, selected.blockId, { lines: v })
+                          }
+                        />
+                      )}
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'signatures' && (
+                    <PropSection title={t('blockProperties.signaturesLabelsTitle')} last>
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.signatureDirectorLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        value={selectedBlock.labels?.director ?? ''}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            labels: { ...selectedBlock.labels, director: e.target.value },
+                          })
+                        }
+                        className="mb-2 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.signatureHomeroomLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        value={selectedBlock.labels?.homeroom ?? ''}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            labels: { ...selectedBlock.labels, homeroom: e.target.value },
+                          })
+                        }
+                        className="mb-2 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.signatureGuardianLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        value={selectedBlock.labels?.guardian ?? ''}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            labels: { ...selectedBlock.labels, guardian: e.target.value },
+                          })
+                        }
+                        className="w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'text' && (
+                    <PropSection title={t('blockProperties.textTitle')} last>
+                      <textarea
+                        maxLength={2000}
+                        rows={8}
+                        value={selectedBlock.text}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, { text: e.target.value })
+                        }
+                        className="mb-2.5 w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <PropSelectRow
+                        label={t('blockProperties.textAlign')}
+                        value={selectedBlock.align}
+                        options={[
+                          { value: 'left', label: t('blockProperties.alignLeft') },
+                          { value: 'center', label: t('blockProperties.alignCenter') },
+                          { value: 'justify', label: t('blockProperties.alignJustify') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            align: v as 'left' | 'center' | 'justify',
+                          })
+                        }
+                      />
+                      <PropSliderRow
+                        label={t('blockProperties.textFontSize')}
+                        value={selectedBlock.fontSize}
+                        min={8}
+                        max={20}
+                        suffix="px"
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { fontSize: v })
+                        }
+                      />
+                      <SwitchRow
+                        label={t('blockProperties.textBold')}
+                        checked={selectedBlock.bold}
+                        onChange={(v) => patchBlock(selected.pageId, selected.blockId, { bold: v })}
+                      />
+                      <SwitchRow
+                        label={t('blockProperties.textItalic')}
+                        checked={selectedBlock.italic}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { italic: v })
+                        }
+                      />
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'cover' && (
+                    <PropSection title={t('blockProperties.coverTitle')} last>
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.coverSectionLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={60}
+                        value={selectedBlock.sectionLabel}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            sectionLabel: e.target.value,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.coverTitlePattern')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={60}
+                        value={selectedBlock.titlePattern}
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            titlePattern: e.target.value,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <SwitchRow
+                        label={t('blockProperties.coverShowLogo')}
+                        checked={selectedBlock.showLogo}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { showLogo: v })
+                        }
+                      />
+                      <SwitchRow
+                        label={t('blockProperties.coverFramed')}
+                        checked={selectedBlock.framed}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { framed: v })
+                        }
+                      />
+                      <div className="mt-2 text-xs font-medium text-foreground">
+                        {t('blockProperties.coverFields')}
+                      </div>
+                      {(
+                        [
+                          'lastName',
+                          'firstName',
+                          'className',
+                          'studentNumber',
+                          'academicYear',
+                        ] as const
+                      ).map((field) => (
+                        <SwitchRow
+                          key={field}
+                          label={t(`blockProperties.coverField.${field}`)}
+                          checked={selectedBlock.fields.includes(field)}
+                          onChange={(v) =>
+                            patchBlock(selected.pageId, selected.blockId, {
+                              fields: v
+                                ? [...selectedBlock.fields, field]
+                                : selectedBlock.fields.filter((f) => f !== field),
+                            })
+                          }
+                        />
+                      ))}
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'criteriaGrids' && (
+                    <PropSection title={t('blockProperties.criteriaGridsTitle')} last>
+                      <SwitchRow
+                        label={t('blockProperties.showScaleHeader')}
+                        checked={selectedBlock.showScaleHeader}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { showScaleHeader: v })
+                        }
+                      />
+                    </PropSection>
+                  )}
                 </>
               )}
             </div>

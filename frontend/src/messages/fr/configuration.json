@@ -926,7 +926,10 @@
       "notes": "Tableau de notes",
       "absences": "Absences",
       "appreciation": "Appréciation",
-      "signatures": "Signatures"
+      "signatures": "Signatures",
+      "text": "Texte libre",
+      "cover": "Couverture",
+      "criteriaGrids": "Grilles qualitatives"
     },
     "editor": {
       "notFound": "Modèle introuvable.",
@@ -967,6 +970,22 @@
         "hideBlock": "Masquer le bloc",
         "showBlock": "Afficher le bloc"
       },
+      "pagesPanel": {
+        "title": "Pages",
+        "addPage": "Ajouter une page",
+        "duplicatePage": "Dupliquer la page",
+        "deletePage": "Supprimer la page",
+        "pageLabel": "Page {n}",
+        "layoutLabel": "Disposition",
+        "layoutFull": "Pleine page",
+        "layoutHalves": "Deux colonnes",
+        "showPageNumber": "Afficher le numéro de page",
+        "overflowWarning": "Le contenu dépasse la page"
+      },
+      "blockPalette": {
+        "title": "Ajouter un bloc",
+        "alreadyOnPage": "Déjà sur cette page"
+      },
       "zoomOut": "Zoom arrière",
       "zoomIn": "Zoom avant",
       "fitToPage": "Ajuster à la page",
@@ -975,7 +994,42 @@
       "tabs": {
         "style": "Style",
         "content": "Contenu",
-        "spacing": "Espacement"
+        "spacing": "Espacement",
+        "block": "Ce bloc"
+      },
+      "blockProperties": {
+        "appreciationTitle": "Appréciation générale",
+        "appreciationStyle": "Présentation",
+        "appreciationStyleBox": "Encadré",
+        "appreciationStyleLines": "Lignes réglées",
+        "appreciationLines": "Nombre de lignes",
+        "signaturesLabelsTitle": "Libellés des signatures",
+        "signatureDirectorLabel": "Libellé signature directeur",
+        "signatureHomeroomLabel": "Libellé signature titulaire",
+        "signatureGuardianLabel": "Libellé signature parent",
+        "textTitle": "Texte",
+        "textAlign": "Alignement",
+        "alignLeft": "Gauche",
+        "alignCenter": "Centré",
+        "alignJustify": "Justifié",
+        "textFontSize": "Taille de police",
+        "textBold": "Gras",
+        "textItalic": "Italique",
+        "coverTitle": "Couverture",
+        "coverSectionLabel": "Libellé de section",
+        "coverTitlePattern": "Titre (utilisez {term} pour le trimestre)",
+        "coverShowLogo": "Afficher le logo",
+        "coverFramed": "Cadre arrondi",
+        "coverFields": "Lignes d'identité",
+        "coverField": {
+          "lastName": "Nom",
+          "firstName": "Prénom",
+          "className": "Classe",
+          "studentNumber": "Code",
+          "academicYear": "Année académique"
+        },
+        "criteriaGridsTitle": "Grilles qualitatives",
+        "showScaleHeader": "Afficher l'en-tête de l'échelle"
       },
       "style": {
         "colorsTitle": "Couleurs du thème",

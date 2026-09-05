@@ -927,7 +927,10 @@
       "notes": "Tablo nòt yo",
       "absences": "Absans",
       "appreciation": "Apresyasyon",
-      "signatures": "Siyati"
+      "signatures": "Siyati",
+      "text": "Tèks lib",
+      "cover": "Kouvèti",
+      "criteriaGrids": "Grij kalitatif"
     },
     "editor": {
       "notFound": "Modèl pa jwenn.",
@@ -968,6 +971,22 @@
         "hideBlock": "Kache blòk la",
         "showBlock": "Montre blòk la"
       },
+      "pagesPanel": {
+        "title": "Paj",
+        "addPage": "Ajoute yon paj",
+        "duplicatePage": "Double paj la",
+        "deletePage": "Efase paj la",
+        "pageLabel": "Paj {n}",
+        "layoutLabel": "Dispozisyon",
+        "layoutFull": "Paj antye",
+        "layoutHalves": "De kolòn",
+        "showPageNumber": "Montre nimewo paj la",
+        "overflowWarning": "Kontni a depase paj la"
+      },
+      "blockPalette": {
+        "title": "Ajoute yon blòk",
+        "alreadyOnPage": "Deja sou paj sa a"
+      },
       "zoomOut": "Zoom aryè",
       "zoomIn": "Zoom devan",
       "fitToPage": "Ajiste sou paj la",
@@ -976,7 +995,42 @@
       "tabs": {
         "style": "Style",
         "content": "Kontni",
-        "spacing": "Espasman"
+        "spacing": "Espasman",
+        "block": "Blòk sa a"
+      },
+      "blockProperties": {
+        "appreciationTitle": "Apresyasyon jeneral",
+        "appreciationStyle": "Prezantasyon",
+        "appreciationStyleBox": "Ankadre",
+        "appreciationStyleLines": "Liy regle",
+        "appreciationLines": "Kantite liy",
+        "signaturesLabelsTitle": "Etikèt siyati",
+        "signatureDirectorLabel": "Etikèt siyati direktè",
+        "signatureHomeroomLabel": "Etikèt siyati titilè",
+        "signatureGuardianLabel": "Etikèt siyati paran",
+        "textTitle": "Tèks",
+        "textAlign": "Alinyman",
+        "alignLeft": "Goch",
+        "alignCenter": "Sant",
+        "alignJustify": "Jistifye",
+        "textFontSize": "Gwosè polis",
+        "textBold": "Gra",
+        "textItalic": "Italik",
+        "coverTitle": "Kouvèti",
+        "coverSectionLabel": "Etikèt seksyon",
+        "coverTitlePattern": "Tit (itilize {term} pou trimès la)",
+        "coverShowLogo": "Montre logo a",
+        "coverFramed": "Ankadreman won",
+        "coverFields": "Liy idantite",
+        "coverField": {
+          "lastName": "Non",
+          "firstName": "Prenon",
+          "className": "Klas",
+          "studentNumber": "Kòd",
+          "academicYear": "Ane akademik"
+        },
+        "criteriaGridsTitle": "Grij kalitatif",
+        "showScaleHeader": "Montre antèt echèl la"
       },
       "style": {
         "colorsTitle": "Koulè tèm nan",

@@ -926,7 +926,10 @@
       "notes": "Grades table",
       "absences": "Absences",
       "appreciation": "Remarks",
-      "signatures": "Signatures"
+      "signatures": "Signatures",
+      "text": "Free text",
+      "cover": "Cover",
+      "criteriaGrids": "Qualitative grids"
     },
     "editor": {
       "notFound": "Template not found.",
@@ -967,6 +970,22 @@
         "hideBlock": "Hide block",
         "showBlock": "Show block"
       },
+      "pagesPanel": {
+        "title": "Pages",
+        "addPage": "Add a page",
+        "duplicatePage": "Duplicate page",
+        "deletePage": "Delete page",
+        "pageLabel": "Page {n}",
+        "layoutLabel": "Layout",
+        "layoutFull": "Full page",
+        "layoutHalves": "Two columns",
+        "showPageNumber": "Show page number",
+        "overflowWarning": "Content overflows the page"
+      },
+      "blockPalette": {
+        "title": "Add a block",
+        "alreadyOnPage": "Already on this page"
+      },
       "zoomOut": "Zoom out",
       "zoomIn": "Zoom in",
       "fitToPage": "Fit to page",
@@ -975,7 +994,42 @@
       "tabs": {
         "style": "Style",
         "content": "Content",
-        "spacing": "Spacing"
+        "spacing": "Spacing",
+        "block": "This block"
+      },
+      "blockProperties": {
+        "appreciationTitle": "General comment",
+        "appreciationStyle": "Presentation",
+        "appreciationStyleBox": "Boxed",
+        "appreciationStyleLines": "Ruled lines",
+        "appreciationLines": "Number of lines",
+        "signaturesLabelsTitle": "Signature labels",
+        "signatureDirectorLabel": "Director signature label",
+        "signatureHomeroomLabel": "Homeroom signature label",
+        "signatureGuardianLabel": "Guardian signature label",
+        "textTitle": "Text",
+        "textAlign": "Alignment",
+        "alignLeft": "Left",
+        "alignCenter": "Center",
+        "alignJustify": "Justify",
+        "textFontSize": "Font size",
+        "textBold": "Bold",
+        "textItalic": "Italic",
+        "coverTitle": "Cover",
+        "coverSectionLabel": "Section label",
+        "coverTitlePattern": "Title (use {term} for the term)",
+        "coverShowLogo": "Show logo",
+        "coverFramed": "Rounded frame",
+        "coverFields": "Identity lines",
+        "coverField": {
+          "lastName": "Last name",
+          "firstName": "First name",
+          "className": "Class",
+          "studentNumber": "Code",
+          "academicYear": "Academic year"
+        },
+        "criteriaGridsTitle": "Qualitative grids",
+        "showScaleHeader": "Show the scale header"
       },
       "style": {
         "colorsTitle": "Theme colors",

@@ -933,7 +933,7 @@ In `frontend/src/app/api/school/bulletin-templates/[id]/route.ts`, in the `DELET
       return NextResponse.json(
         {
           error: 'TEMPLATE_IN_USE',
-          message: `Ce modèle est assigné au niveau « ${usedByLevel.name} » — retirez l'affectation avant de le supprimer.`,
+          message: `Ce modèle est assigné au niveau « ${usedByLevel.name} ». Retirez l'affectation avant de le supprimer.`,
         },
         { status: 409, headers: { 'x-request-id': ctx.requestId } },
       );
@@ -1024,7 +1024,7 @@ In each of `frontend/src/messages/{fr,ht,en}/configuration.json`, inside `modele
 
 - [ ] **Step 4: Test — `TEMPLATE_IN_USE`**
 
-In this route's existing test file (find it: `frontend/src/app/api/school/bulletin-templates/route.test.ts` or a sibling `[id]/route.test.ts` — read the directory first to confirm which file covers `DELETE` today, and mirror its exact mocking conventions), add:
+No test file covers this route today (neither `bulletin-templates/route.test.ts` nor `bulletin-templates/[id]/route.test.ts` exists). Create `frontend/src/app/api/school/bulletin-templates/[id]/route.test.ts`, mirroring the mocking conventions of `frontend/src/app/api/school/grade-levels/route.test.ts` exactly (the same `vi.mock` set for `@/lib/server/prisma` → `prismaMock`, `@/lib/server/auth` → `verifyCsrf`, `@/lib/server/middleware` → `requireAuth`, `@/lib/server/school-permissions` → `requireSchoolPermission`, the same `req()`/`params()` helpers and the same `beforeEach` reset), with this test plus one sibling asserting the pre-existing path still holds (own non-active template, no level references it → 204 and `prismaMock.bulletinTemplate.delete` called with `{ where: { id: 'tpl1' } }`):
 
 ```ts
   it('a level of this school still references it → 409 TEMPLATE_IN_USE', async () => {
@@ -1140,19 +1140,43 @@ In `frontend/src/lib/server/bulletin-pdf/get-bulletin-view.test.ts`, add (adapt 
       .mockResolvedValueOnce({
         ...baseEnrollment,
         class: { ...baseEnrollment.class, gradeLevel: { bulletinTemplate: levelTemplate } },
-      } as never)
-      .mockResolvedValueOnce({ id: 'e1' } as never); // classmates lookup reuses the mock elsewhere in this file — read it first to match the existing sequencing of mockResolvedValueOnce calls exactly.
+      } as never);
     prismaMock.bulletinTemplate.findFirst.mockResolvedValue({ id: 'tpl-active', config: validPagesConfig } as never);
 
     const view = await getStudentBulletinView('school_1', 'student_1', null);
     expect(view?.template?.id).toBe('tpl-level');
   });
 
-  it('falls back to the school\'s active template when the class has no grade-level template', async () => {
-    // Existing base-case mocks already cover this (gradeLevel: null or absent) — add only if the
-    // existing suite does not already assert view.template.id against the active-template mock.
+  it("falls back to the school's active template when the class has no grade-level template", async () => {
+    prismaMock.enrollment.findFirst
+      .mockResolvedValueOnce({
+        ...baseEnrollment,
+        class: { ...baseEnrollment.class, gradeLevel: null },
+      } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce({ id: 'tpl-active', config: validPagesConfig, isActive: true } as never)
+      .mockResolvedValueOnce({ id: 'tpl-global', config: validPagesConfig, isActive: false } as never);
+
+    const view = await getStudentBulletinView('school_1', 'student_1', null);
+    expect(view?.template?.id).toBe('tpl-active');
+  });
+
+  it('falls back to the oldest global template when the level has none and the school has no active one', async () => {
+    prismaMock.enrollment.findFirst
+      .mockResolvedValueOnce({
+        ...baseEnrollment,
+        class: { ...baseEnrollment.class, gradeLevel: { bulletinTemplate: null } },
+      } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'tpl-global', config: validPagesConfig, isActive: false } as never);
+
+    const view = await getStudentBulletinView('school_1', 'student_1', null);
+    expect(view?.template?.id).toBe('tpl-global');
   });
 ```
+
+The classmates lookup is `prisma.enrollment.findMany` (not a second `findFirst`), and the view also reads `student.findUnique`, `school.findUnique`, `term.findMany`, `academicYear.findUnique` and `classSubject.findMany` before it reaches the template — reuse whatever shared `beforeEach`/helper the existing file already has for those; the three tests above only override `enrollment.findFirst` and `bulletinTemplate.findFirst`. Every test above must contain a real assertion — never commit a test whose body is only a comment. If the existing file's fixture is not named `baseEnrollment`/`validPagesConfig`, use its actual names; if `enrollment.findFirst` is mocked with `mockResolvedValue` (not `Once`) in the file's `beforeEach`, override per-test the same way the file's other tests do.
 
 Read the existing test file's mock setup carefully before writing this — it likely mocks `enrollment.findFirst` once per test via a shared fixture object (`baseEnrollment` or similar name); adapt the exact object shape and the `mockResolvedValueOnce` sequencing (this route makes 2 `Promise.all`-batched queries you must supply mocks for in the same order the code awaits them) to match, rather than inventing a new fixture shape.
 

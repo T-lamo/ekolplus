@@ -968,7 +968,8 @@
         "title": "Report card blocks",
         "hint": "Drag to reorder blocks",
         "hideBlock": "Hide block",
-        "showBlock": "Show block"
+        "showBlock": "Show block",
+        "removeBlock": "Remove block"
       },
       "pagesPanel": {
         "title": "Pages",

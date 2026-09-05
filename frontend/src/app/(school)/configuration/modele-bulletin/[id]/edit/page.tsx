@@ -227,16 +227,21 @@ export default function BulletinEditorPage() {
   }
 
   function removeBlock(pageId: string, blockId: string) {
-    setConfig((c) =>
-      c
-        ? {
-            ...c,
-            pages: c.pages.map((p) =>
-              p.id !== pageId ? p : { ...p, blocks: p.blocks.filter((b) => b.id !== blockId) },
-            ),
-          }
-        : c,
-    );
+    setConfig((c) => {
+      if (!c) return c;
+      const page = c.pages.find((p) => p.id === pageId);
+      // pageSchema.blocks is .min(1) server-side: removing a page's last
+      // remaining block would build a config the editor's own schema
+      // rejects on save, with nothing to tell the user which page/field
+      // broke. Mirrors deletePage's last-page guard below.
+      if (!page || page.blocks.length <= 1) return c;
+      return {
+        ...c,
+        pages: c.pages.map((p) =>
+          p.id !== pageId ? p : { ...p, blocks: p.blocks.filter((b) => b.id !== blockId) },
+        ),
+      };
+    });
   }
 
   function patchBlock(pageId: string, blockId: string, patch: Partial<Block>) {
@@ -290,11 +295,16 @@ export default function BulletinEditorPage() {
       if (!c || c.pages.length >= 6) return c;
       const source = c.pages.find((p) => p.id === pageId);
       if (!source) return c;
-      const suffix = Date.now();
+      // Fresh ids from a stable base (matching addPage()/addBlock()'s own
+      // convention) rather than appending a `-copy-${Date.now()}` suffix to
+      // the source id: chain-duplicating a duplicate compounded that suffix
+      // every time and blew past the schema's 60-char id cap by the 3rd
+      // nesting, silently rejecting the whole PATCH.
+      const now = Date.now();
       const copy = {
         ...source,
-        id: `${source.id}-copy-${suffix}`,
-        blocks: source.blocks.map((b) => ({ ...b, id: `${b.id}-copy-${suffix}` })),
+        id: `page-${now}`,
+        blocks: source.blocks.map((b, i) => ({ ...b, id: `${b.type}-${now}-${i}` })),
       };
       setCurrentPageId(copy.id);
       const index = c.pages.findIndex((p) => p.id === pageId);
@@ -828,8 +838,9 @@ export default function BulletinEditorPage() {
                                     removeBlock(page.id, b.id);
                                     if (selected?.blockId === b.id) setSelected(null);
                                   }}
-                                  className="text-muted-foreground"
-                                  aria-label={t('pagesPanel.deletePage')}
+                                  disabled={page.blocks.length <= 1}
+                                  className="text-muted-foreground disabled:opacity-40"
+                                  aria-label={t('blocksPanel.removeBlock')}
                                 >
                                   ×
                                 </button>

@@ -968,7 +968,8 @@
         "title": "Blocs du bulletin",
         "hint": "Glissez pour réorganiser les blocs",
         "hideBlock": "Masquer le bloc",
-        "showBlock": "Afficher le bloc"
+        "showBlock": "Afficher le bloc",
+        "removeBlock": "Supprimer le bloc"
       },
       "pagesPanel": {
         "title": "Pages",

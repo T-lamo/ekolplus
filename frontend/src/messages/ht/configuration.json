@@ -969,7 +969,8 @@
         "title": "Blòk bilten an",
         "hint": "Trennen pou reòganize blòk yo",
         "hideBlock": "Kache blòk la",
-        "showBlock": "Montre blòk la"
+        "showBlock": "Montre blòk la",
+        "removeBlock": "Efase blòk la"
       },
       "pagesPanel": {
         "title": "Paj",

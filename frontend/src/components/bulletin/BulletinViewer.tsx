@@ -35,12 +35,9 @@ import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import {
-  BulletinCanvas,
-  getPageHeightPx,
-  getPageWidthPx,
-  type BulletinRenderData,
-} from '@/components/bulletin/BulletinCanvas';
+import { BulletinDocument, PAGE_GAP_PX } from '@/components/bulletin/BulletinDocument';
+import { getPageHeightPx, getPageWidthPx } from '@/components/bulletin/page-size';
+import type { BulletinRenderData } from '@/components/bulletin/render-data';
 import type { StudentBulletinData } from '@/app/(school)/bulletins/types';
 
 export interface BulletinViewerProps {
@@ -142,7 +139,7 @@ export function BulletinViewer({
     );
   }
 
-  const termLabel = data.terms.find((t) => t.id === data.resolvedTermId)?.label ?? '';
+  const termLabel = data.termLabel;
   const renderData: BulletinRenderData = {
     schoolName: data.schoolName,
     schoolLogoUrl: data.schoolLogoUrl,
@@ -169,6 +166,14 @@ export function BulletinViewer({
     generalAppreciation: data.generalAppreciation,
     absencesDays: null,
     retards: null,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    schoolAddress: data.schoolAddress,
+    schoolPhone: data.schoolPhone,
+    schoolEmail: data.schoolEmail,
+    termLabel,
+    academicYearLabel: data.academicYearLabel,
+    qualitativeSubjects: data.qualitativeSubjects,
   };
 
   const termQs = `termId=${data.resolvedTermId ?? ''}`;
@@ -341,26 +346,24 @@ export function BulletinViewer({
           <div id="bulletin-page-wrap" className="overflow-x-auto py-2">
             {data.template ? (
               (() => {
-                // Natural (unscaled) page size — same 96 CSS px/in convention
-                // the PDF export and template editor use. The outer div
-                // reserves the SCALED footprint and the inner div is the real
-                // page at its natural size with transform:scale only — same
-                // fix already applied to the template editor's preview.
                 const naturalWidth = getPageWidthPx(data.template.config);
                 const naturalHeight = getPageHeightPx(data.template.config);
+                const pageCount = data.template.config.pages.length;
+                const documentNaturalHeight =
+                  pageCount * naturalHeight + (pageCount - 1) * PAGE_GAP_PX;
                 const scaledWidth = Math.round(naturalWidth * (zoom / 100));
-                const scaledHeight = Math.round(naturalHeight * (zoom / 100));
+                const scaledHeight = Math.round(documentNaturalHeight * (zoom / 100));
                 return (
                   <div className="mx-auto" style={{ width: scaledWidth, height: scaledHeight }}>
                     <div
                       style={{
                         width: naturalWidth,
-                        height: naturalHeight,
+                        height: documentNaturalHeight,
                         transform: `scale(${zoom / 100})`,
                         transformOrigin: 'top left',
                       }}
                     >
-                      <BulletinCanvas config={data.template.config} data={renderData} />
+                      <BulletinDocument config={data.template.config} data={renderData} />
                     </div>
                   </div>
                 );

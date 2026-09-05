@@ -59,7 +59,102 @@ const BASE_CONFIG = {
   },
 } as const;
 
-const GLOBAL_TEMPLATES = [
+// "Livret préscolaire" (spec 2026-09-05 §12) reproduces
+// bulletin_template/Bulletin prescolaire.docx exactly — already in the
+// pages/blocks shape (Plan 2), unlike the 3 legacy-shaped templates above.
+const LIVRET_PRESCOLAIRE_CONFIG = {
+  primaryColor: '#1f2937',
+  pageFormat: 'LETTER',
+  orientation: 'LANDSCAPE',
+  pages: [
+    {
+      id: 'interieur',
+      layout: 'halves',
+      showPageNumber: false,
+      blocks: [
+        { id: 'grilles', type: 'criteriaGrids', visible: true, showScaleHeader: true },
+        {
+          id: 'appreciations',
+          type: 'appreciation',
+          visible: true,
+          style: 'lines',
+          lines: 6,
+        },
+        {
+          id: 'signatures',
+          type: 'signatures',
+          visible: true,
+          labels: { homeroom: 'La jardinière', director: 'La direction' },
+        },
+      ],
+    },
+    {
+      id: 'couvertures',
+      layout: 'halves',
+      showPageNumber: false,
+      blocks: [
+        {
+          id: 'verset',
+          type: 'text',
+          visible: true,
+          align: 'justify',
+          fontSize: 12,
+          bold: false,
+          italic: false,
+          text: '“Tu aimerais l’Eternel, ton Dieu, de tout ton cœur, de toute ton âme et de toute ta force. 6 Et ces commandements, que je te donne aujourd’hui, seront dans ton cœur. 7 Tu les inculqueras à tes enfants, et tu en parleras quand tu seras dans ta maison, quand tu iras en voyage, quand tu te coucheras et quand tu te lèveras. 8 Tu les lieras comme un signe sur tes mains, et ils seront comme des fronteaux entre tes yeux. Tu les écriras sur les poteaux de ta maison et sur tes portes”.\n\nDeutéronome 6 : 5-6',
+        },
+        {
+          id: 'couverture',
+          type: 'cover',
+          visible: true,
+          breakBefore: 'column',
+          sectionLabel: 'Section Kindergarten',
+          titlePattern: 'Bulletin du {term}',
+          showLogo: true,
+          framed: true,
+          fields: ['lastName', 'firstName', 'className', 'studentNumber', 'academicYear'],
+        },
+      ],
+    },
+  ],
+  columns: {
+    coefficient: true,
+    classAverage: true,
+    minMax: true,
+    appreciation: true,
+    absences: true,
+    rank: true,
+  },
+  signatures: { director: true, homeroom: true, guardian: false },
+  typography: {
+    schoolName: 24,
+    title: 20,
+    tableBody: 11,
+    tableHeader: 11,
+    noteValue: 11,
+    footer: 9,
+  },
+  content: {
+    title: 'Livret préscolaire',
+    footerMessage: null,
+    pageNumberFormat: '{n} / {total}',
+  },
+  layout: {
+    pageMargin: 36,
+    blockSpacing: 14,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#000000',
+    cellPaddingX: 6,
+    cellPaddingY: 3,
+    tableLineHeight: 1.4,
+    showTableBackgrounds: false,
+    logoSize: 52,
+    signatureSize: 32,
+  },
+} as const;
+
+const GLOBAL_TEMPLATES: Array<{ name: string; description: string; config: unknown }> = [
   {
     name: 'Académique Vert',
     description: 'Style académique classique avec tons verts, adapté aux écoles primaires.',
@@ -76,6 +171,12 @@ const GLOBAL_TEMPLATES = [
     description:
       'Design dynamique aux tons orangés, chaleureux et moderne, idéal pour la maternelle.',
     config: { ...BASE_CONFIG, primaryColor: '#e65100' },
+  },
+  {
+    name: 'Livret préscolaire',
+    description:
+      'Livret plié en deux pour la section Kindergarten : grilles de comportement et de développement, verset et couverture, reproduisant le modèle papier existant.',
+    config: LIVRET_PRESCOLAIRE_CONFIG,
   },
 ];
 

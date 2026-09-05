@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('scripts/seed-bulletin-templates', () => {
-  it('creates all 3 global templates when none exist', async () => {
+  it('creates all 4 global templates when none exist', async () => {
     prismaMock.bulletinTemplate.findMany.mockResolvedValue([]);
     prismaMock.bulletinTemplate.create.mockResolvedValue({} as never);
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
@@ -23,7 +23,7 @@ describe('scripts/seed-bulletin-templates', () => {
       where: { schoolId: null },
       select: { name: true },
     });
-    expect(prismaMock.bulletinTemplate.create).toHaveBeenCalledTimes(3);
+    expect(prismaMock.bulletinTemplate.create).toHaveBeenCalledTimes(4);
     for (const call of prismaMock.bulletinTemplate.create.mock.calls) {
       expect(call[0]?.data).toMatchObject({ schoolId: null });
     }
@@ -35,6 +35,7 @@ describe('scripts/seed-bulletin-templates', () => {
       { name: 'Académique Vert' },
       { name: 'Officiel Rouge' },
       { name: 'Moderne Orange' },
+      { name: 'Livret préscolaire' },
     ] as never);
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
@@ -42,6 +43,28 @@ describe('scripts/seed-bulletin-templates', () => {
 
     expect(code).toBe(0);
     expect(prismaMock.bulletinTemplate.create).not.toHaveBeenCalled();
+    logSpy.mockRestore();
+  });
+
+  it('the Livret préscolaire config validates against the real bulletin-templates schema', async () => {
+    const { bulletinTemplateConfigSchema } = await import('../src/lib/server/bulletin-templates');
+    prismaMock.bulletinTemplate.findMany.mockResolvedValue([
+      { name: 'Académique Vert' },
+      { name: 'Officiel Rouge' },
+      { name: 'Moderne Orange' },
+    ] as never);
+    let capturedConfig: unknown;
+    prismaMock.bulletinTemplate.create.mockImplementation((args) => {
+      if ((args as { data: { name: string } }).data.name === 'Livret préscolaire') {
+        capturedConfig = (args as { data: { config: unknown } }).data.config;
+      }
+      return Promise.resolve({} as never);
+    });
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    await main([], { prisma: prismaMock });
+
+    expect(bulletinTemplateConfigSchema.safeParse(capturedConfig).success).toBe(true);
     logSpy.mockRestore();
   });
 });

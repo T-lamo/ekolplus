@@ -104,8 +104,6 @@
   },
   "nouveau": {
     "title": "Add a staff member",
-    "subtitle": "Personnel → New member",
-    "backToList": "Back to staff",
     "steps": {
       "identite": "Identity",
       "profils": "Profiles",

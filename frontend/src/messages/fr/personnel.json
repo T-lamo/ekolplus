@@ -104,8 +104,6 @@
   },
   "nouveau": {
     "title": "Ajouter un membre du personnel",
-    "subtitle": "Personnel → Nouveau membre",
-    "backToList": "Retour au personnel",
     "steps": {
       "identite": "Identité",
       "profils": "Profils",

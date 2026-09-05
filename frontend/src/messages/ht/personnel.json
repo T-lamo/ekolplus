@@ -105,8 +105,6 @@
   },
   "nouveau": {
     "title": "Ajoute yon manm pèsonèl",
-    "subtitle": "Pèsonèl → Nouvo manm",
-    "backToList": "Tounen nan pèsonèl",
     "steps": {
       "identite": "Idantite",
       "profils": "Pwofil",

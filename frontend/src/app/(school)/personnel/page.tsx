@@ -24,6 +24,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { Skeleton, SkeletonFilters, SkeletonTable } from '@/components/ui/Skeleton';
 import { Pager } from '@/components/ui/Pager';
 import { LIST_PAGE } from '@/lib/layout';
+import { PersonnelFormModal } from './PersonnelFormModal';
 import { PersonnelTable } from './PersonnelTable';
 import type { PersonnelListResponse, PersonnelProfileFilter } from './types';
 
@@ -68,6 +69,7 @@ export default function PersonnelPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [profile, setProfile] = useState<PersonnelProfileFilter>('all');
   const [page, setPage] = useState(1);
+  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -90,10 +92,14 @@ export default function PersonnelPage() {
   if (debouncedSearch) params.set('q', debouncedSearch);
   params.set('page', String(page));
 
-  const { data, error: dataErr } = useApi<PersonnelListResponse>(
-    `/api/school/personnel?${params.toString()}`,
-    { skip: !user, onError: onNoSchool },
-  );
+  const {
+    data,
+    error: dataErr,
+    refresh,
+  } = useApi<PersonnelListResponse>(`/api/school/personnel?${params.toString()}`, {
+    skip: !user,
+    onError: onNoSchool,
+  });
   const error = dataErr ? t('loadError') : null;
 
   const { can, canSee } = usePermissions();
@@ -117,7 +123,7 @@ export default function PersonnelPage() {
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
         {can('enseignants', 'create') && (
-          <Button className="w-fit" onClick={() => router.push('/personnel/nouveau')}>
+          <Button className="w-fit" onClick={() => setAddOpen(true)}>
             <Plus size={14} />
             {t('addButton')}
           </Button>
@@ -184,6 +190,16 @@ export default function PersonnelPage() {
             </>
           )}
         </>
+      )}
+
+      {addOpen && (
+        <PersonnelFormModal
+          onClose={() => setAddOpen(false)}
+          onCreated={() => {
+            setAddOpen(false);
+            void refresh();
+          }}
+        />
       )}
     </div>
   );

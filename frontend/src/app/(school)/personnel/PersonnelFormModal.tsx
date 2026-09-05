@@ -1,16 +1,21 @@
 'use client';
 
-// /personnel/nouveau — unified creation wizard (spec
-// docs/superpowers/specs/2026-09-04-personnel-module-design.md §6.4).
+// PersonnelFormModal — creation wizard for adding a staff member, moved
+// from a standalone page (/personnel/nouveau) into a Modal for consistency
+// with every other "create a record" flow in the app (TeacherFormModal,
+// StudentFormModal, RoomFormModal, TrancheFormModal, SessionFormModal,
+// RoleFormModal never use a dedicated page). Same 3-step gabarit as the
+// teacher/student wizard modals (FormStepsBar + WizardNav, one <form>
+// spanning all steps, only the active step's fields mounted).
+//
 // Banani source: .planning/banani/fetches/personnel-module/ajouter-personnel.html
 // (sidebar/topbar chrome discarded, and the mockup's own #F4F7FD tinted
 // panel background is deliberately dropped in favor of this app's plain
-// white Card — every other card in the app is a uniform bg-card surface
-// with no per-card accent color, a house rule this page follows too).
-// Same 3-step gabarit as the teacher/student wizard modals
-// (FormStepsBar + WizardNav, one <form> spanning all steps, only the
-// active step's fields mounted) but as a standalone page rather than a
-// Modal — three blocks are too dense for a modal (spec §6.4).
+// white Modal surface — every other card in the app is a uniform bg-card
+// surface with no per-card accent color, a house rule this modal follows
+// too). The mockup itself is a full page, but this app's Modal shell is
+// re-used the same way TeacherFormModal/StudentFormModal already re-fit
+// their own wizard mockups into it.
 //
 // The "Enseigne dans l'établissement" card exposes a real matières/classes
 // picker (AssignmentChipPicker, Banani mockup lines ~804-834 — two labeled
@@ -24,24 +29,30 @@
 // `configuration.view` (needed by the two picker endpoints) sees a plain
 // fallback hint instead of the picker, pointing at the fiche's existing
 // "Enseignement" tab / /configuration/matieres.
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import Link from 'next/link';
+//
+// Username-mode success swaps this same Modal instance's header/footer/
+// children for TemporaryPasswordPanel (no stepper, no wizard nav) instead
+// of opening a second modal — the same "one Modal instance, state-driven
+// body" shape TeacherFormModal already uses for its loading-skeleton vs
+// loaded-form swap. Closing that panel (its own button, or the modal's X/
+// Escape) closes the modal AND navigates to the new person's fiche,
+// exactly like the old full-page wizard did on close. Email/none-mode
+// success does the same close+navigate immediately, right after its toast
+// — unchanged from the old page's behavior beyond swapping "navigate away
+// from the page" for "close the modal" as the first step.
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, BookOpen, Check, KeyRound, Mail, UserCircle, UserX } from 'lucide-react';
+import { BookOpen, Check, KeyRound, Mail, UserCircle, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
-import { usePermissions } from '@/lib/usePermissions';
 import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
-import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { AccessDenied } from '@/components/ui/AccessDenied';
-import { Card } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { PhoneInput } from '@/components/ui/PhoneInput';
 import { Select, SelectItem } from '@/components/ui/Select';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { FormStepsBar, type FormStep } from '@/components/school/FormStepsBar';
 import { WizardNav } from '@/components/school/WizardNav';
 import { AssignmentChipPicker } from '@/components/personnel/AssignmentChipPicker';
@@ -184,17 +195,22 @@ function ConnexionCard({
   );
 }
 
-export default function PersonnelNouveauPage() {
-  const user = useUser();
+export function PersonnelFormModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations('Personnel.nouveau');
   const tAdmins = useTranslations('Permissions.adminsTab');
   const tCommon = useTranslations('Common');
   const { role: schoolRole } = useSchoolPlan();
-  const { can } = usePermissions();
   const isAdminPlus = schoolRole === 'OWNER' || schoolRole === 'ADMIN';
   const isOwner = schoolRole === 'OWNER';
+  const topRef = useRef<HTMLDivElement>(null);
 
   const { data: rolesData } = useApi<RolesResponse>('/api/school/roles', { skip: !isAdminPlus });
   const roles = rolesData?.roles ?? [];
@@ -271,6 +287,7 @@ export default function PersonnelNouveauPage() {
     setStepIndex(index);
     setMaxReached((m) => Math.max(m, index));
     setError(null);
+    topRef.current?.scrollIntoView({ block: 'start' });
   }
 
   function validateStep(index: number): string | null {
@@ -316,6 +333,16 @@ export default function PersonnelNouveauPage() {
       default:
         return fallback;
     }
+  }
+
+  // Shared by the temp-password panel's own close button and this Modal's
+  // X/Escape while that panel is showing — closes the modal AND navigates
+  // to the newly created person's fiche, exactly like the old full-page
+  // wizard's "onClose" did.
+  function handleResultClose() {
+    if (!result) return;
+    onCreated();
+    router.push(`/personnel/${result.id}`);
   }
 
   async function onSubmit(e: FormEvent) {
@@ -372,9 +399,11 @@ export default function PersonnelNouveauPage() {
         });
       } else if (loginMode === 'email') {
         toast(t('successEmail', { email: email.trim() }), 'success');
+        onCreated();
         router.push(`/personnel/${res.id}`);
       } else {
         toast(t('successNone'), 'success');
+        onCreated();
         router.push(`/personnel/${res.id}`);
       }
     } catch (err) {
@@ -385,55 +414,47 @@ export default function PersonnelNouveauPage() {
     }
   }
 
-  if (!can('enseignants', 'create')) return <AccessDenied />;
-
-  if (!user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <Skeleton className="h-10 w-10 rounded-full" />
-      </main>
-    );
-  }
-
-  if (result) {
-    return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-5">
-        <TemporaryPasswordPanel
-          name={fullName}
-          username={result.username}
-          temporaryPassword={result.temporaryPassword}
-          onClose={() => router.push(`/personnel/${result.id}`)}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5">
-      <Link
-        href="/personnel"
-        className="flex w-fit items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-sm font-medium text-muted-foreground"
-      >
-        <ArrowLeft size={14} />
-        {t('backToList')}
-      </Link>
-
-      <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
-      </div>
-
-      <Card className="overflow-hidden">
-        <div className="border-b border-border px-4 py-3.5 sm:px-6">
+    <Modal
+      title={t('title')}
+      onClose={result ? handleResultClose : onClose}
+      xwide={!result}
+      header={
+        result ? undefined : (
           <FormStepsBar
             steps={STEPS}
             activeIndex={stepIndex}
             maxReachedIndex={maxReached}
             onStepSelect={goTo}
           />
-        </div>
+        )
+      }
+      footer={
+        result ? undefined : (
+          <WizardNav
+            stepIndex={stepIndex}
+            stepCount={STEPS.length}
+            submitting={submitting}
+            submitLabel={submitting ? t('submitting') : t('submit')}
+            formId={FORM_ID}
+            onCancel={onClose}
+            onPrev={() => goTo(Math.max(0, stepIndex - 1))}
+            onNext={goNext}
+          />
+        )
+      }
+    >
+      {result ? (
+        <TemporaryPasswordPanel
+          name={fullName}
+          username={result.username}
+          temporaryPassword={result.temporaryPassword}
+          onClose={handleResultClose}
+        />
+      ) : (
+        <form id={FORM_ID} onSubmit={onSubmit} className="flex flex-col gap-5">
+          <div ref={topRef} className="scroll-mt-6" />
 
-        <form id={FORM_ID} onSubmit={onSubmit} className="flex flex-col gap-5 p-4 sm:p-6">
           {stepIndex === 0 && (
             <div className="flex flex-col gap-5">
               <div>
@@ -658,20 +679,7 @@ export default function PersonnelNouveauPage() {
             </p>
           )}
         </form>
-
-        <div className="border-t border-border px-4 py-3.5 sm:px-6">
-          <WizardNav
-            stepIndex={stepIndex}
-            stepCount={STEPS.length}
-            submitting={submitting}
-            submitLabel={submitting ? t('submitting') : t('submit')}
-            formId={FORM_ID}
-            onCancel={() => router.push('/personnel')}
-            onPrev={() => goTo(Math.max(0, stepIndex - 1))}
-            onNext={goNext}
-          />
-        </div>
-      </Card>
-    </div>
+      )}
+    </Modal>
   );
 }

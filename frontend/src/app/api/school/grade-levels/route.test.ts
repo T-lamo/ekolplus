@@ -312,6 +312,27 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
     });
   });
 
+  it("the school's own template is accepted → 200, bulletinTemplateId set", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.bulletinTemplate.findUnique.mockResolvedValue({
+      id: 'tpl-own',
+      schoolId: 'school_1',
+    } as never);
+    prismaMock.gradeLevel.update.mockResolvedValue(row('l1', '6ème', 0, 'tpl-own') as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: 'tpl-own' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()) as unknown).toEqual({
+      level: { id: 'l1', name: '6ème', order: 0, bulletinTemplateId: 'tpl-own' },
+    });
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith({
+      where: { id: 'l1' },
+      data: { bulletinTemplateId: 'tpl-own' },
+    });
+  });
+
   it('bulletinTemplateId: null clears the assignment → 200', async () => {
     prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0, 'tpl-global') as never);
     prismaMock.gradeLevel.update.mockResolvedValue(row('l1', '6ème', 0, null) as never);

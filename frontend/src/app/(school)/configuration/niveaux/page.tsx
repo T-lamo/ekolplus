@@ -60,10 +60,11 @@ type NiveauxErrorT = (
     | 'errors.templateNotFound',
 ) => string;
 type NetworkErrorT = (key: 'errors.network') => string;
-type LevelRowT = (
-  key: 'reorderAria' | 'renameAria' | 'deleteAria' | 'templateAria' | 'templateDefault',
-  values?: { name: string },
-) => string;
+type LevelRowT = ((
+  key: 'reorderAria' | 'renameAria' | 'deleteAria' | 'templateAria',
+  values: { name: string },
+) => string) &
+  ((key: 'templateDefault') => string);
 
 /** `ApiError.message` carries the stable server code — switch on it (project
  * convention: branch on `err.code`, never on the message string). */

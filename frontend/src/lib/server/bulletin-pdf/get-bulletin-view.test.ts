@@ -135,4 +135,15 @@ describe('getStudentBulletinView', () => {
       (prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where as Record<string, unknown>).status,
     ).toBe('PUBLISHED');
   });
+
+  it('loads only NUMERIC subjects into the grades table (qualitative ones never reach grades.ts)', async () => {
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(prismaMock.classSubject.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { classId: 'cls_1', subject: { evaluationMode: 'NUMERIC' } },
+      }),
+    );
+    expect(view?.overallAverage).toBe(14);
+    expect(view?.rank).toBe(2);
+  });
 });

@@ -117,4 +117,19 @@ describe('getStudentResults', () => {
     const view = await getStudentResults({ ...baseInput, audience: 'staff' });
     expect(view).toMatchObject({ years: [], terms: [], termMode: 'NONE', enrolled: false });
   });
+
+  it('loads only NUMERIC subjects', async () => {
+    await getStudentResults({
+      schoolId: 'school_1',
+      studentId: 'stu_1',
+      academicYearId: null,
+      termId: null,
+      audience: 'staff',
+    });
+    expect(prismaMock.classSubject.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ subject: { evaluationMode: 'NUMERIC' } }),
+      }),
+    );
+  });
 });

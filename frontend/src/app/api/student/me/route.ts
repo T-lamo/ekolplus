@@ -18,6 +18,7 @@ import { resolveActiveAcademicYear } from '@/lib/server/school';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { absenceCount, addDays, attendanceRate, mondayOf } from '@/lib/server/attendance';
 import { classGeneralAverages, competitionRank, resolveCurrentTerm } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import {
   SESSION_INCLUDE,
   serializeSession,
@@ -144,7 +145,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     let summary: Summary = EMPTY_SUMMARY;
     if (activeYear && classId && currentTerm) {
       const [classSubjects, classmates, attendanceRows] = await Promise.all([
-        prisma.classSubject.findMany({ where: { classId } }),
+        prisma.classSubject.findMany({ where: { classId, ...NUMERIC_SUBJECT_FILTER } }),
         prisma.enrollment.findMany({
           where: { classId, academicYearId: activeYear.id },
           select: { studentId: true },

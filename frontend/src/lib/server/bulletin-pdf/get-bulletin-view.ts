@@ -19,6 +19,7 @@ import {
   resolveCurrentTerm,
   subjectAverageFor,
 } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import type { ViewAudience } from '@/lib/server/student-views/audience';
 
 export interface StudentBulletinView {
@@ -169,7 +170,7 @@ export async function getStudentBulletinView(
   }
 
   const classSubjects = await prisma.classSubject.findMany({
-    where: { classId: enrollment.classId },
+    where: { classId: enrollment.classId, ...NUMERIC_SUBJECT_FILTER },
     include: { subject: true, teacher: { select: { id: true, name: true } } },
     orderBy: [{ subject: { domain: 'asc' } }, { subject: { name: 'asc' } }],
   });

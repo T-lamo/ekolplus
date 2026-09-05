@@ -26,6 +26,7 @@ import {
   trendBetween,
   weightedAverage,
 } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import type { ViewAudience } from './audience';
 
 export interface StudentResultsInput {
@@ -157,7 +158,7 @@ export async function getStudentResults(input: StudentResultsInput): Promise<Stu
   }
 
   const classSubjects = await prisma.classSubject.findMany({
-    where: { classId: enrollment.classId },
+    where: { classId: enrollment.classId, ...NUMERIC_SUBJECT_FILTER },
     include: { subject: true },
     orderBy: [{ subject: { domain: 'asc' } }, { subject: { name: 'asc' } }],
   });

@@ -51,6 +51,7 @@ beforeEach(() => {
     id: 'cs_1',
     classId: 'cls_1',
     class: { schoolId: 'school_1', academicYearId: 'year_1' },
+    subject: { evaluationMode: 'NUMERIC' },
   } as never);
   prismaMock.term.findUnique.mockResolvedValue({
     id: 'term_1',
@@ -138,5 +139,28 @@ describe('POST /api/teacher/evaluations', () => {
     expect(prismaMock.evaluation.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ date: null }),
     });
+  });
+});
+
+describe('POST /api/teacher/evaluations (qualitative subject)', () => {
+  it('409 SUBJECT_NOT_NUMERIC', async () => {
+    prismaMock.classSubject.findUnique.mockResolvedValue({
+      id: 'cs_1',
+      class: { schoolId: 'school_1', academicYearId: 'year_1' },
+      subject: { evaluationMode: 'QUALITATIVE' },
+    } as never);
+    prismaMock.term.findUnique.mockResolvedValue({
+      id: 'term_1',
+      academicYearId: 'year_1',
+    } as never);
+    const res = await POST(
+      new NextRequest('http://localhost/api/teacher/evaluations', {
+        method: 'POST',
+        body: JSON.stringify({ classSubjectId: 'cs_1', termId: 'term_1', label: 'Devoir 1' }),
+      }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'SUBJECT_NOT_NUMERIC' });
+    expect(prismaMock.evaluation.create).not.toHaveBeenCalled();
   });
 });

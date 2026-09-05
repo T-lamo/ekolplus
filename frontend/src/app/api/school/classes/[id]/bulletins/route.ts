@@ -14,6 +14,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { classGeneralAverages, competitionRank, resolveCurrentTerm } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(
@@ -70,7 +71,7 @@ export async function GET(
     }
 
     const [classSubjects, enrollments] = await Promise.all([
-      prisma.classSubject.findMany({ where: { classId } }),
+      prisma.classSubject.findMany({ where: { classId, ...NUMERIC_SUBJECT_FILTER } }),
       prisma.enrollment.findMany({
         where: { classId, academicYearId: cls.academicYearId },
         include: {

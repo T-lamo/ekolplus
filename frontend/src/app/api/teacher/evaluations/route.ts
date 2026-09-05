@@ -77,7 +77,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const [classSubject, term] = await Promise.all([
       prisma.classSubject.findUnique({
         where: { id: parsed.data.classSubjectId },
-        select: { id: true, class: { select: { schoolId: true, academicYearId: true } } },
+        select: {
+          id: true,
+          class: { select: { schoolId: true, academicYearId: true } },
+          subject: { select: { evaluationMode: true } },
+        },
       }),
       prisma.term.findUnique({
         where: { id: parsed.data.termId },
@@ -93,6 +97,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         { error: 'VALIDATION_FAILED', message: 'Invalid classSubjectId or termId' },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    if (classSubject.subject.evaluationMode !== 'NUMERIC') {
+      return NextResponse.json(
+        {
+          error: 'SUBJECT_NOT_NUMERIC',
+          message: 'Cette matière est évaluée par critères, pas par notes.',
+        },
+        { status: 409, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 

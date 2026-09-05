@@ -13,6 +13,7 @@
 import 'server-only';
 import { prisma } from '@/lib/server/prisma';
 import { classGeneralAverages, competitionRank } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import type { ViewAudience } from './audience';
 
 export interface StudentBulletinSummariesInput {
@@ -47,7 +48,9 @@ export async function getStudentBulletinSummaries(
       where: { academicYearId: enrollment.class.academicYearId },
       orderBy: { order: 'asc' },
     }),
-    prisma.classSubject.findMany({ where: { classId: enrollment.classId } }),
+    prisma.classSubject.findMany({
+      where: { classId: enrollment.classId, ...NUMERIC_SUBJECT_FILTER },
+    }),
     prisma.enrollment.findMany({
       where: { classId: enrollment.classId, academicYearId: enrollment.class.academicYearId },
       select: { studentId: true },

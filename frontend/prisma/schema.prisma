@@ -277,8 +277,16 @@ model GradeLevel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Modèle de bulletin assignable par niveau (spec 2026-09-05 §8) — repli sur
+  // le modèle actif de l'école puis le plus ancien modèle global si absent
+  // (voir getStudentBulletinView).
+  bulletinTemplateId String?
+  bulletinTemplate   BulletinTemplate? @relation(fields: [bulletinTemplateId], references: [id], onDelete: SetNull)
+  classes            Class[]
+
   @@unique([schoolId, name])
   @@index([schoolId, order])
+  @@index([bulletinTemplateId])
 }
 
 // Trimestre/Semestre. `status` (Terminé/En cours/À venir) is NOT stored —
@@ -503,6 +511,14 @@ model Class {
   room              String?
   roomId            String?
   roomRef           Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  // Niveau scolaire (catalogue) — `level` reste le libellé affiché, non
+  // supprimé ; ce lien est ce qui permet de résoudre un modèle de bulletin
+  // par niveau (spec 2026-09-05 §8). Nullable : une classe créée avant ce
+  // champ, ou dont le niveau ne correspond à aucune entrée du catalogue,
+  // reste sans lien tant que backfill-class-grade-level.ts ou une
+  // ré-affectation manuelle ne le remplit pas.
+  gradeLevelId      String?
+  gradeLevel        GradeLevel?  @relation(fields: [gradeLevelId], references: [id], onDelete: SetNull)
   capacity          Int?
   homeroomTeacherId String?
   homeroomTeacher   Teacher?     @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
@@ -522,6 +538,7 @@ model Class {
   @@unique([academicYearId, name])
   @@index([schoolId])
   @@index([roomId])
+  @@index([gradeLevelId])
 }
 
 // Catalogue des salles de l'école (configuration/salles). Référencé par
@@ -895,6 +912,8 @@ model BulletinTemplate {
   config       Json
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
+
+  gradeLevels GradeLevel[]
 
   @@index([schoolId])
 }

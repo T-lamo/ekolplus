@@ -4,7 +4,9 @@
 // `isActive: true` flips any other active row for the school back to false
 // in the same transaction — "at most one active per school" is an
 // app-level invariant, same pattern as AcademicYear.isActive.
-// DELETE — own templates only; refuses deleting the active template.
+// DELETE — own templates only; refuses deleting the active template (400)
+// or a template a grade level of this school still references (409
+// TEMPLATE_IN_USE — spec 2026-09-05 §8).
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -137,6 +139,20 @@ export async function DELETE(
           message: 'Cannot delete the active template — activate another one first',
         },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const usedByLevel = await prisma.gradeLevel.findFirst({
+      where: { schoolId: mySchool.schoolId, bulletinTemplateId: id },
+      select: { name: true },
+    });
+    if (usedByLevel) {
+      return NextResponse.json(
+        {
+          error: 'TEMPLATE_IN_USE',
+          message: `Ce modèle est assigné au niveau « ${usedByLevel.name} ». Retirez l'affectation avant de le supprimer.`,
+        },
+        { status: 409, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 

@@ -125,6 +125,10 @@ export default function BulletinTemplatesPage() {
         global: d?.global ?? [],
       }));
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'TEMPLATE_IN_USE') {
+        toast(t('toast.deleteInUseError'), 'error');
+        return;
+      }
       if (err instanceof ApiError && err.code === 'VALIDATION_FAILED') {
         toast(err.message, 'error');
         return;

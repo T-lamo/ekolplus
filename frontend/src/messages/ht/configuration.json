@@ -888,15 +888,16 @@
     "toast": {
       "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
       "forkError": "Erè pandan y ap dupike modèl la.",
-      "activated": "Modèl defini kòm aktif.",
+      "activated": "Modèl defini kòm modèl pa default.",
       "activateError": "Erè pandan aktivasyon modèl la.",
       "deleted": "Modèl efase.",
-      "deleteError": "Erè pandan efasman an."
+      "deleteError": "Erè pandan efasman an.",
+      "deleteInUseError": "Nou pa kapab efase l : modèl sa a asiyen a yon nivo eskolè."
     },
     "deleteConfirm": "Efase modèl bilten sa a ?",
     "activeCard": {
-      "label": "Modèl aktif : {name}",
-      "description": "Modèl sa a itilize kounye a pou jenere bilten yo. Dènye modifikasyon : {date}",
+      "label": "Modèl pa default : {name}",
+      "description": "Modèl sa a itilize pa default pou jenere bilten yo, eksepte pou nivo ki gen pwòp modèl pa yo. Dènye modifikasyon : {date}",
       "edit": "Modifye"
     },
     "tabs": {
@@ -909,20 +910,20 @@
       "global": "Pa gen modèl global disponib."
     },
     "menu": {
-      "setActive": "Defini kòm aktif",
+      "setActive": "Defini kòm modèl pa default",
       "fork": "Dupike",
       "delete": "Efase"
     },
     "badge": {
-      "active": "Aktif",
+      "active": "Modèl pa default",
       "global": "Global",
       "predefined": "Predefini",
       "personal": "Pèsonèl"
     },
     "editLink": "Modifye",
     "help": {
-      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou : ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka aktif nan yon moman.",
-      "activeTemplate": "Modèl aktif la se sa k ap sèvi pou jenere bilten ofisyèl elèv ou yo. Pou aktive yon lòt, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm aktif »."
+      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou : ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka defini kòm modèl pa default nan yon moman.",
+      "activeTemplate": "Modèl pa default la sèvi pou jenere bilten elèv ou yo, sof si nivo eskolè yo genyen pwòp modèl yo chwazi (Konfigirasyon › Nivo). Pou chanje modèl pa default la, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm modèl pa default »."
     },
     "block": {
       "header": "Antèt",
@@ -945,7 +946,7 @@
         "exportError": "Erè pandan ekspòtasyon PDF la.",
         "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
         "forkError": "Erè pandan y ap dupike modèl la.",
-        "activated": "Modèl defini kòm aktif.",
+        "activated": "Modèl defini kòm modèl pa default.",
         "activateError": "Erè pandan aktivasyon modèl la.",
         "renameError": "Erè pandan chanjman non modèl la.",
         "logoError": "Erè pandan anrejistreman logo a.",
@@ -963,7 +964,7 @@
         "landscape": "Peyizaj",
         "portrait": "Pòtrè"
       },
-      "setActive": "Defini kòm aktif",
+      "setActive": "Defini kòm modèl pa default",
       "exportPdf": "Ekspòte PDF",
       "exporting": "Ekspòte…",
       "save": "Anrejistre",

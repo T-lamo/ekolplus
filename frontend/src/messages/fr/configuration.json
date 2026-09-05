@@ -887,15 +887,16 @@
     "toast": {
       "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
       "forkError": "Erreur lors de la duplication du modèle.",
-      "activated": "Modèle défini comme actif.",
+      "activated": "Modèle défini comme modèle par défaut.",
       "activateError": "Erreur lors de l'activation du modèle.",
       "deleted": "Modèle supprimé.",
-      "deleteError": "Erreur lors de la suppression."
+      "deleteError": "Erreur lors de la suppression.",
+      "deleteInUseError": "Impossible de supprimer : ce modèle est assigné à un niveau scolaire."
     },
     "deleteConfirm": "Supprimer ce modèle de bulletin ?",
     "activeCard": {
-      "label": "Modèle actif : {name}",
-      "description": "Ce modèle est actuellement utilisé pour la génération des bulletins. Dernière modification : {date}",
+      "label": "Modèle par défaut : {name}",
+      "description": "Ce modèle est utilisé par défaut pour la génération des bulletins, sauf pour les niveaux qui ont leur propre modèle assigné. Dernière modification : {date}",
       "edit": "Modifier"
     },
     "tabs": {
@@ -908,20 +909,20 @@
       "global": "Aucun modèle global disponible."
     },
     "menu": {
-      "setActive": "Définir comme actif",
+      "setActive": "Définir comme modèle par défaut",
       "fork": "Dupliquer",
       "delete": "Supprimer"
     },
     "badge": {
-      "active": "Actif",
+      "active": "Modèle par défaut",
       "global": "Global",
       "predefined": "Prédéfini",
       "personal": "Personnel"
     },
     "editLink": "Éditer",
     "help": {
-      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre : les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être actif à la fois.",
-      "activeTemplate": "Le modèle actif est celui utilisé pour générer les bulletins officiels de vos élèves. Pour en activer un autre, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme actif »."
+      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre : les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être défini par défaut à la fois.",
+      "activeTemplate": "Le modèle par défaut est utilisé pour générer les bulletins de vos élèves, sauf si leur niveau scolaire a son propre modèle assigné (Configuration › Niveaux). Pour changer le modèle par défaut, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme modèle par défaut »."
     },
     "block": {
       "header": "En-tête",
@@ -944,7 +945,7 @@
         "exportError": "Erreur lors de l'export PDF.",
         "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
         "forkError": "Erreur lors de la duplication du modèle.",
-        "activated": "Modèle défini comme actif.",
+        "activated": "Modèle défini comme modèle par défaut.",
         "activateError": "Erreur lors de l'activation du modèle.",
         "renameError": "Erreur lors du renommage du modèle.",
         "logoError": "Erreur lors de l'enregistrement du logo.",
@@ -962,7 +963,7 @@
         "landscape": "Paysage",
         "portrait": "Portrait"
       },
-      "setActive": "Définir comme actif",
+      "setActive": "Définir comme modèle par défaut",
       "exportPdf": "Exporter PDF",
       "exporting": "Export…",
       "save": "Enregistrer",

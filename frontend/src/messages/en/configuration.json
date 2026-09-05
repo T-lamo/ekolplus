@@ -887,15 +887,16 @@
     "toast": {
       "forked": "Template duplicated: you can now customize it.",
       "forkError": "Error duplicating the template.",
-      "activated": "Template set as active.",
+      "activated": "Template set as default.",
       "activateError": "Error activating the template.",
       "deleted": "Template deleted.",
-      "deleteError": "Error deleting the template."
+      "deleteError": "Error deleting the template.",
+      "deleteInUseError": "Can't delete: this template is assigned to a grade level."
     },
     "deleteConfirm": "Delete this report card template?",
     "activeCard": {
-      "label": "Active template: {name}",
-      "description": "This template is currently used to generate report cards. Last modified: {date}",
+      "label": "Default template: {name}",
+      "description": "This template is used by default to generate report cards, except for grade levels with their own assigned template. Last modified: {date}",
       "edit": "Edit"
     },
     "tabs": {
@@ -908,20 +909,20 @@
       "global": "No global template available."
     },
     "menu": {
-      "setActive": "Set as active",
+      "setActive": "Set as default template",
       "fork": "Duplicate",
       "delete": "Delete"
     },
     "badge": {
-      "active": "Active",
+      "active": "Default template",
       "global": "Global",
       "predefined": "Predefined",
       "personal": "Personal"
     },
     "editLink": "Edit",
     "help": {
-      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own: global templates can't be edited directly. Only one personal template can be active at a time.",
-      "activeTemplate": "The active template is the one used to generate your students' official report cards. To activate a different one, open a personal template's menu and choose \"Set as active\"."
+      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own: global templates can't be edited directly. Only one personal template can be set as default at a time.",
+      "activeTemplate": "The default template is used to generate your students' report cards, unless their grade level has its own assigned template (Configuration > Levels). To change the default template, open a personal template's menu and choose \"Set as default template\"."
     },
     "block": {
       "header": "Header",
@@ -944,7 +945,7 @@
         "exportError": "Error exporting the PDF.",
         "forked": "Template duplicated: you can now customize it.",
         "forkError": "Error duplicating the template.",
-        "activated": "Template set as active.",
+        "activated": "Template set as default.",
         "activateError": "Error activating the template.",
         "renameError": "Error renaming the template.",
         "logoError": "Error saving the logo.",
@@ -962,7 +963,7 @@
         "landscape": "Landscape",
         "portrait": "Portrait"
       },
-      "setActive": "Set as active",
+      "setActive": "Set as default template",
       "exportPdf": "Export PDF",
       "exporting": "Exporting…",
       "save": "Save",

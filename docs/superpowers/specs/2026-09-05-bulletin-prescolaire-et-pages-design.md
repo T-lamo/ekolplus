@@ -127,9 +127,11 @@ Règles :
 - Passer une matière de `NUMERIC` à `QUALITATIVE` est refusé (409 `SUBJECT_HAS_EVALUATIONS`)
   si une évaluation existe sur l'une de ses `ClassSubject` ; l'inverse est refusé
   (409 `SUBJECT_HAS_RATINGS`) si une coche existe.
-- Renommer un niveau de l'échelle est libre (les coches stockent l'index). Retirer un niveau
-  qui a au moins une coche renvoie 409 `SCALE_LEVEL_IN_USE`. Réordonner l'échelle réindexe
-  les coches dans la même transaction.
+- Renommer un niveau de l'échelle est libre (les coches stockent l'index, `ratingScale[i]` est
+  le libellé du niveau `i`). Retirer le dernier niveau alors qu'une coche l'utilise renvoie
+  409 `SCALE_LEVEL_IN_USE`. Réordonner l'échelle n'est possible que tant qu'aucune coche
+  n'existe : le serveur ne distingue pas un renommage d'une permutation, donc le formulaire
+  masque les flèches de déplacement dès que `hasRatings` est vrai dans la fiche matière.
 - Supprimer un critère qui a des coches : 409 `CRITERION_IN_USE` (l'archivage d'un critère est
   hors périmètre, §15).
 - Une matière qualitative ne peut pas recevoir d'évaluation : `POST /api/school/evaluations`

@@ -99,5 +99,12 @@
   },
   "timetable": {
     "title": "Timetable"
+  },
+  "qualitative": {
+    "title": "Criteria grids",
+    "subtitle": "Your subjects assessed by criteria, as published by your teachers.",
+    "empty": "No grid published for this term.",
+    "criterionColumn": "Criterion",
+    "loadError": "The grids cannot be loaded right now."
   }
 }

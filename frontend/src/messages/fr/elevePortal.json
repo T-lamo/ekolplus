@@ -99,5 +99,12 @@
   },
   "timetable": {
     "title": "Emploi du temps"
+  },
+  "qualitative": {
+    "title": "Grilles de critères",
+    "subtitle": "Vos matières évaluées par critères, telles que publiées par vos enseignants.",
+    "empty": "Aucune grille publiée pour cette période.",
+    "criterionColumn": "Critère",
+    "loadError": "Impossible de charger les grilles pour le moment."
   }
 }

@@ -9,6 +9,7 @@ import { useApi } from '@/lib/useApi';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { NotesResultatsTab } from '@/app/(school)/eleves/[id]/NotesResultatsTab';
 import type { StudentResults } from '@/app/(school)/eleves/types';
+import { QualitativeGridsCard } from '@/components/student/QualitativeGridsCard';
 import { ScolaritePage } from '../ScolaritePage';
 
 export default function EleveNotesPage() {
@@ -19,13 +20,16 @@ export default function EleveNotesPage() {
     <ScolaritePage title={t('pages.grades.title')} subtitle={t('pages.grades.subtitle')}>
       {(me) =>
         results ? (
-          <NotesResultatsTab
-            studentId={me.student.id}
-            studentName={`${me.student.firstName} ${me.student.lastName}`}
-            initial={results}
-            apiBase="/api/student"
-            readOnly
-          />
+          <div className="flex flex-col gap-4">
+            <NotesResultatsTab
+              studentId={me.student.id}
+              studentName={`${me.student.firstName} ${me.student.lastName}`}
+              initial={results}
+              apiBase="/api/student"
+              readOnly
+            />
+            <QualitativeGridsCard />
+          </div>
         ) : error ? (
           <p role="alert" className="text-sm text-destructive-foreground">
             {t('loadError')}

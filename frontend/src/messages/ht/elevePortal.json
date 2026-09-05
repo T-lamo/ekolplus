@@ -100,5 +100,12 @@
   },
   "timetable": {
     "title": "Orè kou yo"
+  },
+  "qualitative": {
+    "title": "Griy kritè",
+    "subtitle": "Matyè ou yo ki evalye pa kritè, jan pwofesè ou yo pibliye yo.",
+    "empty": "Pa gen okenn griy pibliye pou peryòd sa a.",
+    "criterionColumn": "Kritè",
+    "loadError": "Nou pa ka chaje griy yo kounye a."
   }
 }

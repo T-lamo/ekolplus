@@ -304,6 +304,7 @@ model Term {
   goals         Goal[]
   appreciations Appreciation[]
   chapters      SubjectChapter[]
+  criteriaAssessments CriteriaAssessment[]
 
   @@index([academicYearId, order])
 }
@@ -393,6 +394,14 @@ model Subject {
   color                String? // hex from the form's fixed swatch catalog
   responsibleTeacherId String?
   responsibleTeacher   Teacher? @relation("SubjectResponsible", fields: [responsibleTeacherId], references: [id], onDelete: SetNull)
+  // NUMERIC | QUALITATIVE. A qualitative subject has no evaluations and no
+  // numeric grades, is skipped by every average, and is rated criterion by
+  // criterion on `ratingScale` (spec 2026-09-05 §4).
+  evaluationMode       String   @default("NUMERIC")
+  // Ordered scale of a QUALITATIVE subject, 2 to 6 labels, e.g.
+  // ["Toujours","Souvent","Parfois","Jamais"]. Ratings store the index into
+  // this array. Empty in NUMERIC mode.
+  ratingScale          String[] @default([])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -400,6 +409,7 @@ model Subject {
   goals         Goal[]
   appreciations Appreciation[]
   chapters      SubjectChapter[]
+  criteria      SubjectCriterion[]
   // Implicit self m2m: subjects that must be validated before this one.
   prerequisites Subject[]        @relation("SubjectPrerequisites")
   requiredBy    Subject[]        @relation("SubjectPrerequisites")
@@ -538,6 +548,58 @@ model Room {
   @@index([schoolId])
 }
 
+// One criterion of a QUALITATIVE subject ("Respecte les consignes", ...).
+// Ordered by `order`; deleting a criterion that has ratings is refused by the
+// API (409 CRITERION_IN_USE), the cascade only fires with the subject.
+model SubjectCriterion {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ratings CriteriaRating[]
+
+  @@index([subjectId, order])
+}
+
+// One sheet per class-subject and term, mirror of Evaluation for qualitative
+// subjects. DRAFT | PUBLISHED; only PUBLISHED sheets reach students and the
+// bulletin.
+model CriteriaAssessment {
+  id             String       @id @default(cuid())
+  classSubjectId String
+  classSubject   ClassSubject @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  termId         String
+  term           Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  status         String       @default("DRAFT")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  ratings CriteriaRating[]
+
+  @@unique([classSubjectId, termId])
+}
+
+// One tick per student and criterion on a sheet, mirror of Grade.
+// `level` is the index into Subject.ratingScale.
+model CriteriaRating {
+  id           String             @id @default(cuid())
+  assessmentId String
+  assessment   CriteriaAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  criterionId  String
+  criterion    SubjectCriterion   @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  level        Int
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([assessmentId, studentId, criterionId])
+  @@index([studentId])
+}
+
 model ClassSubject {
   id          String   @id @default(cuid())
   classId     String
@@ -552,6 +614,7 @@ model ClassSubject {
   updatedAt   DateTime @updatedAt
 
   evaluations Evaluation[]
+  criteriaAssessments CriteriaAssessment[]
 
   @@unique([classId, subjectId])
   @@index([subjectId])
@@ -603,6 +666,7 @@ model Student {
   feePayments     FeePayment[]
   feeDisputes     FeeDispute[]
   feeReminderLogs FeeReminderLog[]
+  criteriaRatings CriteriaRating[]
   userId          String?           @unique
   user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 

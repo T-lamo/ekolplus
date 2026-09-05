@@ -22,6 +22,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual, SUBJECT_COLORS, SUBJECT_ICONS, tintOf } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
+import type { EvaluationMode } from '@/lib/qualitative';
 import {
   ALL_LEVELS,
   EVALUATION_TYPES,
@@ -33,6 +34,7 @@ import {
 } from '@/app/(school)/configuration/matieres/subject-form.constants';
 import { subjectKindLabel } from '@/app/(school)/configuration/matieres/kind-label';
 import { subjectStatusLabel } from '@/app/(school)/configuration/matieres/status-label';
+import type { SubjectCriterionRow } from '@/app/(school)/configuration/matieres/types';
 import {
   BareSelect,
   FormCard,
@@ -44,6 +46,8 @@ import {
   ToggleRow,
 } from './form-primitives';
 import { PrerequisitesPicker, type PrerequisiteOption } from './PrerequisitesPicker';
+import { RatingScaleEditor } from './RatingScaleEditor';
+import { CriteriaEditor } from './CriteriaEditor';
 import { SubjectStatusBadge } from './SubjectPageShell';
 import type { SubjectFormController } from './useSubjectForm';
 
@@ -62,6 +66,7 @@ export function SubjectForm({
   options,
   onGoToProgramme,
   onToggleClass,
+  qualitative,
 }: {
   form: SubjectFormController;
   mode: 'create' | 'edit';
@@ -70,6 +75,13 @@ export function SubjectForm({
   onGoToProgramme?: () => void;
   /** Edit mode: live attach/detach of a class (create mode just tracks ids). */
   onToggleClass?: (classId: string, checked: boolean) => void;
+  /** Edit mode only: live criteria editing + the "ratings exist" lock. */
+  qualitative?: {
+    subjectId: string;
+    criteria: SubjectCriterionRow[];
+    hasRatings: boolean;
+    onChanged: () => void;
+  };
 }) {
   const { values: v, setField, errors, serverError, domainOptions } = form;
   const t = useTranslations('Configuration.matieres.form');
@@ -390,6 +402,57 @@ export function SubjectForm({
                 />
               </FormGroup>
             </div>
+            <SectionDivider />
+            <FormGroup
+              label={t('structure.evaluationModeLabel')}
+              hint={t('structure.evaluationModeHint')}
+              error={errors.evaluationMode}
+              htmlFor="subject-evaluation-mode"
+            >
+              <BareSelect
+                id="subject-evaluation-mode"
+                value={v.evaluationMode}
+                onValueChange={(value) => {
+                  const mode = value as EvaluationMode;
+                  setField('evaluationMode', mode);
+                  if (mode === 'QUALITATIVE' && v.ratingScale.length === 0) {
+                    setField('ratingScale', ['', '']);
+                  }
+                }}
+              >
+                <SelectItem value="NUMERIC">{t('structure.evaluationModeNumeric')}</SelectItem>
+                <SelectItem value="QUALITATIVE">
+                  {t('structure.evaluationModeQualitative')}
+                </SelectItem>
+              </BareSelect>
+            </FormGroup>
+            {v.evaluationMode === 'QUALITATIVE' && (
+              <>
+                <FormGroup
+                  label={t('structure.ratingScaleLabel')}
+                  required
+                  hint={t('structure.ratingScaleHint')}
+                  error={errors.ratingScale}
+                >
+                  <RatingScaleEditor
+                    value={v.ratingScale}
+                    onChange={(scale) => setField('ratingScale', scale)}
+                    lockedOrder={qualitative?.hasRatings ?? false}
+                  />
+                </FormGroup>
+                {qualitative ? (
+                  <CriteriaEditor
+                    subjectId={qualitative.subjectId}
+                    criteria={qualitative.criteria}
+                    onChanged={qualitative.onChanged}
+                  />
+                ) : (
+                  <p className="text-2xs text-muted-foreground">
+                    {t('structure.criteriaAfterSave')}
+                  </p>
+                )}
+              </>
+            )}
             <SectionDivider />
             <ToggleRow
               title={t('structure.includeInAverageTitle')}

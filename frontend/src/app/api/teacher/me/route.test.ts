@@ -64,7 +64,7 @@ beforeEach(() => {
       classId: 'cls_1',
       class: { name: '3ème A', level: '3ème', academicYearId: 'year_1' },
       subjectId: 'sub_1',
-      subject: { name: 'Mathématiques' },
+      subject: { name: 'Mathématiques', evaluationMode: 'NUMERIC' },
     },
   ] as never);
   (prismaMock.enrollment.groupBy as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
@@ -132,6 +132,7 @@ describe('GET /api/teacher/me', () => {
         classLevel: '3ème',
         subjectId: 'sub_1',
         subjectName: 'Mathématiques',
+        subjectEvaluationMode: 'NUMERIC',
         studentCount: 27,
       },
     ]);

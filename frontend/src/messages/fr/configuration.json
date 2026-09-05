@@ -460,7 +460,31 @@
         "includeInAverageTitle": "Inclure dans la moyenne générale",
         "includeInAverageDesc": "Cette matière sera prise en compte dans le calcul de la moyenne",
         "showOnBulletinTitle": "Afficher dans le bulletin",
-        "showOnBulletinDesc": "La note et l'appréciation apparaîtront sur le bulletin scolaire"
+        "showOnBulletinDesc": "La note et l'appréciation apparaîtront sur le bulletin scolaire",
+        "evaluationModeLabel": "Mode d'évaluation",
+        "evaluationModeHint": "Par notes : évaluations chiffrées et moyenne. Par critères : grille cochée sur une échelle, sans note ni moyenne.",
+        "evaluationModeNumeric": "Par notes",
+        "evaluationModeQualitative": "Par critères",
+        "ratingScaleLabel": "Échelle d'appréciation",
+        "ratingScaleHint": "De 2 à 6 niveaux, du meilleur au moins bon. Ex : Toujours, Souvent, Parfois, Jamais.",
+        "ratingScaleLevelPlaceholder": "Niveau {index}",
+        "ratingScaleAdd": "Ajouter un niveau",
+        "ratingScaleRemove": "Retirer ce niveau",
+        "ratingScaleMoveUp": "Monter",
+        "ratingScaleMoveDown": "Descendre",
+        "ratingScaleLocked": "Des coches existent déjà : les niveaux peuvent être renommés, plus réordonnés.",
+        "criteriaTitle": "Critères évalués",
+        "criteriaHint": "Une ligne par critère, dans l'ordre d'affichage sur le bulletin.",
+        "criteriaEmpty": "Aucun critère pour le moment.",
+        "criteriaAfterSave": "Enregistrez la matière pour ajouter des critères.",
+        "criterionPlaceholder": "Ex : Respecte les consignes",
+        "criterionAdd": "Ajouter",
+        "criterionRename": "Renommer",
+        "criterionSave": "Enregistrer",
+        "criterionCancel": "Annuler",
+        "criterionDelete": "Supprimer",
+        "criterionInUse": "Ce critère a des coches : il ne peut pas être supprimé.",
+        "criterionSaveError": "Impossible d'enregistrer le critère."
       },
       "assignment": {
         "title": "Assignation et logistique",
@@ -523,7 +547,8 @@
         "coefficientRange": "Entre 1 et 10.",
         "maxScoreRange": "Entre 1 et 100.",
         "scoreRange": "Entre 0 et {max}.",
-        "evaluationTypeRequired": "Choisissez un type d'évaluation."
+        "evaluationTypeRequired": "Choisissez un type d'évaluation.",
+        "ratingScaleInvalid": "Entre 2 et 6 niveaux, tous remplis, distincts et de 30 caractères maximum."
       }
     },
     "affectations": {

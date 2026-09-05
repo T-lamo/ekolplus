@@ -461,7 +461,31 @@
         "includeInAverageTitle": "Enkli nan mwayèn jeneral la",
         "includeInAverageDesc": "Matyè sa a ap konte nan kalkil mwayèn nan",
         "showOnBulletinTitle": "Montre sou bilten an",
-        "showOnBulletinDesc": "Nòt la ak apresyasyon an ap parèt sou bilten lekòl la"
+        "showOnBulletinDesc": "Nòt la ak apresyasyon an ap parèt sou bilten lekòl la",
+        "evaluationModeLabel": "Mòd evalyasyon",
+        "evaluationModeHint": "Pa nòt : evalyasyon ak chif ak mwayèn. Pa kritè : yon griy yo tcheke sou yon echèl, san nòt ni mwayèn.",
+        "evaluationModeNumeric": "Pa nòt",
+        "evaluationModeQualitative": "Pa kritè",
+        "ratingScaleLabel": "Echèl apresyasyon",
+        "ratingScaleHint": "2 a 6 nivo, pi bon an anvan. Egz. : Toujou, Souvan, Pafwa, Jamè.",
+        "ratingScaleLevelPlaceholder": "Nivo {index}",
+        "ratingScaleAdd": "Ajoute yon nivo",
+        "ratingScaleRemove": "Retire nivo sa a",
+        "ratingScaleMoveUp": "Monte",
+        "ratingScaleMoveDown": "Desann",
+        "ratingScaleLocked": "Gen kwa ki egziste deja : ou ka chanje non nivo yo, men ou pa ka chanje lòd yo ankò.",
+        "criteriaTitle": "Kritè yo evalye",
+        "criteriaHint": "Yon liy pou chak kritè, nan lòd yo parèt sou bilten an.",
+        "criteriaEmpty": "Poko gen kritè.",
+        "criteriaAfterSave": "Anrejistre matyè a pou ajoute kritè.",
+        "criterionPlaceholder": "Egz. : Respekte konsiy yo",
+        "criterionAdd": "Ajoute",
+        "criterionRename": "Chanje non",
+        "criterionSave": "Anrejistre",
+        "criterionCancel": "Anile",
+        "criterionDelete": "Efase",
+        "criterionInUse": "Kritè sa a gen kwa : ou pa ka efase l.",
+        "criterionSaveError": "Nou pa t ka anrejistre kritè a."
       },
       "assignment": {
         "title": "Afektasyon ak lojistik",
@@ -524,7 +548,8 @@
         "coefficientRange": "Ant 1 ak 10.",
         "maxScoreRange": "Ant 1 ak 100.",
         "scoreRange": "Ant 0 ak {max}.",
-        "evaluationTypeRequired": "Chwazi yon tip evalyasyon."
+        "evaluationTypeRequired": "Chwazi yon tip evalyasyon.",
+        "ratingScaleInvalid": "2 a 6 nivo, tout ranpli, diferan, 30 karaktè maksimòm."
       }
     },
     "affectations": {

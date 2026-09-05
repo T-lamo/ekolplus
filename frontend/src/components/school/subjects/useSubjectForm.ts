@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { type EvaluationMode, normalizeRatingScale } from '@/lib/qualitative';
 import {
   OTHER_DOMAIN,
   SUBJECT_DOMAINS,
@@ -35,6 +36,8 @@ export interface SubjectFormValues {
   maxCapacity: string;
   includeInAverage: boolean;
   showOnBulletin: boolean;
+  evaluationMode: EvaluationMode;
+  ratingScale: string[];
   responsibleTeacherId: string | null;
   room: string;
   prerequisiteIds: string[];
@@ -75,6 +78,8 @@ export function initialValues(
     maxCapacity: numOrEmpty(subject?.maxCapacity),
     includeInAverage: subject?.includeInAverage ?? true,
     showOnBulletin: subject?.showOnBulletin ?? true,
+    evaluationMode: subject?.evaluationMode ?? 'NUMERIC',
+    ratingScale: subject?.ratingScale ?? [],
     responsibleTeacherId: subject?.responsibleTeacherId ?? null,
     room: subject?.room ?? '',
     prerequisiteIds: subject?.prerequisiteIds ?? [],
@@ -101,7 +106,8 @@ type SubjectFormErrorCode =
   | 'coefficientRange'
   | 'maxScoreRange'
   | 'scoreRange'
-  | 'evaluationTypeRequired';
+  | 'evaluationTypeRequired'
+  | 'ratingScaleInvalid';
 
 export type SubjectFormErrorCodes = Partial<Record<keyof SubjectFormValues, SubjectFormErrorCode>>;
 
@@ -123,6 +129,9 @@ export function validate(v: SubjectFormValues): { codes: SubjectFormErrorCodes; 
   const elim = toInt(v.eliminatoryScore);
   if (elim !== null && (elim < 0 || elim > max)) errors.eliminatoryScore = 'scoreRange';
   if (v.evaluationType === '') errors.evaluationType = 'evaluationTypeRequired';
+  if (v.evaluationMode === 'QUALITATIVE' && !normalizeRatingScale(v.ratingScale).ok) {
+    errors.ratingScale = 'ratingScaleInvalid';
+  }
   return { codes: errors, max };
 }
 
@@ -167,6 +176,9 @@ export function toBody(v: SubjectFormValues, status: SubjectStatus) {
     maxCapacity: toInt(v.maxCapacity),
     includeInAverage: v.includeInAverage,
     showOnBulletin: v.showOnBulletin,
+    evaluationMode: v.evaluationMode,
+    ratingScale:
+      v.evaluationMode === 'QUALITATIVE' ? v.ratingScale.map((label) => label.trim()) : [],
     responsibleTeacherId: v.responsibleTeacherId,
     room: v.room || null,
     prerequisiteIds: v.prerequisiteIds,
@@ -238,6 +250,13 @@ export function useSubjectForm({
       if (intent === 'draft' && values.name.trim().length < 2) {
         nextCodes.name = 'nameTooShort';
       }
+      if (
+        intent === 'draft' &&
+        values.evaluationMode === 'QUALITATIVE' &&
+        !normalizeRatingScale(values.ratingScale).ok
+      ) {
+        nextCodes.ratingScale = 'ratingScaleInvalid';
+      }
       if (Object.keys(nextCodes).length > 0) {
         setErrors(translateErrors(nextCodes, max, t));
         const first = document.querySelector<HTMLElement>('[data-field-error="true"]');
@@ -260,6 +279,13 @@ export function useSubjectForm({
       } catch (err) {
         if (err instanceof ApiError && err.code === 'SUBJECT_CODE_TAKEN') {
           setErrors((prev) => ({ ...prev, code: err.message }));
+        } else if (
+          err instanceof ApiError &&
+          (err.code === 'SUBJECT_HAS_EVALUATIONS' || err.code === 'SUBJECT_HAS_RATINGS')
+        ) {
+          setErrors((prev) => ({ ...prev, evaluationMode: err.message }));
+        } else if (err instanceof ApiError && err.code === 'SCALE_LEVEL_IN_USE') {
+          setErrors((prev) => ({ ...prev, ratingScale: err.message }));
         } else {
           setServerError(err instanceof ApiError ? err.message : tCommon('errors.network'));
         }

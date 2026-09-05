@@ -19,7 +19,7 @@ import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const INCLUDE = {
-  subject: { select: { id: true, name: true, code: true, domain: true } },
+  subject: { select: { id: true, name: true, code: true, domain: true, evaluationMode: true } },
   teacher: { select: { id: true, name: true } },
   class: { select: { id: true, name: true, level: true } },
 } as const;

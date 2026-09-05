@@ -236,6 +236,12 @@ function SubjectDetailContent() {
             options={options}
             onGoToProgramme={() => setTab('programme')}
             onToggleClass={onToggleClass}
+            qualitative={{
+              subjectId: subject.id,
+              criteria: subject.criteria,
+              hasRatings: subject.hasRatings,
+              onChanged: loadDetail,
+            }}
           />
         </div>
       )}

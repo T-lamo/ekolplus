@@ -460,7 +460,31 @@
         "includeInAverageTitle": "Include in overall average",
         "includeInAverageDesc": "This subject will be factored into the average calculation",
         "showOnBulletinTitle": "Show on report card",
-        "showOnBulletinDesc": "The grade and comments will appear on the report card"
+        "showOnBulletinDesc": "The grade and comments will appear on the report card",
+        "evaluationModeLabel": "Assessment mode",
+        "evaluationModeHint": "By grades: scored assessments and an average. By criteria: a grid ticked on a scale, no grade and no average.",
+        "evaluationModeNumeric": "By grades",
+        "evaluationModeQualitative": "By criteria",
+        "ratingScaleLabel": "Rating scale",
+        "ratingScaleHint": "2 to 6 levels, best first. E.g. Always, Often, Sometimes, Never.",
+        "ratingScaleLevelPlaceholder": "Level {index}",
+        "ratingScaleAdd": "Add a level",
+        "ratingScaleRemove": "Remove this level",
+        "ratingScaleMoveUp": "Move up",
+        "ratingScaleMoveDown": "Move down",
+        "ratingScaleLocked": "Ratings already exist: levels can be renamed but no longer reordered.",
+        "criteriaTitle": "Assessed criteria",
+        "criteriaHint": "One line per criterion, in the order shown on the report card.",
+        "criteriaEmpty": "No criteria yet.",
+        "criteriaAfterSave": "Save the subject to add criteria.",
+        "criterionPlaceholder": "E.g. Follows instructions",
+        "criterionAdd": "Add",
+        "criterionRename": "Rename",
+        "criterionSave": "Save",
+        "criterionCancel": "Cancel",
+        "criterionDelete": "Delete",
+        "criterionInUse": "This criterion has ratings: it cannot be deleted.",
+        "criterionSaveError": "The criterion could not be saved."
       },
       "assignment": {
         "title": "Assignment and logistics",
@@ -523,7 +547,8 @@
         "coefficientRange": "Between 1 and 10.",
         "maxScoreRange": "Between 1 and 100.",
         "scoreRange": "Between 0 and {max}.",
-        "evaluationTypeRequired": "Choose an assessment type."
+        "evaluationTypeRequired": "Choose an assessment type.",
+        "ratingScaleInvalid": "2 to 6 levels, all filled in, distinct and 30 characters at most."
       }
     },
     "affectations": {

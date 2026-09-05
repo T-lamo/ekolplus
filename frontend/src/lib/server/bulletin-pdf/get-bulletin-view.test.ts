@@ -9,6 +9,22 @@ const T_START = new Date('2025-09-01T00:00:00.000Z');
 // Ends far in the future so resolveCurrentTerm picks it whatever the run date.
 const T_END = new Date('2099-12-31T00:00:00.000Z');
 
+// Same pages-shaped config the beforeEach gives tpl_1 — the grade-level
+// resolution tests below only assert on `template.id`, so any template
+// object normalizeConfig already accepts works here.
+const pagesConfig = {
+  pageFormat: 'A4',
+  orientation: 'PORTRAIT',
+  pages: [
+    {
+      id: 'page-1',
+      layout: 'full',
+      showPageNumber: false,
+      blocks: [{ id: 'header', type: 'header', visible: true }],
+    },
+  ],
+};
+
 beforeEach(() => {
   prismaMock.student.findUnique.mockResolvedValue({
     id: 'stu_1',
@@ -239,5 +255,97 @@ describe('getStudentBulletinView', () => {
       content: { title: 'X', footerMessage: null, pageNumberFormat: DEFAULT_PAGE_NUMBER_FORMAT },
       layout: {},
     });
+  });
+
+  it("prefers the enrolled class's grade-level template over the school's active one", async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValueOnce({
+      studentId: 'stu_1',
+      classId: 'cls_1',
+      class: {
+        id: 'cls_1',
+        name: '6ème A',
+        academicYearId: 'year_1',
+        homeroomTeacher: null,
+        gradeLevel: {
+          bulletinTemplate: {
+            id: 'tpl-level',
+            name: 'Livret préscolaire',
+            config: pagesConfig,
+            isActive: false,
+          },
+        },
+      },
+    } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce({
+        id: 'tpl-active',
+        name: 'Actif',
+        config: pagesConfig,
+        isActive: true,
+      } as never)
+      .mockResolvedValueOnce({
+        id: 'tpl-global',
+        name: 'Global',
+        config: pagesConfig,
+        isActive: false,
+      } as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(view?.template?.id).toBe('tpl-level');
+  });
+
+  it("falls back to the school's active template when the class has no grade-level template", async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValueOnce({
+      studentId: 'stu_1',
+      classId: 'cls_1',
+      class: {
+        id: 'cls_1',
+        name: '6ème A',
+        academicYearId: 'year_1',
+        homeroomTeacher: null,
+        gradeLevel: null,
+      },
+    } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce({
+        id: 'tpl-active',
+        name: 'Actif',
+        config: pagesConfig,
+        isActive: true,
+      } as never)
+      .mockResolvedValueOnce({
+        id: 'tpl-global',
+        name: 'Global',
+        config: pagesConfig,
+        isActive: false,
+      } as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(view?.template?.id).toBe('tpl-active');
+  });
+
+  it('falls back to the oldest global template when the level has none and the school has no active one', async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValueOnce({
+      studentId: 'stu_1',
+      classId: 'cls_1',
+      class: {
+        id: 'cls_1',
+        name: '6ème A',
+        academicYearId: 'year_1',
+        homeroomTeacher: null,
+        gradeLevel: { bulletinTemplate: null },
+      },
+    } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce(null as never)
+      .mockResolvedValueOnce({
+        id: 'tpl-global',
+        name: 'Global',
+        config: pagesConfig,
+        isActive: false,
+      } as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(view?.template?.id).toBe('tpl-global');
   });
 });

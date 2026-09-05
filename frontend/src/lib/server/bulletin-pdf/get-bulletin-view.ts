@@ -94,6 +94,7 @@ export async function getStudentBulletinView(
             name: true,
             academicYearId: true,
             homeroomTeacher: { select: { id: true, name: true } },
+            gradeLevel: { select: { bulletinTemplate: true } },
           },
         },
       },
@@ -135,7 +136,12 @@ export async function getStudentBulletinView(
       orderBy: { createdAt: 'asc' },
     }),
   ]);
-  const template = activeTemplate ?? fallbackTemplate;
+  // Résolution spec §8 : niveau -> modèle actif de l'école -> plus ancien
+  // modèle global. Les deux requêtes ci-dessus restent inconditionnelles
+  // (même coût qu'avant l'ajout du niveau) — un repli bon marché, jamais sur
+  // le chemin critique d'un niveau qui a déjà son propre modèle.
+  const template =
+    enrollment.class.gradeLevel?.bulletinTemplate ?? activeTemplate ?? fallbackTemplate;
 
   const shell = {
     studentId,

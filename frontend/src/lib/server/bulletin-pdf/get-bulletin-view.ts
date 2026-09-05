@@ -40,6 +40,7 @@ export interface StudentBulletinView {
   schoolLogoUrl: string | null;
   directorSignatureUrl: string | null;
   academicYearLabel: string;
+  termLabel: string;
   terms: { id: string; label: string; order: number }[];
   resolvedTermId: string | null;
   studentIndex: number | null;
@@ -152,6 +153,7 @@ export async function getStudentBulletinView(
     schoolLogoUrl: school?.logoUrl ?? null,
     directorSignatureUrl: school?.directorSignatureUrl ?? null,
     academicYearLabel: academicYear?.label ?? '',
+    termLabel: term?.label ?? '',
     terms: terms.map((t) => ({ id: t.id, label: t.label, order: t.order })),
     resolvedTermId: term?.id ?? null,
     ...rosterNav,

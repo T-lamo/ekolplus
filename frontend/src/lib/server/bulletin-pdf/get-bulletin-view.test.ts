@@ -98,6 +98,7 @@ describe('getStudentBulletinView', () => {
       rankedCount: 3,
       overallAverage: 14,
       generalAppreciation: 'Bon trimestre.',
+      termLabel: '1er Trimestre',
     });
     expect(view?.subjects[0]).toMatchObject({
       subjectName: 'Mathématiques',
@@ -126,6 +127,7 @@ describe('getStudentBulletinView', () => {
       rankedCount: 3,
       classAverage: 14,
       generalAppreciation: 'Bon trimestre.',
+      termLabel: '1er Trimestre',
     });
     expect(prismaMock.appreciation.findMany.mock.calls[0]?.[0]?.where).toEqual({
       studentId: 'stu_1',

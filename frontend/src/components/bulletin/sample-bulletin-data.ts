@@ -1,4 +1,4 @@
-import type { BulletinRenderData } from './BulletinCanvas';
+import type { BulletinRenderData } from './render-data';
 
 // Illustrative-only fixture — used by the template editor's live preview
 // AND by the server-side template PDF export (app/print/bulletin-template-preview)
@@ -71,4 +71,35 @@ export const SAMPLE_BULLETIN_DATA: BulletinRenderData = {
     "Élève sérieux et investi qui fait preuve d'une bonne volonté dans l'ensemble des matières. Les résultats en sciences sont excellents et encourageants. Des efforts supplémentaires sont attendus en anglais pour consolider les acquis. Continuez ainsi !",
   absencesDays: 3,
   retards: 1,
+  firstName: 'Jean-Pierre',
+  lastName: 'M.',
+  schoolAddress: '12 Rue des Écoles, Port-au-Prince',
+  schoolPhone: '+509 1234 5678',
+  schoolEmail: 'contact@lesetoiles.edu.ht',
+  termLabel: 'Trimestre 2',
+  academicYearLabel: '2024–2025',
+  qualitativeSubjects: [
+    {
+      subjectName: 'Comportement',
+      ratingScale: ['Toujours', 'Souvent', 'Parfois', 'Jamais'],
+      criteria: [
+        { label: 'Respecte les consignes', level: 0 },
+        { label: "Participe à l'oral", level: 1 },
+        { label: 'Respecte ses camarades', level: 0 },
+        { label: 'Range son matériel', level: 2 },
+        { label: 'Fait preuve de politesse', level: 0 },
+      ],
+    },
+    {
+      subjectName: 'Développement physique',
+      ratingScale: ['Excellent', 'Très bien', 'Bien', 'Assez bien'],
+      criteria: [
+        { label: 'Motricité globale', level: 1 },
+        { label: 'Motricité fine', level: 0 },
+        { label: 'Coordination', level: 1 },
+        { label: 'Autonomie corporelle', level: 2 },
+        { label: 'Endurance', level: 1 },
+      ],
+    },
+  ],
 };

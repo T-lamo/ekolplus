@@ -65,6 +65,7 @@ export interface StudentBulletinData {
   schoolLogoUrl: string | null;
   directorSignatureUrl: string | null;
   academicYearLabel: string;
+  termLabel: string;
   terms: TermOption[];
   resolvedTermId: string | null;
   studentIndex: number | null;
@@ -76,5 +77,10 @@ export interface StudentBulletinData {
   rank: number | null;
   rankedCount: number;
   subjects: BulletinSubjectRow[];
+  qualitativeSubjects: {
+    subjectName: string;
+    ratingScale: string[];
+    criteria: { label: string; level: number | null }[];
+  }[];
   generalAppreciation: string | null;
 }

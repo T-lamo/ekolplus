@@ -780,6 +780,13 @@ export default function BulletinEditorPage() {
                             >
                               {t('pagesPanel.layoutHalves')}
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => patchPage(page.id, { layout: 'sidebar' })}
+                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'sidebar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                            >
+                              {t('pagesPanel.layoutSidebar')}
+                            </button>
                           </div>
                         </div>
                         <SwitchRow
@@ -787,6 +794,16 @@ export default function BulletinEditorPage() {
                           checked={page.showPageNumber}
                           onChange={(v) => patchPage(page.id, { showPageNumber: v })}
                         />
+                        {page.layout === 'sidebar' && (
+                          <PropSliderRow
+                            label={t('pagesPanel.asideWidth')}
+                            value={page.asideWidth ?? 25}
+                            min={15}
+                            max={40}
+                            suffix="%"
+                            onChange={(v) => patchPage(page.id, { asideWidth: v })}
+                          />
+                        )}
                       </div>
 
                       <p className="mb-2.5 text-2xs text-muted-foreground">
@@ -1478,6 +1495,9 @@ export default function BulletinEditorPage() {
                         }
                         className="mb-2.5 w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
                       />
+                      <p className="mb-2.5 text-2xs text-muted-foreground">
+                        {t('blockProperties.textVariablesHint')}
+                      </p>
                       <PropSelectRow
                         label={t('blockProperties.textAlign')}
                         value={selectedBlock.align}
@@ -1583,14 +1603,35 @@ export default function BulletinEditorPage() {
                           options={[
                             { value: 'dashed', label: t('blockProperties.coverFrameDashed') },
                             { value: 'solid', label: t('blockProperties.coverFrameSolid') },
+                            { value: 'rounded', label: t('blockProperties.coverFrameRounded') },
                           ]}
                           onChange={(v) =>
                             patchBlock(selected.pageId, selected.blockId, {
-                              frameStyle: v as 'dashed' | 'solid',
+                              frameStyle: v as 'dashed' | 'solid' | 'rounded',
                             })
                           }
                         />
                       )}
+                      <SwitchRow
+                        label={t('blockProperties.coverUppercase')}
+                        checked={selectedBlock.uppercase ?? true}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { uppercase: v })
+                        }
+                      />
+                      <PropSelectRow
+                        label={t('blockProperties.coverLogoPosition')}
+                        value={selectedBlock.logoPosition ?? 'top'}
+                        options={[
+                          { value: 'top', label: t('blockProperties.coverLogoTop') },
+                          { value: 'belowTitle', label: t('blockProperties.coverLogoBelowTitle') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            logoPosition: v as 'top' | 'belowTitle',
+                          })
+                        }
+                      />
                       <div className="mt-2 text-xs font-medium text-foreground">
                         {t('blockProperties.coverFields')}
                       </div>
@@ -1598,23 +1639,46 @@ export default function BulletinEditorPage() {
                         [
                           'lastName',
                           'firstName',
+                          'fullName',
                           'className',
                           'studentNumber',
+                          'nisu',
                           'academicYear',
                         ] as const
                       ).map((field) => (
-                        <SwitchRow
-                          key={field}
-                          label={t(`blockProperties.coverField.${field}`)}
-                          checked={selectedBlock.fields.includes(field)}
-                          onChange={(v) =>
-                            patchBlock(selected.pageId, selected.blockId, {
-                              fields: v
-                                ? [...selectedBlock.fields, field]
-                                : selectedBlock.fields.filter((f) => f !== field),
-                            })
-                          }
-                        />
+                        <div key={field}>
+                          <SwitchRow
+                            label={t(`blockProperties.coverField.${field}`)}
+                            checked={selectedBlock.fields.includes(field)}
+                            onChange={(v) =>
+                              patchBlock(selected.pageId, selected.blockId, {
+                                fields: v
+                                  ? [...selectedBlock.fields, field]
+                                  : selectedBlock.fields.filter((f) => f !== field),
+                              })
+                            }
+                          />
+                          {selectedBlock.fields.includes(field) && (
+                            <input
+                              type="text"
+                              maxLength={60}
+                              aria-label={t('blockProperties.coverFieldLabel', {
+                                field: t(`blockProperties.coverField.${field}`),
+                              })}
+                              placeholder={t('blockProperties.coverFieldLabel', {
+                                field: t(`blockProperties.coverField.${field}`),
+                              })}
+                              value={selectedBlock.fieldLabels?.[field] ?? ''}
+                              onChange={(e) => {
+                                const newLabel: string | undefined = e.target.value || undefined;
+                                patchBlock(selected.pageId, selected.blockId, {
+                                  fieldLabels: { ...selectedBlock.fieldLabels, [field]: newLabel },
+                                });
+                              }}
+                              className="mb-2 w-full rounded border-none bg-muted px-2 py-1 text-xs text-foreground outline-none"
+                            />
+                          )}
+                        </div>
                       ))}
                     </PropSection>
                   )}
@@ -1663,6 +1727,124 @@ export default function BulletinEditorPage() {
                       <div className="mt-1 text-2xs text-muted-foreground">
                         {t('blockProperties.gridSubjectsHint')}
                       </div>
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'yearGrid' && (
+                    <PropSection title={t('blockProperties.yearGridTitle')} last>
+                      <SwitchRow
+                        label={t('blockProperties.yearGridShowDomains')}
+                        checked={selectedBlock.showDomains ?? false}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { showDomains: v })
+                        }
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearGridNotesLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={20}
+                        value={selectedBlock.notesLabel ?? ''}
+                        placeholder="Notes"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            notesLabel: e.target.value || undefined,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearGridMaxLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={20}
+                        value={selectedBlock.maxLabel ?? ''}
+                        placeholder="Sur"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            maxLabel: e.target.value || undefined,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'yearDecisions' && (
+                    <PropSection title={t('blockProperties.yearDecisionsTitle')} last>
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearDecisionsHeading')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={60}
+                        value={selectedBlock.title ?? ''}
+                        placeholder="Décisions"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            title: e.target.value || undefined,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                    </PropSection>
+                  )}
+
+                  {selectedBlock.type === 'yearSignatures' && (
+                    <PropSection title={t('blockProperties.yearSignaturesTitle')} last>
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearSignaturesHeading')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={60}
+                        value={selectedBlock.title ?? ''}
+                        placeholder="Signatures"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            title: e.target.value || undefined,
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearSignaturesDirector')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        value={selectedBlock.labels?.director ?? ''}
+                        placeholder="Direction"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            labels: {
+                              ...selectedBlock.labels,
+                              director: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.yearSignaturesGuardian')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        value={selectedBlock.labels?.guardian ?? ''}
+                        placeholder="Les Parents"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            labels: {
+                              ...selectedBlock.labels,
+                              guardian: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="mb-2.5 w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
                     </PropSection>
                   )}
                 </>

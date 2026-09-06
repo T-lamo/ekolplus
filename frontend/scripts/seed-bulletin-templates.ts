@@ -1,4 +1,4 @@
-// Bootstrap script. Seeds the 4 global (schoolId: null) BulletinTemplate
+// Bootstrap script. Seeds the 6 global (schoolId: null) BulletinTemplate
 // rows every school sees in the "Modèles globaux" gallery tab and can fork
 // from. See .planning/banani/bulletin-templates.md for the fork-on-write
 // ownership model — these rows are never edited in place once schools start
@@ -180,6 +180,152 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
   },
 } as const;
 
+// The two annual carnets (spec 2026-09-06) reproduce
+// bulletin_template/Carnet scolaire 3e cycle et secondaire 2025-2026.docx and
+// bulletin_template/Carnet scolaire complet primaire 2025 - 2026 (1).docx.
+// School name, address, phones and logo come from the printing school's
+// data (cover block), never from the config.
+const NBSP = ' ';
+const CARNET_REGLEMENT =
+  'Extrait des règlements\n\n' +
+  '1. Considéré (e) comme promu (e), l’élève qui obtient au moins une moyenne générale de 24/40.\n' +
+  '2. Considéré (e) comme maintenu (e), l’élève qui obtient une moyenne générale comprise entre 16/40 et 24/40.\n' +
+  '3. Orienté (e) ailleurs, l’élève qui obtient une moyenne générale inférieure à 16/40.\n' +
+  '4. Un élève qui s’est absenté 5 jours consécutifs sans motif valable est considéré comme abandon.';
+
+function carnetConfig(sectionLabel: string, showDomains: boolean) {
+  return {
+    primaryColor: '#1a1a2e',
+    pageFormat: 'LETTER',
+    orientation: 'LANDSCAPE',
+    pages: [
+      {
+        id: 'decisions',
+        layout: 'halves',
+        showPageNumber: false,
+        blocks: [
+          { id: 'decisions-table', type: 'yearDecisions', visible: true, title: 'Décisions' },
+          {
+            id: 'observations',
+            type: 'text',
+            visible: true,
+            align: 'left',
+            fontSize: 10,
+            bold: false,
+            italic: false,
+            text:
+              'Observations :\n\n' +
+              `-${NBSP}${NBSP}L’élève est :\n` +
+              `${NBSP.repeat(6)}○${NBSP}Promu (e)\n` +
+              `${NBSP.repeat(6)}○${NBSP}Maintenu (e)\n` +
+              `${NBSP.repeat(6)}○${NBSP}Orienté (e) ailleurs`,
+          },
+          {
+            id: 'reglement',
+            type: 'text',
+            visible: true,
+            align: 'justify',
+            fontSize: 10,
+            bold: false,
+            italic: false,
+            text: CARNET_REGLEMENT,
+          },
+          {
+            id: 'direction',
+            type: 'text',
+            visible: true,
+            align: 'right',
+            verticalAlign: 'bottom',
+            fontSize: 11,
+            bold: true,
+            italic: false,
+            text: 'La direction',
+          },
+          {
+            id: 'couverture',
+            type: 'cover',
+            visible: true,
+            breakBefore: 'column',
+            sectionLabel,
+            titlePattern: 'Carnet scolaire',
+            showLogo: true,
+            framed: true,
+            frameStyle: 'rounded',
+            uppercase: false,
+            logoPosition: 'belowTitle',
+            fields: ['fullName', 'className', 'nisu', 'academicYear'],
+            fieldLabels: { academicYear: 'Année Scolaire' },
+          },
+        ],
+      },
+      {
+        id: 'grille',
+        layout: 'sidebar',
+        asideWidth: 22,
+        showPageNumber: false,
+        blocks: [
+          {
+            id: 'identite',
+            type: 'text',
+            visible: true,
+            align: 'left',
+            fontSize: 10,
+            bold: true,
+            italic: false,
+            text: `Nom (s) et Prénom (s) {eleve}${NBSP.repeat(12)}Classe {classe}${NBSP.repeat(12)}Année Scolaire : {annee}`,
+          },
+          {
+            id: 'grille-annuelle',
+            type: 'yearGrid',
+            visible: true,
+            ...(showDomains ? { showDomains: true } : {}),
+          },
+          {
+            id: 'signatures-periodes',
+            type: 'yearSignatures',
+            visible: true,
+            breakBefore: 'column',
+            title: 'Signatures',
+            labels: { director: 'Direction', guardian: 'Les Parents' },
+          },
+        ],
+      },
+    ],
+    columns: {
+      coefficient: true,
+      classAverage: false,
+      minMax: false,
+      appreciation: false,
+      absences: false,
+      rank: true,
+    },
+    signatures: { director: true, homeroom: false, guardian: true },
+    typography: {
+      schoolName: 20,
+      title: 16,
+      tableBody: 9,
+      tableHeader: 9,
+      noteValue: 9,
+      footer: 8,
+    },
+    content: { title: 'Carnet scolaire', footerMessage: null, pageNumberFormat: '{n} / {total}' },
+    layout: {
+      pageMargin: 18,
+      blockSpacing: 8,
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor: '#1a1a2e',
+      cellPaddingX: 4,
+      cellPaddingY: 1,
+      tableLineHeight: 1.25,
+      showTableBackgrounds: false,
+      logoSize: 64,
+      signatureSize: 24,
+      showDecoration: false,
+    },
+  } as const;
+}
+
 const GLOBAL_TEMPLATES: Array<{
   name: string;
   description: string;
@@ -207,6 +353,18 @@ const GLOBAL_TEMPLATES: Array<{
     description:
       'Livret plié en deux pour la section Kindergarten : grilles de comportement et de développement, verset et couverture, reproduisant le modèle papier existant.',
     config: LIVRET_PRESCOLAIRE_CONFIG,
+  },
+  {
+    name: 'Carnet scolaire (3e cycle et secondaire)',
+    description:
+      'Carnet annuel sur deux pages : décisions et règlement, couverture, grille des contrôles de l’année avec signatures par période.',
+    config: carnetConfig('3ème Cycle & Secondaire', false),
+  },
+  {
+    name: 'Carnet scolaire (primaire)',
+    description:
+      'Carnet annuel sur deux pages : décisions et règlement, couverture, grille des contrôles de l’année avec signatures par période. Les matières sont regroupées par domaine.',
+    config: carnetConfig('Section primaire', true),
   },
 ];
 

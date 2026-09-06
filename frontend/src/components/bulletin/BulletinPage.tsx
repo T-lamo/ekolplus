@@ -160,6 +160,7 @@ export function BulletinPage({
               ? {
                   flex: '1 1 auto',
                   gridTemplateColumns: `minmax(0, 1fr) ${asideWidth}%`,
+                  gridTemplateRows: 'minmax(0, 1fr) auto',
                   columnGap: config.layout.blockSpacing * 2,
                   alignItems: 'stretch',
                 }

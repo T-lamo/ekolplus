@@ -142,4 +142,29 @@ describe('sidebar layout', () => {
     const sig = out.slice(out.indexOf('data-block-id="sig"'));
     expect(sig.slice(0, 400)).toContain('flex-grow:1');
   });
+
+  it('keeps the content row at full height and the footer row auto-sized when a footer message is set', () => {
+    const out = renderToStaticMarkup(
+      <BulletinPage
+        page={sidebarPage}
+        pageIndex={0}
+        totalPages={1}
+        config={{
+          ...DEFAULT_BULLETIN_CONFIG,
+          content: {
+            ...DEFAULT_BULLETIN_CONFIG.content,
+            footerMessage: 'Ensemble vers la réussite',
+          },
+        }}
+        data={{ ...data, year: SAMPLE_BULLETIN_DATA.year }}
+        chrome={false}
+      />,
+    );
+    expect(out).toContain('grid-template-rows:minmax(0, 1fr) auto');
+    const footer = out.slice(
+      out.indexOf('Ensemble vers la réussite') - 200,
+      out.indexOf('Ensemble vers la réussite'),
+    );
+    expect(footer).toContain('grid-column:1 / -1');
+  });
 });

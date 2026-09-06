@@ -8,6 +8,7 @@ import type {
 import { DEFAULT_BULLETIN_CONFIG } from '@/lib/server/bulletin-templates';
 import type { BulletinRenderData } from './render-data';
 import { BulletinPage } from './BulletinPage';
+import { SAMPLE_BULLETIN_DATA } from './sample-bulletin-data';
 
 const data: BulletinRenderData = {
   schoolName: 'École',
@@ -75,5 +76,70 @@ describe('BulletinPage decoration stripes', () => {
     });
     expect(out).not.toContain('linear-gradient(90deg');
     expect(out).toContain('Verset');
+  });
+});
+
+describe('sidebar layout', () => {
+  const sidebarPage: Page = {
+    id: 'grille',
+    layout: 'sidebar',
+    asideWidth: 22,
+    showPageNumber: false,
+    blocks: [
+      {
+        id: 'line',
+        type: 'text',
+        visible: true,
+        text: 'Nom',
+        align: 'left',
+        fontSize: 10,
+        bold: true,
+        italic: false,
+      },
+      { id: 'grid', type: 'yearGrid', visible: true },
+      { id: 'sig', type: 'yearSignatures', visible: true, breakBefore: 'column' },
+    ],
+  };
+  const render = (p: Page) =>
+    renderToStaticMarkup(
+      <BulletinPage
+        page={p}
+        pageIndex={0}
+        totalPages={1}
+        config={DEFAULT_BULLETIN_CONFIG}
+        data={{ ...data, year: SAMPLE_BULLETIN_DATA.year }}
+        chrome={false}
+      />,
+    );
+
+  it('splits the blocks into a main column and an aside at the first breakBefore, aside width from asideWidth', () => {
+    const out = render(sidebarPage);
+    expect(out).toContain('grid-template-columns:minmax(0, 1fr) 22%');
+    const main = out.slice(
+      out.indexOf('data-testid="bulletin-page-main"'),
+      out.indexOf('data-testid="bulletin-page-aside"'),
+    );
+    expect(main).toContain('data-block-id="line"');
+    expect(main).toContain('data-block-id="grid"');
+    expect(main).not.toContain('data-block-id="sig"');
+    const aside = out.slice(out.indexOf('data-testid="bulletin-page-aside"'));
+    expect(aside).toContain('data-block-id="sig"');
+  });
+
+  it('defaults the aside width to 25% and puts every block in the main column without a breakBefore', () => {
+    const out = render({
+      ...sidebarPage,
+      asideWidth: undefined,
+      blocks: sidebarPage.blocks.map((b) => ({ ...b, breakBefore: undefined })),
+    });
+    expect(out).toContain('grid-template-columns:minmax(0, 1fr) 25%');
+    const aside = out.slice(out.indexOf('data-testid="bulletin-page-aside"'));
+    expect(aside).not.toContain('data-block-id=');
+  });
+
+  it('stretches the yearSignatures block to the column height', () => {
+    const out = render(sidebarPage);
+    const sig = out.slice(out.indexOf('data-block-id="sig"'));
+    expect(sig.slice(0, 400)).toContain('flex-grow:1');
   });
 });

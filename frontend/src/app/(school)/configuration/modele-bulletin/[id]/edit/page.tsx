@@ -17,6 +17,7 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { BareSelect, SelectItem } from '@/components/school/subjects/form-primitives';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
@@ -1374,11 +1375,46 @@ export default function BulletinEditorPage() {
                           }
                         />
                       )}
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.appreciationTitleLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={60}
+                        value={selectedBlock.title ?? ''}
+                        placeholder="Appréciation générale du conseil de classe"
+                        onChange={(e) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            title: e.target.value || undefined,
+                          })
+                        }
+                        className="w-full rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
                     </PropSection>
                   )}
 
                   {selectedBlock.type === 'signatures' && (
                     <PropSection title={t('blockProperties.signaturesLabelsTitle')} last>
+                      <PropSelectRow
+                        label={t('blockProperties.signaturesStyle')}
+                        value={selectedBlock.style ?? 'boxes'}
+                        options={[
+                          { value: 'boxes', label: t('blockProperties.signaturesStyleBoxes') },
+                          { value: 'lines', label: t('blockProperties.signaturesStyleLines') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            style: v as 'boxes' | 'lines',
+                          })
+                        }
+                      />
+                      <SwitchRow
+                        label={t('blockProperties.signaturesHomeroomFirst')}
+                        checked={selectedBlock.homeroomFirst ?? false}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, { homeroomFirst: v })
+                        }
+                      />
                       <label className="mb-1 block text-xs font-medium text-foreground">
                         {t('blockProperties.signatureDirectorLabel')}
                       </label>
@@ -1441,11 +1477,26 @@ export default function BulletinEditorPage() {
                         options={[
                           { value: 'left', label: t('blockProperties.alignLeft') },
                           { value: 'center', label: t('blockProperties.alignCenter') },
+                          { value: 'right', label: t('blockProperties.alignRight') },
                           { value: 'justify', label: t('blockProperties.alignJustify') },
                         ]}
                         onChange={(v) =>
                           patchBlock(selected.pageId, selected.blockId, {
-                            align: v as 'left' | 'center' | 'justify',
+                            align: v as 'left' | 'center' | 'right' | 'justify',
+                          })
+                        }
+                      />
+                      <PropSelectRow
+                        label={t('blockProperties.textVerticalAlign')}
+                        value={selectedBlock.verticalAlign ?? 'top'}
+                        options={[
+                          { value: 'top', label: t('blockProperties.verticalAlignTop') },
+                          { value: 'middle', label: t('blockProperties.verticalAlignMiddle') },
+                          { value: 'bottom', label: t('blockProperties.verticalAlignBottom') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            verticalAlign: v as 'top' | 'middle' | 'bottom',
                           })
                         }
                       />
@@ -1518,6 +1569,21 @@ export default function BulletinEditorPage() {
                           patchBlock(selected.pageId, selected.blockId, { framed: v })
                         }
                       />
+                      {selectedBlock.framed && (
+                        <PropSelectRow
+                          label={t('blockProperties.coverFrameStyle')}
+                          value={selectedBlock.frameStyle ?? 'dashed'}
+                          options={[
+                            { value: 'dashed', label: t('blockProperties.coverFrameDashed') },
+                            { value: 'solid', label: t('blockProperties.coverFrameSolid') },
+                          ]}
+                          onChange={(v) =>
+                            patchBlock(selected.pageId, selected.blockId, {
+                              frameStyle: v as 'dashed' | 'solid',
+                            })
+                          }
+                        />
+                      )}
                       <div className="mt-2 text-xs font-medium text-foreground">
                         {t('blockProperties.coverFields')}
                       </div>
@@ -1548,6 +1614,19 @@ export default function BulletinEditorPage() {
 
                   {selectedBlock.type === 'criteriaGrids' && (
                     <PropSection title={t('blockProperties.criteriaGridsTitle')} last>
+                      <PropSelectRow
+                        label={t('blockProperties.gridStyle')}
+                        value={selectedBlock.style ?? 'modern'}
+                        options={[
+                          { value: 'modern', label: t('blockProperties.gridStyleModern') },
+                          { value: 'grid', label: t('blockProperties.gridStyleGrid') },
+                        ]}
+                        onChange={(v) =>
+                          patchBlock(selected.pageId, selected.blockId, {
+                            style: v as 'modern' | 'grid',
+                          })
+                        }
+                      />
                       <SwitchRow
                         label={t('blockProperties.showScaleHeader')}
                         checked={selectedBlock.showScaleHeader}
@@ -1674,17 +1753,18 @@ function PropSelectRow({
 }) {
   return (
     <PropRow label={label}>
-      <select
+      <BareSelect
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded border-none bg-muted px-2 py-1 text-xs text-foreground outline-none"
+        onValueChange={onChange}
+        aria-label={label}
+        className="w-auto min-w-44 px-2 py-1"
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <SelectItem key={o.value} value={o.value}>
             {o.label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
+      </BareSelect>
     </PropRow>
   );
 }

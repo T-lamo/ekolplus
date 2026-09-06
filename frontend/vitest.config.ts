@@ -18,7 +18,7 @@ export default defineConfig({
     // Phase 3 Wave 0: extend include glob so scripts/*.test.ts (e.g.
     // make-superadmin) is discovered alongside src/. Vitest 2 supports
     // multiple globs; both are scoped under `frontend/` via cwd.
-    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
     environment: 'node',
     // Wave 0 ships this config before any test files exist (Wave 1 plans add them).
     // Without this, Vitest 2.x exits 1 on zero tests, blocking the plan's own

@@ -56,6 +56,7 @@ const appreciationBlockSchema = z.object({
   type: z.literal('appreciation'),
   style: z.enum(['box', 'lines']).optional(),
   lines: z.number().int().min(3).max(12).optional(),
+  title: z.string().trim().max(60).optional(),
 });
 const signaturesBlockSchema = z.object({
   ...blockBase,
@@ -67,12 +68,15 @@ const signaturesBlockSchema = z.object({
       guardian: z.string().trim().max(40).optional(),
     })
     .optional(),
+  style: z.enum(['boxes', 'lines']).optional(),
+  homeroomFirst: z.boolean().optional(),
 });
 const textBlockSchema = z.object({
   ...blockBase,
   type: z.literal('text'),
   text: z.string().max(2000),
-  align: z.enum(['left', 'center', 'justify']),
+  align: z.enum(['left', 'center', 'right', 'justify']),
+  verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
   fontSize: z.number().min(8).max(20),
   bold: z.boolean(),
   italic: z.boolean(),
@@ -91,12 +95,14 @@ const coverBlockSchema = z.object({
   titlePattern: z.string().trim().max(60),
   showLogo: z.boolean(),
   framed: z.boolean(),
+  frameStyle: z.enum(['dashed', 'solid']).optional(),
   fields: z.array(coverFieldSchema),
 });
 const criteriaGridsBlockSchema = z.object({
   ...blockBase,
   type: z.literal('criteriaGrids'),
   showScaleHeader: z.boolean(),
+  style: z.enum(['modern', 'grid']).optional(),
 });
 
 export const blockSchema = z.discriminatedUnion('type', [

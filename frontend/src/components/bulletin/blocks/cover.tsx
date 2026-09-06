@@ -97,7 +97,7 @@ export function render({
   if (!block.framed) return content;
   return (
     <div
-      className="h-full rounded-2xl border-2 border-dashed"
+      className={`h-full rounded-2xl border-2 ${block.frameStyle === 'solid' ? 'border-solid' : 'border-dashed'}`}
       style={{ borderColor: config.primaryColor }}
     >
       {content}

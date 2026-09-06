@@ -72,18 +72,27 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
       layout: 'halves',
       showPageNumber: false,
       blocks: [
-        { id: 'grilles', type: 'criteriaGrids', visible: true, showScaleHeader: true },
+        {
+          id: 'grilles',
+          type: 'criteriaGrids',
+          visible: true,
+          showScaleHeader: true,
+          style: 'grid',
+        },
         {
           id: 'appreciations',
           type: 'appreciation',
           visible: true,
           style: 'lines',
           lines: 6,
+          title: 'Appréciations',
         },
         {
           id: 'signatures',
           type: 'signatures',
           visible: true,
+          style: 'lines',
+          homeroomFirst: true,
           labels: { homeroom: 'La jardinière', director: 'La direction' },
         },
       ],
@@ -98,6 +107,7 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
           type: 'text',
           visible: true,
           align: 'justify',
+          verticalAlign: 'middle',
           fontSize: 12,
           bold: false,
           italic: false,
@@ -112,6 +122,7 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
           titlePattern: 'Bulletin du {term}',
           showLogo: true,
           framed: true,
+          frameStyle: 'solid',
           fields: ['lastName', 'firstName', 'className', 'studentNumber', 'academicYear'],
         },
       ],
@@ -205,7 +216,13 @@ export async function main(_args: string[] = [], deps: RunDeps = {}): Promise<nu
 
     for (const tpl of GLOBAL_TEMPLATES) {
       if (existingNames.has(tpl.name)) {
-        console.log(`= ${tpl.name} already exists — skipping.`);
+        // Global templates are canonical: re-running the seed refreshes their
+        // config so a presentation fix reaches databases seeded before it.
+        await prisma.bulletinTemplate.updateMany({
+          where: { schoolId: null, name: tpl.name },
+          data: { description: tpl.description, config: tpl.config },
+        });
+        console.log(`↻ Refreshed global template: ${tpl.name}`);
         continue;
       }
       await prisma.bulletinTemplate.create({

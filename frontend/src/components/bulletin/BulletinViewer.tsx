@@ -327,7 +327,7 @@ export function BulletinViewer({
               {data.template
                 ? `${data.template.config.pageFormat === 'LETTER' ? 'Letter' : 'A4'} ${data.template.config.orientation === 'LANDSCAPE' ? 'paysage' : 'portrait'}`
                 : '—'}{' '}
-              — Modèle : {data.template?.name ?? '—'}
+              · Modèle : {data.template?.name ?? '—'}
             </span>
             <button
               type="button"

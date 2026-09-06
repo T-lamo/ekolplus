@@ -59,6 +59,8 @@ export interface AppreciationBlock extends BlockBase {
   type: 'appreciation';
   style?: 'box' | 'lines' | undefined;
   lines?: number | undefined;
+  /** Printed heading; defaults to « Appréciation générale du conseil de classe ». */
+  title?: string | undefined;
 }
 export interface SignaturesLabels {
   director?: string | undefined;
@@ -68,11 +70,17 @@ export interface SignaturesLabels {
 export interface SignaturesBlock extends BlockBase {
   type: 'signatures';
   labels?: SignaturesLabels | undefined;
+  /** 'lines' = a signature line with the label beneath, no heading (Word style). */
+  style?: 'boxes' | 'lines' | undefined;
+  homeroomFirst?: boolean | undefined;
 }
+export type TextVerticalAlign = 'top' | 'middle' | 'bottom';
 export interface TextBlock extends BlockBase {
   type: 'text';
   text: string;
-  align: 'left' | 'center' | 'justify';
+  align: 'left' | 'center' | 'right' | 'justify';
+  /** Vertical placement inside the column (halves) or the remaining page (full). */
+  verticalAlign?: TextVerticalAlign | undefined;
   fontSize: number;
   bold: boolean;
   italic: boolean;
@@ -84,11 +92,14 @@ export interface CoverBlock extends BlockBase {
   titlePattern: string;
   showLogo: boolean;
   framed: boolean;
+  frameStyle?: 'dashed' | 'solid' | undefined;
   fields: CoverField[];
 }
 export interface CriteriaGridsBlock extends BlockBase {
   type: 'criteriaGrids';
   showScaleHeader: boolean;
+  /** 'grid' = Word-style gridded table (border on every cell, plain header). */
+  style?: 'modern' | 'grid' | undefined;
 }
 
 export type Block =

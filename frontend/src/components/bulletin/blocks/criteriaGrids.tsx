@@ -4,6 +4,12 @@ import type {
 } from '@/app/(school)/configuration/modele-bulletin/types';
 import type { BulletinRenderData } from '../render-data';
 
+// `style: 'grid'` reproduces a Word-style gridded table (spec §12, the
+// livret): a thin border on every cell, a plain white header row without
+// the "Critère" label and the subject name printed as typed. The default
+// 'modern' look keeps the colored header row of the other templates.
+const INK = '#1a1a2e';
+
 export function render({
   block,
   config,
@@ -14,6 +20,10 @@ export function render({
   data: BulletinRenderData;
 }): React.ReactNode {
   if (data.qualitativeSubjects.length === 0) return null;
+  const grid = block.style === 'grid';
+  const cellPadding = `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`;
+  const cellBorder = grid ? { border: `1px solid ${INK}` } : {};
+  const headClass = grid ? 'font-bold' : 'font-bold text-white';
   return (
     <div className="flex flex-col gap-3">
       {data.qualitativeSubjects.map((subject) => (
@@ -23,30 +33,37 @@ export function render({
           style={{ breakInside: 'avoid', lineHeight: config.layout.tableLineHeight }}
         >
           <caption
-            className="mb-1 text-left font-extrabold uppercase"
-            style={{ fontSize: config.typography.tableBody, color: config.primaryColor }}
+            className={
+              grid ? 'mb-1.5 text-left font-bold' : 'mb-1 text-left font-extrabold uppercase'
+            }
+            style={{
+              fontSize: config.typography.tableBody,
+              color: grid ? INK : config.primaryColor,
+            }}
           >
             {subject.subjectName}
           </caption>
           {block.showScaleHeader !== false && (
             <thead>
-              <tr style={{ background: config.primaryColor }}>
+              <tr style={grid ? { color: INK } : { background: config.primaryColor }}>
                 <th
-                  className="text-left font-bold text-white"
+                  className={`text-left ${headClass}`}
                   style={{
-                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    padding: cellPadding,
                     fontSize: config.typography.tableHeader,
+                    ...cellBorder,
                   }}
                 >
-                  Critère
+                  {grid ? '' : 'Critère'}
                 </th>
                 {subject.ratingScale.map((label) => (
                   <th
                     key={label}
-                    className="text-center font-bold text-white"
+                    className={`text-center ${headClass}`}
                     style={{
-                      padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                      padding: cellPadding,
                       fontSize: config.typography.tableHeader,
+                      ...cellBorder,
                     }}
                   >
                     {label}
@@ -60,8 +77,9 @@ export function render({
               <tr key={criterion.label}>
                 <td
                   style={{
-                    padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                    padding: cellPadding,
                     fontSize: config.typography.tableBody,
+                    ...cellBorder,
                   }}
                 >
                   {criterion.label}
@@ -71,8 +89,9 @@ export function render({
                     key={levelIndex}
                     className="text-center"
                     style={{
-                      padding: `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`,
+                      padding: cellPadding,
                       fontSize: config.typography.noteValue,
+                      ...cellBorder,
                     }}
                   >
                     {criterion.level === levelIndex ? '✓' : ''}

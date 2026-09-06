@@ -64,6 +64,52 @@ describe('bulletinTemplateConfigSchema', () => {
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
   });
 
+  it('accepts the optional presentation fields of the livret (grid style, ruled signatures, vertical alignment, solid frame, appreciation title)', () => {
+    const cfg = validConfig();
+    cfg.pages[0]!.layout = 'halves';
+    cfg.pages[0]!.blocks = [
+      { id: 'grilles', type: 'criteriaGrids', visible: true, showScaleHeader: true, style: 'grid' },
+      { id: 'appr', type: 'appreciation', visible: true, style: 'lines', title: 'Appréciations' },
+      { id: 'sig', type: 'signatures', visible: true, style: 'lines', homeroomFirst: true },
+      {
+        id: 'verset',
+        type: 'text',
+        visible: true,
+        text: 'a',
+        align: 'right',
+        verticalAlign: 'middle',
+        fontSize: 12,
+        bold: false,
+        italic: false,
+      },
+      {
+        id: 'cover',
+        type: 'cover',
+        visible: true,
+        breakBefore: 'column',
+        sectionLabel: 'Section',
+        titlePattern: 'Bulletin du {term}',
+        showLogo: true,
+        framed: true,
+        frameStyle: 'solid',
+        fields: ['lastName'],
+      },
+    ];
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+  });
+
+  it('rejects unknown values for the new enumerated fields', () => {
+    const cfg = validConfig();
+    cfg.pages[0]!.blocks.push({
+      id: 'grilles',
+      type: 'criteriaGrids',
+      visible: true,
+      showScaleHeader: true,
+      style: 'fancy' as never,
+    });
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+
   it('rejects breakBefore on a full-layout page', () => {
     const cfg = validConfig();
     cfg.pages[0]!.blocks[0]!.breakBefore = 'column';

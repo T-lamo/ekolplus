@@ -15,14 +15,21 @@ export function render({
   config: BulletinTemplateConfig;
   data: BulletinRenderData;
 }): React.ReactNode {
+  // A custom `title` prints as typed (the livret says « Appréciations »);
+  // without one the default heading keeps its small-caps look.
+  const heading = block.title ? (
+    <div className="mb-1.5 text-xs font-semibold text-[#1a1a2e]">{block.title}</div>
+  ) : (
+    <div className="mb-1.5 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
+      Appréciation générale du conseil de classe
+    </div>
+  );
   if (block.style === 'lines') {
     const lineCount = block.lines ?? 3;
     const text = data.generalAppreciation ?? '';
     return (
       <div>
-        <div className="mb-1.5 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
-          Appréciation générale du conseil de classe
-        </div>
+        {heading}
         <div>
           {Array.from({ length: lineCount }).map((_, i) => (
             <div
@@ -39,9 +46,7 @@ export function render({
 
   return (
     <div className="rounded-md border border-[#e8e4f6] bg-[#faf9ff] p-2.5">
-      <div className="mb-1 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">
-        Appréciation générale du conseil de classe
-      </div>
+      {heading}
       <div className="text-2xs leading-relaxed text-[#1a1a2e] italic">
         {data.generalAppreciation || 'Aucune appréciation générale saisie.'}
       </div>

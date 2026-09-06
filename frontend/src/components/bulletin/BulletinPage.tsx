@@ -52,6 +52,9 @@ export function BulletinPage({
     if (!block.visible) return null;
     const reorderable = draggingEnabled && DRAGGABLE_BLOCK_TYPES.includes(block.type);
     const isLastVisible = restBlocks.filter((b) => b.visible).slice(-1)[0]?.id === block.id;
+    // A vertically aligned text block owns its whole column (halves) or the
+    // remaining page height (full) so the text renderer can center inside it.
+    const fillsSpace = block.type === 'text' && (block.verticalAlign ?? 'top') !== 'top';
     return (
       <div
         key={block.id}
@@ -63,8 +66,10 @@ export function BulletinPage({
         onDrop={reorderable ? () => onDrop?.(block.id) : undefined}
         onDragEnd={reorderable ? onDragEnd : undefined}
         style={{
-          marginBottom: config.layout.blockSpacing,
+          marginBottom: fillsSpace ? 0 : config.layout.blockSpacing,
           marginTop: !halves && block.type === 'signatures' && isLastVisible ? 'auto' : undefined,
+          height: fillsSpace && halves ? '100%' : undefined,
+          flexGrow: fillsSpace && !halves ? 1 : undefined,
           opacity: dragBlockId === block.id ? 0.4 : 1,
           breakInside: block.breakBefore ? undefined : 'avoid',
           breakBefore: block.breakBefore === 'column' ? 'column' : undefined,

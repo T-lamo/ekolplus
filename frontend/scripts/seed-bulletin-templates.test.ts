@@ -30,19 +30,53 @@ describe('scripts/seed-bulletin-templates', () => {
     logSpy.mockRestore();
   });
 
-  it('is idempotent — skips templates that already exist by name', async () => {
+  it('is idempotent — refreshes the config of templates that already exist by name instead of creating them', async () => {
     prismaMock.bulletinTemplate.findMany.mockResolvedValue([
       { name: 'Académique Vert' },
       { name: 'Officiel Rouge' },
       { name: 'Moderne Orange' },
       { name: 'Livret préscolaire' },
     ] as never);
+    prismaMock.bulletinTemplate.updateMany.mockResolvedValue({ count: 1 });
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const code = await main([], { prisma: prismaMock });
 
     expect(code).toBe(0);
     expect(prismaMock.bulletinTemplate.create).not.toHaveBeenCalled();
+    expect(prismaMock.bulletinTemplate.updateMany).toHaveBeenCalledTimes(4);
+    for (const call of prismaMock.bulletinTemplate.updateMany.mock.calls) {
+      expect(call[0]?.where).toMatchObject({ schoolId: null });
+      expect(call[0]?.data).toHaveProperty('config');
+    }
+    logSpy.mockRestore();
+  });
+
+  it('the Livret préscolaire reproduces the docx presentation: gridded tables, ruled signatures with the homeroom first, centered verse, solid cover frame', async () => {
+    prismaMock.bulletinTemplate.findMany.mockResolvedValue([]);
+    let captured: {
+      pages: { blocks: Record<string, unknown>[] }[];
+    } | null = null;
+    prismaMock.bulletinTemplate.create.mockImplementation((args) => {
+      const data = (args as { data: { name: string; config: typeof captured } }).data;
+      if (data.name === 'Livret préscolaire') captured = data.config;
+      return Promise.resolve({} as never);
+    });
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    await main([], { prisma: prismaMock });
+
+    const blocks = captured!.pages.flatMap((p) => p.blocks);
+    const byType = (type: string) => blocks.find((b) => b.type === type)!;
+    expect(byType('criteriaGrids')).toMatchObject({ style: 'grid' });
+    expect(byType('appreciation')).toMatchObject({
+      style: 'lines',
+      lines: 6,
+      title: 'Appréciations',
+    });
+    expect(byType('signatures')).toMatchObject({ style: 'lines', homeroomFirst: true });
+    expect(byType('text')).toMatchObject({ align: 'justify', verticalAlign: 'middle' });
+    expect(byType('cover')).toMatchObject({ framed: true, frameStyle: 'solid' });
     logSpy.mockRestore();
   });
 

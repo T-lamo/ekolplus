@@ -272,7 +272,7 @@ valide et se rend à l'identique. `normalizeConfig` n'est pas modifié.
 
 Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
 `layout.showDecoration: false`, `pageMargin 18`, `blockSpacing 8`,
-`typography.tableBody 9`, `pages` :
+`typography.tableBody / tableHeader / noteValue 13` (le Word est en 11 pt, les textes libres en 14 et « La direction » en 15), `pages` :
 
 1. `id 'decisions'`, `layout 'sidebar'`, `asideWidth 48`, blocs dans l'ordre :
    - `yearDecisions` (`title 'Décisions'`)
@@ -290,7 +290,7 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
      `showLogo true`, `fields ['fullName','className','nisu','academicYear']`,
      `fieldLabels { academicYear: 'Année Scolaire' }`)
 2. `id 'grille'`, `layout 'sidebar'`, `asideWidth 22`, blocs :
-   - `text` « Nom (s) et Prénom (s) {eleve}        Classe {classe}        Année Scolaire : {annee} » (gras, `fontSize 10` ; les espacements sont des espaces insécables, les seules que `white-space: pre-line` conserve)
+   - `text` « Nom (s) et Prénom (s) {eleve}        Classe {classe}        Année Scolaire : {annee} » (gras, `fontSize 13` ; les espacements sont des espaces insécables, les seules que `white-space: pre-line` conserve)
    - `yearGrid` (`showDomains` true pour le primaire seulement)
    - `yearSignatures` (`breakBefore 'column'`)
 

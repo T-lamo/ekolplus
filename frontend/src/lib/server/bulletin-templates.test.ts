@@ -4,6 +4,7 @@ import {
   normalizeConfig,
   DEFAULT_BULLETIN_CONFIG,
   DEFAULT_PAGE_NUMBER_FORMAT,
+  templateNeedsYear,
 } from './bulletin-templates';
 
 function validConfig() {
@@ -158,6 +159,76 @@ describe('bulletinTemplateConfigSchema', () => {
     const cfg = validConfig();
     cfg.pages[0]!.blocks = [];
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+
+  it('accepts the three annual block types with their optional presentation fields', () => {
+    const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG);
+    cfg.pages[0]!.blocks = [
+      {
+        id: 'g',
+        type: 'yearGrid',
+        visible: true,
+        showDomains: true,
+        notesLabel: 'Notes',
+        maxLabel: 'Sur',
+      },
+      { id: 'd', type: 'yearDecisions', visible: true, title: 'Décisions' },
+      {
+        id: 's',
+        type: 'yearSignatures',
+        visible: true,
+        title: 'Signatures',
+        labels: { director: 'Direction', guardian: 'Les Parents' },
+      },
+    ];
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+  });
+
+  it('accepts the cover fields fullName and nisu, the rounded frame, uppercase, logoPosition and fieldLabels', () => {
+    const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG);
+    cfg.pages[0]!.blocks = [
+      {
+        id: 'c',
+        type: 'cover',
+        visible: true,
+        sectionLabel: 'Section primaire',
+        titlePattern: 'Carnet scolaire',
+        showLogo: true,
+        framed: true,
+        frameStyle: 'rounded',
+        uppercase: false,
+        logoPosition: 'belowTitle',
+        fields: ['fullName', 'className', 'nisu', 'academicYear'],
+        fieldLabels: { academicYear: 'Année Scolaire' },
+      },
+    ];
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+    (cfg.pages[0]!.blocks[0] as { logoPosition: string }).logoPosition = 'left';
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+
+  it('accepts a sidebar page with an asideWidth between 15 and 40 and breakBefore on it', () => {
+    const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG);
+    cfg.pages[0] = {
+      id: 'grille',
+      layout: 'sidebar',
+      asideWidth: 22,
+      showPageNumber: false,
+      blocks: [
+        { id: 'g', type: 'yearGrid', visible: true },
+        { id: 's', type: 'yearSignatures', visible: true, breakBefore: 'column' },
+      ],
+    };
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+    cfg.pages[0].asideWidth = 50;
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+
+  it('templateNeedsYear is true only when a page holds an annual block', () => {
+    const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG);
+    expect(templateNeedsYear(cfg)).toBe(false);
+    cfg.pages[0]!.blocks.push({ id: 'd', type: 'yearDecisions', visible: false });
+    expect(templateNeedsYear(cfg)).toBe(true);
   });
 });
 

@@ -11,7 +11,10 @@ export type BlockLabelT = (
     | 'signatures'
     | 'text'
     | 'cover'
-    | 'criteriaGrids',
+    | 'criteriaGrids'
+    | 'yearGrid'
+    | 'yearDecisions'
+    | 'yearSignatures',
 ) => string;
 
 export function blockLabel(type: BlockType, t: BlockLabelT): string {

@@ -936,7 +936,10 @@
       "signatures": "Siyati",
       "text": "Tèks lib",
       "cover": "Kouvèti",
-      "criteriaGrids": "Grij kalitatif"
+      "criteriaGrids": "Grij kalitatif",
+      "yearGrid": "Griy anyèl",
+      "yearDecisions": "Desizyon ane a",
+      "yearSignatures": "Siyati pa peryòd"
     },
     "editor": {
       "notFound": "Modèl pa jwenn.",

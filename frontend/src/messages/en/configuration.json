@@ -935,7 +935,10 @@
       "signatures": "Signatures",
       "text": "Free text",
       "cover": "Cover",
-      "criteriaGrids": "Qualitative grids"
+      "criteriaGrids": "Qualitative grids",
+      "yearGrid": "Annual grid",
+      "yearDecisions": "Year decisions",
+      "yearSignatures": "Signatures per period"
     },
     "editor": {
       "notFound": "Template not found.",

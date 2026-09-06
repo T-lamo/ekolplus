@@ -24,7 +24,15 @@ export const LEGACY_BLOCK_TYPES = [
 ] as const;
 export type LegacyBlockType = (typeof LEGACY_BLOCK_TYPES)[number];
 
-export const BLOCK_TYPES = [...LEGACY_BLOCK_TYPES, 'text', 'cover', 'criteriaGrids'] as const;
+export const BLOCK_TYPES = [
+  ...LEGACY_BLOCK_TYPES,
+  'text',
+  'cover',
+  'criteriaGrids',
+  'yearGrid',
+  'yearDecisions',
+  'yearSignatures',
+] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 
 export const BLOCK_LABEL: Record<LegacyBlockType, string> = {
@@ -40,9 +48,10 @@ export const BLOCK_LABEL: Record<LegacyBlockType, string> = {
 const blockBase = {
   id: z.string().trim().min(1).max(60),
   visible: z.boolean(),
-  // 'column': only meaningful on a `halves` page — starts the right-hand
-  // CSS column at this block. Enforced by pageSchema's refine below, not
-  // here, since validity depends on the containing page's `layout`.
+  // 'column': starts the right-hand CSS column on a halves page, the
+  // aside column on a sidebar page. Enforced by pageSchema's refine
+  // below, not here, since validity depends on the containing page's
+  // `layout`.
   breakBefore: z.literal('column').optional(),
 };
 
@@ -84,8 +93,10 @@ const textBlockSchema = z.object({
 const coverFieldSchema = z.enum([
   'lastName',
   'firstName',
+  'fullName',
   'className',
   'studentNumber',
+  'nisu',
   'academicYear',
 ]);
 const coverBlockSchema = z.object({
@@ -95,8 +106,25 @@ const coverBlockSchema = z.object({
   titlePattern: z.string().trim().max(60),
   showLogo: z.boolean(),
   framed: z.boolean(),
-  frameStyle: z.enum(['dashed', 'solid']).optional(),
+  frameStyle: z.enum(['dashed', 'solid', 'rounded']).optional(),
+  // Absent = true (today's rendering: school name, section label and title
+  // in capitals). false prints them as typed, the way the carnets do.
+  uppercase: z.boolean().optional(),
+  // Absent = 'top'. 'belowTitle' places the logo between the title and the
+  // identity lines (spec 2026-09-06 §4.2).
+  logoPosition: z.enum(['top', 'belowTitle']).optional(),
   fields: z.array(coverFieldSchema),
+  fieldLabels: z
+    .object({
+      lastName: z.string().trim().max(60).optional(),
+      firstName: z.string().trim().max(60).optional(),
+      fullName: z.string().trim().max(60).optional(),
+      className: z.string().trim().max(60).optional(),
+      studentNumber: z.string().trim().max(60).optional(),
+      nisu: z.string().trim().max(60).optional(),
+      academicYear: z.string().trim().max(60).optional(),
+    })
+    .optional(),
 });
 const criteriaGridsBlockSchema = z.object({
   ...blockBase,
@@ -105,6 +133,34 @@ const criteriaGridsBlockSchema = z.object({
   style: z.enum(['modern', 'grid']).optional(),
   subjects: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
 });
+
+// Annual carnet blocks (spec 2026-09-06 §4.1). They read `data.year`, which
+// getStudentBulletinView only computes when templateNeedsYear() is true.
+const yearGridBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal('yearGrid'),
+  showDomains: z.boolean().optional(),
+  notesLabel: z.string().trim().min(1).max(20).optional(),
+  maxLabel: z.string().trim().min(1).max(20).optional(),
+});
+const yearDecisionsBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal('yearDecisions'),
+  title: z.string().trim().min(1).max(60).optional(),
+});
+const yearSignaturesBlockSchema = z.object({
+  ...blockBase,
+  type: z.literal('yearSignatures'),
+  title: z.string().trim().min(1).max(60).optional(),
+  labels: z
+    .object({
+      director: z.string().trim().max(40).optional(),
+      guardian: z.string().trim().max(40).optional(),
+    })
+    .optional(),
+});
+
+export const YEAR_BLOCK_TYPES = ['yearGrid', 'yearDecisions', 'yearSignatures'] as const;
 
 export const blockSchema = z.discriminatedUnion('type', [
   headerBlockSchema,
@@ -117,13 +173,19 @@ export const blockSchema = z.discriminatedUnion('type', [
   textBlockSchema,
   coverBlockSchema,
   criteriaGridsBlockSchema,
+  yearGridBlockSchema,
+  yearDecisionsBlockSchema,
+  yearSignaturesBlockSchema,
 ]);
 export type Block = z.infer<typeof blockSchema>;
 
 export const pageSchema = z
   .object({
     id: z.string().trim().min(1).max(60),
-    layout: z.enum(['full', 'halves']),
+    layout: z.enum(['full', 'halves', 'sidebar']),
+    // Width of the aside column of a `sidebar` page, in percent of the
+    // printable width. Read only when layout === 'sidebar'; absent = 25.
+    asideWidth: z.number().min(15).max(40).optional(),
     showPageNumber: z.boolean(),
     blocks: z.array(blockSchema).min(1),
   })
@@ -139,8 +201,8 @@ export const pageSchema = z
     },
     { message: 'each of the 7 legacy block types may appear at most once per page' },
   )
-  .refine((page) => page.layout === 'halves' || page.blocks.every((b) => b.breakBefore == null), {
-    message: 'breakBefore is only valid on a halves-layout page',
+  .refine((page) => page.layout !== 'full' || page.blocks.every((b) => b.breakBefore == null), {
+    message: 'breakBefore is only valid on a halves- or sidebar-layout page',
   });
 export type Page = z.infer<typeof pageSchema>;
 
@@ -217,6 +279,14 @@ export const bulletinTemplateConfigSchema = z
   );
 
 export type BulletinTemplateConfig = z.infer<typeof bulletinTemplateConfigSchema>;
+
+// True when at least one page (visible block or not) holds an annual block:
+// getStudentBulletinView only pays for the year-wide computation then.
+export function templateNeedsYear(config: Pick<BulletinTemplateConfig, 'pages'>): boolean {
+  return config.pages.some((p) =>
+    p.blocks.some((b) => (YEAR_BLOCK_TYPES as readonly string[]).includes(b.type)),
+  );
+}
 
 export const DEFAULT_PAGE_NUMBER_FORMAT = '{n} / {total}';
 

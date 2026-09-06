@@ -13,7 +13,14 @@ export type LegacyBlockType =
   | 'appreciation'
   | 'signatures';
 
-export type BlockType = LegacyBlockType | 'text' | 'cover' | 'criteriaGrids';
+export type BlockType =
+  | LegacyBlockType
+  | 'text'
+  | 'cover'
+  | 'criteriaGrids'
+  | 'yearGrid'
+  | 'yearDecisions'
+  | 'yearSignatures';
 
 export const LEGACY_BLOCK_TYPES: LegacyBlockType[] = [
   'header',
@@ -25,7 +32,15 @@ export const LEGACY_BLOCK_TYPES: LegacyBlockType[] = [
   'signatures',
 ];
 
-export const BLOCK_TYPES: BlockType[] = [...LEGACY_BLOCK_TYPES, 'text', 'cover', 'criteriaGrids'];
+export const YEAR_BLOCK_TYPES = ['yearGrid', 'yearDecisions', 'yearSignatures'] as const;
+
+export const BLOCK_TYPES: BlockType[] = [
+  ...LEGACY_BLOCK_TYPES,
+  'text',
+  'cover',
+  'criteriaGrids',
+  ...YEAR_BLOCK_TYPES,
+];
 
 // Every type except header/studentInfo — those two always render in a
 // fixed combined top row regardless of their position in `blocks` (see
@@ -85,15 +100,37 @@ export interface TextBlock extends BlockBase {
   bold: boolean;
   italic: boolean;
 }
-export type CoverField = 'lastName' | 'firstName' | 'className' | 'studentNumber' | 'academicYear';
+export type CoverField =
+  | 'lastName'
+  | 'firstName'
+  | 'fullName'
+  | 'className'
+  | 'studentNumber'
+  | 'nisu'
+  | 'academicYear';
+export interface CoverFieldLabels {
+  lastName?: string | undefined;
+  firstName?: string | undefined;
+  fullName?: string | undefined;
+  className?: string | undefined;
+  studentNumber?: string | undefined;
+  nisu?: string | undefined;
+  academicYear?: string | undefined;
+}
 export interface CoverBlock extends BlockBase {
   type: 'cover';
   sectionLabel: string;
   titlePattern: string;
   showLogo: boolean;
   framed: boolean;
-  frameStyle?: 'dashed' | 'solid' | undefined;
+  frameStyle?: 'dashed' | 'solid' | 'rounded' | undefined;
+  /** Absent = true: school name, section label and title in capitals. */
+  uppercase?: boolean | undefined;
+  /** Absent = 'top'. 'belowTitle' puts the logo between the title and the identity lines. */
+  logoPosition?: 'top' | 'belowTitle' | undefined;
   fields: CoverField[];
+  /** Per-field label override; absent fields keep the default French label. */
+  fieldLabels?: CoverFieldLabels | undefined;
 }
 export interface CriteriaGridsBlock extends BlockBase {
   type: 'criteriaGrids';
@@ -102,6 +139,27 @@ export interface CriteriaGridsBlock extends BlockBase {
   style?: 'modern' | 'grid' | undefined;
   /** Subject names to print, in this order (case/accent-insensitive); absent = all. */
   subjects?: string[] | undefined;
+}
+/** Matières × périodes grid of the annual carnet (spec 2026-09-06 §4.1). */
+export interface YearGridBlock extends BlockBase {
+  type: 'yearGrid';
+  /** Print a bold heading row each time the subject domain changes. */
+  showDomains?: boolean | undefined;
+  notesLabel?: string | undefined;
+  maxLabel?: string | undefined;
+}
+export interface YearDecisionsBlock extends BlockBase {
+  type: 'yearDecisions';
+  title?: string | undefined;
+}
+export interface YearSignaturesLabels {
+  director?: string | undefined;
+  guardian?: string | undefined;
+}
+export interface YearSignaturesBlock extends BlockBase {
+  type: 'yearSignatures';
+  title?: string | undefined;
+  labels?: YearSignaturesLabels | undefined;
 }
 
 export type Block =
@@ -114,11 +172,16 @@ export type Block =
   | SignaturesBlock
   | TextBlock
   | CoverBlock
-  | CriteriaGridsBlock;
+  | CriteriaGridsBlock
+  | YearGridBlock
+  | YearDecisionsBlock
+  | YearSignaturesBlock;
 
 export interface Page {
   id: string;
-  layout: 'full' | 'halves';
+  layout: 'full' | 'halves' | 'sidebar';
+  /** Percent width of the aside column of a sidebar page; absent = 25. */
+  asideWidth?: number | undefined;
   showPageNumber: boolean;
   blocks: Block[];
 }

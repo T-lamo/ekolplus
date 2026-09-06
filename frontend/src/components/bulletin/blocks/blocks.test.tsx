@@ -10,6 +10,9 @@ import { render as renderSignatures } from './signatures';
 import { render as renderText } from './text';
 import { render as renderAppreciation } from './appreciation';
 import { render as renderCover } from './cover';
+import { render as renderYearGrid } from './yearGrid';
+import { render as renderYearDecisions } from './yearDecisions';
+import { render as renderYearSignatures } from './yearSignatures';
 
 const config: BulletinTemplateConfig = {
   ...DEFAULT_CONFIG,
@@ -280,5 +283,27 @@ describe('cover block', () => {
     expect(html(renderCover({ block: { ...block, frameStyle: 'solid' }, config, data }))).toContain(
       'border-solid',
     );
+  });
+});
+
+describe('annual blocks without annual data', () => {
+  it('render nothing when the view carries no `year` payload', () => {
+    expect(
+      renderYearGrid({ block: { id: 'g', type: 'yearGrid', visible: true }, config, data }),
+    ).toBeNull();
+    expect(
+      renderYearDecisions({
+        block: { id: 'd', type: 'yearDecisions', visible: true },
+        config,
+        data,
+      }),
+    ).toBeNull();
+    expect(
+      renderYearSignatures({
+        block: { id: 's', type: 'yearSignatures', visible: true },
+        config,
+        data,
+      }),
+    ).toBeNull();
   });
 });

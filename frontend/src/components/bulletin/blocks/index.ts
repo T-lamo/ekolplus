@@ -13,6 +13,9 @@ import { render as renderSignatures } from './signatures';
 import { render as renderText } from './text';
 import { render as renderCover } from './cover';
 import { render as renderCriteriaGrids } from './criteriaGrids';
+import { render as renderYearGrid } from './yearGrid';
+import { render as renderYearDecisions } from './yearDecisions';
+import { render as renderYearSignatures } from './yearSignatures';
 
 export function renderBlock({
   block,
@@ -44,6 +47,12 @@ export function renderBlock({
       return renderCover({ block, config, data });
     case 'criteriaGrids':
       return renderCriteriaGrids({ block, config, data });
+    case 'yearGrid':
+      return renderYearGrid({ block, config, data });
+    case 'yearDecisions':
+      return renderYearDecisions({ block, config, data });
+    case 'yearSignatures':
+      return renderYearSignatures({ block, config, data });
     default: {
       // Exhaustive check — TS will yell if we add a new block type and
       // forget it here, instead of this compiling silently and rendering

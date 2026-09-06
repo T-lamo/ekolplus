@@ -9,8 +9,10 @@ import type { BulletinRenderData } from '../render-data';
 const FIELD_LABEL: Record<CoverField, string> = {
   lastName: 'Nom',
   firstName: 'Prénom',
+  fullName: 'Nom complet',
   className: 'Classe',
   studentNumber: 'Code',
+  nisu: 'NISU',
   academicYear: 'Année Académique',
 };
 
@@ -20,10 +22,15 @@ function fieldValue(field: CoverField, data: BulletinRenderData): string {
       return data.lastName;
     case 'firstName':
       return data.firstName;
+    case 'fullName':
+      return `${data.firstName} ${data.lastName}`.trim();
     case 'className':
       return data.className;
     case 'studentNumber':
       return data.studentNumber;
+    case 'nisu':
+      // Not yet on BulletinRenderData; a later task wires the real value.
+      return '';
     case 'academicYear':
       return data.academicYearLabel;
   }

@@ -935,7 +935,10 @@
       "signatures": "Signatures",
       "text": "Texte libre",
       "cover": "Couverture",
-      "criteriaGrids": "Grilles qualitatives"
+      "criteriaGrids": "Grilles qualitatives",
+      "yearGrid": "Grille annuelle",
+      "yearDecisions": "Décisions de l'année",
+      "yearSignatures": "Signatures par période"
     },
     "editor": {
       "notFound": "Modèle introuvable.",

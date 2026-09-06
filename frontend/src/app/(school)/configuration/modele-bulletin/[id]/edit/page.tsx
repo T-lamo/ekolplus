@@ -345,11 +345,17 @@ export default function BulletinEditorPage() {
     if (!config || !pageContentRef.current) return;
     const el = pageContentRef.current;
     const natH = getPageHeightPx(config);
+    // halves pages give the sheet a definite height with column-fill: auto
+    // (BulletinPage.tsx), so content that doesn't fit no longer grows the
+    // sheet vertically — per the CSS multicol spec it spills into extra
+    // columns on the inline (horizontal) axis instead. Check scrollWidth
+    // too so that overflow still trips the warning for halves pages.
+    const natW = getPageWidthPx(config);
     setOverflowingPages((prev) => {
       const next = new Set(prev);
       const page = config.pages.find((p) => p.id === currentPageId);
       if (!page) return prev;
-      if (el.scrollHeight > natH) next.add(page.id);
+      if (el.scrollHeight > natH || el.scrollWidth > natW) next.add(page.id);
       else next.delete(page.id);
       return next;
     });

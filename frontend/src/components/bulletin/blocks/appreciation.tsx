@@ -27,9 +27,9 @@ export function render({
           {Array.from({ length: lineCount }).map((_, i) => (
             <div
               key={i}
-              className="border-b border-[#c9c4dd] text-2xs leading-[22px] text-[#1a1a2e] italic"
+              className="min-h-[22px] border-b border-[#c9c4dd] text-2xs leading-[22px] text-[#1a1a2e] italic"
             >
-              {i === 0 ? text : ''}
+              {i === 0 ? text : ' '}
             </div>
           ))}
         </div>

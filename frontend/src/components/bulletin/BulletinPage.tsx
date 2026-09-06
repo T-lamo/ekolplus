@@ -93,7 +93,11 @@ export function BulletinPage({
   return (
     <div
       className={`print-bulletin-canvas bulletin-print-root relative flex flex-col bg-white ${chrome ? 'overflow-hidden rounded-[2px] shadow-2xl' : ''}`}
-      style={{ minHeight: getPageHeightPx(config) }}
+      style={
+        halves
+          ? { height: getPageHeightPx(config), breakInside: 'avoid' }
+          : { minHeight: getPageHeightPx(config) }
+      }
     >
       <div
         className="h-1.5 shrink-0"
@@ -119,7 +123,15 @@ export function BulletinPage({
         className={halves ? 'flex-1' : 'flex flex-1 flex-col'}
         style={{
           padding: config.layout.pageMargin,
-          ...(halves ? { columnCount: 2, columnGap: config.layout.blockSpacing * 2 } : {}),
+          ...(halves
+            ? {
+                minHeight: 0,
+                flex: '1 1 auto',
+                columnCount: 2,
+                columnFill: 'auto',
+                columnGap: config.layout.blockSpacing * 2,
+              }
+            : {}),
         }}
       >
         {restBlocks.map((block) => wrap(block, renderBlock({ block, config, data })))}

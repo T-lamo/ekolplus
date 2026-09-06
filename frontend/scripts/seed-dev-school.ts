@@ -1926,28 +1926,31 @@ async function seedEtoiles(
     }),
   ]);
 
-  const [csComportement, csPhysique, csIntellectuel] = await Promise.all([
-    prisma.classSubject.create({
-      data: { classId: kinderClass.id, subjectId: comportement.id, teacherId: tid('silien') },
-      select: { id: true },
-    }),
-    prisma.classSubject.create({
-      data: {
-        classId: kinderClass.id,
-        subjectId: developpementPhysique.id,
-        teacherId: tid('silien'),
-      },
-      select: { id: true },
-    }),
-    prisma.classSubject.create({
-      data: {
-        classId: kinderClass.id,
-        subjectId: developpementIntellectuel.id,
-        teacherId: tid('silien'),
-      },
-      select: { id: true },
-    }),
-  ]);
+  // Created sequentially (not Promise.all) so createdAt ordering is
+  // deterministic — loadPublishedGrids (student-views/criteria.ts) orders
+  // grids by classSubject.createdAt asc, and the livret template expects
+  // Comportement, then Développement physique, then Développement
+  // intellectuel, matching the source document's order.
+  const csComportement = await prisma.classSubject.create({
+    data: { classId: kinderClass.id, subjectId: comportement.id, teacherId: tid('silien') },
+    select: { id: true },
+  });
+  const csPhysique = await prisma.classSubject.create({
+    data: {
+      classId: kinderClass.id,
+      subjectId: developpementPhysique.id,
+      teacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const csIntellectuel = await prisma.classSubject.create({
+    data: {
+      classId: kinderClass.id,
+      subjectId: developpementIntellectuel.id,
+      teacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
 
   const kinderBirthYear = yearStart - 5;
   const kinderStudentInputs: Prisma.StudentCreateManyInput[] = [];

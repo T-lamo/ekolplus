@@ -80,10 +80,46 @@ const signaturesBlockSchema = z.object({
   style: z.enum(['boxes', 'lines']).optional(),
   homeroomFirst: z.boolean().optional(),
 });
+// Structured rich text (components/bulletin/rich-text.ts): runs of text with
+// marks inside paragraphs and lists. Only these shapes exist, so a template
+// can never carry markup; the renderer prints the runs as text nodes.
+const richRunSchema = z.object({
+  text: z.string().max(2000),
+  marks: z
+    .array(z.enum(['bold', 'italic', 'underline']))
+    .max(3)
+    .optional(),
+});
+const richAlignSchema = z.enum(['left', 'center', 'right', 'justify']).optional();
+const richBlockSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('p'), align: richAlignSchema, runs: z.array(richRunSchema).max(200) }),
+  z.object({
+    kind: z.enum(['ul', 'ol']),
+    align: richAlignSchema,
+    items: z.array(z.array(richRunSchema).max(200)).max(100),
+  }),
+]);
 const textBlockSchema = z.object({
   ...blockBase,
   type: z.literal('text'),
   text: z.string().max(2000),
+  rich: z
+    .array(richBlockSchema)
+    .max(100)
+    .optional()
+    .refine(
+      (blocks) =>
+        !blocks ||
+        blocks.reduce(
+          (n, b) =>
+            n +
+            (b.kind === 'p'
+              ? b.runs.reduce((m, r) => m + r.text.length, 0)
+              : b.items.reduce((m, runs) => m + runs.reduce((k, r) => k + r.text.length, 0), 0)),
+          0,
+        ) <= 4000,
+      { message: 'Rich text is limited to 4000 characters' },
+    ),
   align: z.enum(['left', 'center', 'right', 'justify']),
   verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
   fontSize: z.number().min(8).max(20),

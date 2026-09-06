@@ -120,6 +120,49 @@ describe('bulletinTemplateConfigSchema', () => {
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
   });
 
+  it('accepts structured rich text on a text block and rejects anything markup-shaped', () => {
+    const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG) as unknown as {
+      pages: { blocks: Record<string, unknown>[] }[];
+    };
+    const richText = {
+      id: 'rt',
+      type: 'text',
+      visible: true,
+      text: 'Extrait',
+      align: 'left',
+      fontSize: 12,
+      bold: false,
+      italic: false,
+      rich: [
+        {
+          kind: 'p',
+          align: 'center',
+          runs: [{ text: 'Extrait ' }, { text: 'des règlements', marks: ['bold', 'underline'] }],
+        },
+        { kind: 'ol', items: [[{ text: 'Promu (e)' }], [{ text: 'Maintenu', marks: ['italic'] }]] },
+      ],
+    };
+    cfg.pages[0]!.blocks.push(richText);
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+
+    const unknownMark = structuredClone(cfg);
+    (
+      unknownMark.pages[0]!.blocks.at(-1) as { rich: { runs: { marks: string[] }[] }[] }
+    ).rich[0]!.runs[1]!.marks = ['onclick'];
+    expect(bulletinTemplateConfigSchema.safeParse(unknownMark).success).toBe(false);
+
+    const htmlString = structuredClone(cfg);
+    (htmlString.pages[0]!.blocks.at(-1) as { rich: unknown }).rich = '<b>gras</b>';
+    expect(bulletinTemplateConfigSchema.safeParse(htmlString).success).toBe(false);
+
+    const unknownKind = structuredClone(cfg);
+    (unknownKind.pages[0]!.blocks.at(-1) as { rich: unknown[] }).rich.push({
+      kind: 'script',
+      runs: [],
+    });
+    expect(bulletinTemplateConfigSchema.safeParse(unknownKind).success).toBe(false);
+  });
+
   it('rejects breakBefore on a full-layout page', () => {
     const cfg = validConfig();
     cfg.pages[0]!.blocks[0]!.breakBefore = 'column';

@@ -69,5 +69,21 @@
     "cancel": "Cancel",
     "confirmAction": "Confirm",
     "deleteAction": "Delete"
+  },
+  "richText": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "bulletList": "Bulleted list",
+    "numberedList": "Numbered list",
+    "alignLeft": "Align left",
+    "alignCenter": "Center",
+    "alignRight": "Align right",
+    "alignJustify": "Justify",
+    "edit": "Edit text",
+    "editorTitle": "Rich text",
+    "editorHint": "Select some text, then use the toolbar. Variables stay available.",
+    "done": "Done",
+    "empty": "No text"
   }
 }

@@ -4,6 +4,8 @@
 // this codebase's established convention, see page-size.ts's identical
 // note). Keep this file's shapes structurally identical to the server
 // Zod schema's inferred types whenever either changes.
+import type { RichBlock } from '@/components/bulletin/rich-text';
+
 export type LegacyBlockType =
   | 'header'
   | 'studentInfo'
@@ -92,7 +94,12 @@ export interface SignaturesBlock extends BlockBase {
 export type TextVerticalAlign = 'top' | 'middle' | 'bottom';
 export interface TextBlock extends BlockBase {
   type: 'text';
+  /** Plain fallback of `rich` (paragraphs separated by a blank line); the
+   * printed text when `rich` is absent. */
   text: string;
+  /** Structured rich text (bold, italic, underline, lists, alignment);
+   * never HTML. Takes precedence over `text` when present. */
+  rich?: RichBlock[] | undefined;
   align: 'left' | 'center' | 'right' | 'justify';
   /** Vertical placement inside the column (halves) or the remaining page (full). */
   verticalAlign?: TextVerticalAlign | undefined;

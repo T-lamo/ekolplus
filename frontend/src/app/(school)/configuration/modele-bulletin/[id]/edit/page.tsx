@@ -20,6 +20,10 @@ import {
   RectangleHorizontal,
   Columns2,
   PanelRight,
+  Palette,
+  MoveHorizontal,
+  Component,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BareSelect, SelectItem } from '@/components/school/subjects/form-primitives';
@@ -33,6 +37,9 @@ import { ImageUploader } from '@/components/ui/ImageUploader';
 import { SignaturePad } from '@/components/ui/SignaturePad';
 import { BulletinPage as BulletinPageCanvas } from '@/components/bulletin/BulletinPage';
 import { getPageHeightPx, getPageWidthPx } from '@/components/bulletin/page-size';
+import { Modal } from '@/components/ui/Modal';
+import { RichTextEditor, richTextSummary } from '@/components/ui/RichTextEditor';
+import { richTextFromPlain, richTextToPlain } from '@/components/bulletin/rich-text';
 import type { BulletinRenderData } from '@/components/bulletin/render-data';
 import { SAMPLE_BULLETIN_DATA } from '@/components/bulletin/sample-bulletin-data';
 import { API_URL, COOKIE_PREFIX } from '@/lib/constants';
@@ -63,6 +70,13 @@ const COLOR_SWATCHES = [
 
 type Tab = 'style' | 'content' | 'spacing' | 'block';
 
+const TAB_ICON: Record<Tab, LucideIcon> = {
+  style: Palette,
+  content: FileText,
+  spacing: MoveHorizontal,
+  block: Component,
+};
+
 export default function BulletinEditorPage() {
   const user = useUser();
   const router = useRouter();
@@ -71,11 +85,15 @@ export default function BulletinEditorPage() {
   const t = useTranslations('Configuration.modeleBulletin.editor');
   const tBlock = useTranslations('Configuration.modeleBulletin.block');
   const tBadge = useTranslations('Configuration.modeleBulletin.badge');
+  const tRich = useTranslations('Common.richText');
   const [config, setConfig] = useState<BulletinTemplateConfig | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+  // The free-text block edits in a modal: the side panel is too narrow for
+  // a toolbar plus a comfortable writing surface.
+  const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [selected, setSelected] = useState<{ pageId: string; blockId: string } | null>(null);
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragBlockId, setDragBlockId] = useState<string | null>(null);
@@ -1086,16 +1104,20 @@ export default function BulletinEditorPage() {
                       'spacing',
                       ...(showBlockTab ? (['block'] as const) : []),
                     ] as Tab[]
-                  ).map((tabKey) => (
-                    <button
-                      key={tabKey}
-                      type="button"
-                      onClick={() => setPropTab(tabKey)}
-                      className={`flex-1 rounded px-1 py-1 text-2xs font-medium ${propTab === tabKey ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      {t(`tabs.${tabKey}`)}
-                    </button>
-                  ))}
+                  ).map((tabKey) => {
+                    const Icon = TAB_ICON[tabKey];
+                    return (
+                      <button
+                        key={tabKey}
+                        type="button"
+                        onClick={() => setPropTab(tabKey)}
+                        className={`flex flex-1 flex-col items-center gap-0.5 rounded px-1 py-1.5 text-2xs font-medium ${propTab === tabKey ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
+                      >
+                        <Icon size={13} />
+                        {t(`tabs.${tabKey}`)}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1551,18 +1573,53 @@ export default function BulletinEditorPage() {
 
                   {selectedBlock.type === 'text' && (
                     <PropSection title={t('blockProperties.textTitle')} last>
-                      <textarea
-                        maxLength={2000}
-                        rows={8}
-                        value={selectedBlock.text}
-                        onChange={(e) =>
-                          patchBlock(selected.pageId, selected.blockId, { text: e.target.value })
-                        }
-                        className="mb-2.5 w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setTextEditorOpen(true)}
+                        className="mb-2.5 flex w-full flex-col gap-1.5 rounded-md border border-border bg-muted px-2.5 py-2 text-left hover:bg-muted/70"
+                      >
+                        <span className="line-clamp-3 text-xs whitespace-pre-line text-foreground">
+                          {richTextSummary(
+                            selectedBlock.rich ?? richTextFromPlain(selectedBlock.text),
+                            160,
+                          ) || tRich('empty')}
+                        </span>
+                        <span className="text-2xs font-semibold text-primary">{tRich('edit')}</span>
+                      </button>
                       <p className="mb-2.5 text-2xs text-muted-foreground">
                         {t('blockProperties.textVariablesHint')}
                       </p>
+                      {textEditorOpen && (
+                        <Modal
+                          title={tRich('editorTitle')}
+                          subtitle={tRich('editorHint')}
+                          medium
+                          onClose={() => setTextEditorOpen(false)}
+                          footer={
+                            <div className="flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setTextEditorOpen(false)}
+                                className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                              >
+                                {tRich('done')}
+                              </button>
+                            </div>
+                          }
+                        >
+                          <RichTextEditor
+                            autoFocus
+                            minHeight={320}
+                            value={selectedBlock.rich ?? richTextFromPlain(selectedBlock.text)}
+                            onChange={(rich) =>
+                              patchBlock(selected.pageId, selected.blockId, {
+                                rich,
+                                text: richTextToPlain(rich).slice(0, 2000),
+                              })
+                            }
+                          />
+                        </Modal>
+                      )}
                       <PropSelectRow
                         label={t('blockProperties.textAlign')}
                         value={selectedBlock.align}

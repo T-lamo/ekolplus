@@ -325,8 +325,12 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
       where: { id: 'l1' },
       data: { bulletinTemplateId: 'tpl-global' },
     });
-    // F2(a) — a bulletinTemplateId-only PATCH must NOT touch any class.
-    expect(prismaMock.class.updateMany).not.toHaveBeenCalled();
+    // Assigning a template also adopts the classes still only labelled with
+    // the level's name, so the template applies to their students at once.
+    expect(prismaMock.class.updateMany).toHaveBeenCalledWith({
+      where: { schoolId: 'school_1', gradeLevelId: null, level: '6ème' },
+      data: { gradeLevelId: 'l1' },
+    });
   });
 
   it("the school's own template is accepted → 200, bulletinTemplateId set", async () => {

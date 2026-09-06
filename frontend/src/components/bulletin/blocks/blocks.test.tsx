@@ -360,6 +360,70 @@ describe('cover block, carnet options', () => {
   });
 });
 
+describe('text block rich content', () => {
+  const base = {
+    id: 't',
+    type: 'text' as const,
+    visible: true,
+    text: 'fallback',
+    align: 'left' as const,
+    fontSize: 12,
+    bold: false,
+    italic: false,
+  };
+
+  it('renders paragraphs, marks, lists and per-paragraph alignment from the structured runs', () => {
+    const out = html(
+      renderText({
+        block: {
+          ...base,
+          rich: [
+            {
+              kind: 'p',
+              align: 'center',
+              runs: [
+                { text: 'Extrait ' },
+                { text: 'des règlements', marks: ['bold', 'underline'] },
+              ],
+            },
+            {
+              kind: 'ol',
+              items: [[{ text: 'Promu (e)' }], [{ text: 'Maintenu', marks: ['italic'] }]],
+            },
+          ],
+        },
+        config,
+        data,
+      }),
+    );
+    expect(out).toContain('text-center');
+    expect(out).toContain('<strong><u>des règlements</u></strong>');
+    expect(out).toContain('<ol class="mb-2 pl-5 whitespace-pre-line last:mb-0 list-decimal">');
+    expect(out).toContain('<li><span><em>Maintenu</em></span></li>');
+    expect(out).not.toContain('fallback');
+  });
+
+  it('prints markup typed by the author as literal text (no injection through a run)', () => {
+    const out = html(
+      renderText({
+        block: {
+          ...base,
+          rich: [{ kind: 'p', runs: [{ text: '<img src=x onerror=alert(1)> & {eleve}' }] }],
+        },
+        config,
+        data,
+      }),
+    );
+    expect(out).not.toContain('<img');
+    expect(out).toContain('&lt;img src=x onerror=alert(1)&gt; &amp; Jonathan Alexis');
+  });
+
+  it('falls back to the plain text when rich is absent or empty', () => {
+    const out = html(renderText({ block: { ...base, rich: [] }, config, data }));
+    expect(out).toContain('fallback');
+  });
+});
+
 describe('text block variables', () => {
   it('replaces {eleve}, {classe}, {annee}, {periode}, {ecole} and leaves unknown variables', () => {
     const out = html(

@@ -4,6 +4,7 @@ import type {
   BulletinTemplateConfig,
 } from '@/app/(school)/configuration/modele-bulletin/types';
 import type { BulletinRenderData } from '../render-data';
+import type { RichAlign, RichBlock, RichRun } from '../rich-text';
 
 const ALIGN_CLASS: Record<TextBlock['align'], string> = {
   left: 'text-left',
@@ -38,6 +39,46 @@ export function substituteVariables(text: string, data: BulletinRenderData): str
   });
 }
 
+// Rich runs become React text nodes wrapped in strong/em/u: the author's
+// text is never parsed as markup, so no injection is possible here or in
+// the PDF (which renders this same tree).
+function renderRuns(runs: RichRun[], data: BulletinRenderData): React.ReactNode {
+  return runs.map((run, i) => {
+    let node: React.ReactNode = substituteVariables(run.text, data);
+    const marks = run.marks ?? [];
+    if (marks.includes('underline')) node = <u>{node}</u>;
+    if (marks.includes('italic')) node = <em>{node}</em>;
+    if (marks.includes('bold')) node = <strong>{node}</strong>;
+    return <span key={i}>{node}</span>;
+  });
+}
+
+const RICH_ALIGN_CLASS: Record<RichAlign, string> = ALIGN_CLASS;
+
+function renderRich(blocks: RichBlock[], data: BulletinRenderData): React.ReactNode {
+  return blocks.map((block, i) => {
+    const alignClass = block.align ? RICH_ALIGN_CLASS[block.align] : '';
+    if (block.kind === 'p') {
+      return (
+        <p key={i} className={`mb-2 whitespace-pre-line last:mb-0 ${alignClass}`.trim()}>
+          {renderRuns(block.runs, data)}
+        </p>
+      );
+    }
+    const List = block.kind === 'ol' ? 'ol' : 'ul';
+    return (
+      <List
+        key={i}
+        className={`mb-2 pl-5 whitespace-pre-line last:mb-0 ${block.kind === 'ol' ? 'list-decimal' : 'list-disc'} ${alignClass}`.trim()}
+      >
+        {block.items.map((runs, j) => (
+          <li key={j}>{renderRuns(runs, data)}</li>
+        ))}
+      </List>
+    );
+  });
+}
+
 export function render({
   block,
   data,
@@ -50,6 +91,7 @@ export function render({
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
+  const rich = block.rich && block.rich.length > 0 ? block.rich : null;
   return (
     <div
       className={`${ALIGN_CLASS[block.align]} ${VALIGN_CLASS[block.verticalAlign ?? 'top']}`.trim()}
@@ -59,11 +101,13 @@ export function render({
         fontStyle: block.italic ? 'italic' : 'normal',
       }}
     >
-      {paragraphs.map((p, i) => (
-        <p key={i} className="mb-2 whitespace-pre-line last:mb-0">
-          {p}
-        </p>
-      ))}
+      {rich
+        ? renderRich(rich, data)
+        : paragraphs.map((p, i) => (
+            <p key={i} className="mb-2 whitespace-pre-line last:mb-0">
+              {p}
+            </p>
+          ))}
     </div>
   );
 }

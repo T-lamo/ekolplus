@@ -23,6 +23,17 @@ import {
   Palette,
   MoveHorizontal,
   Component,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  AlignVerticalJustifyStart,
+  AlignVerticalJustifyCenter,
+  AlignVerticalJustifyEnd,
+  Square,
+  SeparatorHorizontal,
+  SquareDashed,
+  SquareRoundCorner,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -1106,15 +1117,18 @@ export default function BulletinEditorPage() {
                     ] as Tab[]
                   ).map((tabKey) => {
                     const Icon = TAB_ICON[tabKey];
+                    const label = t(`tabs.${tabKey}`);
                     return (
                       <button
                         key={tabKey}
                         type="button"
+                        title={label}
+                        aria-label={label}
+                        aria-pressed={propTab === tabKey}
                         onClick={() => setPropTab(tabKey)}
-                        className={`flex flex-1 flex-col items-center gap-0.5 rounded px-1 py-1.5 text-2xs font-medium ${propTab === tabKey ? 'bg-card text-foreground' : 'text-muted-foreground'}`}
+                        className={`flex flex-1 items-center justify-center rounded px-1 py-1.5 ${propTab === tabKey ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                       >
-                        <Icon size={13} />
-                        {t(`tabs.${tabKey}`)}
+                        <Icon size={15} />
                       </button>
                     );
                   })}
@@ -1413,13 +1427,25 @@ export default function BulletinEditorPage() {
                         patchConfig({ layout: { ...config.layout, borderWidth: v } })
                       }
                     />
-                    <PropSelectRow
+                    <PropIconRow
                       label={t('spacing.borderStyleLabel')}
                       value={config.layout.borderStyle}
                       options={[
-                        { value: 'solid', label: t('spacing.borderStyle.solid') },
-                        { value: 'dashed', label: t('spacing.borderStyle.dashed') },
-                        { value: 'dotted', label: t('spacing.borderStyle.dotted') },
+                        {
+                          value: 'solid',
+                          icon: (p2) => <BorderStyleIcon variant="solid" {...p2} />,
+                          label: t('spacing.borderStyle.solid'),
+                        },
+                        {
+                          value: 'dashed',
+                          icon: (p2) => <BorderStyleIcon variant="dashed" {...p2} />,
+                          label: t('spacing.borderStyle.dashed'),
+                        },
+                        {
+                          value: 'dotted',
+                          icon: (p2) => <BorderStyleIcon variant="dotted" {...p2} />,
+                          label: t('spacing.borderStyle.dotted'),
+                        },
                       ]}
                       onChange={(v) =>
                         patchConfig({
@@ -1462,12 +1488,20 @@ export default function BulletinEditorPage() {
                 <>
                   {selectedBlock.type === 'appreciation' && (
                     <PropSection title={t('blockProperties.appreciationTitle')} last>
-                      <PropSelectRow
+                      <PropIconRow
                         label={t('blockProperties.appreciationStyle')}
                         value={selectedBlock.style ?? 'box'}
                         options={[
-                          { value: 'box', label: t('blockProperties.appreciationStyleBox') },
-                          { value: 'lines', label: t('blockProperties.appreciationStyleLines') },
+                          {
+                            value: 'box',
+                            icon: Square,
+                            label: t('blockProperties.appreciationStyleBox'),
+                          },
+                          {
+                            value: 'lines',
+                            icon: SeparatorHorizontal,
+                            label: t('blockProperties.appreciationStyleLines'),
+                          },
                         ]}
                         onChange={(v) =>
                           patchBlock(selected.pageId, selected.blockId, {
@@ -1506,12 +1540,20 @@ export default function BulletinEditorPage() {
 
                   {selectedBlock.type === 'signatures' && (
                     <PropSection title={t('blockProperties.signaturesLabelsTitle')} last>
-                      <PropSelectRow
+                      <PropIconRow
                         label={t('blockProperties.signaturesStyle')}
                         value={selectedBlock.style ?? 'boxes'}
                         options={[
-                          { value: 'boxes', label: t('blockProperties.signaturesStyleBoxes') },
-                          { value: 'lines', label: t('blockProperties.signaturesStyleLines') },
+                          {
+                            value: 'boxes',
+                            icon: Square,
+                            label: t('blockProperties.signaturesStyleBoxes'),
+                          },
+                          {
+                            value: 'lines',
+                            icon: SeparatorHorizontal,
+                            label: t('blockProperties.signaturesStyleLines'),
+                          },
                         ]}
                         onChange={(v) =>
                           patchBlock(selected.pageId, selected.blockId, {
@@ -1620,14 +1662,26 @@ export default function BulletinEditorPage() {
                           />
                         </Modal>
                       )}
-                      <PropSelectRow
+                      <PropIconRow
                         label={t('blockProperties.textAlign')}
                         value={selectedBlock.align}
                         options={[
-                          { value: 'left', label: t('blockProperties.alignLeft') },
-                          { value: 'center', label: t('blockProperties.alignCenter') },
-                          { value: 'right', label: t('blockProperties.alignRight') },
-                          { value: 'justify', label: t('blockProperties.alignJustify') },
+                          { value: 'left', icon: AlignLeft, label: t('blockProperties.alignLeft') },
+                          {
+                            value: 'center',
+                            icon: AlignCenter,
+                            label: t('blockProperties.alignCenter'),
+                          },
+                          {
+                            value: 'right',
+                            icon: AlignRight,
+                            label: t('blockProperties.alignRight'),
+                          },
+                          {
+                            value: 'justify',
+                            icon: AlignJustify,
+                            label: t('blockProperties.alignJustify'),
+                          },
                         ]}
                         onChange={(v) =>
                           patchBlock(selected.pageId, selected.blockId, {
@@ -1635,13 +1689,25 @@ export default function BulletinEditorPage() {
                           })
                         }
                       />
-                      <PropSelectRow
+                      <PropIconRow
                         label={t('blockProperties.textVerticalAlign')}
                         value={selectedBlock.verticalAlign ?? 'top'}
                         options={[
-                          { value: 'top', label: t('blockProperties.verticalAlignTop') },
-                          { value: 'middle', label: t('blockProperties.verticalAlignMiddle') },
-                          { value: 'bottom', label: t('blockProperties.verticalAlignBottom') },
+                          {
+                            value: 'top',
+                            icon: AlignVerticalJustifyStart,
+                            label: t('blockProperties.verticalAlignTop'),
+                          },
+                          {
+                            value: 'middle',
+                            icon: AlignVerticalJustifyCenter,
+                            label: t('blockProperties.verticalAlignMiddle'),
+                          },
+                          {
+                            value: 'bottom',
+                            icon: AlignVerticalJustifyEnd,
+                            label: t('blockProperties.verticalAlignBottom'),
+                          },
                         ]}
                         onChange={(v) =>
                           patchBlock(selected.pageId, selected.blockId, {
@@ -1719,13 +1785,25 @@ export default function BulletinEditorPage() {
                         }
                       />
                       {selectedBlock.framed && (
-                        <PropSelectRow
+                        <PropIconRow
                           label={t('blockProperties.coverFrameStyle')}
                           value={selectedBlock.frameStyle ?? 'dashed'}
                           options={[
-                            { value: 'dashed', label: t('blockProperties.coverFrameDashed') },
-                            { value: 'solid', label: t('blockProperties.coverFrameSolid') },
-                            { value: 'rounded', label: t('blockProperties.coverFrameRounded') },
+                            {
+                              value: 'dashed',
+                              icon: SquareDashed,
+                              label: t('blockProperties.coverFrameDashed'),
+                            },
+                            {
+                              value: 'solid',
+                              icon: Square,
+                              label: t('blockProperties.coverFrameSolid'),
+                            },
+                            {
+                              value: 'rounded',
+                              icon: SquareRoundCorner,
+                              label: t('blockProperties.coverFrameRounded'),
+                            },
                           ]}
                           onChange={(v) =>
                             patchBlock(selected.pageId, selected.blockId, {
@@ -2070,6 +2148,80 @@ function PropSliderRow({
         className="w-full accent-primary"
       />
     </div>
+  );
+}
+
+interface IconLike {
+  size?: number;
+  className?: string;
+}
+
+/**
+ * A single-select row of icon buttons instead of a dropdown: each option's
+ * icon is meant to read the choice at a glance (an alignment direction, a
+ * literal line-style preview), with the full label still available as a
+ * native tooltip on hover / focus for anyone who wants the word.
+ */
+function PropIconRow<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; icon: React.ComponentType<IconLike>; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <PropRow label={label}>
+      <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            title={o.label}
+            aria-label={o.label}
+            aria-pressed={value === o.value}
+            onClick={() => onChange(o.value)}
+            className={`flex h-7 w-7 items-center justify-center rounded ${
+              value === o.value
+                ? 'bg-card text-primary shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <o.icon size={14} />
+          </button>
+        ))}
+      </div>
+    </PropRow>
+  );
+}
+
+/** Literal preview of a border line style (solid / dashed / dotted), read
+ * at a glance instead of guessing from a generic icon. */
+function BorderStyleIcon({
+  variant,
+  size = 14,
+}: {
+  variant: 'solid' | 'dashed' | 'dotted';
+  size?: number;
+}) {
+  return (
+    <svg width={size * 1.3} height={size} viewBox="0 0 18 14" fill="none" aria-hidden="true">
+      <line
+        x1="1"
+        y1="7"
+        x2="17"
+        y2="7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap={variant === 'dotted' ? 'round' : 'butt'}
+        strokeDasharray={
+          variant === 'dashed' ? '4 3' : variant === 'dotted' ? '0.1 3.4' : undefined
+        }
+      />
+    </svg>
   );
 }
 

@@ -37,9 +37,9 @@ images dans le scratchpad de la session `carnets/`) :
   (« 3ème Cycle & Secondaire » ou « Section primaire »), « Carnet scolaire »,
   le logo, puis les lignes « Elève : », « Classe : », « NISU : »,
   « Année Scolaire : ».
-- **Page 2**. Ligne « Nom (s) et Prénom (s) ____ Classe ____ Année Scolaire ____ »
+- **Page 2**. Ligne « Nom (s) et Prénom (s) \_**\_ Classe \_\_** Année Scolaire \_\_\_\_ »
   en haut ; grille quadrillée `Matières | 1er contrôle (Notes, Sur) | 2ème
-  contrôle (Notes, Sur) | 3ème contrôle | 4ème contrôle` suivie des lignes
+contrôle (Notes, Sur) | 3ème contrôle | 4ème contrôle` suivie des lignes
   `Total`, `Moyenne`, `Place` ; à droite un encadré « Signatures » avec, pour
   chaque contrôle, une ligne « Direction » puis une ligne « Les Parents ».
   Le carnet primaire regroupe les matières sous des intitulés en gras
@@ -208,7 +208,7 @@ comme `criteriaGrids` en style `grid` :
   en gras (Place = `rank` en ordinal `1er`, `2e`…, vide si null). Sans `year`
   dans les données, le bloc rend `null`.
 - **yearDecisions** : titre souligné, `<table>` `Contrôle | Moyenne |
-  Coefficient`, une ligne par période (I, II, III, IV, V… en chiffres romains),
+Coefficient`, une ligne par période (I, II, III, IV, V… en chiffres romains),
   ligne `Moyenne Générale` en gras. Moyenne vide si null.
 - **yearSignatures** : encadré (`border 1px`), titre dans un cadre arrondi
   centré, puis pour chaque période un bloc « ligne de signature + libellé
@@ -280,7 +280,7 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
 1. `id 'decisions'`, `layout 'sidebar'`, `asideWidth 48`, blocs dans l'ordre :
    - `yearDecisions` (`title 'Décisions'`)
    - `text` « Observations : » (gras) puis le texte
-     « -   L'élève est :\n      ○ Promu (e)\n      ○ Maintenu (e)\n      ○ Orienté (e) ailleurs »
+     « - L'élève est :\n ○ Promu (e)\n ○ Maintenu (e)\n ○ Orienté (e) ailleurs »
    - `text` « Extrait des règlements » (gras) puis les quatre points, verbatim du Word :
      1. Considéré (e) comme promu (e), l'élève qui obtient au moins une moyenne générale de 24/40.
      2. Considéré (e) comme maintenu (e), l'élève qui obtient une moyenne générale comprise entre 16/40 et 24/40.
@@ -289,11 +289,11 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
    - `text` « La direction » (gras, `align 'right'`, `verticalAlign 'bottom'`)
    - `cover` (colonne latérale, `breakBefore 'column'`, `framed true`, `frameStyle 'rounded'`,
      `uppercase false`, `logoPosition 'belowTitle'`, `sectionLabel '3ème Cycle
-     & Secondaire'` ou `'Section primaire'`, `titlePattern 'Carnet scolaire'`,
+& Secondaire'` ou `'Section primaire'`, `titlePattern 'Carnet scolaire'`,
      `showLogo true`, `fields ['fullName','className','nisu','academicYear']`,
      `fieldLabels { academicYear: 'Année Scolaire' }`)
 2. `id 'grille'`, `layout 'sidebar'`, `asideWidth 22`, blocs :
-   - `text` « Nom (s) et Prénom (s) {eleve}        Classe {classe}        Année Scolaire : {annee} » (gras, `fontSize 13` ; les espacements sont des espaces insécables, les seules que `white-space: pre-line` conserve)
+   - `text` « Nom (s) et Prénom (s) : {eleve} Classe : {classe} Année Scolaire : {annee} » (gras, `fontSize 13` ; les espacements sont des espaces insécables, les seules que `white-space: pre-line` conserve)
    - `yearGrid` (`showDomains` true pour le primaire seulement)
    - `yearSignatures` (`breakBefore 'column'`)
 

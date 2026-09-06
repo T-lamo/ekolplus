@@ -273,7 +273,7 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
             fontSize: 13,
             bold: true,
             italic: false,
-            text: `Nom (s) et Prénom (s) {eleve}${NBSP.repeat(12)}Classe {classe}${NBSP.repeat(12)}Année Scolaire : {annee}`,
+            text: `Nom (s) et Prénom (s) : {eleve}${NBSP.repeat(12)}Classe : {classe}${NBSP.repeat(12)}Année Scolaire : {annee}`,
           },
           {
             id: 'grille-annuelle',

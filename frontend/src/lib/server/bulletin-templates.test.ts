@@ -137,7 +137,10 @@ describe('bulletinTemplateConfigSchema', () => {
         {
           kind: 'p',
           align: 'center',
-          runs: [{ text: 'Extrait ' }, { text: 'des règlements', marks: ['bold', 'underline'] }],
+          runs: [
+            { text: 'Extrait ', size: 18 },
+            { text: 'des règlements', marks: ['bold', 'underline'] },
+          ],
         },
         { kind: 'ol', items: [[{ text: 'Promu (e)' }], [{ text: 'Maintenu', marks: ['italic'] }]] },
       ],
@@ -154,6 +157,14 @@ describe('bulletinTemplateConfigSchema', () => {
     const htmlString = structuredClone(cfg);
     (htmlString.pages[0]!.blocks.at(-1) as { rich: unknown }).rich = '<b>gras</b>';
     expect(bulletinTemplateConfigSchema.safeParse(htmlString).success).toBe(false);
+
+    for (const size of [5, 49, 12.5, '14px']) {
+      const badSize = structuredClone(cfg);
+      (
+        badSize.pages[0]!.blocks.at(-1) as { rich: { runs: { size: unknown }[] }[] }
+      ).rich[0]!.runs[0]!.size = size;
+      expect(bulletinTemplateConfigSchema.safeParse(badSize).success).toBe(false);
+    }
 
     const unknownKind = structuredClone(cfg);
     (unknownKind.pages[0]!.blocks.at(-1) as { rich: unknown[] }).rich.push({

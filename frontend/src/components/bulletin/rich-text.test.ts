@@ -14,7 +14,7 @@ function text(t: string): DomNodeLike {
 function el(
   tag: string,
   children: DomNodeLike[],
-  opts: { align?: string; attrAlign?: string } = {},
+  opts: { align?: string; attrAlign?: string; size?: string } = {},
 ): DomNodeLike {
   return {
     nodeType: 1,
@@ -22,7 +22,7 @@ function el(
     textContent: children.map((c) => c.textContent ?? '').join(''),
     childNodes: children,
     getAttribute: (name) => (name === 'align' ? (opts.attrAlign ?? null) : null),
-    style: { textAlign: opts.align },
+    style: { textAlign: opts.align, fontSize: opts.size },
   };
 }
 
@@ -96,6 +96,28 @@ describe('richTextFromDom', () => {
     ]);
     expect(richTextFromDom(root)).toEqual([
       { kind: 'ul', align: 'center', items: [[{ text: 'Promu' }], [{ text: 'Maintenu' }]] },
+    ]);
+  });
+
+  it('reads a px font size from a span and keeps only sizes inside the allowed range', () => {
+    const root = el('div', [
+      el('div', [
+        el('span', [text('Petit ')], { size: '8px' }),
+        el('span', [el('b', [text('gras')]), text(' grand')], { size: '24px' }),
+        el('span', [text(' hors limite')], { size: '200px' }),
+        el('span', [text(' pas en px')], { size: '2em' }),
+      ]),
+    ]);
+    expect(richTextFromDom(root)).toEqual([
+      {
+        kind: 'p',
+        runs: [
+          { text: 'Petit ', size: 8 },
+          { text: 'gras', marks: ['bold'], size: 24 },
+          { text: ' grand', size: 24 },
+          { text: ' hors limite pas en px' },
+        ],
+      },
     ]);
   });
 

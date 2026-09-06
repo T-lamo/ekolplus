@@ -89,6 +89,7 @@ const richRunSchema = z.object({
     .array(z.enum(['bold', 'italic', 'underline']))
     .max(3)
     .optional(),
+  size: z.number().int().min(6).max(48).optional(),
 });
 const richAlignSchema = z.enum(['left', 'center', 'right', 'justify']).optional();
 const richBlockSchema = z.discriminatedUnion('kind', [

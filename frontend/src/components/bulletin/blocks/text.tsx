@@ -49,7 +49,13 @@ function renderRuns(runs: RichRun[], data: BulletinRenderData): React.ReactNode 
     if (marks.includes('underline')) node = <u>{node}</u>;
     if (marks.includes('italic')) node = <em>{node}</em>;
     if (marks.includes('bold')) node = <strong>{node}</strong>;
-    return <span key={i}>{node}</span>;
+    // A run size is a validated integer (px); it never comes from markup.
+    const style = run.size !== undefined ? { fontSize: `${run.size}px` } : undefined;
+    return (
+      <span key={i} style={style}>
+        {node}
+      </span>
+    );
   });
 }
 

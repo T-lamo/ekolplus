@@ -84,6 +84,8 @@
     "editorTitle": "Rich text",
     "editorHint": "Select some text, then use the toolbar. Variables stay available.",
     "done": "Done",
-    "empty": "No text"
+    "empty": "No text",
+    "size": "Text size",
+    "sizeDefault": "Block size"
   }
 }

@@ -1,13 +1,13 @@
 'use client';
 
 // Small rich-text editor for the bulletin's free-text block: bold, italic,
-// underline, bulleted / numbered lists and paragraph alignment. It edits a
+// underline, text size, bulleted / numbered lists and paragraph alignment. It edits a
 // contentEditable surface and hands back a structured document
 // (components/bulletin/rich-text.ts), never HTML: the DOM is read through an
 // allowlist parser, so anything pasted that is not one of the supported
 // marks is reduced to its text. Rendering the value back into the surface
 // goes through document.createElement with text nodes only.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AlignCenter,
   AlignJustify,
@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
+  RICH_SIZES,
+  normalizeRichSize,
   richTextFromDom,
   richTextToPlain,
   type RichAlign,
@@ -59,6 +61,12 @@ function runsToDom(doc: Document, runs: RichRun[], parent: HTMLElement): void {
         b.appendChild(node);
         node = b;
       }
+      if (run.size !== undefined) {
+        const span = doc.createElement('span');
+        span.style.fontSize = `${run.size}px`;
+        span.appendChild(node);
+        node = span;
+      }
       parent.appendChild(node);
     });
   }
@@ -89,6 +97,20 @@ function richToDom(doc: Document, blocks: RichBlock[], root: HTMLElement): void 
     p.appendChild(doc.createElement('br'));
     root.appendChild(p);
   }
+}
+
+/** Size (px) applied to the element the selection starts in, if any. */
+function sizeAtSelection(surface: HTMLElement): number | undefined {
+  const sel = surface.ownerDocument.getSelection();
+  let node: Node | null = sel?.anchorNode ?? null;
+  while (node && node !== surface) {
+    if (node instanceof HTMLElement) {
+      const size = normalizeRichSize(parseFloat(node.style.fontSize));
+      if (size !== undefined) return size;
+    }
+    node = node.parentNode;
+  }
+  return undefined;
 }
 
 const ALIGN_COMMAND: Record<RichAlign, string> = {
@@ -123,12 +145,54 @@ export function RichTextEditor({
     if (autoFocus) ref.current?.focus();
   }, [autoFocus]);
 
+  // Size shown by the toolbar select: the one at the caret, refreshed on
+  // every selection change while the editor is mounted.
+  const [currentSize, setCurrentSize] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const doc = el.ownerDocument;
+    const refresh = () => {
+      if (el.contains(doc.activeElement)) setCurrentSize(sizeAtSelection(el));
+    };
+    doc.addEventListener('selectionchange', refresh);
+    return () => doc.removeEventListener('selectionchange', refresh);
+  }, []);
+  // The selection to restore when the size select takes the focus.
+  const savedRange = useRef<Range | null>(null);
+
   const emit = () => {
     const el = ref.current;
     if (!el) return;
     const next = richTextFromDom(el);
     emitted.current = JSON.stringify(next);
     onChange(next);
+  };
+
+  const applySize = (size: number | undefined) => {
+    const el = ref.current;
+    if (!el) return;
+    el.focus();
+    const sel = el.ownerDocument.getSelection();
+    if (savedRange.current && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRange.current);
+    }
+    // execCommand('fontSize') wraps the selection in <font size="7">; each
+    // wrapper becomes a span carrying the px size (or nothing, for the
+    // block's default), with older sizes inside it cleared.
+    document.execCommand('styleWithCSS', false, 'false');
+    document.execCommand('fontSize', false, '7');
+    for (const font of Array.from(el.querySelectorAll('font'))) {
+      const span = el.ownerDocument.createElement('span');
+      if (size !== undefined) span.style.fontSize = `${size}px`;
+      for (const inner of Array.from(font.querySelectorAll<HTMLElement>('[style]')))
+        inner.style.fontSize = '';
+      while (font.firstChild) span.appendChild(font.firstChild);
+      font.replaceWith(span);
+    }
+    setCurrentSize(size);
+    emit();
   };
 
   const exec = (command: string) => {
@@ -159,7 +223,34 @@ export function RichTextEditor({
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/60 px-1.5 py-1">
         {tools.map(({ icon: Icon, label, command }, i) => (
           <span key={command} className="flex items-center">
-            {(i === 3 || i === 5) && <span className="mx-1 h-4 w-px bg-border" />}
+            {i === 3 && (
+              <>
+                <span className="mx-1 h-4 w-px bg-border" />
+                <select
+                  title={t('size')}
+                  aria-label={t('size')}
+                  value={currentSize ?? ''}
+                  onMouseDown={() => {
+                    const range = ref.current?.ownerDocument.getSelection()?.getRangeAt(0);
+                    savedRange.current =
+                      range && ref.current?.contains(range.commonAncestorContainer)
+                        ? range.cloneRange()
+                        : null;
+                  }}
+                  onChange={(e) => applySize(normalizeRichSize(e.target.value))}
+                  className="mr-1 h-7 rounded border border-border bg-card px-1 text-xs text-foreground outline-none"
+                >
+                  <option value="">{t('sizeDefault')}</option>
+                  {RICH_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <span className="mx-1 h-4 w-px bg-border" />
+              </>
+            )}
+            {i === 5 && <span className="mx-1 h-4 w-px bg-border" />}
             <button
               type="button"
               title={label}

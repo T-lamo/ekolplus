@@ -84,6 +84,8 @@
     "editorTitle": "Texte enrichi",
     "editorHint": "Sélectionnez du texte puis utilisez la barre d'outils. Les variables restent disponibles.",
     "done": "Terminé",
-    "empty": "Aucun texte"
+    "empty": "Aucun texte",
+    "size": "Taille du texte",
+    "sizeDefault": "Taille du bloc"
   }
 }

@@ -85,6 +85,8 @@
     "editorTitle": "Tèks anrichi",
     "editorHint": "Chwazi yon pati nan tèks la, epi sèvi ak ba zouti a. Varyab yo toujou disponib.",
     "done": "Fini",
-    "empty": "Pa gen tèks"
+    "empty": "Pa gen tèks",
+    "size": "Gwosè tèks la",
+    "sizeDefault": "Gwosè blòk la"
   }
 }

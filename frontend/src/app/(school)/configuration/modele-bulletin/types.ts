@@ -97,7 +97,7 @@ export interface TextBlock extends BlockBase {
   /** Plain fallback of `rich` (paragraphs separated by a blank line); the
    * printed text when `rich` is absent. */
   text: string;
-  /** Structured rich text (bold, italic, underline, lists, alignment);
+  /** Structured rich text (bold, italic, underline, size, lists, alignment);
    * never HTML. Takes precedence over `text` when present. */
   rich?: RichBlock[] | undefined;
   align: 'left' | 'center' | 'right' | 'justify';

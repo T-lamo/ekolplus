@@ -418,6 +418,29 @@ describe('text block rich content', () => {
     expect(out).toContain('&lt;img src=x onerror=alert(1)&gt; &amp; Jonathan Alexis');
   });
 
+  it('prints a run size as an inline px font size on the span', () => {
+    const out = html(
+      renderText({
+        block: {
+          ...base,
+          rich: [
+            {
+              kind: 'p',
+              runs: [
+                { text: 'Petit', size: 8 },
+                { text: ' Grand', size: 24 },
+              ],
+            },
+          ],
+        },
+        config,
+        data,
+      }),
+    );
+    expect(out).toContain('<span style="font-size:8px">Petit</span>');
+    expect(out).toContain('<span style="font-size:24px"> Grand</span>');
+  });
+
   it('falls back to the plain text when rich is absent or empty', () => {
     const out = html(renderText({ block: { ...base, rich: [] }, config, data }));
     expect(out).toContain('fallback');

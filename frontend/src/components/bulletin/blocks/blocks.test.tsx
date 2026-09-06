@@ -5,6 +5,7 @@ import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele
 // header note), so the server default is a valid fixture here.
 import { DEFAULT_BULLETIN_CONFIG as DEFAULT_CONFIG } from '@/lib/server/bulletin-templates';
 import type { BulletinRenderData } from '../render-data';
+import { SAMPLE_BULLETIN_DATA } from '../sample-bulletin-data';
 import { render as renderCriteriaGrids } from './criteriaGrids';
 import { render as renderSignatures } from './signatures';
 import { render as renderText } from './text';
@@ -284,6 +285,94 @@ describe('cover block', () => {
     expect(html(renderCover({ block: { ...block, frameStyle: 'solid' }, config, data }))).toContain(
       'border-solid',
     );
+  });
+});
+
+describe('yearGrid block', () => {
+  const dataWithYear: BulletinRenderData = { ...data, year: SAMPLE_BULLETIN_DATA.year };
+
+  it('prints one two-column group per period with Notes/Sur sub-headers and a border on every cell', () => {
+    const out = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('Matières');
+    for (const label of ['1er contrôle', '2ème contrôle', '3ème contrôle', '4ème contrôle']) {
+      expect(out).toContain(`colSpan="2"`);
+      expect(out).toContain(label);
+    }
+    expect(out.match(/>Notes</g)).toHaveLength(4);
+    expect(out.match(/>Sur</g)).toHaveLength(4);
+    expect(out).toContain('border:1px solid #1a1a2e');
+  });
+
+  it('prints points with a decimal comma, Sur only for graded periods, and empty cells otherwise', () => {
+    const out = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>62,7<');
+    expect(out).toContain('>80<');
+    // Anglais has no grade in the 2nd period: empty Notes cell, Sur still printed.
+    expect(out).toContain('>60<');
+    // The two ungraded periods print no Sur at all: 5 subjects × 2 graded periods = 10 Sur cells.
+    expect(out.match(/>(80|60|40)</g)).toHaveLength(10);
+  });
+
+  it('prints Total, Moyenne and Place rows', () => {
+    const out = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>Total<');
+    expect(out).toContain('>227,7<');
+    expect(out).toContain('>320<');
+    expect(out).toContain('>Moyenne<');
+    expect(out).toContain('>7,1<');
+    expect(out).toContain('>Place<');
+    expect(out).toContain('>4e<');
+    expect(out).toContain('>6e<');
+  });
+
+  it('prints a bold domain heading row when the domain changes and showDomains is on', () => {
+    const on = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true, showDomains: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(on).toContain('>Sciences<');
+    expect(on).toContain('>Lettres<');
+    const off = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(off).not.toContain('>Lettres<');
+  });
+
+  it('uses the custom Notes/Sur labels', () => {
+    const out = html(
+      renderYearGrid({
+        block: { id: 'g', type: 'yearGrid', visible: true, notesLabel: 'Pts', maxLabel: 'Max' },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out.match(/>Pts</g)).toHaveLength(4);
+    expect(out.match(/>Max</g)).toHaveLength(4);
   });
 });
 

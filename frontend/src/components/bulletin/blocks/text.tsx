@@ -22,14 +22,31 @@ const VALIGN_CLASS: Record<TextVerticalAlign, string> = {
   bottom: 'flex h-full flex-col justify-end',
 };
 
+// Placeholders a template author can type in a text block (spec 2026-09-06
+// §4.2); an unknown {name} is printed as typed.
+const VARIABLES: Record<string, (d: BulletinRenderData) => string> = {
+  eleve: (d) => d.studentName,
+  classe: (d) => d.className,
+  annee: (d) => d.academicYearLabel,
+  periode: (d) => d.termLabel,
+  ecole: (d) => d.schoolName,
+};
+export function substituteVariables(text: string, data: BulletinRenderData): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => {
+    const read = VARIABLES[key];
+    return read ? read(data) : match;
+  });
+}
+
 export function render({
   block,
+  data,
 }: {
   block: TextBlock;
   config: BulletinTemplateConfig;
   data: BulletinRenderData;
 }): React.ReactNode {
-  const paragraphs = block.text
+  const paragraphs = substituteVariables(block.text, data)
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);

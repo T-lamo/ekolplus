@@ -288,6 +288,102 @@ describe('cover block', () => {
   });
 });
 
+describe('cover block, carnet options', () => {
+  const coverBlock = {
+    id: 'c',
+    type: 'cover' as const,
+    visible: true,
+    sectionLabel: 'Section primaire',
+    titlePattern: 'Carnet scolaire',
+    showLogo: false,
+    framed: true,
+    fields: ['fullName', 'className', 'nisu', 'academicYear'] as const,
+  };
+  const dataWithNisu: BulletinRenderData = { ...data, nisu: '0123456789' };
+
+  it('prints Elève (full name) and NISU with their default labels, and renames a field through fieldLabels', () => {
+    const out = html(
+      renderCover({
+        block: {
+          ...coverBlock,
+          fields: [...coverBlock.fields],
+          fieldLabels: { academicYear: 'Année Scolaire' },
+        },
+        config,
+        data: dataWithNisu,
+      }),
+    );
+    expect(out).toContain('Elève :');
+    expect(out).toContain('Jonathan Alexis');
+    expect(out).toContain('NISU :');
+    expect(out).toContain('0123456789');
+    expect(out).toContain('Année Scolaire :');
+    expect(out).not.toContain('Année Académique');
+  });
+
+  it('keeps capitals by default and prints as typed with uppercase: false', () => {
+    const upper = html(
+      renderCover({
+        block: { ...coverBlock, fields: [...coverBlock.fields] },
+        config,
+        data: dataWithNisu,
+      }),
+    );
+    expect(upper).toContain('uppercase');
+    const typed = html(
+      renderCover({
+        block: { ...coverBlock, fields: [...coverBlock.fields], uppercase: false },
+        config,
+        data: dataWithNisu,
+      }),
+    );
+    expect(typed).not.toContain('uppercase');
+  });
+
+  it('draws the rounded frame and places the logo below the title on request', () => {
+    const out = html(
+      renderCover({
+        block: {
+          ...coverBlock,
+          fields: [...coverBlock.fields],
+          frameStyle: 'rounded',
+          showLogo: true,
+          logoPosition: 'belowTitle',
+        },
+        config,
+        data: dataWithNisu,
+      }),
+    );
+    expect(out).toContain('border-radius:40px');
+    // Logo placeholder (no logo url) comes after the title text.
+    expect(out.indexOf('Carnet scolaire')).toBeLessThan(out.indexOf('lucide'));
+  });
+});
+
+describe('text block variables', () => {
+  it('replaces {eleve}, {classe}, {annee}, {periode}, {ecole} and leaves unknown variables', () => {
+    const out = html(
+      renderText({
+        block: {
+          id: 't',
+          type: 'text',
+          visible: true,
+          text: 'Nom {eleve} · {classe} · {annee} · {periode} · {ecole} · {autre}',
+          align: 'left',
+          fontSize: 10,
+          bold: false,
+          italic: false,
+        },
+        config,
+        data,
+      }),
+    );
+    expect(out).toContain(
+      'Nom Jonathan Alexis · Kindergarten A · 2026-2027 · 1er Trimestre · École Les Étoiles · {autre}',
+    );
+  });
+});
+
 describe('yearGrid block', () => {
   const dataWithYear: BulletinRenderData = { ...data, year: SAMPLE_BULLETIN_DATA.year };
 

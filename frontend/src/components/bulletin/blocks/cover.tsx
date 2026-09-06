@@ -9,7 +9,7 @@ import type { BulletinRenderData } from '../render-data';
 const FIELD_LABEL: Record<CoverField, string> = {
   lastName: 'Nom',
   firstName: 'Prénom',
-  fullName: 'Nom complet',
+  fullName: 'Elève',
   className: 'Classe',
   studentNumber: 'Code',
   nisu: 'NISU',
@@ -23,14 +23,13 @@ function fieldValue(field: CoverField, data: BulletinRenderData): string {
     case 'firstName':
       return data.firstName;
     case 'fullName':
-      return `${data.firstName} ${data.lastName}`.trim();
+      return data.studentName;
     case 'className':
       return data.className;
     case 'studentNumber':
       return data.studentNumber;
     case 'nisu':
-      // Not yet on BulletinRenderData; a later task wires the real value.
-      return '';
+      return data.nisu ?? '';
     case 'academicYear':
       return data.academicYearLabel;
   }
@@ -46,28 +45,33 @@ export function render({
   data: BulletinRenderData;
 }): React.ReactNode {
   const title = block.titlePattern.replace('{term}', data.termLabel);
+  const upper = block.uppercase ?? true;
+  const caseClass = upper ? 'uppercase' : '';
+  const logo = block.showLogo ? (
+    data.schoolLogoUrl ? (
+      <img
+        src={data.schoolLogoUrl}
+        alt={data.schoolName}
+        className="h-16 w-16 rounded-md object-contain"
+      />
+    ) : (
+      <div
+        className="flex h-16 w-16 items-center justify-center rounded-md border-[1.5px] border-dashed"
+        style={{
+          borderColor: `${config.primaryColor}80`,
+          background: `${config.primaryColor}0d`,
+        }}
+      >
+        <LayoutTemplate size={22} style={{ color: `${config.primaryColor}80` }} />
+      </div>
+    )
+  ) : null;
+  const logoPosition = block.logoPosition ?? 'top';
   const content = (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-      {block.showLogo &&
-        (data.schoolLogoUrl ? (
-          <img
-            src={data.schoolLogoUrl}
-            alt={data.schoolName}
-            className="h-16 w-16 rounded-md object-contain"
-          />
-        ) : (
-          <div
-            className="flex h-16 w-16 items-center justify-center rounded-md border-[1.5px] border-dashed"
-            style={{
-              borderColor: `${config.primaryColor}80`,
-              background: `${config.primaryColor}0d`,
-            }}
-          >
-            <LayoutTemplate size={22} style={{ color: `${config.primaryColor}80` }} />
-          </div>
-        ))}
+      {logoPosition === 'top' && logo}
       <div
-        className="rounded-md border-2 px-4 py-2 font-black uppercase"
+        className={`rounded-md border-2 px-4 py-2 font-black ${caseClass}`}
         style={{
           borderColor: config.primaryColor,
           color: config.primaryColor,
@@ -80,20 +84,21 @@ export function render({
         <div className="text-2xs text-muted-foreground">{data.schoolAddress}</div>
       )}
       {data.schoolPhone && <div className="text-2xs text-muted-foreground">{data.schoolPhone}</div>}
-      <div className="text-xs font-semibold tracking-wide text-[#1a1a2e] uppercase">
+      <div className={`text-xs font-semibold tracking-wide text-[#1a1a2e] ${caseClass}`}>
         {block.sectionLabel}
       </div>
       <div
-        className="font-black uppercase"
+        className={`font-black ${caseClass}`}
         style={{ fontSize: config.typography.title, color: config.primaryColor }}
       >
         {title}
       </div>
+      {logoPosition === 'belowTitle' && logo}
       <div className="mt-4 flex w-full max-w-xs flex-col gap-2 text-left">
         {block.fields.map((field) => (
           <div key={field} className="flex items-baseline gap-2 border-b border-[#c9c4dd] pb-1">
             <span className="shrink-0 text-2xs font-semibold text-muted-foreground">
-              {FIELD_LABEL[field]} :
+              {block.fieldLabels?.[field] ?? FIELD_LABEL[field]} :
             </span>
             <span className="text-xs text-[#1a1a2e]">{fieldValue(field, data) || ''}</span>
           </div>
@@ -102,10 +107,11 @@ export function render({
     </div>
   );
   if (!block.framed) return content;
+  const rounded = block.frameStyle === 'rounded';
   return (
     <div
-      className={`h-full rounded-2xl border-2 ${block.frameStyle === 'solid' ? 'border-solid' : 'border-dashed'}`}
-      style={{ borderColor: config.primaryColor }}
+      className={`h-full border-2 ${rounded ? 'border-solid' : block.frameStyle === 'solid' ? 'rounded-2xl border-solid' : 'rounded-2xl border-dashed'}`}
+      style={{ borderColor: config.primaryColor, ...(rounded ? { borderRadius: 40 } : {}) }}
     >
       {content}
     </div>

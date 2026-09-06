@@ -136,6 +136,7 @@ describe('scripts/seed-bulletin-templates', () => {
           blocks: Record<string, unknown>[];
         }[];
         layout: Record<string, unknown>;
+        typography: Record<string, unknown>;
       }
     >();
     prismaMock.bulletinTemplate.create.mockImplementation((async (args: {
@@ -152,8 +153,9 @@ describe('scripts/seed-bulletin-templates', () => {
       const cfg = captured.get(name);
       expect(cfg, name).toBeDefined();
       expect(cfg!.layout.showDecoration).toBe(false);
-      expect(cfg!.pages.map((p) => p.layout)).toEqual(['halves', 'sidebar']);
+      expect(cfg!.pages.map((p) => p.layout)).toEqual(['sidebar', 'sidebar']);
       const [p1, p2] = cfg!.pages;
+      expect(p1!.asideWidth).toBe(48);
       expect(p1!.blocks.map((b) => b.type)).toEqual([
         'yearDecisions',
         'text',
@@ -195,6 +197,11 @@ describe('scripts/seed-bulletin-templates', () => {
     expect(
       captured.get('Carnet scolaire (3e cycle et secondaire)')!.pages[1]!.blocks[1],
     ).not.toHaveProperty('showDomains');
+    expect(captured.get('Carnet scolaire (primaire)')!.typography).toMatchObject({
+      tableBody: 13,
+      tableHeader: 13,
+      noteValue: 13,
+    });
   });
 
   it('the two carnet configs validate against the real bulletin-templates schema', async () => {

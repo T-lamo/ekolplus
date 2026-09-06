@@ -185,7 +185,7 @@ export const pageSchema = z
     layout: z.enum(['full', 'halves', 'sidebar']),
     // Width of the aside column of a `sidebar` page, in percent of the
     // printable width. Read only when layout === 'sidebar'; absent = 25.
-    asideWidth: z.number().min(15).max(40).optional(),
+    asideWidth: z.number().min(15).max(50).optional(),
     showPageNumber: z.boolean(),
     blocks: z.array(blockSchema).min(1),
   })

@@ -143,6 +143,75 @@ describe('sidebar layout', () => {
     expect(sig.slice(0, 400)).toContain('flex-grow:1');
   });
 
+  it('stretches a cover block to the aside on a sidebar page', () => {
+    const withCover: Page = {
+      id: 'grille',
+      layout: 'sidebar',
+      asideWidth: 22,
+      showPageNumber: false,
+      blocks: [
+        {
+          id: 'line',
+          type: 'text',
+          visible: true,
+          text: 'Nom',
+          align: 'left',
+          fontSize: 10,
+          bold: true,
+          italic: false,
+        },
+        {
+          id: 'couverture',
+          type: 'cover',
+          visible: true,
+          breakBefore: 'column',
+          framed: true,
+          frameStyle: 'rounded',
+          sectionLabel: 'Section',
+          titlePattern: 'Carnet scolaire',
+          showLogo: false,
+          fields: ['fullName'],
+        },
+      ],
+    };
+    const out = render(withCover);
+    const cover = out.slice(out.indexOf('data-block-id="couverture"'));
+    expect(cover.slice(0, 400)).toContain('flex-grow:1');
+  });
+
+  it('does not stretch a cover block on a halves page (the livret keeps its content-height cover)', () => {
+    const halvesPage: Page = {
+      id: 'couvertures',
+      layout: 'halves',
+      showPageNumber: false,
+      blocks: [
+        {
+          id: 'couverture',
+          type: 'cover',
+          visible: true,
+          framed: true,
+          frameStyle: 'rounded',
+          sectionLabel: 'Section',
+          titlePattern: 'Carnet scolaire',
+          showLogo: false,
+          fields: ['fullName'],
+        },
+      ],
+    };
+    const out = renderToStaticMarkup(
+      <BulletinPage
+        page={halvesPage}
+        pageIndex={0}
+        totalPages={1}
+        config={DEFAULT_BULLETIN_CONFIG}
+        data={data}
+      />,
+    );
+    const cover = out.slice(out.indexOf('data-block-id="couverture"'));
+    expect(cover.slice(0, 400)).not.toContain('height:100%');
+    expect(cover.slice(0, 400)).not.toContain('flex-grow:1');
+  });
+
   it('keeps the content row at full height and the footer row auto-sized when a footer message is set', () => {
     const out = renderToStaticMarkup(
       <BulletinPage

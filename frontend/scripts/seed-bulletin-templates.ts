@@ -201,7 +201,8 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
     pages: [
       {
         id: 'decisions',
-        layout: 'halves',
+        layout: 'sidebar',
+        asideWidth: 48,
         showPageNumber: false,
         blocks: [
           { id: 'decisions-table', type: 'yearDecisions', visible: true, title: 'Décisions' },
@@ -210,7 +211,7 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
             type: 'text',
             visible: true,
             align: 'left',
-            fontSize: 10,
+            fontSize: 14,
             bold: false,
             italic: false,
             text:
@@ -225,7 +226,7 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
             type: 'text',
             visible: true,
             align: 'justify',
-            fontSize: 10,
+            fontSize: 14,
             bold: false,
             italic: false,
             text: CARNET_REGLEMENT,
@@ -236,7 +237,7 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
             visible: true,
             align: 'right',
             verticalAlign: 'bottom',
-            fontSize: 11,
+            fontSize: 15,
             bold: true,
             italic: false,
             text: 'La direction',
@@ -269,7 +270,7 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
             type: 'text',
             visible: true,
             align: 'left',
-            fontSize: 10,
+            fontSize: 13,
             bold: true,
             italic: false,
             text: `Nom (s) et Prénom (s) {eleve}${NBSP.repeat(12)}Classe {classe}${NBSP.repeat(12)}Année Scolaire : {annee}`,
@@ -303,9 +304,9 @@ function carnetConfig(sectionLabel: string, showDomains: boolean) {
     typography: {
       schoolName: 20,
       title: 16,
-      tableBody: 9,
-      tableHeader: 9,
-      noteValue: 9,
+      tableBody: 13,
+      tableHeader: 13,
+      noteValue: 13,
       footer: 8,
     },
     content: { title: 'Carnet scolaire', footerMessage: null, pageNumberFormat: '{n} / {total}' },

@@ -241,7 +241,7 @@ comme `criteriaGrids` en style `grid` :
 ### 4.3 Layout de page `sidebar`
 
 `pageSchema.layout` accepte `'sidebar'` ; la page gagne `asideWidth?: number`
-(pourcentage, 15 à 40, défaut 25, seulement lu en `sidebar`). `breakBefore:
+(pourcentage, 15 à 50, défaut 25, seulement lu en `sidebar`). `breakBefore:
 'column'` devient valide sur les pages `sidebar` (raffinement zod : `halves`
 ou `sidebar`). Rendu dans `BulletinPage` : grille CSS à deux pistes
 `1fr <asideWidth>%`, colonne principale = blocs avant le premier `breakBefore`,
@@ -274,7 +274,7 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
 `layout.showDecoration: false`, `pageMargin 18`, `blockSpacing 8`,
 `typography.tableBody 9`, `pages` :
 
-1. `id 'decisions'`, `layout 'halves'`, blocs dans l'ordre :
+1. `id 'decisions'`, `layout 'sidebar'`, `asideWidth 48`, blocs dans l'ordre :
    - `yearDecisions` (`title 'Décisions'`)
    - `text` « Observations : » (gras) puis le texte
      « -   L'élève est :\n      ○ Promu (e)\n      ○ Maintenu (e)\n      ○ Orienté (e) ailleurs »
@@ -284,7 +284,7 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
      3. Orienté (e) ailleurs, l'élève qui obtient une moyenne générale inférieure à 16/40.
      4. Un élève qui s'est absenté 5 jours consécutifs sans motif valable est considéré comme abandon.
    - `text` « La direction » (gras, `align 'right'`, `verticalAlign 'bottom'`)
-   - `cover` (`breakBefore 'column'`, `framed true`, `frameStyle 'rounded'`,
+   - `cover` (colonne latérale, `breakBefore 'column'`, `framed true`, `frameStyle 'rounded'`,
      `uppercase false`, `logoPosition 'belowTitle'`, `sectionLabel '3ème Cycle
      & Secondaire'` ou `'Section primaire'`, `titlePattern 'Carnet scolaire'`,
      `showLogo true`, `fields ['fullName','className','nisu','academicYear']`,

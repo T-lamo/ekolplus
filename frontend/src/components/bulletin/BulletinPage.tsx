@@ -70,9 +70,12 @@ export function BulletinPage({
     // A vertically aligned text block owns its whole column (halves/sidebar)
     // or the remaining page height (full) so the text renderer can center
     // inside it; `yearSignatures` always stretches to the column height.
+    // A cover stretches to the aside on a sidebar page (the carnet's rounded
+    // frame spans the sheet); halves/full keep the livret's content-height cover.
     const fillsSpace =
       (block.type === 'text' && (block.verticalAlign ?? 'top') !== 'top') ||
-      block.type === 'yearSignatures';
+      block.type === 'yearSignatures' ||
+      (block.type === 'cover' && sidebar);
     return (
       <div
         key={block.id}

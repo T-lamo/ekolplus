@@ -332,6 +332,9 @@ export default function BulletinEditorPage() {
     'text',
     'cover',
     'criteriaGrids',
+    'yearGrid',
+    'yearDecisions',
+    'yearSignatures',
   ];
   const selectedBlock = config?.pages
     .find((p) => p.id === selected?.pageId)
@@ -799,7 +802,7 @@ export default function BulletinEditorPage() {
                             label={t('pagesPanel.asideWidth')}
                             value={page.asideWidth ?? 25}
                             min={15}
-                            max={40}
+                            max={50}
                             suffix="%"
                             onChange={(v) => patchPage(page.id, { asideWidth: v })}
                           />

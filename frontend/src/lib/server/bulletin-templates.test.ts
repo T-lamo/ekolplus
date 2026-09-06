@@ -207,7 +207,7 @@ describe('bulletinTemplateConfigSchema', () => {
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
   });
 
-  it('accepts a sidebar page with an asideWidth between 15 and 40 and breakBefore on it', () => {
+  it('accepts a sidebar page with an asideWidth between 15 and 50 and breakBefore on it', () => {
     const cfg = structuredClone(DEFAULT_BULLETIN_CONFIG);
     cfg.pages[0] = {
       id: 'grille',
@@ -221,6 +221,8 @@ describe('bulletinTemplateConfigSchema', () => {
     };
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
     cfg.pages[0].asideWidth = 50;
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+    cfg.pages[0].asideWidth = 51;
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
   });
 

@@ -77,9 +77,14 @@ export function buildYearData(input: BuildYearDataInput): YearData {
     .sort((a, b) => a.order - b.order)
     .map((term) => {
       const bySubject = byTerm.get(term.id) ?? new Map<string, YearEvaluation[]>();
-      const own = pointsFor(bySubject, studentId);
+      const pointsByStudent = new Map(classmateIds.map((id) => [id, pointsFor(bySubject, id)]));
+      // The ledger invariant guarantees studentId is always in classmateIds;
+      // this fallback only guards against that invariant ever breaking.
+      const own = pointsByStudent.get(studentId) ?? pointsFor(bySubject, studentId);
+      // Ranked on the rounded average10 on purpose: two students printing the
+      // same Moyenne must share the same Place.
       const ranked = classmateIds
-        .map((id) => ({ studentId: id, average10: pointsFor(bySubject, id).average10 }))
+        .map((id) => ({ studentId: id, average10: pointsByStudent.get(id)!.average10 }))
         .filter((r): r is { studentId: string; average10: number } => r.average10 != null)
         .sort((a, b) => b.average10 - a.average10);
       const ranks = competitionRank(ranked, (r) => r.average10);
@@ -110,6 +115,7 @@ export function buildYearData(input: BuildYearDataInput): YearData {
     generalAverage: graded.length
       ? roundToTenth(graded.reduce((sum, t) => sum + (t.average10 ?? 0), 0))
       : null,
+    // Over the periods where THIS student has an average, the same predicate as the coefficient cell of each Décisions row.
     generalCoefficient: graded.reduce((sum, t) => sum + t.coefficientSum, 0),
   };
 }

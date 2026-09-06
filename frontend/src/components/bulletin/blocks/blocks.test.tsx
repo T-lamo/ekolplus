@@ -507,6 +507,58 @@ describe('yearDecisions block', () => {
     expect(out).toContain('>Bilan<');
     expect(out).not.toContain('>Décisions<');
   });
+
+  it("shows a period's coefficient only when the student has an average, not merely when the class does", () => {
+    // c2: hasGrades true (a classmate has an average) but the student was
+    // absent the whole period, so average10 is null. The coefficient cell
+    // must stay empty even though the class was graded.
+    const dataWithAbsence: BulletinRenderData = {
+      ...data,
+      year: {
+        terms: [
+          {
+            termId: 'c1',
+            label: '1er contrôle',
+            order: 1,
+            hasGrades: true,
+            subjects: [],
+            totalPoints: 80,
+            totalMax: 160,
+            average10: 8,
+            rank: 1,
+            rankedCount: 10,
+            coefficientSum: 16,
+          },
+          {
+            termId: 'c2',
+            label: '2ème contrôle',
+            order: 2,
+            hasGrades: true,
+            subjects: [],
+            totalPoints: null,
+            totalMax: 160,
+            average10: null,
+            rank: null,
+            rankedCount: 9,
+            coefficientSum: 23,
+          },
+        ],
+        generalAverage: 8,
+        generalCoefficient: 16,
+      },
+    };
+    const out = html(
+      renderYearDecisions({
+        block: { id: 'd', type: 'yearDecisions', visible: true },
+        config,
+        data: dataWithAbsence,
+      }),
+    );
+    expect(out).not.toContain('>23<');
+    // The graded period's own coefficient row and the Moyenne Générale row
+    // both print 16 (the sum over graded periods only).
+    expect(out.match(/>16</g)).toHaveLength(2);
+  });
 });
 
 describe('yearSignatures block', () => {

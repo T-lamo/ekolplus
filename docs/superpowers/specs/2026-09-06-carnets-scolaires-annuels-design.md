@@ -248,8 +248,11 @@ ou `sidebar`). Rendu dans `BulletinPage` : grille CSS à deux pistes
 colonne latérale = les autres, les deux en `flex-col` de hauteur pleine ; pas
 de report automatique dans une colonne supplémentaire (contrairement à
 `halves`), un dépassement se voit dans l'éditeur par le contrôle
-`scrollHeight`/`scrollWidth` existant. Le bloc « aligné verticalement » et le
-bloc `yearSignatures` prennent `height: 100%` dans leur colonne.
+`scrollHeight`/`scrollWidth` existant. Sur une page `sidebar`, le bloc « aligné
+verticalement », `yearSignatures` et un bloc `cover` remplissent leur colonne
+avec `flexGrow: 1` (en `halves`, ça reste `height: 100%`). Un bloc `cover` ne
+remplit sa colonne que sur une page `sidebar` : en `halves` comme en `full`, il
+garde le cover à hauteur de contenu du livret.
 
 Éditeur : le sélecteur de layout ajoute « Colonne latérale » et, dans ce cas,
 un curseur « Largeur de la colonne latérale ».

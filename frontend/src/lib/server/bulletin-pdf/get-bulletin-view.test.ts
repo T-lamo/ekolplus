@@ -450,4 +450,86 @@ describe('getStudentBulletinView', () => {
     expect(view?.year?.generalAverage).toBe(13);
     expect(view?.year?.generalCoefficient).toBe(8);
   });
+
+  it('computes the annual payload with a student audience, PUBLISHED rows only', async () => {
+    prismaMock.student.findUnique.mockResolvedValue({
+      id: 'stu_1',
+      schoolId: 'school_1',
+      firstName: 'Nadia',
+      lastName: 'Joseph',
+      studentNumber: 'EL-2025-002',
+      nisu: '0123456789',
+      dateOfBirth: null,
+    } as never);
+    prismaMock.term.findMany.mockResolvedValue([
+      { id: 'term_1', label: '1er contrôle', order: 1, startDate: T_START, endDate: T_END },
+      { id: 'term_2', label: '2ème contrôle', order: 2, startDate: T_END, endDate: T_END },
+    ] as never);
+    // normalizeConfig falls back to the DEFAULT config when a pages-shaped
+    // config fails the schema, so the mock must be a complete valid config.
+    prismaMock.bulletinTemplate.findFirst.mockResolvedValue({
+      id: 'tpl_year',
+      name: 'Carnet',
+      config: {
+        ...DEFAULT_BULLETIN_CONFIG,
+        pages: [
+          {
+            id: 'p',
+            layout: 'full',
+            showPageNumber: false,
+            blocks: [{ id: 'g', type: 'yearGrid', visible: true }],
+          },
+        ],
+      },
+      isActive: true,
+    } as never);
+    prismaMock.classSubject.findMany.mockResolvedValue([
+      {
+        id: 'cs_1',
+        classId: 'cls_1',
+        subjectId: 'sub_1',
+        coefficient: 4,
+        subject: { name: 'Mathématiques', domain: 'Sciences', maxScore: 10 },
+        teacher: null,
+      },
+    ] as never);
+    prismaMock.evaluation.findMany.mockResolvedValue([
+      {
+        id: 'ev_1',
+        classSubjectId: 'cs_1',
+        termId: 'term_1',
+        coefficient: 1,
+        maxScore: 20,
+        status: 'PUBLISHED',
+        countsTowardAverage: true,
+        grades: [
+          { studentId: 'stu_0', score: 10, absent: false },
+          { studentId: 'stu_1', score: 16, absent: false },
+        ],
+      },
+      {
+        id: 'ev_2',
+        classSubjectId: 'cs_1',
+        termId: 'term_2',
+        coefficient: 1,
+        maxScore: 20,
+        status: 'PUBLISHED',
+        countsTowardAverage: true,
+        grades: [{ studentId: 'stu_1', score: 10, absent: false }],
+      },
+    ] as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', 'term_1', 'student');
+
+    expect(view?.year?.terms.map((t) => t.label)).toEqual(['1er contrôle', '2ème contrôle']);
+    const evalWhere = prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where as Record<
+      string,
+      unknown
+    >;
+    expect(evalWhere.termId).toEqual({ in: ['term_1', 'term_2'] });
+    expect(evalWhere.status).toBe('PUBLISHED');
+    expect(prismaMock.appreciation.findMany.mock.calls[0]?.[0]?.where).toMatchObject({
+      status: 'PUBLISHED',
+    });
+  });
 });

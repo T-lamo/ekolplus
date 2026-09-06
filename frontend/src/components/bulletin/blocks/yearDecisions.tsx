@@ -52,7 +52,7 @@ export function render({
             <tr key={t.termId}>
               <td style={{ ...cell, fontWeight: 700 }}>{ROMAN[i] ?? String(i + 1)}</td>
               <td style={center}>{fmtPoints(t.average10)}</td>
-              <td style={center}>{t.hasGrades ? String(t.coefficientSum) : ''}</td>
+              <td style={center}>{t.average10 != null ? String(t.coefficientSum) : ''}</td>
             </tr>
           ))}
           <tr>

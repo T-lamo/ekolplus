@@ -75,7 +75,7 @@ export interface StudentBulletinView {
   generalAppreciation: string | null;
   // Annual carnet payload (spec 2026-09-06 §3), only when the resolved
   // template holds an annual block; absent otherwise.
-  year?: YearData;
+  year?: YearData | undefined;
 }
 
 export async function getStudentBulletinView(

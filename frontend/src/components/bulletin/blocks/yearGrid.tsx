@@ -57,7 +57,7 @@ export function render({
   subjects.forEach((subject, i) => {
     if (block.showDomains && subject.domain && subject.domain !== lastDomain) {
       rows.push(
-        <tr key={`domain-${subject.domain}`}>
+        <tr key={`domain-${i}-${subject.domain}`}>
           <td style={{ ...body, fontWeight: 700 }}>{subject.domain}</td>
           {terms.map((t) => (
             <Fragment key={t.termId}>
@@ -70,7 +70,7 @@ export function render({
     }
     lastDomain = subject.domain;
     rows.push(
-      <tr key={subject.subjectName}>
+      <tr key={`${i}-${subject.subjectName}`}>
         <td style={body}>{subject.subjectName}</td>
         {terms.map((t) => {
           const s = t.subjects[i];

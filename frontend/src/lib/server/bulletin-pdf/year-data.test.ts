@@ -103,6 +103,24 @@ describe('buildYearData', () => {
     expect(t1.rankedCount).toBe(2);
   });
 
+  it('a student with no grade in a graded period keeps that period out of generalAverage and generalCoefficient', () => {
+    const year = buildYearData({
+      ...base,
+      terms: [terms[0]!, terms[1]!],
+      evaluations: [
+        // t1: self and mate both graded. t2: mate graded, self has no row at all.
+        ev('t1', 'cs_math', 10, { self: 8, mate: 5 }),
+        ev('t2', 'cs_math', 10, { mate: 6 }),
+      ],
+      studentId: 'self',
+      classmateIds: ['self', 'mate'],
+    });
+    expect(year.terms[1]!.hasGrades).toBe(true);
+    expect(year.terms[1]!.average10).toBeNull();
+    expect(year.terms[1]!.rank).toBeNull();
+    expect(year.generalCoefficient).toBe(year.terms[0]!.coefficientSum);
+  });
+
   it('shares the rank between tied classmates (competition ranking)', () => {
     const year = buildYearData({
       ...base,

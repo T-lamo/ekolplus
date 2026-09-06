@@ -31,6 +31,8 @@
     "db:migrate:status": "pnpm --filter frontend run db:migrate:status",
     "db:studio": "pnpm --filter frontend run db:studio",
     "db:make-superadmin": "pnpm --filter frontend run db:make-superadmin",
+    "db:seed-bulletin-templates": "pnpm --filter frontend run db:seed-bulletin-templates",
+    "db:seed-plans": "pnpm --filter frontend run db:seed-plans",
     "seed:dev": "pnpm --filter frontend run seed:dev",
     "seed:dev-school": "pnpm --filter frontend run seed:dev-school",
     "stripe:migrate-price": "pnpm --filter frontend run stripe:migrate-price",

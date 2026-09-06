@@ -174,6 +174,8 @@ export function BulletinViewer({
     termLabel,
     academicYearLabel: data.academicYearLabel,
     qualitativeSubjects: data.qualitativeSubjects,
+    nisu: data.nisu,
+    ...(data.year ? { year: data.year } : {}),
   };
 
   const termQs = `termId=${data.resolvedTermId ?? ''}`;

@@ -53,6 +53,7 @@ export interface StudentBulletinData {
   firstName: string;
   lastName: string;
   studentNumber: string;
+  nisu: string | null;
   dateOfBirth: string;
   classId: string;
   className: string;
@@ -83,4 +84,5 @@ export interface StudentBulletinData {
     criteria: { label: string; level: number | null }[];
   }[];
   generalAppreciation: string | null;
+  year?: import('@/components/bulletin/render-data').YearData | undefined;
 }

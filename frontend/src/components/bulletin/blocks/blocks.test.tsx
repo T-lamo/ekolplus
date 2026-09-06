@@ -51,6 +51,7 @@ const data: BulletinRenderData = {
       criteria: [{ label: 'Serviable', level: 1 }],
     },
   ],
+  nisu: null,
 };
 
 const html = (node: React.ReactNode) => renderToStaticMarkup(<>{node}</>);

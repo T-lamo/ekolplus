@@ -20,15 +20,18 @@ import {
   subjectAverageFor,
 } from '@/lib/server/grades';
 import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
-import { normalizeConfig } from '@/lib/server/bulletin-templates';
+import { normalizeConfig, templateNeedsYear } from '@/lib/server/bulletin-templates';
 import { loadPublishedGrids } from '@/lib/server/student-views/criteria';
+import { buildYearData } from './year-data';
 import type { ViewAudience } from '@/lib/server/student-views/audience';
+import type { YearData } from '@/components/bulletin/render-data';
 
 export interface StudentBulletinView {
   studentId: string;
   firstName: string;
   lastName: string;
   studentNumber: string;
+  nisu: string | null;
   dateOfBirth: Date | null;
   classId: string;
   className: string;
@@ -70,6 +73,9 @@ export interface StudentBulletinView {
     criteria: { label: string; level: number | null }[];
   }[];
   generalAppreciation: string | null;
+  // Annual carnet payload (spec 2026-09-06 §3), only when the resolved
+  // template holds an annual block; absent otherwise.
+  year?: YearData;
 }
 
 export async function getStudentBulletinView(
@@ -148,6 +154,7 @@ export async function getStudentBulletinView(
     firstName: student.firstName,
     lastName: student.lastName,
     studentNumber: student.studentNumber,
+    nisu: student.nisu ?? null,
     dateOfBirth: student.dateOfBirth,
     classId: enrollment.classId,
     className: enrollment.class.name,
@@ -195,15 +202,27 @@ export async function getStudentBulletinView(
   const classSubjectIds = classSubjects.map((cs) => cs.id);
   const classmateIds = classmates.map((cm) => cm.studentId);
 
-  const [evaluations, appreciations] = await Promise.all([
+  // Annual templates need every period of the year: one wider query
+  // instead of a second one (Ruling R4); the per-term table below filters
+  // the current period in memory.
+  const needsYear = shell.template ? templateNeedsYear(shell.template.config) : false;
+  const termIds = terms.map((t) => t.id);
+  const [allEvaluations, appreciations] = await Promise.all([
     classSubjectIds.length === 0
       ? Promise.resolve([])
       : prisma.evaluation.findMany({
-          where: { classSubjectId: { in: classSubjectIds }, termId: term.id, ...publishedOnly },
+          where: {
+            classSubjectId: { in: classSubjectIds },
+            termId: needsYear ? { in: termIds } : term.id,
+            ...publishedOnly,
+          },
           include: { grades: true },
         }),
     prisma.appreciation.findMany({ where: { studentId, termId: term.id, ...publishedOnly } }),
   ]);
+  const evaluations = needsYear
+    ? allEvaluations.filter((ev) => ev.termId === term.id)
+    : allEvaluations;
 
   const evalsByClassSubject = new Map<string, typeof evaluations>();
   for (const ev of evaluations) {
@@ -265,6 +284,22 @@ export async function getStudentBulletinView(
     criteria: g.criteria.map((c) => ({ label: c.label, level: c.level })),
   }));
 
+  const year: YearData | undefined = needsYear
+    ? buildYearData({
+        terms: terms.map((t) => ({ id: t.id, label: t.label, order: t.order })),
+        classSubjects: classSubjects.map((cs) => ({
+          id: cs.id,
+          subjectName: cs.subject.name,
+          domain: cs.subject.domain,
+          maxScore: cs.subject.maxScore,
+          coefficient: cs.coefficient,
+        })),
+        evaluations: allEvaluations,
+        studentId,
+        classmateIds,
+      })
+    : undefined;
+
   return {
     ...shell,
     overallAverage,
@@ -274,5 +309,6 @@ export async function getStudentBulletinView(
     subjects,
     qualitativeSubjects,
     generalAppreciation: generalRow?.text ?? null,
+    ...(year ? { year } : {}),
   };
 }

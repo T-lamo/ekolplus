@@ -3,7 +3,10 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getStudentBulletinView } from './get-bulletin-view';
-import { DEFAULT_PAGE_NUMBER_FORMAT } from '@/lib/server/bulletin-templates';
+import {
+  DEFAULT_BULLETIN_CONFIG,
+  DEFAULT_PAGE_NUMBER_FORMAT,
+} from '@/lib/server/bulletin-templates';
 
 const T_START = new Date('2025-09-01T00:00:00.000Z');
 // Ends far in the future so resolveCurrentTerm picks it whatever the run date.
@@ -347,5 +350,104 @@ describe('getStudentBulletinView', () => {
 
     const view = await getStudentBulletinView('school_1', 'stu_1', null);
     expect(view?.template?.id).toBe('tpl-global');
+  });
+
+  it('computes no annual payload and queries only the current term when the template has no annual block', async () => {
+    const view = await getStudentBulletinView('school_1', 'stu_1', 'term_1');
+    expect(view?.year).toBeUndefined();
+    expect(view?.nisu).toBeNull();
+    expect(
+      (prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where as Record<string, unknown>).termId,
+    ).toBe('term_1');
+  });
+
+  it('computes the annual payload over every term of the year when the template holds an annual block', async () => {
+    prismaMock.student.findUnique.mockResolvedValue({
+      id: 'stu_1',
+      schoolId: 'school_1',
+      firstName: 'Nadia',
+      lastName: 'Joseph',
+      studentNumber: 'EL-2025-002',
+      nisu: '0123456789',
+      dateOfBirth: null,
+    } as never);
+    prismaMock.term.findMany.mockResolvedValue([
+      { id: 'term_1', label: '1er contrôle', order: 1, startDate: T_START, endDate: T_END },
+      { id: 'term_2', label: '2ème contrôle', order: 2, startDate: T_END, endDate: T_END },
+    ] as never);
+    // normalizeConfig falls back to the DEFAULT config when a pages-shaped
+    // config fails the schema, so the mock must be a complete valid config.
+    prismaMock.bulletinTemplate.findFirst.mockResolvedValue({
+      id: 'tpl_year',
+      name: 'Carnet',
+      config: {
+        ...DEFAULT_BULLETIN_CONFIG,
+        pages: [
+          {
+            id: 'p',
+            layout: 'full',
+            showPageNumber: false,
+            blocks: [{ id: 'g', type: 'yearGrid', visible: true }],
+          },
+        ],
+      },
+      isActive: true,
+    } as never);
+    prismaMock.classSubject.findMany.mockResolvedValue([
+      {
+        id: 'cs_1',
+        classId: 'cls_1',
+        subjectId: 'sub_1',
+        coefficient: 4,
+        subject: { name: 'Mathématiques', domain: 'Sciences', maxScore: 10 },
+        teacher: null,
+      },
+    ] as never);
+    prismaMock.evaluation.findMany.mockResolvedValue([
+      {
+        id: 'ev_1',
+        classSubjectId: 'cs_1',
+        termId: 'term_1',
+        coefficient: 1,
+        maxScore: 20,
+        status: 'PUBLISHED',
+        countsTowardAverage: true,
+        grades: [
+          { studentId: 'stu_0', score: 10, absent: false },
+          { studentId: 'stu_1', score: 16, absent: false },
+        ],
+      },
+      {
+        id: 'ev_2',
+        classSubjectId: 'cs_1',
+        termId: 'term_2',
+        coefficient: 1,
+        maxScore: 20,
+        status: 'PUBLISHED',
+        countsTowardAverage: true,
+        grades: [{ studentId: 'stu_1', score: 10, absent: false }],
+      },
+    ] as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', 'term_1');
+
+    expect(view?.nisu).toBe('0123456789');
+    expect(
+      (prismaMock.evaluation.findMany.mock.calls[0]?.[0]?.where as Record<string, unknown>).termId,
+    ).toEqual({ in: ['term_1', 'term_2'] });
+    // The per-term table still only sees the current term's evaluations.
+    expect(view?.subjects[0]?.average).toBe(16);
+    expect(view?.year?.terms.map((t) => t.label)).toEqual(['1er contrôle', '2ème contrôle']);
+    expect(view?.year?.terms[0]?.subjects[0]).toEqual({
+      subjectName: 'Mathématiques',
+      domain: 'Sciences',
+      points: 32,
+      maxPoints: 40,
+    });
+    expect(view?.year?.terms[0]?.average10).toBe(8);
+    expect(view?.year?.terms[0]?.rank).toBe(1);
+    expect(view?.year?.terms[1]?.average10).toBe(5);
+    expect(view?.year?.generalAverage).toBe(13);
+    expect(view?.year?.generalCoefficient).toBe(8);
   });
 });

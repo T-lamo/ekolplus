@@ -72,6 +72,8 @@ export default async function PrintBulletinPage({
     termLabel: view.termLabel,
     academicYearLabel: view.academicYearLabel,
     qualitativeSubjects: view.qualitativeSubjects,
+    nisu: view.nisu,
+    ...(view.year ? { year: view.year } : {}),
   };
 
   return (

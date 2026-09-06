@@ -35,6 +35,7 @@ const data: BulletinRenderData = {
   termLabel: '1er Trimestre',
   academicYearLabel: '2026-2027',
   qualitativeSubjects: [],
+  nisu: null,
 };
 
 const page: Page = {

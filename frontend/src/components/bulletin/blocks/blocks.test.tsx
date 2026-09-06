@@ -376,6 +376,79 @@ describe('yearGrid block', () => {
   });
 });
 
+describe('yearDecisions block', () => {
+  const dataWithYear: BulletinRenderData = { ...data, year: SAMPLE_BULLETIN_DATA.year };
+
+  it('prints one roman-numbered row per period with Moyenne and Coefficient, then Moyenne Générale', () => {
+    const out = html(
+      renderYearDecisions({
+        block: { id: 'd', type: 'yearDecisions', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>Décisions<');
+    expect(out).toContain('>Contrôle<');
+    expect(out).toContain('>Moyenne<');
+    expect(out).toContain('>Coefficient<');
+    for (const n of ['I', 'II', 'III', 'IV']) expect(out).toContain(`>${n}<`);
+    expect(out).toContain('>7,1<');
+    expect(out).toContain('>6<');
+    expect(out.match(/>16</g)).toHaveLength(2); // coefficient printed for the two graded periods only
+    expect(out).toContain('>Moyenne Générale<');
+    expect(out).toContain('>13,1<');
+    expect(out).toContain('>32<');
+  });
+
+  it('uses the custom title', () => {
+    const out = html(
+      renderYearDecisions({
+        block: { id: 'd', type: 'yearDecisions', visible: true, title: 'Bilan' },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>Bilan<');
+    expect(out).not.toContain('>Décisions<');
+  });
+});
+
+describe('yearSignatures block', () => {
+  const dataWithYear: BulletinRenderData = { ...data, year: SAMPLE_BULLETIN_DATA.year };
+
+  it('prints a Signatures heading and one Direction + Les Parents pair per period', () => {
+    const out = html(
+      renderYearSignatures({
+        block: { id: 's', type: 'yearSignatures', visible: true },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>Signatures<');
+    expect(out.match(/>Direction</g)).toHaveLength(4);
+    expect(out.match(/>Les Parents</g)).toHaveLength(4);
+  });
+
+  it('uses the custom title and labels', () => {
+    const out = html(
+      renderYearSignatures({
+        block: {
+          id: 's',
+          type: 'yearSignatures',
+          visible: true,
+          title: 'Visas',
+          labels: { director: 'La direction', guardian: 'Le parent' },
+        },
+        config,
+        data: dataWithYear,
+      }),
+    );
+    expect(out).toContain('>Visas<');
+    expect(out.match(/>La direction</g)).toHaveLength(4);
+    expect(out.match(/>Le parent</g)).toHaveLength(4);
+  });
+});
+
 describe('annual blocks without annual data', () => {
   it('render nothing when the view carries no `year` payload', () => {
     expect(

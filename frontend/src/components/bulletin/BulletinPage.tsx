@@ -42,6 +42,10 @@ export function BulletinPage({
   const interactive = onSelect != null;
   const draggingEnabled = onDragStart != null && onDrop != null;
   const halves = page.layout === 'halves';
+  // The gradient stripes at the top and bottom of every sheet are on by
+  // default; a template reproducing a plain paper form (the livret) turns
+  // them off with `layout.showDecoration: false`.
+  const showDecoration = config.layout.showDecoration ?? true;
 
   const headerBlock = page.blocks.find((b) => b.type === 'header');
   const studentInfoBlock = page.blocks.find((b) => b.type === 'studentInfo');
@@ -104,12 +108,14 @@ export function BulletinPage({
           : { minHeight: getPageHeightPx(config) }
       }
     >
-      <div
-        className="h-1.5 shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
-        }}
-      />
+      {showDecoration && (
+        <div
+          className="h-1.5 shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
+          }}
+        />
+      )}
 
       {showTopRow && (
         <div
@@ -160,12 +166,14 @@ export function BulletinPage({
         </div>
       )}
 
-      <div
-        className="h-1.5 shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
-        }}
-      />
+      {showDecoration && (
+        <div
+          className="h-1.5 shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${config.primaryColor}, var(--color-bulletin-gradient-end))`,
+          }}
+        />
+      )}
     </div>
   );
 }

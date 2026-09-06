@@ -1108,7 +1108,8 @@
           "dotted": "Dotted"
         },
         "borderColor": "Border color",
-        "showBackgrounds": "Colored table backgrounds"
+        "showBackgrounds": "Colored table backgrounds",
+        "showDecoration": "Top and bottom page stripes"
       }
     }
   }

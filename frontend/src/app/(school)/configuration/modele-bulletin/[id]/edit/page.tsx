@@ -1343,6 +1343,13 @@ export default function BulletinEditorPage() {
                         patchConfig({ layout: { ...config.layout, showTableBackgrounds: v } })
                       }
                     />
+                    <SwitchRow
+                      label={t('spacing.showDecoration')}
+                      checked={config.layout.showDecoration ?? true}
+                      onChange={(v) =>
+                        patchConfig({ layout: { ...config.layout, showDecoration: v } })
+                      }
+                    />
                   </PropSection>
                 </>
               )}

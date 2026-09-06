@@ -175,6 +175,8 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
     showTableBackgrounds: false,
     logoSize: 52,
     signatureSize: 32,
+    // The Word document is a plain form: no gradient stripes on the sheets.
+    showDecoration: false,
   },
 } as const;
 

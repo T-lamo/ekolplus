@@ -1109,7 +1109,8 @@
           "dotted": "Pwentiye"
         },
         "borderColor": "Koulè kad",
-        "showBackgrounds": "Fon koulè nan tablo a"
+        "showBackgrounds": "Fon koulè nan tablo a",
+        "showDecoration": "Bann anwo ak anba paj la"
       }
     }
   }

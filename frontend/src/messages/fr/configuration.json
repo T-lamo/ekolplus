@@ -1108,7 +1108,8 @@
           "dotted": "Pointillés"
         },
         "borderColor": "Couleur de bordure",
-        "showBackgrounds": "Fonds colorés du tableau"
+        "showBackgrounds": "Fonds colorés du tableau",
+        "showDecoration": "Bandeaux en haut et en bas de page"
       }
     }
   }

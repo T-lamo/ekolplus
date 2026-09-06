@@ -64,6 +64,15 @@ describe('bulletinTemplateConfigSchema', () => {
     expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
   });
 
+  it('accepts layout.showDecoration as an optional boolean', () => {
+    const cfg = validConfig();
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+    cfg.layout = { ...cfg.layout, showDecoration: false };
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(true);
+    cfg.layout = { ...cfg.layout, showDecoration: 'no' as never };
+    expect(bulletinTemplateConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+
   it('accepts the optional presentation fields of the livret (grid style, ruled signatures, vertical alignment, solid frame, appreciation title)', () => {
     const cfg = validConfig();
     cfg.pages[0]!.layout = 'halves';

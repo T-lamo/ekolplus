@@ -197,6 +197,8 @@ export const bulletinTemplateConfigSchema = z
       // absent.
       logoSize: z.number().min(32).max(96).optional(),
       signatureSize: z.number().min(20).max(64).optional(),
+      // Gradient stripes at the top and bottom of every sheet; absent = shown.
+      showDecoration: z.boolean().optional(),
     }),
   })
   .refine(

@@ -56,6 +56,7 @@ describe('scripts/seed-bulletin-templates', () => {
     prismaMock.bulletinTemplate.findMany.mockResolvedValue([]);
     let captured: {
       pages: { blocks: Record<string, unknown>[] }[];
+      layout: Record<string, unknown>;
     } | null = null;
     prismaMock.bulletinTemplate.create.mockImplementation((args) => {
       const data = (args as { data: { name: string; config: typeof captured } }).data;
@@ -95,6 +96,7 @@ describe('scripts/seed-bulletin-templates', () => {
     expect(byType('signatures')).toMatchObject({ style: 'lines', homeroomFirst: true });
     expect(byType('text')).toMatchObject({ align: 'justify', verticalAlign: 'middle' });
     expect(byType('cover')).toMatchObject({ framed: true, frameStyle: 'solid' });
+    expect(captured!.layout).toMatchObject({ showDecoration: false });
     logSpy.mockRestore();
   });
 

@@ -160,6 +160,8 @@ export interface BulletinTemplateConfig {
     showTableBackgrounds: boolean;
     logoSize?: number | undefined;
     signatureSize?: number | undefined;
+    /** Gradient stripes at the top and bottom of each sheet; absent = shown. */
+    showDecoration?: boolean | undefined;
   };
 }
 

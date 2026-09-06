@@ -125,6 +125,17 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
           data: { level: data.name },
         });
       }
+      // Assigning a template must reach every class of the level at once:
+      // classes created before the catalog (or seeded without the link) only
+      // carry the free-text label, so adopt the ones whose label is this
+      // level's name. The bulletin view also matches by label as a safety
+      // net, but the link makes the data honest for every other consumer.
+      if (data.bulletinTemplateId !== undefined) {
+        await tx.class.updateMany({
+          where: { schoolId: g.schoolId, gradeLevelId: null, level: level.name },
+          data: { gradeLevelId: level.id },
+        });
+      }
       return level;
     });
     return NextResponse.json(

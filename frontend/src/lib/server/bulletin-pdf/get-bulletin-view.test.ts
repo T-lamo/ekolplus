@@ -327,6 +327,70 @@ describe('getStudentBulletinView', () => {
     expect(view?.template?.id).toBe('tpl-active');
   });
 
+  it("resolves the level's template through the class's level label when the class is not linked to a grade level", async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValueOnce({
+      studentId: 'stu_1',
+      classId: 'cls_1',
+      class: {
+        id: 'cls_1',
+        name: '3ème A',
+        level: '3ème',
+        academicYearId: 'year_1',
+        homeroomTeacher: null,
+        gradeLevel: null,
+      },
+    } as never);
+    prismaMock.gradeLevel.findFirst.mockResolvedValueOnce({
+      bulletinTemplate: {
+        id: 'tpl-level-by-label',
+        name: 'Carnet',
+        config: pagesConfig,
+        isActive: false,
+      },
+    } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce({
+        id: 'tpl-active',
+        name: 'Actif',
+        config: pagesConfig,
+        isActive: true,
+      } as never)
+      .mockResolvedValueOnce(null as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(view?.template?.id).toBe('tpl-level-by-label');
+    expect(prismaMock.gradeLevel.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { schoolId: 'school_1', name: '3ème' } }),
+    );
+  });
+
+  it('does not look a level up by label when the class is already linked to one', async () => {
+    prismaMock.enrollment.findFirst.mockResolvedValueOnce({
+      studentId: 'stu_1',
+      classId: 'cls_1',
+      class: {
+        id: 'cls_1',
+        name: '3ème A',
+        level: '3ème',
+        academicYearId: 'year_1',
+        homeroomTeacher: null,
+        gradeLevel: { bulletinTemplate: null },
+      },
+    } as never);
+    prismaMock.bulletinTemplate.findFirst
+      .mockResolvedValueOnce({
+        id: 'tpl-active',
+        name: 'Actif',
+        config: pagesConfig,
+        isActive: true,
+      } as never)
+      .mockResolvedValueOnce(null as never);
+
+    const view = await getStudentBulletinView('school_1', 'stu_1', null);
+    expect(view?.template?.id).toBe('tpl-active');
+    expect(prismaMock.gradeLevel.findFirst).not.toHaveBeenCalled();
+  });
+
   it('falls back to the oldest global template when the level has none and the school has no active one', async () => {
     prismaMock.enrollment.findFirst.mockResolvedValueOnce({
       studentId: 'stu_1',

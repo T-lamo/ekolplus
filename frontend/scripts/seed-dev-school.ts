@@ -1138,6 +1138,14 @@ async function seedEtoiles(
   await prisma.gradeLevel.createMany({
     data: LEVELS.map((name, i) => ({ schoolId, name, order: i + 1 })),
   });
+  // Classes below are linked to their catalog level (Class.gradeLevelId), the
+  // way the class form does it, so a bulletin template assigned to a level
+  // from the Niveaux screen reaches the seeded classes.
+  const levelIdByName = new Map(
+    (
+      await prisma.gradeLevel.findMany({ where: { schoolId }, select: { id: true, name: true } })
+    ).map((l) => [l.name, l.id] as const),
+  );
 
   // Rooms catalogue — created before classes / timetable sessions so both
   // link by roomId (the class-form / session-form catalogue selects).
@@ -1321,6 +1329,7 @@ async function seedEtoiles(
         academicYearId: yearId,
         name: c.name,
         level: c.level,
+        gradeLevelId: levelIdByName.get(c.level) ?? null,
         room: c.room,
         roomId: roomId.get(c.room) ?? null,
         capacity: c.capacity,

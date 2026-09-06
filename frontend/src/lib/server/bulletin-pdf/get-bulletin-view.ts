@@ -98,6 +98,7 @@ export async function getStudentBulletinView(
           select: {
             id: true,
             name: true,
+            level: true,
             academicYearId: true,
             homeroomTeacher: { select: { id: true, name: true } },
             gradeLevel: { select: { bulletinTemplate: true } },
@@ -135,19 +136,32 @@ export async function getStudentBulletinView(
             idx >= 0 && idx < classmates.length - 1 ? classmates[idx + 1]!.studentId : null,
         };
 
-  const [activeTemplate, fallbackTemplate] = await Promise.all([
+  const [activeTemplate, fallbackTemplate, levelByLabel] = await Promise.all([
     prisma.bulletinTemplate.findFirst({ where: { schoolId, isActive: true } }),
     prisma.bulletinTemplate.findFirst({
       where: { schoolId: null },
       orderBy: { createdAt: 'asc' },
     }),
+    // A class created before the grade-level catalog (or seeded without the
+    // link) only carries its free-text `level`; the level's template still
+    // applies by matching that label, so a template assigned on the Niveaux
+    // screen reaches every class of the level without a manual re-link.
+    enrollment.class.gradeLevel == null && enrollment.class.level
+      ? prisma.gradeLevel.findFirst({
+          where: { schoolId, name: enrollment.class.level },
+          select: { bulletinTemplate: true },
+        })
+      : Promise.resolve(null),
   ]);
   // Résolution spec §8 : niveau -> modèle actif de l'école -> plus ancien
-  // modèle global. Les deux requêtes ci-dessus restent inconditionnelles
+  // modèle global. Les deux premières requêtes restent inconditionnelles
   // (même coût qu'avant l'ajout du niveau) — un repli bon marché, jamais sur
   // le chemin critique d'un niveau qui a déjà son propre modèle.
   const template =
-    enrollment.class.gradeLevel?.bulletinTemplate ?? activeTemplate ?? fallbackTemplate;
+    enrollment.class.gradeLevel?.bulletinTemplate ??
+    levelByLabel?.bulletinTemplate ??
+    activeTemplate ??
+    fallbackTemplate;
 
   const shell = {
     studentId,

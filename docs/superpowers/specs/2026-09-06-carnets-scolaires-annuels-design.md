@@ -82,10 +82,12 @@ images dans le scratchpad de la session `carnets/`) :
    (sur 40 avec 4 contrôles, ce que vise le « 24/40 » du règlement),
    Coefficient = somme des coefficients de ces périodes.
 4. **Groupes de matières** (carnet primaire) : depuis le champ `Subject.domain`.
-   Une ligne en gras par domaine, à sa première apparition dans l'ordre des
-   matières de la classe (`ClassSubject.createdAt`), suivie de ses matières.
-   Les matières sans domaine restent à plat. Le carnet secondaire n'active pas
-   les groupes.
+   L'ordre des matières est celui que la vue bulletin charge déjà pour le
+   tableau de notes (domaine croissant, puis nom croissant, matières sans
+   domaine en dernier), ce qui regroupe naturellement chaque domaine. Une
+   ligne en gras par domaine à sa première apparition, suivie de ses
+   matières ; les matières sans domaine restent à plat. Le carnet secondaire
+   n'active pas les groupes.
 5. **Observations** (Promu, Maintenu, Orienté ailleurs) et **Extrait des
    règlements** sont imprimés tels quels, comme texte modifiable par l'école ;
    aucune décision n'est calculée ni cochée par l'application.
@@ -135,8 +137,9 @@ year?: YearData;
 ```
 
 `subjects` de chaque période contient les mêmes matières dans le même ordre
-(celui de `ClassSubject.createdAt`, filtre `NUMERIC_SUBJECT_FILTER`) ; les
-matières qualitatives n'apparaissent pas.
+(la requête `classSubject.findMany` existante de la vue : filtre
+`NUMERIC_SUBJECT_FILTER`, tri domaine puis nom) ; les matières qualitatives
+n'apparaissent pas.
 
 ### 3.2 Calcul
 
@@ -215,12 +218,16 @@ comme `criteriaGrids` en style `grid` :
 
 ### 4.2 Extensions de blocs existants
 
-- **cover** : `fields` accepte en plus `'fullName'` (« Elève ») et `'nisu'`
-  (« NISU », vide si l'élève n'en a pas) ; nouvelles options
-  `showSchoolContact?: boolean` (adresse en italique puis « Téls : … » sous le
-  nom, uniquement les valeurs non vides) et `nameBoxed?: boolean` (nom de
-  l'école dans un rectangle à bord plein) ; `frameStyle` gagne `'rounded'`
-  (bord plein, rayon 40 px, épaisseur 2 px). Libellés par défaut dans
+- **cover** : `fields` accepte en plus `'fullName'` (« Elève », valeur
+  `studentName`) et `'nisu'` (« NISU », vide si l'élève n'en a pas) ;
+  `frameStyle` gagne `'rounded'` (bord plein, rayon 40 px, épaisseur 2 px) ;
+  `uppercase?: boolean` (absent = `true`, le rendu actuel : nom d'école,
+  libellé de section et titre en capitales ; `false` les imprime tels que
+  saisis, comme le Word) ; `logoPosition?: 'top' | 'belowTitle'` (absent =
+  `'top'`, le rendu actuel ; `'belowTitle'` place le logo entre le titre et
+  les lignes d'identité, comme le Word). L'adresse et le téléphone de l'école
+  s'impriment déjà sous le nom quand ils sont renseignés, rien ne change. Le
+  nom de l'école est déjà dans un rectangle bordé de la couleur principale. Libellés par défaut dans
   `FIELD_LABEL` : `fullName` → « Elève », `nisu` → « NISU », les autres
   inchangés (`academicYear` garde « Année Académique » pour ne pas modifier le
   livret). Nouveau champ `fieldLabels?: Partial<Record<CoverField, string>>`
@@ -278,12 +285,12 @@ Config commune : `LETTER`, `LANDSCAPE`, `primaryColor '#1a1a2e'`,
      4. Un élève qui s'est absenté 5 jours consécutifs sans motif valable est considéré comme abandon.
    - `text` « La direction » (gras, `align 'right'`, `verticalAlign 'bottom'`)
    - `cover` (`breakBefore 'column'`, `framed true`, `frameStyle 'rounded'`,
-     `nameBoxed true`, `showSchoolContact true`, `sectionLabel '3ème Cycle &
-     Secondaire'` ou `'Section primaire'`, `titlePattern 'Carnet scolaire'`,
+     `uppercase false`, `logoPosition 'belowTitle'`, `sectionLabel '3ème Cycle
+     & Secondaire'` ou `'Section primaire'`, `titlePattern 'Carnet scolaire'`,
      `showLogo true`, `fields ['fullName','className','nisu','academicYear']`,
-     `fieldLabels { fullName: 'Elève', academicYear: 'Année Scolaire' }`)
+     `fieldLabels { academicYear: 'Année Scolaire' }`)
 2. `id 'grille'`, `layout 'sidebar'`, `asideWidth 22`, blocs :
-   - `text` « Nom (s) et Prénom (s) {eleve}        Classe {classe}        Année Scolaire : {annee} » (gras, `fontSize 10`)
+   - `text` « Nom (s) et Prénom (s) {eleve}        Classe {classe}        Année Scolaire : {annee} » (gras, `fontSize 10` ; les espacements sont des espaces insécables, les seules que `white-space: pre-line` conserve)
    - `yearGrid` (`showDomains` true pour le primaire seulement)
    - `yearSignatures` (`breakBefore 'column'`)
 
@@ -300,9 +307,9 @@ s'appellent pas « 1er contrôle » verra ses propres libellés.
   champs « Libellé Notes », « Libellé Sur » ; `yearDecisions` → « Titre » ;
   `yearSignatures` → « Titre », « Libellé direction », « Libellé parents » ;
   `cover` → cases « Élève (nom complet) » et « NISU » dans la liste des champs,
-  interrupteurs « Coordonnées de l'école », « Nom dans un cadre », option
-  « Arrondi » du trait du cadre, champs de renommage des libellés ; `text` →
-  aide listant les variables.
+  interrupteur « Capitales », sélecteur « Position du logo », option
+  « Arrondi » du trait du cadre, un champ de libellé sous chaque ligne
+  d'identité cochée ; `text` → aide listant les variables.
 - Page : « Colonne latérale » dans le sélecteur de layout, curseur de largeur.
 - Aperçu : `SAMPLE_BULLETIN_DATA.year` alimente les blocs ; le contrôle de
   dépassement existant s'applique au layout `sidebar`.
@@ -346,7 +353,8 @@ téléphone et logo dans Paramètres › Établissement.
   `fullName`/`nisu`, `fieldLabels`, `frameStyle 'rounded'`.
 - `blocks.test.tsx` : rendu des trois blocs (en-têtes par période, lignes de
   domaine, valeurs vides, chiffres romains, Moyenne Générale, paires de
-  signatures), `cover` avec coordonnées et nom encadré, `text` avec variables.
+  signatures), `cover` en casse saisie avec logo sous le titre, cadre arrondi,
+  champs Elève et NISU renommables, `text` avec variables.
 - `BulletinPage.test.tsx` : layout `sidebar` (deux colonnes, largeur, blocs
   après `breakBefore` dans la colonne latérale).
 - `seed-bulletin-templates.test.ts` : les deux carnets (pages, blocs, domaines

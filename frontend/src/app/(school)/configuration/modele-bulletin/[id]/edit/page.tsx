@@ -15,6 +15,11 @@ import {
   Smartphone,
   ZoomIn,
   ZoomOut,
+  Plus,
+  Trash2,
+  RectangleHorizontal,
+  Columns2,
+  PanelRight,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BareSelect, SelectItem } from '@/components/school/subjects/form-primitives';
@@ -77,7 +82,9 @@ export default function BulletinEditorPage() {
   const [nameInput, setNameInput] = useState('');
   const [zoom, setZoom] = useState(100);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const pageContentRef = useRef<HTMLDivElement>(null);
+  // Every page is painted in the canvas, one under the other; this map holds
+  // each sheet's natural-size element (overflow check, scroll-to-page).
+  const pageRefs = useRef(new Map<string, HTMLDivElement>());
   const [overflowingPages, setOverflowingPages] = useState<Set<string>>(new Set());
 
   const { data, mutate: mutateData } = useApi<TemplateDetail>(
@@ -346,8 +353,7 @@ export default function BulletinEditorPage() {
   }, [propTab, showBlockTab]);
 
   useEffect(() => {
-    if (!config || !pageContentRef.current) return;
-    const el = pageContentRef.current;
+    if (!config) return;
     const natH = getPageHeightPx(config);
     // halves pages give the sheet a definite height with column-fill: auto
     // (BulletinPage.tsx), so content that doesn't fit no longer grows the
@@ -356,14 +362,50 @@ export default function BulletinEditorPage() {
     // too so that overflow still trips the warning for halves pages.
     const natW = getPageWidthPx(config);
     setOverflowingPages((prev) => {
-      const next = new Set(prev);
-      const page = config.pages.find((p) => p.id === currentPageId);
-      if (!page) return prev;
-      if (el.scrollHeight > natH || el.scrollWidth > natW) next.add(page.id);
-      else next.delete(page.id);
+      const next = new Set<string>();
+      for (const page of config.pages) {
+        const el = pageRefs.current.get(page.id);
+        if (!el) continue;
+        if (el.scrollHeight > natH || el.scrollWidth > natW) next.add(page.id);
+      }
+      if (next.size === prev.size && [...next].every((id) => prev.has(id))) return prev;
       return next;
     });
-  }, [config, currentPageId, zoom]);
+  }, [config, zoom]);
+
+  // The page the user is looking at drives the left panel (its blocks, its
+  // layout): as the canvas scrolls past a sheet, the most visible one becomes
+  // the current page, so the panel follows the scroll instead of a page tab.
+  useEffect(() => {
+    const root = canvasContainerRef.current;
+    if (!root || !config) return;
+    const ratios = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).dataset.pageId;
+          if (id) ratios.set(id, entry.intersectionRatio);
+        }
+        let best: { id: string; ratio: number } | null = null;
+        for (const [id, ratio] of ratios) {
+          if (!best || ratio > best.ratio) best = { id, ratio };
+        }
+        if (best && best.ratio > 0) setCurrentPageId(best.id);
+      },
+      { root, threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    for (const page of config.pages) {
+      const el = pageRefs.current.get(page.id)?.parentElement;
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [config?.pages, zoom]);
+
+  function scrollToPage(pageId: string) {
+    pageRefs.current
+      .get(pageId)
+      ?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   async function save() {
     if (!config) return;
@@ -709,6 +751,7 @@ export default function BulletinEditorPage() {
                     onClick={() => {
                       setCurrentPageId(p.id);
                       setSelected(null);
+                      scrollToPage(p.id);
                     }}
                     className={`flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium ${
                       currentPageId === p.id
@@ -731,9 +774,11 @@ export default function BulletinEditorPage() {
                   type="button"
                   onClick={addPage}
                   disabled={config.pages.length >= 6}
-                  className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-foreground disabled:opacity-40"
+                  title={t('pagesPanel.addPage')}
+                  aria-label={t('pagesPanel.addPage')}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-foreground hover:bg-muted disabled:opacity-40"
                 >
-                  {t('pagesPanel.addPage')}
+                  <Plus size={15} />
                 </button>
                 {currentPageId && (
                   <>
@@ -741,17 +786,21 @@ export default function BulletinEditorPage() {
                       type="button"
                       onClick={() => duplicatePage(currentPageId)}
                       disabled={config.pages.length >= 6}
-                      className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-foreground disabled:opacity-40"
+                      title={t('pagesPanel.duplicatePage')}
+                      aria-label={t('pagesPanel.duplicatePage')}
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-foreground hover:bg-muted disabled:opacity-40"
                     >
-                      {t('pagesPanel.duplicatePage')}
+                      <Copy size={14} />
                     </button>
                     <button
                       type="button"
                       onClick={() => deletePage(currentPageId)}
                       disabled={config.pages.length <= 1}
-                      className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-2xs font-medium text-destructive-foreground disabled:opacity-40"
+                      title={t('pagesPanel.deletePage')}
+                      aria-label={t('pagesPanel.deletePage')}
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-destructive-foreground hover:bg-destructive/10 disabled:opacity-40"
                     >
-                      {t('pagesPanel.deletePage')}
+                      <Trash2 size={14} />
                     </button>
                   </>
                 )}
@@ -769,27 +818,25 @@ export default function BulletinEditorPage() {
                             {t('pagesPanel.layoutLabel')}
                           </span>
                           <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
-                            <button
-                              type="button"
-                              onClick={() => patchPage(page.id, { layout: 'full' })}
-                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'full' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-                            >
-                              {t('pagesPanel.layoutFull')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => patchPage(page.id, { layout: 'halves' })}
-                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'halves' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-                            >
-                              {t('pagesPanel.layoutHalves')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => patchPage(page.id, { layout: 'sidebar' })}
-                              className={`rounded px-2 py-0.5 text-2xs font-medium ${page.layout === 'sidebar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-                            >
-                              {t('pagesPanel.layoutSidebar')}
-                            </button>
+                            {(
+                              [
+                                ['full', t('pagesPanel.layoutFull'), RectangleHorizontal],
+                                ['halves', t('pagesPanel.layoutHalves'), Columns2],
+                                ['sidebar', t('pagesPanel.layoutSidebar'), PanelRight],
+                              ] as const
+                            ).map(([layout, label, Icon]) => (
+                              <button
+                                key={layout}
+                                type="button"
+                                onClick={() => patchPage(page.id, { layout })}
+                                title={label}
+                                aria-label={label}
+                                aria-pressed={page.layout === layout}
+                                className={`flex h-7 w-8 items-center justify-center rounded ${page.layout === layout ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                              >
+                                <Icon size={15} />
+                              </button>
+                            ))}
                           </div>
                         </div>
                         <SwitchRow
@@ -965,23 +1012,35 @@ export default function BulletinEditorPage() {
                   zoom level. overflow stays visible (no overflow-hidden) so
                   content taller than one physical page is never silently
                   cropped — it's visible below the page edge instead. */}
-                <div style={{ width: scaledSize.width, height: scaledSize.height }}>
-                  <div
-                    ref={pageContentRef}
-                    className="rounded-[2px] bg-white shadow-2xl"
-                    style={{
-                      width: naturalSize.width,
-                      height: naturalSize.height,
-                      transform: `scale(${zoom / 100})`,
-                      transformOrigin: 'top left',
-                    }}
-                  >
-                    {(() => {
-                      const page =
-                        config.pages.find((p) => p.id === currentPageId) ?? config.pages[0];
-                      if (!page) return null;
-                      const pageIndex = config.pages.findIndex((p) => p.id === page.id);
-                      return (
+                {/* Every page of the template, one under the other, so the
+                  whole document is read by scrolling; the page tabs on the
+                  left only jump to a sheet. */}
+                {config.pages.map((page, pageIndex) => (
+                  <div key={page.id} className={pageIndex > 0 ? 'mt-6' : undefined}>
+                    {config.pages.length > 1 && (
+                      <div
+                        className={`mb-1.5 text-2xs font-medium ${currentPageId === page.id ? 'text-primary' : 'text-[#888]'}`}
+                      >
+                        {t('pagesPanel.pageLabel', { n: pageIndex + 1 })}
+                      </div>
+                    )}
+                    <div
+                      data-page-id={page.id}
+                      style={{ width: scaledSize.width, height: scaledSize.height }}
+                    >
+                      <div
+                        ref={(el) => {
+                          if (el) pageRefs.current.set(page.id, el);
+                          else pageRefs.current.delete(page.id);
+                        }}
+                        className={`rounded-[2px] bg-white shadow-2xl ${currentPageId === page.id && config.pages.length > 1 ? 'ring-2 ring-primary/40' : ''}`}
+                        style={{
+                          width: naturalSize.width,
+                          height: naturalSize.height,
+                          transform: `scale(${zoom / 100})`,
+                          transformOrigin: 'top left',
+                        }}
+                      >
                         <BulletinPageCanvas
                           page={page}
                           pageIndex={pageIndex}
@@ -990,16 +1049,19 @@ export default function BulletinEditorPage() {
                           data={previewData}
                           chrome={false}
                           selected={selected ?? undefined}
-                          onSelect={(pageId, blockId) => setSelected({ pageId, blockId })}
+                          onSelect={(pageId, blockId) => {
+                            setCurrentPageId(pageId);
+                            setSelected({ pageId, blockId });
+                          }}
                           dragBlockId={dragBlockId}
                           onDragStart={setDragBlockId}
                           onDrop={(blockId) => reorder(page.id, blockId)}
                           onDragEnd={() => setDragBlockId(null)}
                         />
-                      );
-                    })()}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

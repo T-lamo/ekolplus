@@ -25,10 +25,12 @@ export function SidebarItem({ item, active, collapsed, variant, onNavigate }: Si
     variant === 'light'
       ? 'bg-primary text-primary-foreground'
       : 'border-primary bg-white/10 text-white';
+  // Items stay in normal case and regular weight so the uppercase, bold
+  // section heads above them read as headings at a glance.
   const inactiveClasses =
     variant === 'light'
-      ? 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      : 'border-transparent text-white/50';
+      ? 'font-normal text-muted-foreground hover:bg-muted hover:text-foreground'
+      : 'border-transparent font-normal text-white/55';
 
   const link = (
     <Link

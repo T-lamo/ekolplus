@@ -18,6 +18,7 @@
     "levelTemplateUpdated": "Report card template updated.",
     "templateDefault": "School's default template",
     "templateAria": "Report card template for {name}",
+    "templatesUnavailable": "Template list unavailable: the \"Grades\" permission is required.",
     "addModalTitle": "Add a grade level",
     "addModalSubmit": "Add",
     "renameModalTitle": "Rename grade level",

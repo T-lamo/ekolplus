@@ -2,7 +2,9 @@
 // on collision with another level of the same school) and/or assign its
 // bulletin template (`bulletinTemplateId`, own school's or global; 404
 // TEMPLATE_NOT_FOUND otherwise; `null` clears it back to the school's
-// default — spec 2026-09-05 §8).
+// default — spec 2026-09-05 §8). A rename also cascades to every linked
+// `Class.level` free-text label in the same transaction, so a class's
+// displayed level follows the catalog entry it points to (final-review F2).
 // DELETE — hard delete. `Class.gradeLevelId` (spec 2026-09-05 §8) is
 // `onDelete: SetNull`, so this can never orphan a class row — a class at a
 // deleted level just falls back to no grade-level link, same as before this
@@ -109,9 +111,21 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
       }
     }
 
-    const updated = await prisma.gradeLevel.update({
-      where: { id: g.level.id },
-      data,
+    const updated = await prisma.$transaction(async (tx) => {
+      const level = await tx.gradeLevel.update({
+        where: { id: g.level.id },
+        data,
+      });
+      // Keep every class's displayed free-text `level` label in sync with the
+      // grade level it points to, so a rename doesn't silently drift the two
+      // apart until the next unrelated class edit rewrites it back (F2).
+      if (data.name !== undefined) {
+        await tx.class.updateMany({
+          where: { gradeLevelId: g.level.id },
+          data: { level: data.name },
+        });
+      }
+      return level;
     });
     return NextResponse.json(
       {

@@ -173,6 +173,7 @@ describe('executeRollover', () => {
       room: string | null;
       capacity: number | null;
       homeroomTeacherId: string | null;
+      gradeLevelId: string | null;
     }> = {},
   ) {
     return {
@@ -182,6 +183,7 @@ describe('executeRollover', () => {
       room: null,
       capacity: null,
       homeroomTeacherId: null,
+      gradeLevelId: null,
       ...extra,
     };
   }
@@ -232,6 +234,7 @@ describe('executeRollover', () => {
         room: 'B12',
         capacity: 30,
         homeroomTeacherId: 't_9',
+        gradeLevelId: 'gl_5eme',
       }),
     ] as never);
     tx.enrollment.findMany.mockResolvedValue([{ studentId: 's1', classId: 'old_c1' }] as never);
@@ -254,6 +257,9 @@ describe('executeRollover', () => {
         room: 'B12',
         capacity: 30,
         homeroomTeacherId: 't_9',
+        // F3 (final-review): GradeLevel is year-independent, so the clone
+        // carries the template's catalog link forward instead of dropping it.
+        gradeLevelId: 'gl_5eme',
       },
     });
     expect(tx.enrollment.create).toHaveBeenCalledWith({
@@ -382,6 +388,9 @@ describe('executeRollover', () => {
         room: null,
         capacity: null,
         homeroomTeacherId: null,
+        // The legacy "Créer nouvelle" draft path has no source class to
+        // carry a catalog link from.
+        gradeLevelId: null,
       },
     });
     expect(tx.enrollment.create).toHaveBeenCalledWith({

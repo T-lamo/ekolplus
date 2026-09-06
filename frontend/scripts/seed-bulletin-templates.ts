@@ -1,4 +1,4 @@
-// Bootstrap script. Seeds the 3 global (schoolId: null) BulletinTemplate
+// Bootstrap script. Seeds the 4 global (schoolId: null) BulletinTemplate
 // rows every school sees in the "Modèles globaux" gallery tab and can fork
 // from. See .planning/banani/bulletin-templates.md for the fork-on-write
 // ownership model — these rows are never edited in place once schools start
@@ -10,7 +10,7 @@
 // rows, since there's no natural unique business key for a global template
 // besides its name.
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 
 // Mirrors DEFAULT_BULLETIN_CONFIG in src/lib/server/bulletin-templates.ts,
 // duplicated rather than imported: that module is `server-only`-guarded
@@ -101,7 +101,7 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
           fontSize: 12,
           bold: false,
           italic: false,
-          text: '“Tu aimerais l’Eternel, ton Dieu, de tout ton cœur, de toute ton âme et de toute ta force. 6 Et ces commandements, que je te donne aujourd’hui, seront dans ton cœur. 7 Tu les inculqueras à tes enfants, et tu en parleras quand tu seras dans ta maison, quand tu iras en voyage, quand tu te coucheras et quand tu te lèveras. 8 Tu les lieras comme un signe sur tes mains, et ils seront comme des fronteaux entre tes yeux. Tu les écriras sur les poteaux de ta maison et sur tes portes”.\n\nDeutéronome 6 : 5-6',
+          text: '“Tu aimeras l’Eternel, ton Dieu, de tout ton cœur, de toute ton âme et de toute ta force. 6 Et ces commandements, que je te donne aujourd’hui, seront dans ton cœur. 7 Tu les inculqueras à tes enfants, et tu en parleras quand tu seras dans ta maison, quand tu iras en voyage, quand tu te coucheras et quand tu te lèveras. 8 Tu les lieras comme un signe sur tes mains, et ils seront comme des fronteaux entre tes yeux. Tu les écriras sur les poteaux de ta maison et sur tes portes”.\n\nDeutéronome 6 : 5-6',
         },
         {
           id: 'couverture',
@@ -154,7 +154,11 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
   },
 } as const;
 
-const GLOBAL_TEMPLATES: Array<{ name: string; description: string; config: unknown }> = [
+const GLOBAL_TEMPLATES: Array<{
+  name: string;
+  description: string;
+  config: Prisma.InputJsonValue;
+}> = [
   {
     name: 'Académique Vert',
     description: 'Style académique classique avec tons verts, adapté aux écoles primaires.',

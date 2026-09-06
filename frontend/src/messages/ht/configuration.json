@@ -19,6 +19,7 @@
     "levelTemplateUpdated": "Modèl bilten an mete ajou.",
     "templateDefault": "Modèl pa default lekòl la",
     "templateAria": "Modèl bilten pou {name}",
+    "templatesUnavailable": "Lis modèl yo pa disponib : ou bezwen dwa \"Nòt\" la.",
     "addModalTitle": "Ajoute yon nivo",
     "addModalSubmit": "Ajoute",
     "renameModalTitle": "Chanje non nivo a",

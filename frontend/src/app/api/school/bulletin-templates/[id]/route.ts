@@ -136,7 +136,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           error: 'VALIDATION_FAILED',
-          message: 'Cannot delete the active template — activate another one first',
+          message: 'Cannot delete the active template. Activate another one first',
         },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );

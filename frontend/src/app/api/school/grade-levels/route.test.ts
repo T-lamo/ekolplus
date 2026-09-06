@@ -70,6 +70,16 @@ beforeEach(() => {
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);
+  // PATCH /[id] wraps the rename + Class.level cascade in a callback-form
+  // $transaction (F2) — pass `prismaMock` itself as `tx` so existing
+  // `prismaMock.gradeLevel.update` / `.class.updateMany` assertions still
+  // see the calls made inside it. Mirrors src/lib/server/portal-invite.test.ts.
+  prismaMock.$transaction.mockImplementation((cb: unknown) => {
+    if (typeof cb === 'function') {
+      return (cb as (tx: typeof prismaMock) => unknown)(prismaMock) as Promise<unknown>;
+    }
+    return Promise.resolve(cb);
+  });
 });
 
 describe('GET /api/school/grade-levels', () => {
@@ -259,6 +269,11 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
       where: { id: 'l1' },
       data: { name: 'Sixième' },
     });
+    // F2(a) — a rename cascades to every class displaying this level's label.
+    expect(prismaMock.class.updateMany).toHaveBeenCalledWith({
+      where: { gradeLevelId: 'l1' },
+      data: { level: 'Sixième' },
+    });
   });
 
   it('empty body (no name, no bulletinTemplateId) → 400 VALIDATION_FAILED', async () => {
@@ -310,6 +325,8 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
       where: { id: 'l1' },
       data: { bulletinTemplateId: 'tpl-global' },
     });
+    // F2(a) — a bulletinTemplateId-only PATCH must NOT touch any class.
+    expect(prismaMock.class.updateMany).not.toHaveBeenCalled();
   });
 
   it("the school's own template is accepted → 200, bulletinTemplateId set", async () => {
@@ -386,7 +403,7 @@ describe('DELETE /api/school/grade-levels/[id]', () => {
 });
 
 describe('POST /api/school/grade-levels/reorder', () => {
-  const existing = [row('l1', '6ème', 0), row('l2', '5ème', 1), row('l3', '4ème', 2)];
+  const existing = [row('l1', '6ème', 0, 'tpl-1'), row('l2', '5ème', 1), row('l3', '4ème', 2)];
 
   beforeEach(() => {
     prismaMock.gradeLevel.findMany.mockResolvedValue(existing as never);
@@ -442,9 +459,9 @@ describe('POST /api/school/grade-levels/reorder', () => {
     expect(res.status).toBe(200);
     expect((await res.json()) as unknown).toEqual({
       levels: [
-        { id: 'l3', name: '4ème', order: 0 },
-        { id: 'l1', name: '6ème', order: 1 },
-        { id: 'l2', name: '5ème', order: 2 },
+        { id: 'l3', name: '4ème', order: 0, bulletinTemplateId: null },
+        { id: 'l1', name: '6ème', order: 1, bulletinTemplateId: 'tpl-1' },
+        { id: 'l2', name: '5ème', order: 2, bulletinTemplateId: null },
       ],
     });
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);

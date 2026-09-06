@@ -191,6 +191,10 @@ export async function executeRollover(
       room: true,
       capacity: true,
       homeroomTeacherId: true,
+      // `GradeLevel` is year-independent (per-school, not per-year), so a
+      // template clone carries its source class's link forward instead of
+      // dropping it back to null on every rollover (final-review F3).
+      gradeLevelId: true,
     },
   });
 
@@ -224,6 +228,9 @@ export async function executeRollover(
     room: string | null;
     capacity: number | null;
     homeroomTeacherId: string | null;
+    /** Only set for a template clone (an old-year class row) — the legacy
+     * "Créer nouvelle" draft path has no catalog link to carry. */
+    gradeLevelId?: string | null;
   }): Promise<string> {
     const existing = createdClassIdByName.get(spec.name);
     if (existing) return existing;
@@ -236,6 +243,7 @@ export async function executeRollover(
         room: spec.room,
         capacity: spec.capacity,
         homeroomTeacherId: spec.homeroomTeacherId,
+        gradeLevelId: spec.gradeLevelId ?? null,
       },
     });
     createdClassIdByName.set(spec.name, created.id);

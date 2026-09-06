@@ -288,4 +288,60 @@ describe('PATCH /api/school/classes/[id]', () => {
       expect.objectContaining({ data: { color: '#388e3c', track: 'Sciences' } }),
     );
   });
+
+  // F2(b) — the gradeLevelId ownership guard on edit, mirroring the POST
+  // coverage above (final-review, no separate [id]/route.test.ts: PATCH was
+  // already exercised in this file, so these join that existing describe
+  // block instead of duplicating the mocks/helpers in a new file).
+  it('valid own-school gradeLevelId is persisted', async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.gradeLevel.findUnique.mockResolvedValue({
+      id: 'gl1',
+      schoolId: 'school_1',
+    } as never);
+    prismaMock.class.update.mockResolvedValue({ ...createdClass, gradeLevelId: 'gl1' } as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'gl1' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.class.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { gradeLevelId: 'gl1' } }),
+    );
+  });
+
+  it("unknown or another school's gradeLevelId → 400 VALIDATION_FAILED, no update", async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce(null);
+    let res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'nope' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toBe('VALIDATION_FAILED');
+
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce({
+      id: 'gl1',
+      schoolId: 'school_OTHER',
+    } as never);
+    res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'gl1' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(400);
+    expect(prismaMock.class.update).not.toHaveBeenCalled();
+  });
+
+  it('gradeLevelId: null clears the link', async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.class.update.mockResolvedValue({ ...createdClass, gradeLevelId: null } as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: null }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.class.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { gradeLevelId: null } }),
+    );
+  });
 });

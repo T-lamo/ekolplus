@@ -18,6 +18,7 @@
     "levelTemplateUpdated": "Modèle de bulletin mis à jour.",
     "templateDefault": "Modèle par défaut de l'école",
     "templateAria": "Modèle de bulletin de {name}",
+    "templatesUnavailable": "Liste des modèles indisponible : droit \"Notes\" requis.",
     "addModalTitle": "Ajouter un niveau",
     "addModalSubmit": "Ajouter",
     "renameModalTitle": "Renommer le niveau",

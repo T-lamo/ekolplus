@@ -64,7 +64,7 @@ type LevelRowT = ((
   key: 'reorderAria' | 'renameAria' | 'deleteAria' | 'templateAria',
   values: { name: string },
 ) => string) &
-  ((key: 'templateDefault') => string);
+  ((key: 'templateDefault' | 'templatesUnavailable') => string);
 
 /** `ApiError.message` carries the stable server code — switch on it (project
  * convention: branch on `err.code`, never on the message string). */
@@ -162,6 +162,7 @@ function SortableLevelRow({
   onRename,
   onDelete,
   templates,
+  templatesUnavailable,
   onTemplateChange,
   t,
 }: {
@@ -171,6 +172,11 @@ function SortableLevelRow({
   onRename: () => void;
   onDelete: () => void;
   templates: TemplateListData | null;
+  // The template list (notes.view) failed to load for this caller (e.g. a
+  // MEMBER without the "Notes" grant) — the selector can't tell the school's
+  // own/global templates apart from the assigned id, so it must not silently
+  // render as "default" (final-review F4).
+  templatesUnavailable: boolean;
   onTemplateChange: (templateId: string | null) => void;
   t: LevelRowT;
 }) {
@@ -211,12 +217,20 @@ function SortableLevelRow({
         {index + 1}
       </span>
       <span className="flex-1 truncate text-sm font-medium text-foreground">{level.name}</span>
-      <div className="w-36 shrink-0 sm:w-52">
+      <div
+        className="w-36 shrink-0 sm:w-52"
+        title={templatesUnavailable ? t('templatesUnavailable') : undefined}
+      >
         <BareSelect
-          value={level.bulletinTemplateId ?? ''}
+          value={templatesUnavailable ? '' : (level.bulletinTemplateId ?? '')}
           onValueChange={(val) => onTemplateChange(val === '' ? null : val)}
-          placeholder={t('templateDefault')}
-          aria-label={t('templateAria', { name: level.name })}
+          placeholder={templatesUnavailable ? t('templatesUnavailable') : t('templateDefault')}
+          disabled={templatesUnavailable}
+          aria-label={
+            templatesUnavailable
+              ? t('templatesUnavailable')
+              : t('templateAria', { name: level.name })
+          }
         >
           <SelectItem value="">{t('templateDefault')}</SelectItem>
           {(templates?.personal ?? []).map((tpl: TemplateRow) => (
@@ -291,9 +305,16 @@ export default function NiveauxPage() {
   const levels = levelsData?.levels ?? null;
   const error = levelsErr ? t('loadError') : null;
 
-  const { data: templatesData } = useApi<TemplateListData>('/api/school/bulletin-templates', {
-    skip: !user,
-  });
+  const { data: templatesData, error: templatesErr } = useApi<TemplateListData>(
+    '/api/school/bulletin-templates',
+    { skip: !user },
+  );
+  // A MEMBER without notes.view gets a 403 here that this page (a
+  // configuration screen) must not silently swallow — otherwise every level
+  // reads as "Modèle par défaut" even when one is actually assigned
+  // (final-review F4). Route permission stays notes.view; this is page-side
+  // handling only.
+  const templatesUnavailable = templatesErr !== null;
 
   const { can, canSee } = usePermissions();
   if (!canSee('configuration')) return <AccessDenied />;
@@ -440,6 +461,7 @@ export default function NiveauxPage() {
                       onRename={() => setRenaming(level)}
                       onDelete={() => onDelete(level)}
                       templates={templatesData}
+                      templatesUnavailable={templatesUnavailable}
                       onTemplateChange={(templateId) => updateLevelTemplate(level, templateId)}
                       t={t}
                     />

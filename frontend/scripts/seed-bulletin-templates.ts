@@ -72,12 +72,25 @@ const LIVRET_PRESCOLAIRE_CONFIG = {
       layout: 'halves',
       showPageNumber: false,
       blocks: [
+        // Left column: the two grids named here; right column (forced by
+        // breakBefore) starts with Développement intellectuel, then the
+        // appreciation lines and the signatures, exactly as the Word page.
         {
-          id: 'grilles',
+          id: 'grilles-gauche',
           type: 'criteriaGrids',
           visible: true,
           showScaleHeader: true,
           style: 'grid',
+          subjects: ['Comportement', 'Développement physique'],
+        },
+        {
+          id: 'grilles-droite',
+          type: 'criteriaGrids',
+          visible: true,
+          breakBefore: 'column',
+          showScaleHeader: true,
+          style: 'grid',
+          subjects: ['Développement intellectuel'],
         },
         {
           id: 'appreciations',

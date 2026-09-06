@@ -86,6 +86,56 @@ describe('criteriaGrids block', () => {
     expect(out.match(/border:1px solid/g)?.length).toBe(6);
     expect(out).toContain('Comportement');
   });
+
+  const threeSubjects: BulletinRenderData = {
+    ...data,
+    qualitativeSubjects: [
+      { subjectName: 'Développement intellectuel', ratingScale: ['Bien'], criteria: [] },
+      { subjectName: 'Développement physique', ratingScale: ['Bien'], criteria: [] },
+      { subjectName: 'Comportement', ratingScale: ['Bien'], criteria: [] },
+    ],
+  };
+
+  it('subjects keeps only the listed subjects, in the listed order, ignoring case and accents', () => {
+    const out = html(
+      renderCriteriaGrids({
+        block: {
+          id: 'g',
+          type: 'criteriaGrids',
+          visible: true,
+          showScaleHeader: true,
+          subjects: ['comportement', 'Developpement Physique'],
+        },
+        config,
+        data: threeSubjects,
+      }),
+    );
+    expect(out).not.toContain('Développement intellectuel');
+    expect(out.indexOf('Comportement')).toBeLessThan(out.indexOf('Développement physique'));
+  });
+
+  it('renders nothing when no listed subject exists, and everything in data order without a list', () => {
+    const none = renderCriteriaGrids({
+      block: {
+        id: 'g',
+        type: 'criteriaGrids',
+        visible: true,
+        showScaleHeader: true,
+        subjects: ['Musique'],
+      },
+      config,
+      data: threeSubjects,
+    });
+    expect(none).toBeNull();
+    const all = html(
+      renderCriteriaGrids({
+        block: { id: 'g', type: 'criteriaGrids', visible: true, showScaleHeader: true },
+        config,
+        data: threeSubjects,
+      }),
+    );
+    expect(all.indexOf('Développement intellectuel')).toBeLessThan(all.indexOf('Comportement'));
+  });
 });
 
 describe('signatures block', () => {

@@ -1052,6 +1052,9 @@
         "gridStyle": "Grid style",
         "gridStyleModern": "Modern",
         "gridStyleGrid": "Gridded",
+        "gridSubjects": "Subjects shown",
+        "gridSubjectsPlaceholder": "One subject per line",
+        "gridSubjectsHint": "Empty: every qualitative subject. Otherwise only the listed ones, in this order.",
         "showScaleHeader": "Show the scale header"
       },
       "style": {

@@ -100,6 +100,8 @@ export interface CriteriaGridsBlock extends BlockBase {
   showScaleHeader: boolean;
   /** 'grid' = Word-style gridded table (border on every cell, plain header). */
   style?: 'modern' | 'grid' | undefined;
+  /** Subject names to print, in this order (case/accent-insensitive); absent = all. */
+  subjects?: string[] | undefined;
 }
 
 export type Block =

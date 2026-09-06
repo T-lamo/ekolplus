@@ -103,6 +103,7 @@ const criteriaGridsBlockSchema = z.object({
   type: z.literal('criteriaGrids'),
   showScaleHeader: z.boolean(),
   style: z.enum(['modern', 'grid']).optional(),
+  subjects: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
 });
 
 export const blockSchema = z.discriminatedUnion('type', [

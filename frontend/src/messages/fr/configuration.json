@@ -1052,6 +1052,9 @@
         "gridStyle": "Style de grille",
         "gridStyleModern": "Moderne",
         "gridStyleGrid": "Quadrillé",
+        "gridSubjects": "Matières affichées",
+        "gridSubjectsPlaceholder": "Une matière par ligne",
+        "gridSubjectsHint": "Vide : toutes les matières qualitatives. Sinon, seules celles listées, dans cet ordre.",
         "showScaleHeader": "Afficher l'en-tête de l'échelle"
       },
       "style": {

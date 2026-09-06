@@ -1634,6 +1634,28 @@ export default function BulletinEditorPage() {
                           patchBlock(selected.pageId, selected.blockId, { showScaleHeader: v })
                         }
                       />
+                      <label className="mb-1 block text-xs font-medium text-foreground">
+                        {t('blockProperties.gridSubjects')}
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={(selectedBlock.subjects ?? []).join('\n')}
+                        placeholder={t('blockProperties.gridSubjectsPlaceholder')}
+                        onChange={(e) => {
+                          const subjects = e.target.value
+                            .split('\n')
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                            .slice(0, 20);
+                          patchBlock(selected.pageId, selected.blockId, {
+                            subjects: subjects.length > 0 ? subjects : undefined,
+                          });
+                        }}
+                        className="w-full resize-none rounded border-none bg-muted px-2 py-1.5 text-xs text-foreground outline-none"
+                      />
+                      <div className="mt-1 text-2xs text-muted-foreground">
+                        {t('blockProperties.gridSubjectsHint')}
+                      </div>
                     </PropSection>
                   )}
                 </>

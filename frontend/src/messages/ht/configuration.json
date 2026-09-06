@@ -1053,6 +1053,9 @@
         "gridStyle": "Estil grij",
         "gridStyleModern": "Modèn",
         "gridStyleGrid": "Kadriye",
+        "gridSubjects": "Matyè ki parèt",
+        "gridSubjectsPlaceholder": "Yon matyè pa liy",
+        "gridSubjectsHint": "Vid : tout matyè kalitatif yo. Sinon, sèlman sa ki nan lis la, nan lòd sa a.",
         "showScaleHeader": "Montre antèt echèl la"
       },
       "style": {

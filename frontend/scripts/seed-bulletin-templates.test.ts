@@ -68,6 +68,24 @@ describe('scripts/seed-bulletin-templates', () => {
 
     const blocks = captured!.pages.flatMap((p) => p.blocks);
     const byType = (type: string) => blocks.find((b) => b.type === type)!;
+    // Left column: Comportement + Développement physique; right column
+    // (forced by breakBefore) starts with Développement intellectuel so the
+    // split never depends on how many criteria a school has.
+    const grids = blocks.filter((b) => b.type === 'criteriaGrids');
+    expect(grids).toHaveLength(2);
+    expect(grids[0]).toMatchObject({
+      style: 'grid',
+      subjects: ['Comportement', 'Développement physique'],
+    });
+    expect(grids[0]).not.toHaveProperty('breakBefore');
+    expect(grids[1]).toMatchObject({
+      style: 'grid',
+      subjects: ['Développement intellectuel'],
+      breakBefore: 'column',
+    });
+    const order = blocks.map((b) => b.id);
+    expect(order.indexOf('grilles-droite')).toBeLessThan(order.indexOf('appreciations'));
+    expect(order.indexOf('appreciations')).toBeLessThan(order.indexOf('signatures'));
     expect(byType('criteriaGrids')).toMatchObject({ style: 'grid' });
     expect(byType('appreciation')).toMatchObject({
       style: 'lines',

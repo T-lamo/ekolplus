@@ -10,6 +10,27 @@ import type { BulletinRenderData } from '../render-data';
 // 'modern' look keeps the colored header row of the other templates.
 const INK = '#1a1a2e';
 
+const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+// `block.subjects` pins which grids this block prints and in which order,
+// so a template can split them across columns deterministically (the livret
+// puts Comportement + Développement physique left, Développement
+// intellectuel right) instead of relying on column overflow. Without a list
+// every grid prints in data order.
+function selectSubjects<T extends { subjectName: string }>(all: T[], wanted: string[] | undefined) {
+  if (!wanted || wanted.length === 0) return all;
+  return wanted.flatMap((name) => {
+    const key = fold(name);
+    const hit = all.find((s) => fold(s.subjectName) === key);
+    return hit ? [hit] : [];
+  });
+}
+
 export function render({
   block,
   config,
@@ -19,14 +40,15 @@ export function render({
   config: BulletinTemplateConfig;
   data: BulletinRenderData;
 }): React.ReactNode {
-  if (data.qualitativeSubjects.length === 0) return null;
+  const subjects = selectSubjects(data.qualitativeSubjects, block.subjects);
+  if (subjects.length === 0) return null;
   const grid = block.style === 'grid';
   const cellPadding = `${config.layout.cellPaddingY}px ${config.layout.cellPaddingX}px`;
   const cellBorder = grid ? { border: `1px solid ${INK}` } : {};
   const headClass = grid ? 'font-bold' : 'font-bold text-white';
   return (
     <div className="flex flex-col gap-3">
-      {data.qualitativeSubjects.map((subject) => (
+      {subjects.map((subject) => (
         <table
           key={subject.subjectName}
           className="w-full border-collapse"

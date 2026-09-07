@@ -7,9 +7,11 @@ Deux projets Vercel distincts, tous deux avec `frontend/` comme root directory, 
 | Environnement | Branche | Domaine | Base de données |
 |---|---|---|---|
 | Production | `main` | schoolgesti.com | Neon "prod", vide au départ, migrée à chaque déploiement |
-| Test / staging | `develop` | testing.schoolgesti.com | Neon "dev/test", partagée avec `pnpm dev` en local |
+| Test / staging | `staging` | testing.schoolgesti.com | Neon "dev/test", partagée avec `pnpm dev` en local |
 
 Il n'y a pas d'environnement Preview séparé : chaque projet Vercel ne suit qu'une seule branche, pour éviter qu'une preview écrive dans la même base que la production.
+
+Une troisième branche, `develop`, sert d'intégration active pour les fonctionnalités (voir [CONTRIBUTING.md](CONTRIBUTING.md)) mais n'est déployée nulle part ; elle est fusionnée dans `staging` une fois stable.
 
 ## Build
 

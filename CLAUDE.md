@@ -12,7 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Two deployments**, each its own Vercel project with `frontend/` as root directory:
 - Production — branch `main` → schoolgesti.com
-- Test / staging — branch `develop` → testing.schoolgesti.com
+- Test / staging — branch `staging` → testing.schoolgesti.com
+
+Three branches total: `develop` is the active integration branch (feature branches merge into it, never deployed directly), `staging` is the pre-production checkpoint deployed to testing.schoolgesti.com (`develop` is periodically merged into it), `main` is production. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full promotion flow.
 
 **Inherited-but-unused surfaces**: this codebase started from an internal generic SaaS starter, and a few of that starter's subsystems are still physically present but are **not wired into any SchoolGesti UI** — `/api/orders`, `/api/withdrawals`, `/api/admin/orders`, `/api/admin/withdrawals`, `/api/cron/order-expiration`, `/api/auth/withdrawal-pin`, and the Bictorys payment provider. SchoolGesti's real payment system is **Stripe** (school subscription billing — see `frontend/src/lib/billing-plans.ts`, `frontend/src/lib/server/billing/`, `frontend/src/app/api/cron/stripe-sync`). Don't extend the Bictorys/Withdrawals code path for new school-facing features; if you're asked to remove it, treat it as an optional feature and follow [PRUNING.md](PRUNING.md)'s protocol rather than deleting it ad hoc.
 

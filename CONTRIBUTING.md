@@ -11,11 +11,12 @@ Ce document décrit comment travailler sur ce dépôt : environnement, style de 
 ## Organisation des branches
 
 - `main` → production, [schoolgesti.com](https://schoolgesti.com)
-- `develop` → environnement de test, testing.schoolgesti.com
+- `staging` → pré-production, testing.schoolgesti.com
+- `develop` → intégration active, jamais déployée directement
 
-Travaillez sur une branche de fonctionnalité créée à partir de `develop`, puis ouvrez une pull request vers `develop`. `main` ne reçoit que des fusions depuis `develop` une fois la fonctionnalité vérifiée en test.
+Travaillez sur une branche de fonctionnalité créée à partir de `develop`, puis ouvrez une pull request vers `develop`. Une fois `develop` stable, elle est fusionnée dans `staging`, qui se déploie sur testing.schoolgesti.com pour vérification en conditions réelles. `main` ne reçoit que des fusions depuis `staging` une fois la fonctionnalité validée en test.
 
-**Point d'attention actuel** : le workflow CI (`.github/workflows/ci.yml`) ne se déclenche que sur `push`/`pull_request` vers `main`. Une branche fusionnée dans `develop` ne passe donc par aucune vérification automatique avant son déploiement sur testing.schoolgesti.com — seul le hook pre-commit local (voir plus bas) protège cette branche. Lancez `pnpm format && pnpm lint && pnpm typecheck && pnpm test` vous-même avant de fusionner dans `develop`.
+**Point d'attention actuel** : le workflow CI (`.github/workflows/ci.yml`) se déclenche sur `push`/`pull_request` vers `main` et `staging`, mais pas vers `develop`. Une branche fusionnée dans `develop` ne passe donc par aucune vérification automatique tant qu'elle n'est pas remontée dans `staging` — seul le hook pre-commit local (voir plus bas) protège `develop`. Lancez `pnpm format && pnpm lint && pnpm typecheck && pnpm test` vous-même avant de fusionner dans `develop`, et considérez `staging` comme le vrai filet de sécurité avant `main`.
 
 ### Travail concurrent sur le même arbre
 

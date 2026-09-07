@@ -129,7 +129,9 @@ Voir [API.md](API.md) pour la liste des routes par domaine.
 Deux projets Vercel séparés, tous deux avec `frontend/` comme root directory :
 
 - **Production** — branche `main` → schoolgesti.com
-- **Test / staging** — branche `develop` → testing.schoolgesti.com
+- **Test / staging** — branche `staging` → testing.schoolgesti.com
+
+Une troisième branche, `develop`, sert à l'intégration des fonctionnalités mais n'est déployée nulle part : `develop` fusionne vers `staging` pour validation, puis `staging` vers `main` pour la mise en production.
 
 `frontend/vercel.json` déclare les schedules cron ; Vercel les enregistre automatiquement au déploiement. Détails complets (variables d'environnement, migrations, webhook Stripe, rollback) dans [DEPLOY.md](DEPLOY.md).
 

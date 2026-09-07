@@ -16,7 +16,7 @@ Merci de ne pas ouvrir d'issue publique ni de publier les détails avant qu'un c
 
 ## Versions couvertes
 
-Il n'y a pas de versions maintenues en parallèle : seule la version actuellement déployée sur `main` (schoolgesti.com) est en production et reçoit des correctifs de sécurité. `develop` (testing.schoolgesti.com) est un environnement de test, pas destiné à des données réelles d'établissements clients.
+Il n'y a pas de versions maintenues en parallèle : seule la version actuellement déployée sur `main` (schoolgesti.com) est en production et reçoit des correctifs de sécurité. `staging` (testing.schoolgesti.com) est un environnement de test, pas destiné à des données réelles d'établissements clients.
 
 ## Ce qui est déjà en place
 

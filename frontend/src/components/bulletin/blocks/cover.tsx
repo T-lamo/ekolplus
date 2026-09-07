@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LayoutTemplate } from 'lucide-react';
 import type {
   CoverBlock,
@@ -5,6 +6,47 @@ import type {
   BulletinTemplateConfig,
 } from '@/app/(school)/configuration/modele-bulletin/types';
 import type { BulletinRenderData } from '../render-data';
+
+function LogoPlaceholder({ primaryColor }: { primaryColor: string }): React.ReactNode {
+  return (
+    <div
+      className="flex h-16 w-16 items-center justify-center rounded-md border-[1.5px] border-dashed"
+      style={{ borderColor: `${primaryColor}80`, background: `${primaryColor}0d` }}
+    >
+      <LayoutTemplate size={22} style={{ color: `${primaryColor}80` }} />
+    </div>
+  );
+}
+
+/**
+ * The school logo, resilient to a one-off failure loading it (a flaky CDN
+ * edge, a transient network blip): a broken-image icon plus wrapped alt
+ * text is never an acceptable render for an official document, so a first
+ * failure retries once with a cache-busting query param, and only falls
+ * back to the placeholder if the retry fails too.
+ */
+function CoverLogo({
+  src,
+  alt,
+  primaryColor,
+}: {
+  src: string;
+  alt: string;
+  primaryColor: string;
+}): React.ReactNode {
+  const [attempt, setAttempt] = useState(0);
+  const [failed, setFailed] = useState(false);
+  if (failed) return <LogoPlaceholder primaryColor={primaryColor} />;
+  return (
+    <img
+      key={attempt}
+      src={attempt === 0 ? src : `${src}${src.includes('?') ? '&' : '?'}retry=${attempt}`}
+      alt={alt}
+      className="h-16 w-16 rounded-md object-contain"
+      onError={() => (attempt === 0 ? setAttempt(1) : setFailed(true))}
+    />
+  );
+}
 
 const FIELD_LABEL: Record<CoverField, string> = {
   lastName: 'Nom',
@@ -49,21 +91,13 @@ export function render({
   const caseClass = upper ? 'uppercase' : '';
   const logo = block.showLogo ? (
     data.schoolLogoUrl ? (
-      <img
+      <CoverLogo
         src={data.schoolLogoUrl}
         alt={data.schoolName}
-        className="h-16 w-16 rounded-md object-contain"
+        primaryColor={config.primaryColor}
       />
     ) : (
-      <div
-        className="flex h-16 w-16 items-center justify-center rounded-md border-[1.5px] border-dashed"
-        style={{
-          borderColor: `${config.primaryColor}80`,
-          background: `${config.primaryColor}0d`,
-        }}
-      >
-        <LayoutTemplate size={22} style={{ color: `${config.primaryColor}80` }} />
-      </div>
+      <LogoPlaceholder primaryColor={config.primaryColor} />
     )
   ) : null;
   const logoPosition = block.logoPosition ?? 'top';

@@ -286,6 +286,33 @@ describe('cover block', () => {
       'border-solid',
     );
   });
+
+  it('renders the school logo as an <img> when the school has one, alt-texted for a graceful fallback', () => {
+    const block = {
+      id: 'c',
+      type: 'cover' as const,
+      visible: true,
+      sectionLabel: 'Section',
+      titlePattern: 'Bulletin du {term}',
+      showLogo: true,
+      framed: false,
+      fields: [],
+    };
+    const out = html(
+      renderCover({
+        block,
+        config,
+        data: { ...data, schoolLogoUrl: 'https://res.cloudinary.com/demo/image/upload/logo.png' },
+      }),
+    );
+    expect(out).toContain('<img');
+    expect(out).toContain('src="https://res.cloudinary.com/demo/image/upload/logo.png"');
+    expect(out).toContain(`alt="${data.schoolName}"`);
+    // No onError fallback fires in a static render (no browser event loop),
+    // so this only pins the markup contract; the retry-then-placeholder
+    // behavior itself needs a real browser and is covered by manual/E2E
+    // verification instead.
+  });
 });
 
 describe('cover block, carnet options', () => {

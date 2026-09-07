@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { GripVertical } from 'lucide-react';
 import {
   DRAGGABLE_BLOCK_TYPES,
@@ -12,7 +13,7 @@ import { render as renderHeader } from './blocks/header';
 import { render as renderStudentInfo } from './blocks/studentInfo';
 import { getPageHeightPx } from './page-size';
 
-export function BulletinPage({
+function BulletinPageInner({
   page,
   pageIndex,
   totalPages,
@@ -36,7 +37,7 @@ export function BulletinPage({
   onSelect?: (pageId: string, blockId: string) => void;
   dragBlockId?: string | null;
   onDragStart?: (blockId: string) => void;
-  onDrop?: (blockId: string) => void;
+  onDrop?: (pageId: string, blockId: string) => void;
   onDragEnd?: () => void;
 }) {
   const interactive = onSelect != null;
@@ -84,7 +85,7 @@ export function BulletinPage({
         draggable={reorderable}
         onDragStart={reorderable ? () => onDragStart?.(block.id) : undefined}
         onDragOver={reorderable ? (e) => e.preventDefault() : undefined}
-        onDrop={reorderable ? () => onDrop?.(block.id) : undefined}
+        onDrop={reorderable ? () => onDrop?.(page.id, block.id) : undefined}
         onDragEnd={reorderable ? onDragEnd : undefined}
         style={{
           marginBottom: fillsSpace ? 0 : config.layout.blockSpacing,
@@ -216,3 +217,45 @@ export function BulletinPage({
     </div>
   );
 }
+
+// `config` is one object holding both the template's style settings and its
+// `pages` array; any edit to a single block replaces `config.pages` (and so
+// `config` itself) via an immutable update, even though the 8 fields below
+// never actually change for that edit. Comparing `config` by reference would
+// make every page re-render on every keystroke in the editor; comparing only
+// the fields BulletinPage actually reads (everything except `pages`, which
+// arrives separately as the `page` prop) lets an edit to one page's block
+// skip re-rendering every other page of the same template. Keep this in
+// sync with BulletinTemplateConfig (types.ts) — a field added there that
+// affects rendering must be added here too, or edits to it won't preview live.
+function configEqualForRender(a: BulletinTemplateConfig, b: BulletinTemplateConfig): boolean {
+  return (
+    a === b ||
+    (a.primaryColor === b.primaryColor &&
+      a.pageFormat === b.pageFormat &&
+      a.orientation === b.orientation &&
+      a.columns === b.columns &&
+      a.signatures === b.signatures &&
+      a.typography === b.typography &&
+      a.content === b.content &&
+      a.layout === b.layout)
+  );
+}
+
+export const BulletinPage = memo(BulletinPageInner, (prev, next) => {
+  return (
+    prev.page === next.page &&
+    prev.pageIndex === next.pageIndex &&
+    prev.totalPages === next.totalPages &&
+    prev.data === next.data &&
+    prev.chrome === next.chrome &&
+    prev.selected?.pageId === next.selected?.pageId &&
+    prev.selected?.blockId === next.selected?.blockId &&
+    prev.dragBlockId === next.dragBlockId &&
+    prev.onSelect === next.onSelect &&
+    prev.onDragStart === next.onDragStart &&
+    prev.onDrop === next.onDrop &&
+    prev.onDragEnd === next.onDragEnd &&
+    configEqualForRender(prev.config, next.config)
+  );
+});

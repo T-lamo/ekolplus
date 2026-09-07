@@ -1,5 +1,6 @@
 'use client';
 
+import type { ComponentProps } from 'react';
 import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
 import type { BulletinRenderData } from './render-data';
 import { BulletinPage } from './BulletinPage';
@@ -27,13 +28,13 @@ export function BulletinDocument({
   onSelect?: (pageId: string, blockId: string) => void;
   dragBlockId?: string | null;
   onDragStart?: (blockId: string) => void;
-  onDrop?: (blockId: string) => void;
+  onDrop?: (pageId: string, blockId: string) => void;
   onDragEnd?: () => void;
 }) {
   return (
     <div className="flex flex-col" style={{ gap: PAGE_GAP_PX }}>
       {config.pages.map((page, index) => {
-        const pageProps: Parameters<typeof BulletinPage>[0] = {
+        const pageProps: ComponentProps<typeof BulletinPage> = {
           page,
           pageIndex: index,
           totalPages: config.pages.length,

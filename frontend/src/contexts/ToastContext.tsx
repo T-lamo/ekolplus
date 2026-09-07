@@ -11,6 +11,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -133,8 +134,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const value = useMemo(() => ({ toasts, toast: addToast }), [toasts, addToast]);
+
   return (
-    <ToastContext.Provider value={{ toasts, toast: addToast }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div
         aria-live="polite"

@@ -108,6 +108,12 @@ export default function BulletinEditorPage() {
   const [selected, setSelected] = useState<{ pageId: string; blockId: string } | null>(null);
   const [propTab, setPropTab] = useState<Tab>('style');
   const [dragBlockId, setDragBlockId] = useState<string | null>(null);
+  // Read by the stable `reorder` callback below so it never closes over a
+  // stale drag target — keeping `reorder` referentially stable (via
+  // useCallback + refs, no state in its deps) is what lets BulletinPage
+  // (memoized) skip re-rendering pages unrelated to the current edit.
+  const dragBlockIdRef = useRef(dragBlockId);
+  dragBlockIdRef.current = dragBlockId;
   const [nameInput, setNameInput] = useState('');
   const [zoom, setZoom] = useState(100);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -208,19 +214,34 @@ export default function BulletinEditorPage() {
     );
   }
 
-  function reorder(pageId: string, targetBlockId: string) {
-    if (!dragBlockId || dragBlockId === targetBlockId || !config) return;
-    const page = config.pages.find((p) => p.id === pageId);
-    if (!page) return;
-    const blocks = [...page.blocks];
-    const from = blocks.findIndex((b) => b.id === dragBlockId);
-    const to = blocks.findIndex((b) => b.id === targetBlockId);
-    if (from < 0 || to < 0) return;
-    const [moved] = blocks.splice(from, 1);
-    if (!moved) return;
-    blocks.splice(to, 0, moved);
-    patchPage(pageId, { blocks });
-  }
+  // Stable identity ([] deps, reads dragBlockId via ref, config via
+  // setConfig's own updater) so the canvas can pass the same `onDrop`
+  // reference to every page across renders — required for BulletinPage's
+  // memoization below to actually skip unaffected pages.
+  const reorder = useCallback((pageId: string, targetBlockId: string) => {
+    const currentDragBlockId = dragBlockIdRef.current;
+    if (!currentDragBlockId || currentDragBlockId === targetBlockId) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const page = c.pages.find((p) => p.id === pageId);
+      if (!page) return c;
+      const blocks = [...page.blocks];
+      const from = blocks.findIndex((b) => b.id === currentDragBlockId);
+      const to = blocks.findIndex((b) => b.id === targetBlockId);
+      if (from < 0 || to < 0) return c;
+      const [moved] = blocks.splice(from, 1);
+      if (!moved) return c;
+      blocks.splice(to, 0, moved);
+      return { ...c, pages: c.pages.map((p) => (p.id === pageId ? { ...p, blocks } : p)) };
+    });
+  }, []);
+
+  // Stable identities for the same reason as `reorder` above.
+  const handleSelectBlock = useCallback((pageId: string, blockId: string) => {
+    setCurrentPageId(pageId);
+    setSelected({ pageId, blockId });
+  }, []);
+  const handleDragEnd = useCallback(() => setDragBlockId(null), []);
 
   function addBlock(pageId: string, type: BlockType) {
     setConfig((c) => {
@@ -1078,14 +1099,11 @@ export default function BulletinEditorPage() {
                           data={previewData}
                           chrome={false}
                           selected={selected ?? undefined}
-                          onSelect={(pageId, blockId) => {
-                            setCurrentPageId(pageId);
-                            setSelected({ pageId, blockId });
-                          }}
+                          onSelect={handleSelectBlock}
                           dragBlockId={dragBlockId}
                           onDragStart={setDragBlockId}
-                          onDrop={(blockId) => reorder(page.id, blockId)}
-                          onDragEnd={() => setDragBlockId(null)}
+                          onDrop={reorder}
+                          onDragEnd={handleDragEnd}
                         />
                       </div>
                     </div>

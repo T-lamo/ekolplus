@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError, clearCsrfToken, storeCsrfToken } from '@/lib/api';
 import { invalidateCachePrefix } from '@/lib/useApi';
@@ -124,11 +132,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoggingOut(false);
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, loggingOut, error, refresh: fetchUser, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, loading, loggingOut, error, refresh: fetchUser, logout }),
+    [user, loading, loggingOut, error, fetchUser, logout],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 const SSR_STUB: AuthContextValue = {

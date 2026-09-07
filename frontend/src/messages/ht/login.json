@@ -10,12 +10,6 @@
   },
   "welcome": "Byenveni 👋",
   "formSubtitle": "Konekte nan espas ou pou jwenn tablodbò etablisman ou.",
-  "accountTypeLabel": "Kalite kont",
-  "roleTabs": {
-    "admin": "Administratè",
-    "teacher": "Pwofesè",
-    "studentParent": "Elèv / Paran"
-  },
   "identifierLabel": "Imel oswa non itilizatè",
   "identifierPlaceholder": "ou@lekol.com oswa marie.k",
   "passwordLabel": "Modpas",

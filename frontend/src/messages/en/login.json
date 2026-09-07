@@ -9,12 +9,6 @@
   },
   "welcome": "Welcome 👋",
   "formSubtitle": "Sign in to your workspace to access your school's dashboard.",
-  "accountTypeLabel": "Account type",
-  "roleTabs": {
-    "admin": "Administrator",
-    "teacher": "Teacher",
-    "studentParent": "Student / Parent"
-  },
   "identifierLabel": "Email or username",
   "identifierPlaceholder": "you@school.com or marie.k",
   "passwordLabel": "Password",

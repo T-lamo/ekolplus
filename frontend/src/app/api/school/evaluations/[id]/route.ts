@@ -111,12 +111,26 @@ export async function PATCH(
     if (parsed.data.classSubjectId) {
       const classSubject = await prisma.classSubject.findUnique({
         where: { id: parsed.data.classSubjectId },
-        include: { class: { select: { schoolId: true } } },
+        include: {
+          class: { select: { schoolId: true } },
+          subject: { select: { evaluationMode: true } },
+        },
       });
       if (!classSubject || classSubject.class.schoolId !== mySchool.schoolId) {
         return NextResponse.json(
           { error: 'VALIDATION_FAILED', message: 'Invalid classSubjectId' },
           { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      // Same guard as POST: an Evaluation must never land on a qualitative
+      // subject, retargeting included — normalized averages assume otherwise.
+      if (classSubject.subject.evaluationMode !== 'NUMERIC') {
+        return NextResponse.json(
+          {
+            error: 'SUBJECT_NOT_NUMERIC',
+            message: 'Cette matière est évaluée par critères, pas par notes.',
+          },
+          { status: 409, headers: { 'x-request-id': ctx.requestId } },
         );
       }
     }

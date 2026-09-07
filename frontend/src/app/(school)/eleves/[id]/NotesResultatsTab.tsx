@@ -74,10 +74,16 @@ export function NotesResultatsTab({
   studentId,
   studentName,
   initial,
+  apiBase = `/api/school/students/${studentId}`,
+  readOnly = false,
 }: {
   studentId: string;
   studentName: string;
   initial: StudentResults;
+  /** API prefix of the results read (`${apiBase}/results`). Default: the fiche's school route. */
+  apiBase?: string;
+  /** Espace Élève: no goal-setting, and the ranking card shows the rank + class average only. */
+  readOnly?: boolean;
 }) {
   const t = useTranslations('Eleves.notesResultats');
   const tFilterBy = useTranslations('Eleves');
@@ -91,7 +97,7 @@ export function NotesResultatsTab({
   const resultsQs = new URLSearchParams();
   if (yearId) resultsQs.set('academicYearId', yearId);
   if (termSel) resultsQs.set('termId', termSel);
-  const resultsPath = `/api/school/students/${studentId}/results?${resultsQs.toString()}`;
+  const resultsPath = `${apiBase}/results?${resultsQs.toString()}`;
 
   // The parent page already fetched this exact combo (server-resolved
   // defaults) moments ago and handed it down as `initial` — pre-warm the
@@ -256,7 +262,7 @@ export function NotesResultatsTab({
 
           <div className={ASIDE_GRID}>
             {/* Left column */}
-            <div className="flex flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-4">
               <Card className="gap-3.5 p-4.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-caption font-semibold text-foreground">
@@ -431,7 +437,16 @@ export function NotesResultatsTab({
                       : '—'}
                   </span>
                 </div>
-                {rankingDisplay.length === 0 ? (
+                {readOnly ? (
+                  <div className="mt-1 flex flex-col gap-1 border-t border-border pt-2.5 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>{t('classAverageShort')}</span>
+                      <strong className="text-foreground">
+                        {fmt(data.classOverallAverage)} / 20
+                      </strong>
+                    </div>
+                  </div>
+                ) : rankingDisplay.length === 0 ? (
                   <p className="py-2 text-sm text-muted-foreground">{t('noRanking')}</p>
                 ) : (
                   rankingDisplay.map((row) =>
@@ -474,7 +489,7 @@ export function NotesResultatsTab({
                     ),
                   )
                 )}
-                {data.ranking.length > 0 && (
+                {!readOnly && data.ranking.length > 0 && (
                   <div className="mt-1 flex flex-col gap-1 border-t border-border pt-2.5 text-xs text-muted-foreground">
                     <div className="flex justify-between">
                       <span>{t('classAverageShort')}</span>
@@ -525,13 +540,15 @@ export function NotesResultatsTab({
                       <Target size={14} className="text-primary" />
                       {t('goals', { term: currentTermLabel })}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setGoalModal(true)}
-                      className="text-xs font-medium text-primary"
-                    >
-                      {t('defineGoal')}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => setGoalModal(true)}
+                        className="text-xs font-medium text-primary"
+                      >
+                        {t('defineGoal')}
+                      </button>
+                    )}
                   </div>
                   {!data.goals || data.goals.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{t('noGoals')}</p>
@@ -569,7 +586,7 @@ export function NotesResultatsTab({
         </>
       )}
 
-      {goalModal && data.resolvedTermId && (
+      {!readOnly && goalModal && data.resolvedTermId && (
         <GoalModal
           studentId={studentId}
           termId={data.resolvedTermId}

@@ -1,7 +1,111 @@
 {
   "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman.",
+  "roleLabel": "Elèv",
   "title": "Espas elèv",
   "welcome": "Byenveni, {name}",
-  "comingSoon": "Nòt, prezans, orè, bilten ak apresyasyon w yo ap vini isit la byento.",
-  "logout": "Dekonekte"
+  "logout": "Dekonekte",
+  "loadError": "Nou pa t kapab chaje enfòmasyon w yo kounye a.",
+  "nav": {
+    "ariaLabel": "Navigasyon prensipal",
+    "sectionLabel": "Prensipal",
+    "home": "Akèy",
+    "profile": "Pwofil mwen",
+    "schoolSectionLabel": "Lavi lekòl",
+    "grades": "Nòt mwen yo",
+    "attendance": "Prezans mwen yo",
+    "timetable": "Orè",
+    "bulletins": "Bilten",
+    "appreciations": "Apresyasyon",
+    "accountSectionLabel": "Kont",
+    "settings": "Paramèt",
+    "moreAriaLabel": "Louvri meni an"
+  },
+  "topbar": {
+    "defaultPageTitle": "Espas elèv"
+  },
+  "home": {
+    "subtitle": "{className} · {yearLabel}",
+    "noClass": "Ou pa nan okenn klas pou ane sa a.",
+    "stats": {
+      "overallAverage": "Mwayèn jeneral",
+      "attendanceRate": "To prezans",
+      "absences": "Absans trimès sa a",
+      "rank": "Ran nan klas la",
+      "rankOf": "{rank} / {count}"
+    },
+    "today": "Kou jodi a",
+    "noCoursesToday": "Pa gen kou jodi a.",
+    "thisWeek": "Semèn sa a",
+    "noSessions": "Pa gen kou prevwa semèn sa a.",
+    "viewTimetable": "Gade orè a",
+    "sessionsCount": "{count, plural, =0 {Pa gen kou} one {# kou} other {# kou}}",
+    "recentGrades": "Dènye nòt yo",
+    "noRecentGrades": "Poko gen nòt pibliye.",
+    "absent": "Absan",
+    "quickActions": "Aksè rapid",
+    "myGrades": "Nòt mwen yo",
+    "myBulletins": "Bilten mwen yo"
+  },
+  "profile": {
+    "title": "Pwofil mwen",
+    "subtitle": "Enfòmasyon w yo jan lekòl la anrejistre yo.",
+    "readOnlyHint": "Pou korije yon enfòmasyon, kontakte sekretarya lekòl la.",
+    "homeroomSuffix": "(titilè)",
+    "ageYears": "{age} an",
+    "identity": "Idantite",
+    "contact": "Kowòdone",
+    "guardians": "Responsab",
+    "noGuardian": "Pa gen responsab anrejistre.",
+    "primary": "Prensipal",
+    "fields": {
+      "fullName": "Non konplè",
+      "dateOfBirth": "Dat nesans",
+      "placeOfBirth": "Kote ou fèt",
+      "gender": "Sèks",
+      "nationality": "Nasyonalite",
+      "motherTongue": "Lang manman",
+      "class": "Klas",
+      "homeroomTeacher": "Pwofesè titilè",
+      "enrolledAt": "Dat enskripsyon",
+      "scholarship": "Bous",
+      "yes": "Wi",
+      "no": "Non",
+      "status": "Estati",
+      "phone": "Telefòn",
+      "email": "Imèl",
+      "address": "Adrès"
+    }
+  },
+  "settings": {
+    "subtitle": "Pwofil ou, aparans ak lang espas ou a.",
+    "profileSubtitle": "Enfòmasyon kont elèv ou a"
+  },
+  "pages": {
+    "grades": {
+      "title": "Nòt mwen yo",
+      "subtitle": "Rezilta w pa matyè, mwayèn ou ak ran ou nan klas la."
+    },
+    "attendance": {
+      "title": "Prezans mwen yo",
+      "subtitle": "Asidite w ak jounal prezans ou, peryòd pa peryòd."
+    },
+    "bulletins": {
+      "title": "Bilten mwen yo",
+      "subtitle": "Bilten ou yo pa peryòd, pou li sou ekran oswa telechaje an PDF."
+    },
+    "appreciations": {
+      "title": "Apresyasyon",
+      "subtitle": "Apresyasyon pwofesè w yo pou chak peryòd."
+    }
+  },
+  "timetable": {
+    "title": "Orè kou yo"
+  },
+  "qualitative": {
+    "title": "Griy kritè",
+    "subtitle": "Matyè ou yo ki evalye pa kritè, jan pwofesè ou yo pibliye yo.",
+    "empty": "Pa gen okenn griy pibliye pou peryòd sa a.",
+    "criterionColumn": "Kritè",
+    "loadError": "Nou pa ka chaje griy yo kounye a."
+  }
 }

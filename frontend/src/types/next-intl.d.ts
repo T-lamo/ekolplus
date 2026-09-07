@@ -42,6 +42,7 @@ import type setPasswordEleve from '@/messages/fr/setPasswordEleve.json';
 import type elevePortal from '@/messages/fr/elevePortal.json';
 import type permissions from '@/messages/fr/permissions.json';
 import type spaces from '@/messages/fr/spaces.json';
+import type personnel from '@/messages/fr/personnel.json';
 import type { LOCALE_KEYS } from '@/lib/locales';
 
 declare module 'next-intl' {
@@ -85,6 +86,7 @@ declare module 'next-intl' {
       ElevePortal: typeof elevePortal;
       Permissions: typeof permissions;
       Spaces: typeof spaces;
+      Personnel: typeof personnel;
     };
   }
 }

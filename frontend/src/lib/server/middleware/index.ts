@@ -28,11 +28,11 @@ import type { OrgRole } from './require-org-role';
 import { ORG_ROLE_RANK } from './require-org-role';
 
 export interface AuthContext {
-  user: { sub: string; email: string };
+  user: { sub: string; email: string | null };
 }
 
 export interface AdminContext extends AuthContext {
-  admin: { id: string; email: string; role: AdminRole };
+  admin: { id: string; email: string | null; role: AdminRole };
 }
 
 export interface OrgContext extends AuthContext {

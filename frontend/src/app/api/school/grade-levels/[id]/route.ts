@@ -1,21 +1,36 @@
 // PATCH /api/school/grade-levels/[id] — rename a level (409 LEVEL_NAME_TAKEN
-// on collision with another level of the same school).
-// DELETE — hard delete. There is no FK from Class to GradeLevel (by design),
-// so this can never orphan a class row; classes at that free-text level just
-// stop getting an auto-suggestion in the rollover wizard.
+// on collision with another level of the same school) and/or assign its
+// bulletin template (`bulletinTemplateId`, own school's or global; 404
+// TEMPLATE_NOT_FOUND otherwise; `null` clears it back to the school's
+// default — spec 2026-09-05 §8). A rename also cascades to every linked
+// `Class.level` free-text label in the same transaction, so a class's
+// displayed level follows the catalog entry it points to (final-review F2).
+// DELETE — hard delete. `Class.gradeLevelId` (spec 2026-09-05 §8) is
+// `onDelete: SetNull`, so this can never orphan a class row — a class at a
+// deleted level just falls back to no grade-level link, same as before this
+// field existed; classes still keep their free-text `level` either way.
 export const runtime = 'nodejs';
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
+import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import type { PermissionAction } from '@/lib/permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
-import { LevelNameBody } from '../route';
 
 type Ctx = { params: Promise<{ id: string }> };
+
+const PatchLevelBody = z
+  .object({
+    name: z.string().trim().min(1).max(40).optional(),
+    bulletinTemplateId: z.string().min(1).nullable().optional(),
+  })
+  .refine((data) => data.name !== undefined || data.bulletinTemplateId !== undefined, {
+    message: 'at least one field required',
+  });
 
 /** Shared guard chain for both mutating verbs: CSRF → auth → configuration
  * grant → owned level. Returns either the level row + school, or the
@@ -53,32 +68,85 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
     const g = await guard(req, params, ctx.requestId, 'edit');
     if (g instanceof NextResponse) return g;
 
-    const parsed = LevelNameBody.safeParse(await req.json().catch(() => null));
+    const parsed = PatchLevelBody.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'VALIDATION_FAILED', message: 'Invalid request body' },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const name = parsed.data.name;
 
-    const clash = await prisma.gradeLevel.findFirst({
-      where: { schoolId: g.schoolId, name, NOT: { id: g.level.id } },
-      select: { id: true },
-    });
-    if (clash) {
-      return NextResponse.json(
-        { error: 'LEVEL_NAME_TAKEN', message: `Le niveau « ${name} » existe déjà.` },
-        { status: 409, headers: { 'x-request-id': ctx.requestId } },
-      );
+    const data: { name?: string; bulletinTemplateId?: string | null } = {};
+
+    if (parsed.data.name !== undefined) {
+      const name = parsed.data.name;
+      const clash = await prisma.gradeLevel.findFirst({
+        where: { schoolId: g.schoolId, name, NOT: { id: g.level.id } },
+        select: { id: true },
+      });
+      if (clash) {
+        return NextResponse.json(
+          { error: 'LEVEL_NAME_TAKEN', message: `Le niveau « ${name} » existe déjà.` },
+          { status: 409, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      data.name = name;
     }
 
-    const updated = await prisma.gradeLevel.update({
-      where: { id: g.level.id },
-      data: { name },
+    if (parsed.data.bulletinTemplateId !== undefined) {
+      if (parsed.data.bulletinTemplateId === null) {
+        data.bulletinTemplateId = null;
+      } else {
+        const tpl = await prisma.bulletinTemplate.findUnique({
+          where: { id: parsed.data.bulletinTemplateId },
+          select: { id: true, schoolId: true },
+        });
+        if (!tpl || (tpl.schoolId !== null && tpl.schoolId !== g.schoolId)) {
+          return NextResponse.json(
+            { error: 'TEMPLATE_NOT_FOUND', message: 'Template not found' },
+            { status: 404, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        data.bulletinTemplateId = tpl.id;
+      }
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const level = await tx.gradeLevel.update({
+        where: { id: g.level.id },
+        data,
+      });
+      // Keep every class's displayed free-text `level` label in sync with the
+      // grade level it points to, so a rename doesn't silently drift the two
+      // apart until the next unrelated class edit rewrites it back (F2).
+      if (data.name !== undefined) {
+        await tx.class.updateMany({
+          where: { gradeLevelId: g.level.id },
+          data: { level: data.name },
+        });
+      }
+      // Assigning a template must reach every class of the level at once:
+      // classes created before the catalog (or seeded without the link) only
+      // carry the free-text label, so adopt the ones whose label is this
+      // level's name. The bulletin view also matches by label as a safety
+      // net, but the link makes the data honest for every other consumer.
+      if (data.bulletinTemplateId !== undefined) {
+        await tx.class.updateMany({
+          where: { schoolId: g.schoolId, gradeLevelId: null, level: level.name },
+          data: { gradeLevelId: level.id },
+        });
+      }
+      return level;
     });
     return NextResponse.json(
-      { level: { id: updated.id, name: updated.name, order: updated.order } },
+      {
+        level: {
+          id: updated.id,
+          name: updated.name,
+          order: updated.order,
+          bulletinTemplateId: updated.bulletinTemplateId,
+        },
+      },
       { headers: { 'x-request-id': ctx.requestId } },
     );
   });

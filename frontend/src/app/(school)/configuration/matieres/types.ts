@@ -1,3 +1,4 @@
+import type { EvaluationMode } from '@/lib/qualitative';
 import type { SubjectKind, SubjectStatus } from './subject-form.constants';
 
 /** Profile fields shared by the list rows, the detail payload and the form. */
@@ -23,6 +24,8 @@ export interface SubjectProfile {
   maxCapacity: number | null;
   includeInAverage: boolean;
   showOnBulletin: boolean;
+  evaluationMode: EvaluationMode;
+  ratingScale: string[];
   room: string | null;
   eliminatoryScore: number | null;
   icon: string | null;
@@ -63,6 +66,14 @@ export interface SubjectTeacherAvailability {
   status: 'AVAILABLE' | 'BUSY';
 }
 
+export interface SubjectCriterionRow {
+  id: string;
+  label: string;
+  order: number;
+  /** Ticks referencing it; > 0 blocks deletion (409 CRITERION_IN_USE). */
+  ratingCount: number;
+}
+
 /** GET /api/school/subjects/[id] — one payload for every tab. */
 export interface SubjectDetail extends SubjectProfile {
   responsibleTeacher: { id: string; name: string; photoUrl: string | null } | null;
@@ -73,6 +84,9 @@ export interface SubjectDetail extends SubjectProfile {
   classSubjects: SubjectClassAssignment[];
   unassignedClasses: { id: string; name: string; level: string; studentCount: number }[];
   teachers: SubjectTeacherAvailability[];
+  criteria: SubjectCriterionRow[];
+  /** True once any tick exists: the scale can be renamed but not reordered. */
+  hasRatings: boolean;
 }
 
 export interface TermData {

@@ -131,6 +131,37 @@ describe('/api/teacher/evaluations/[id]', () => {
     expect(prismaMock.evaluation.update).not.toHaveBeenCalled();
   });
 
+  it('409s a move onto a qualitative classSubject that IS in my affectations', async () => {
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1', 'cs_2'],
+      homeroomClassIds: [],
+    });
+    prismaMock.classSubject.findUnique.mockResolvedValue({
+      class: { academicYearId: 'year_1' },
+      subject: { evaluationMode: 'QUALITATIVE' },
+    } as never);
+    const res = await PATCH(reqFor('PATCH', { classSubjectId: 'cs_2' }), params);
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe('SUBJECT_NOT_NUMERIC');
+    expect(prismaMock.evaluation.update).not.toHaveBeenCalled();
+  });
+
+  it('allows a move onto a numeric classSubject in my affectations', async () => {
+    mockResolveMyTeacherProfile.mockResolvedValue({
+      teacherId: 'tea_1',
+      classSubjectIds: ['cs_1', 'cs_2'],
+      homeroomClassIds: [],
+    });
+    prismaMock.classSubject.findUnique.mockResolvedValue({
+      class: { academicYearId: 'year_1' },
+      subject: { evaluationMode: 'NUMERIC' },
+    } as never);
+    const res = await PATCH(reqFor('PATCH', { classSubjectId: 'cs_2' }), params);
+    expect(res.status).toBe(200);
+    expect(prismaMock.evaluation.update).toHaveBeenCalled();
+  });
+
   it('PATCH refuses to lower maxScore below an existing grade', async () => {
     prismaMock.grade.findFirst.mockResolvedValue({ id: 'gr_1', score: 18 } as never);
     const res = await PATCH(reqFor('PATCH', { maxScore: 10 }), params);

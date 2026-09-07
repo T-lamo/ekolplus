@@ -49,7 +49,7 @@ export default function LoginPage() {
   const t = useTranslations('Login');
   const tCommon = useTranslations('Common');
   const [role, setRole] = useState<(typeof ROLE_TAB_KEYS)[number]>('admin');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -63,7 +63,7 @@ export default function LoginPage() {
     try {
       const res = await api<{ csrfToken?: string }>('/api/auth/login', {
         method: 'POST',
-        body: { email, password },
+        body: { identifier, password },
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       const me = await refresh();
@@ -225,13 +225,14 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Field
-              label={t('emailLabel')}
-              type="email"
-              name="email"
+              label={t('identifierLabel')}
+              type="text"
+              name="identifier"
               required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder={t('identifierPlaceholder')}
               icon={<Mail size={14} />}
             />
 

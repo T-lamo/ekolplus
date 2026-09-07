@@ -281,7 +281,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           amount: parsed.data.amount,
           currency: parsed.data.currency,
           customer: {
-            email: parsed.data.customerEmail ?? auth.user.email,
+            // '' fallback: inherited-but-unused surface (see CLAUDE.md), not
+            // wired to any SchoolGesti UI — no caller ever hits this without
+            // an email since customerEmail/auth.user.email have covered
+            // every real request so far. Kept only for a total function.
+            email: parsed.data.customerEmail ?? auth.user.email ?? '',
             ...(parsed.data.customerPhone ? { phone: parsed.data.customerPhone } : {}),
             ...(parsed.data.customerName ? { name: parsed.data.customerName } : {}),
           },

@@ -187,5 +187,27 @@
       "filenamePrefix": "carnet-notes",
       "allSubjectsSuffix": "toutes-matieres"
     }
+  },
+  "criteria": {
+    "title": "Grille de critères",
+    "subtitle": "Une coche par critère et par élève, sur l'échelle de la matière.",
+    "back": "Retour au carnet de notes",
+    "statusDraft": "Brouillon",
+    "statusPublished": "Validée",
+    "saveDraft": "Enregistrer brouillon",
+    "validate": "Valider",
+    "locked": "La saisie est désactivée pour cette période.",
+    "scaleHint": "Échelle : {scale}",
+    "criterionColumn": "Critère",
+    "prevStudent": "Précédent",
+    "nextStudent": "Suivant",
+    "noStudents": "Aucun élève inscrit dans cette classe.",
+    "noCriteria": "Cette matière n'a pas encore de critères. Ajoutez-les dans la fiche matière.",
+    "loadError": "Impossible de charger la grille pour le moment.",
+    "saveError": "Impossible d'enregistrer la grille.",
+    "draftSavedToast": "Brouillon enregistré.",
+    "validatedToast": "Grille validée et publiée.",
+    "qualitativeSubjectHint": "Cette matière est évaluée par critères, sans notes ni moyenne.",
+    "openSheet": "Ouvrir la grille de critères"
   }
 }

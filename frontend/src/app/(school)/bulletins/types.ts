@@ -53,6 +53,7 @@ export interface StudentBulletinData {
   firstName: string;
   lastName: string;
   studentNumber: string;
+  nisu: string | null;
   dateOfBirth: string;
   classId: string;
   className: string;
@@ -65,6 +66,7 @@ export interface StudentBulletinData {
   schoolLogoUrl: string | null;
   directorSignatureUrl: string | null;
   academicYearLabel: string;
+  termLabel: string;
   terms: TermOption[];
   resolvedTermId: string | null;
   studentIndex: number | null;
@@ -76,5 +78,11 @@ export interface StudentBulletinData {
   rank: number | null;
   rankedCount: number;
   subjects: BulletinSubjectRow[];
+  qualitativeSubjects: {
+    subjectName: string;
+    ratingScale: string[];
+    criteria: { label: string; level: number | null }[];
+  }[];
   generalAppreciation: string | null;
+  year?: import('@/components/bulletin/render-data').YearData | undefined;
 }

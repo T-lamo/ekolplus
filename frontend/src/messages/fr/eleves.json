@@ -141,6 +141,8 @@
       "previousSchoolPlaceholder": "Nom de l'école précédente...",
       "transferNumber": "Numéro de transfert",
       "transferNumberPlaceholder": "Optionnel",
+      "nisu": "NISU",
+      "nisuPlaceholder": "Numéro d'identification scolaire unique",
       "notes": "Observations / Notes internes"
     },
     "statusSection": {
@@ -158,7 +160,16 @@
       "relationship": "Lien de parenté",
       "phone": "Téléphone",
       "email": "Email",
-      "profession": "Profession"
+      "profession": "Profession",
+      "nif": "NIF",
+      "nifPlaceholder": "Numéro d'identification fiscale",
+      "niu": "NIU",
+      "niuPlaceholder": "Numéro d'identifiant unique",
+      "vitalStatus": "Statut",
+      "vitalStatusOptions": {
+        "VIVANT": "Vivant(e)",
+        "DECEDE": "Décédé(e)"
+      }
     },
     "options": {
       "title": "Options & Accès",
@@ -194,7 +205,8 @@
       "grades": "Notes & Résultats",
       "attendance": "Présences",
       "appreciations": "Appréciations",
-      "bulletins": "Bulletins"
+      "bulletins": "Bulletins",
+      "documents": "Documents"
     },
     "stats": {
       "overallAverage": "Moyenne générale",
@@ -308,7 +320,8 @@
       "teacher": "Enseignant"
     },
     "overallAverage": "Moyenne générale",
-    "rank": "· Rang : {rank} / {rankedCount}"
+    "rank": "· Rang : {rank} / {rankedCount}",
+    "loadError": "Impossible de charger les appréciations."
   },
   "attendanceTab": {
     "journal": "Journal de présence",
@@ -317,7 +330,8 @@
       "date": "Date",
       "status": "Statut",
       "justification": "Justification"
-    }
+    },
+    "loadError": "Impossible de charger les présences."
   },
   "bulletins": {
     "loadError": "Impossible de charger les bulletins.",
@@ -336,6 +350,42 @@
     "sentToast": "Invitation envoyée.",
     "resentToast": "Invitation renvoyée.",
     "errorEmailInUse": "Cette adresse email est déjà utilisée par un autre compte.",
-    "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter."
+    "errorNoTarget": "Ajoutez un email (élève ou tuteur principal) avant d'inviter.",
+    "emailOption": {
+      "label": "Inviter par email",
+      "description": "Un lien d'activation est envoyé par email. L'élève choisit lui-même son mot de passe."
+    },
+    "usernameOption": {
+      "label": "Créer un accès par nom d'utilisateur",
+      "description": "Idéal pour les élèves sans email. Un identifiant et un mot de passe temporaire sont générés.",
+      "button": "Créer l'accès",
+      "submitButton": "Créer le compte",
+      "cancelButton": "Annuler",
+      "errorTaken": "Ce nom d'utilisateur est déjà pris."
+    },
+    "usernameActive": {
+      "status": "Connecté avec le nom d'utilisateur {username}",
+      "resetButton": "Réinitialiser le mot de passe",
+      "resetConfirmTitle": "Réinitialiser le mot de passe ?",
+      "resetConfirmBody": "Un nouveau mot de passe temporaire sera généré pour {name}. Transmettez-le lui manuellement.",
+      "resetConfirmButton": "Réinitialiser"
+    }
+  },
+  "documents": {
+    "types": {
+      "BIRTH_CERTIFICATE": "Acte de naissance",
+      "VACCINATION_RECORD": "Carnet de vaccination",
+      "PREVIOUS_SCHOOL_RECORD": "Dossier de l'ancienne école"
+    },
+    "provided": "Fourni",
+    "missing": "Manquant",
+    "upload": "Téléverser",
+    "replace": "Remplacer",
+    "uploading": "Envoi en cours",
+    "download": "Télécharger",
+    "unsupportedFormat": "Format non supporté. PDF, JPG ou PNG uniquement.",
+    "tooLarge": "Fichier trop volumineux, {maxSizeMb} Mo maximum.",
+    "uploadError": "L'envoi a échoué. Réessayez.",
+    "loadError": "Impossible de charger les documents."
   }
 }

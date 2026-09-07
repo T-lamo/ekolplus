@@ -34,7 +34,7 @@ export default function ClassDetailPage() {
   const { toast } = useToast();
   const t = useTranslations('Configuration.classes.detail');
   const tCommon = useTranslations('Common');
-  const { options, error: optionsError, noSchool } = useClassFormData(!!user);
+  const { options, levelCatalogRows, error: optionsError, noSchool } = useClassFormData(!!user);
   const [loadError, setLoadError] = useState<string | null>(null);
   const {
     data: clsData,
@@ -81,6 +81,7 @@ export default function ClassDetailPage() {
   const form = useClassForm({
     cls,
     levelCatalog: options?.levelCatalog ?? [],
+    levelCatalogRows,
     roomIds,
     subjects: options?.subjects ?? [],
     onSaved,

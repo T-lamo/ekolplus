@@ -1,0 +1,188 @@
+{
+  "_review": "Kreyòl ayisyen — tradiksyon inisyal, poko relwe pa yon moun ki pale lang lan natirèlman. À faire relire par un locuteur natif avant mise en production.",
+  "list": {
+    "title": "Pèsonèl",
+    "subtitle": "Jere pwofesè ak pèsonèl administratif lekòl la.",
+    "searchPlaceholder": "Chèche pa non, imèl oswa non itilizatè...",
+    "filter": {
+      "all": "Tout",
+      "teacher": "Pwofesè",
+      "staff": "Pèsonèl administratif"
+    },
+    "table": {
+      "name": "Non",
+      "profiles": "Pwofil",
+      "account": "Estati kont lan",
+      "login": "Koneksyon",
+      "actions": "Aksyon"
+    },
+    "profileBadge": {
+      "teacher": "Pwofesè",
+      "admin": "Administratè"
+    },
+    "accountStatus": {
+      "none": "Pa gen kont",
+      "pending": "N ap tann",
+      "pendingFull": "N ap tann aktivasyon",
+      "active": "Aktif"
+    },
+    "loginMode": {
+      "email": "Imèl",
+      "username": "Non itilizatè",
+      "both": "Tou de"
+    },
+    "menu": {
+      "viewProfile": "Wè pwofil la"
+    },
+    "addButton": "Ajoute",
+    "loadError": "Nou pa ka chaje pèsonèl la.",
+    "emptyNone": "Pa gen pèsonèl pou kounye a.",
+    "emptyFiltered": "Pa gen rezilta pou rechèch sa a."
+  },
+  "fiche": {
+    "backToList": "Tounen nan pèsonèl",
+    "notFound": "Nou pa jwenn manm pèsonèl sa a.",
+    "noTabAccess": "Ou pa gen aksè a detay pwofil sa a.",
+    "header": {
+      "giveTeachingAccess": "Bay yon aksè ansèyman",
+      "giveManagementAccess": "Bay yon aksè jesyon",
+      "confirmTeachingTitle": "Bay yon aksè ansèyman",
+      "confirmTeachingBody": "Y ap ka asiyen {name} nan matyè ak klas tankou yon pwofesè.",
+      "confirmTeachingButton": "Bay aksè a",
+      "confirmManagementTitle": "Bay yon aksè jesyon",
+      "confirmManagementBody": "Y ap ka bay {name} yon wòl nan espas jesyon lekòl la.",
+      "confirmManagementButton": "Bay aksè a",
+      "teachingGranted": "Aksè ansèyman ajoute.",
+      "managementGranted": "Aksè jesyon ajoute."
+    },
+    "tabs": {
+      "access": "Aksè & wòl",
+      "compte": "Kont"
+    },
+    "accesRoles": {
+      "sectionTitle": "Aksè sistèm",
+      "summaryTitle": "Rezime dwa yo"
+    },
+    "compte": {
+      "noAccount": {
+        "description": "Moun sa a poko gen yon kont pou konekte."
+      },
+      "pending": {
+        "title": "Envitasyon voye",
+        "description": "Yon imèl aktivasyon voye bay {email}. N ap tann konfimasyon.",
+        "resendButton": "Voye envitasyon an ankò",
+        "resent": "Envitasyon an voye ankò."
+      },
+      "usernameOnly": {
+        "title": "Koneksyon ak non itilizatè",
+        "description": "Moun sa a itilize yon non itilizatè pou konekte.",
+        "resetButton": "Reyajiste modpas la",
+        "confirmTitle": "Reyajiste modpas la",
+        "confirmBody": "Y ap jenere yon nouvo modpas tanporè pou {name}. Ansyen modpas la ap sispann fonksyone touswit.",
+        "confirmButton": "Reyajiste"
+      },
+      "emailActive": {
+        "description": "Kont lan aktif e verifye.",
+        "footerNote": "Moun sa a ka reyajiste modpas li menm avèk « Modpas bliye »."
+      },
+      "tempPasswordPanel": {
+        "title": "Kont lan pare pou {name}",
+        "subtitle": "Note enfòmasyon sa yo anvan ou fèmen panno sa a.",
+        "usernameLabel": "Non itilizatè",
+        "passwordLabel": "Modpas tanporè",
+        "copyButton": "Kopye",
+        "warning": "Modpas sa a pap parèt ankò. Bay moun lan li, l ap ka chanje l nan paramèt li yo.",
+        "closeButton": "Mwen note, fèmen"
+      }
+    }
+  },
+  "usernameField": {
+    "label": "Non itilizatè",
+    "placeholder": "prenon.non",
+    "available": "Disponib",
+    "taken": "Non itilizatè sa a deja pran.",
+    "invalidFormat": "Dwe kòmanse ak yon lèt e sèlman gen lèt, chif, pwen, tirè oswa underscore (3 a 30 karaktè)."
+  },
+  "nouveau": {
+    "title": "Ajoute yon manm pèsonèl",
+    "steps": {
+      "identite": "Idantite",
+      "profils": "Pwofil",
+      "connexion": "Koneksyon"
+    },
+    "identite": {
+      "title": "Idantite manm nan",
+      "subtitle": "Antre enfòmasyon debaz moun w ap ajoute a.",
+      "firstName": "Prenon",
+      "firstNamePlaceholder": "Mari",
+      "lastName": "Non fanmi",
+      "lastNamePlaceholder": "Kevin",
+      "phone": "Telefòn",
+      "email": "Imèl",
+      "emailOptional": "(opsyonèl)",
+      "emailPlaceholder": "egzanp: mari.k@lekol.edu.ht",
+      "emailHint": "Si w ranpli l, chan sa a ka itilize nan etap Koneksyon an.",
+      "nameRequired": "Prenon ak non fanmi obligatwa."
+    },
+    "profils": {
+      "title": "Pwofil manm nan",
+      "subtitle": "Chwazi pwofil ki koresponn ak wòl moun sa a nan lekòl la.",
+      "teacherCard": {
+        "title": "Ansenye nan lekòl la",
+        "description": "Manm sa a ansenye matyè bay klas lekòl la.",
+        "picker": {
+          "matieresLabel": "Matyè yo asiyen",
+          "matieresSearchPlaceholder": "Chèche yon matyè…",
+          "matieresEmpty": "Pa gen matyè",
+          "classesLabel": "Klas yo",
+          "classesSearchPlaceholder": "Chèche yon klas…",
+          "classesEmpty": "Pa gen klas",
+          "add": "Ajoute",
+          "unavailable": "W ap ka asiyen matyè ak klas yo apati fich manm sa a apre kreyasyon an."
+        }
+      },
+      "staffCard": {
+        "title": "Gen aksè nan aplikasyon jesyon an",
+        "description": "Manm sa a ka konekte nan espas jesyon lekòl la.",
+        "roleLabel": "Wòl nan òganizasyon an",
+        "roleMember": "Manm",
+        "roleAdmin": "Administratè",
+        "roleAdminHint": "Aksè konplè nan jesyon lekòl la.",
+        "roleMemberHint": "Aksè limite a wòl staff yo asiyen anba a.",
+        "staffRolesLabel": "Wòl staff",
+        "staffRolesHint": "Opsyonèl. Dwa efektif yo se inyon tout wòl asiyen yo."
+      },
+      "atLeastOneError": "Chwazi omwen yon pwofil pou kontinye."
+    },
+    "connexion": {
+      "title": "Metòd koneksyon",
+      "subtitle": "Chwazi kijan manm sa a ap antre nan espas li. W ap ka chanje sa pita apati fich li.",
+      "noneCard": {
+        "title": "Pa gen kont pou kounye a",
+        "description": "Pa gen aksè nimerik. Fich la ap kreye san idantifyan.",
+        "disabledHint": "Disponib sèlman lè manm nan pa gen aksè jesyon."
+      },
+      "emailCard": {
+        "title": "Ak imèl",
+        "description": "Yon lyen aktivasyon ap voye nan adrès imèl la ba li a.",
+        "disabledHint": "Antre yon imèl nan etap Idantite pou aktive opsyon sa a.",
+        "inviteLabel": "Imèl envitasyon"
+      },
+      "usernameCard": {
+        "title": "Ak non itilizatè",
+        "description": "Manm nan konekte ak yon non itilizatè ak yon modpas lokal."
+      },
+      "modeRequiredError": "Chwazi yon metòd koneksyon."
+    },
+    "submit": "Kreye kont lan",
+    "submitting": "Ap kreye...",
+    "successEmail": "Envitasyon voye bay {email}.",
+    "successNone": "Fich la kreye san kont koneksyon.",
+    "errors": {
+      "USERNAME_TAKEN": "Non itilizatè sa a deja pran.",
+      "EMAIL_ALREADY_IN_USE": "Imèl sa a deja itilize pa yon lòt kont.",
+      "PERMISSION_DENIED": "Ou pa gen pèmisyon pou fè aksyon sa a.",
+      "VALIDATION_FAILED": "Gen enfòmasyon ki envalid. Tcheke fòm lan."
+    }
+  }
+}

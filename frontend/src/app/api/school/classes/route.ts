@@ -80,6 +80,7 @@ const CreateClassBody = z.object({
   roomId: z.string().min(1).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
+  gradeLevelId: z.string().min(1).nullable().optional(),
   color: z.string().regex(CLASS_COLOR_REGEX).nullable().optional(),
   track: z.string().trim().max(60).nullable().optional(),
   // Fiche classe (add-class.md) : matières cochées à la création → pivots
@@ -137,6 +138,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    if (parsed.data.gradeLevelId) {
+      const level = await prisma.gradeLevel.findUnique({ where: { id: parsed.data.gradeLevelId } });
+      if (!level || level.schoolId !== mySchool.schoolId) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid gradeLevelId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+    }
+
     let roomLabel = parsed.data.room ?? null;
     if (parsed.data.roomId) {
       const room = await findSchoolRoom(prisma, parsed.data.roomId, mySchool.schoolId);
@@ -175,6 +186,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           roomId: parsed.data.roomId ?? null,
           capacity: parsed.data.capacity ?? null,
           homeroomTeacherId: parsed.data.homeroomTeacherId ?? null,
+          gradeLevelId: parsed.data.gradeLevelId ?? null,
           color: parsed.data.color ?? null,
           track: parsed.data.track ?? null,
         },

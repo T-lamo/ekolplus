@@ -8,6 +8,7 @@ import { prisma } from '@/lib/server/prisma';
 import { weightedAverage, resolveCurrentTerm } from '@/lib/server/grades';
 import { attendanceRate, mondayOf, addDays, dateOnlyUTC } from '@/lib/server/attendance';
 import { getFeeLedgerRows } from '@/lib/server/fees/rows';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import { queryActivityEvents } from '@/lib/server/activity-log';
 
 export interface DashboardData {
@@ -148,7 +149,7 @@ export async function getSchoolDashboard(schoolId: string): Promise<DashboardDat
       where: {
         status: 'PUBLISHED',
         countsTowardAverage: true,
-        classSubject: { class: { schoolId, academicYearId: year.id } },
+        classSubject: { class: { schoolId, academicYearId: year.id }, ...NUMERIC_SUBJECT_FILTER },
       },
       select: {
         date: true,

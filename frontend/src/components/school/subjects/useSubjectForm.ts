@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api';
+import { type EvaluationMode, normalizeRatingScale } from '@/lib/qualitative';
 import {
   OTHER_DOMAIN,
   SUBJECT_DOMAINS,
@@ -35,6 +36,8 @@ export interface SubjectFormValues {
   maxCapacity: string;
   includeInAverage: boolean;
   showOnBulletin: boolean;
+  evaluationMode: EvaluationMode;
+  ratingScale: string[];
   responsibleTeacherId: string | null;
   room: string;
   prerequisiteIds: string[];
@@ -46,6 +49,33 @@ export interface SubjectFormValues {
 }
 
 export type SubjectFormErrors = Partial<Record<keyof SubjectFormValues, string>>;
+
+// "Informations générales" split into 4 steps (2026-09-06, too many fields on
+// one screen) — order also drives which step the first validation error
+// jumps to on submit.
+export type SubjectFormStep = 'identity' | 'kind' | 'evaluation' | 'assignment';
+export const SUBJECT_FORM_STEPS: SubjectFormStep[] = [
+  'identity',
+  'kind',
+  'evaluation',
+  'assignment',
+];
+const STEP_FIELDS: Record<SubjectFormStep, (keyof SubjectFormValues)[]> = {
+  identity: ['name', 'code', 'domain', 'domainOther', 'level'],
+  kind: ['defaultCoefficient'],
+  evaluation: [
+    'evaluationType',
+    'maxScore',
+    'passingScore',
+    'eliminatoryScore',
+    'evaluationMode',
+    'ratingScale',
+  ],
+  assignment: [],
+};
+function stepForField(field: keyof SubjectFormValues): SubjectFormStep | undefined {
+  return SUBJECT_FORM_STEPS.find((step) => STEP_FIELDS[step].includes(field));
+}
 
 const numOrEmpty = (v: number | null | undefined) => (v == null ? '' : String(v));
 
@@ -75,6 +105,8 @@ export function initialValues(
     maxCapacity: numOrEmpty(subject?.maxCapacity),
     includeInAverage: subject?.includeInAverage ?? true,
     showOnBulletin: subject?.showOnBulletin ?? true,
+    evaluationMode: subject?.evaluationMode ?? 'NUMERIC',
+    ratingScale: subject?.ratingScale ?? [],
     responsibleTeacherId: subject?.responsibleTeacherId ?? null,
     room: subject?.room ?? '',
     prerequisiteIds: subject?.prerequisiteIds ?? [],
@@ -101,7 +133,8 @@ type SubjectFormErrorCode =
   | 'coefficientRange'
   | 'maxScoreRange'
   | 'scoreRange'
-  | 'evaluationTypeRequired';
+  | 'evaluationTypeRequired'
+  | 'ratingScaleInvalid';
 
 export type SubjectFormErrorCodes = Partial<Record<keyof SubjectFormValues, SubjectFormErrorCode>>;
 
@@ -123,6 +156,9 @@ export function validate(v: SubjectFormValues): { codes: SubjectFormErrorCodes; 
   const elim = toInt(v.eliminatoryScore);
   if (elim !== null && (elim < 0 || elim > max)) errors.eliminatoryScore = 'scoreRange';
   if (v.evaluationType === '') errors.evaluationType = 'evaluationTypeRequired';
+  if (v.evaluationMode === 'QUALITATIVE' && !normalizeRatingScale(v.ratingScale).ok) {
+    errors.ratingScale = 'ratingScaleInvalid';
+  }
   return { codes: errors, max };
 }
 
@@ -167,6 +203,9 @@ export function toBody(v: SubjectFormValues, status: SubjectStatus) {
     maxCapacity: toInt(v.maxCapacity),
     includeInAverage: v.includeInAverage,
     showOnBulletin: v.showOnBulletin,
+    evaluationMode: v.evaluationMode,
+    ratingScale:
+      v.evaluationMode === 'QUALITATIVE' ? v.ratingScale.map((label) => label.trim()) : [],
     responsibleTeacherId: v.responsibleTeacherId,
     room: v.room || null,
     prerequisiteIds: v.prerequisiteIds,
@@ -200,6 +239,7 @@ export function useSubjectForm({
     initialValues(subject, domainOptions),
   );
   const [errors, setErrors] = useState<SubjectFormErrors>({});
+  const [activeStep, setActiveStep] = useState<SubjectFormStep>('identity');
   const [submitting, setSubmitting] = useState<'draft' | 'publish' | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [codeTouched, setCodeTouched] = useState(!!subject?.code);
@@ -238,10 +278,22 @@ export function useSubjectForm({
       if (intent === 'draft' && values.name.trim().length < 2) {
         nextCodes.name = 'nameTooShort';
       }
+      if (
+        intent === 'draft' &&
+        values.evaluationMode === 'QUALITATIVE' &&
+        !normalizeRatingScale(values.ratingScale).ok
+      ) {
+        nextCodes.ratingScale = 'ratingScaleInvalid';
+      }
       if (Object.keys(nextCodes).length > 0) {
         setErrors(translateErrors(nextCodes, max, t));
-        const first = document.querySelector<HTMLElement>('[data-field-error="true"]');
-        first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Jump to the first step holding an invalid field — the others are
+        // fields of steps not currently mounted, so scrollIntoView alone
+        // (the pre-steps behaviour) can no longer reach them.
+        const erroredStep = SUBJECT_FORM_STEPS.find((step) =>
+          STEP_FIELDS[step].some((field) => nextCodes[field]),
+        );
+        if (erroredStep) setActiveStep(erroredStep);
         return;
       }
       setSubmitting(intent);
@@ -258,8 +310,22 @@ export function useSubjectForm({
             });
         onSaved(res.subject, intent);
       } catch (err) {
-        if (err instanceof ApiError && err.code === 'SUBJECT_CODE_TAKEN') {
-          setErrors((prev) => ({ ...prev, code: err.message }));
+        // A server-side rejection targets one field, same as a client
+        // validation failure — jump to that field's step so it's not left
+        // invisible on whichever step the user has since moved to.
+        const failField: keyof SubjectFormValues | null =
+          err instanceof ApiError && err.code === 'SUBJECT_CODE_TAKEN'
+            ? 'code'
+            : err instanceof ApiError &&
+                (err.code === 'SUBJECT_HAS_EVALUATIONS' || err.code === 'SUBJECT_HAS_RATINGS')
+              ? 'evaluationMode'
+              : err instanceof ApiError && err.code === 'SCALE_LEVEL_IN_USE'
+                ? 'ratingScale'
+                : null;
+        if (failField && err instanceof ApiError) {
+          setErrors((prev) => ({ ...prev, [failField]: err.message }));
+          const failStep = stepForField(failField);
+          if (failStep) setActiveStep(failStep);
         } else {
           setServerError(err instanceof ApiError ? err.message : tCommon('errors.network'));
         }
@@ -270,7 +336,17 @@ export function useSubjectForm({
     [values, subject, onSaved, t, tCommon],
   );
 
-  return { values, setField, errors, submit, submitting, serverError, domainOptions };
+  return {
+    values,
+    setField,
+    errors,
+    submit,
+    submitting,
+    serverError,
+    domainOptions,
+    activeStep,
+    setActiveStep,
+  };
 }
 
 export type SubjectFormController = ReturnType<typeof useSubjectForm>;

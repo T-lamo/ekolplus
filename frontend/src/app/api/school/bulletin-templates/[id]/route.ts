@@ -4,7 +4,9 @@
 // `isActive: true` flips any other active row for the school back to false
 // in the same transaction — "at most one active per school" is an
 // app-level invariant, same pattern as AcademicYear.isActive.
-// DELETE — own templates only; refuses deleting the active template.
+// DELETE — own templates only; refuses deleting the active template (400)
+// or a template a grade level of this school still references (409
+// TEMPLATE_IN_USE — spec 2026-09-05 §8).
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -14,7 +16,7 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
-import { bulletinTemplateConfigSchema } from '@/lib/server/bulletin-templates';
+import { bulletinTemplateConfigSchema, normalizeConfig } from '@/lib/server/bulletin-templates';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const PatchBody = z.object({
@@ -47,7 +49,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { ...tpl, isOwn: tpl.schoolId === mySchool.schoolId },
+      { ...tpl, config: normalizeConfig(tpl.config), isOwn: tpl.schoolId === mySchool.schoolId },
       { headers: { 'x-request-id': ctx.requestId } },
     );
   });
@@ -134,9 +136,23 @@ export async function DELETE(
       return NextResponse.json(
         {
           error: 'VALIDATION_FAILED',
-          message: 'Cannot delete the active template — activate another one first',
+          message: 'Cannot delete the active template. Activate another one first',
         },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const usedByLevel = await prisma.gradeLevel.findFirst({
+      where: { schoolId: mySchool.schoolId, bulletinTemplateId: id },
+      select: { name: true },
+    });
+    if (usedByLevel) {
+      return NextResponse.json(
+        {
+          error: 'TEMPLATE_IN_USE',
+          message: `Ce modèle est assigné au niveau « ${usedByLevel.name} ». Retirez l'affectation avant de le supprimer.`,
+        },
+        { status: 409, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 

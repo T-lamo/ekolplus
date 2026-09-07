@@ -124,7 +124,11 @@ export async function loadSchoolRows(
       officialCode: s.officialCode,
       country: s.country,
       city: s.city,
-      ownerName: s.organization.owner.name ?? s.organization.owner.email,
+      // Final fallback ('Propriétaire sans nom') covers a username-only
+      // owner account, which the school-creation flow never actually
+      // produces (always email-based) — defensive only, name/email are
+      // both nullable at the type level.
+      ownerName: s.organization.owner.name ?? s.organization.owner.email ?? 'Propriétaire sans nom',
       plan: sub ? { key: sub.plan.key, name: sub.plan.name } : null,
       status: sub?.status ?? 'NONE',
       expiringSoon:

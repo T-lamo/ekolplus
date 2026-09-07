@@ -108,7 +108,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         await enqueueOutbox(tx, {
           kind: 'email.verification_code',
           payload: {
-            to: owner.email,
+            // data.ownerEmail (not owner.email): this branch only runs for
+            // a fresh owner, created with this exact email a few lines up
+            // — guaranteed non-null, unlike User.email's nullable type.
+            to: data.ownerEmail,
             code: verificationCode,
             expiresAt: verificationExpiresAt.toISOString(),
           },

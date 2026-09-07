@@ -24,6 +24,7 @@ import type {
   EvaluationConfig,
   TermOption,
 } from '@/app/(school)/pedagogie/carnet-de-notes/types';
+import type { EvaluationMode } from '@/lib/qualitative';
 
 export default function EditEvaluationPage() {
   const t = useTranslations('Gradebook.editEvaluation');
@@ -65,6 +66,7 @@ export default function EditEvaluationPage() {
       className: string;
       subjectId: string;
       subjectName: string;
+      subjectEvaluationMode: EvaluationMode;
     }[];
     terms: TermOption[];
   }>('/api/teacher/me', { skip: !user });
@@ -73,7 +75,7 @@ export default function EditEvaluationPage() {
     classId: cs.classId,
     subjectId: cs.subjectId,
     class: { id: cs.classId, name: cs.className },
-    subject: { id: cs.subjectId, name: cs.subjectName },
+    subject: { id: cs.subjectId, name: cs.subjectName, evaluationMode: cs.subjectEvaluationMode },
     teacher: null,
     coefficient: null,
   }));

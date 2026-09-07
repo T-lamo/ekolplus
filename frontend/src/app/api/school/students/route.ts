@@ -70,6 +70,9 @@ const GuardianInput = z.object({
   email: zEmail.nullable().optional(),
   profession: z.string().trim().max(80).nullable().optional(),
   isPrimary: z.boolean().optional(),
+  nif: z.string().trim().max(40).nullable().optional(),
+  niu: z.string().trim().max(40).nullable().optional(),
+  vitalStatus: z.enum(['VIVANT', 'DECEDE']).nullable().optional(),
 });
 
 const CreateStudentBody = z.object({
@@ -91,6 +94,7 @@ const CreateStudentBody = z.object({
   enrolledAt: z.coerce.date().optional(),
   previousSchool: z.string().trim().max(120).nullable().optional(),
   transferNumber: z.string().trim().max(60).nullable().optional(),
+  nisu: z.string().trim().max(40).nullable().optional(),
   notes: z.string().trim().max(1000).nullable().optional(),
   scholarship: z.boolean().optional(),
   status: z.enum(['ENROLLED', 'REPEATED_ABSENCES', 'SUSPENDED']).optional(),
@@ -177,6 +181,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           ...(parsed.data.enrolledAt ? { enrolledAt: parsed.data.enrolledAt } : {}),
           previousSchool: parsed.data.previousSchool ?? null,
           transferNumber: parsed.data.transferNumber ?? null,
+          nisu: parsed.data.nisu ?? null,
           notes: parsed.data.notes ?? null,
           scholarship: parsed.data.scholarship ?? false,
           ...(parsed.data.status ? { status: parsed.data.status } : {}),
@@ -199,6 +204,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             email: g.email ?? null,
             profession: g.profession ?? null,
             isPrimary: g.isPrimary ?? false,
+            nif: g.nif ?? null,
+            niu: g.niu ?? null,
+            vitalStatus: g.vitalStatus ?? null,
           })),
         });
       }

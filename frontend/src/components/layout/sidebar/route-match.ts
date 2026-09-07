@@ -2,7 +2,12 @@ import type { NavItem, NavSection } from './types';
 
 export function isActiveRoute(pathname: string, href: string): boolean {
   const path = href.split('?')[0]!;
-  if (path === '/dashboard' || path === '/admin' || path === '/espace-enseignant')
+  if (
+    path === '/dashboard' ||
+    path === '/admin' ||
+    path === '/espace-enseignant' ||
+    path === '/eleve'
+  )
     return pathname === path;
   return pathname === path || pathname.startsWith(`${path}/`);
 }

@@ -188,5 +188,27 @@
       "filenamePrefix": "kanè-nòt",
       "allSubjectsSuffix": "tout-matye"
     }
+  },
+  "criteria": {
+    "title": "Griy kritè",
+    "subtitle": "Yon kwa pou chak kritè ak chak elèv, sou echèl matyè a.",
+    "back": "Retounen nan kanè nòt la",
+    "statusDraft": "Bouyon",
+    "statusPublished": "Valide",
+    "saveDraft": "Anrejistre bouyon",
+    "validate": "Valide",
+    "locked": "Sezi nòt yo fèmen pou peryòd sa a.",
+    "scaleHint": "Echèl : {scale}",
+    "criterionColumn": "Kritè",
+    "prevStudent": "Anvan",
+    "nextStudent": "Apre",
+    "noStudents": "Pa gen okenn elèv enskri nan klas sa a.",
+    "noCriteria": "Matyè sa a poko gen kritè. Ajoute yo nan fich matyè a.",
+    "loadError": "Nou pa ka chaje griy la kounye a.",
+    "saveError": "Nou pa t ka anrejistre griy la.",
+    "draftSavedToast": "Bouyon anrejistre.",
+    "validatedToast": "Griy la valide epi pibliye.",
+    "qualitativeSubjectHint": "Matyè sa a evalye pa kritè, san nòt ni mwayèn.",
+    "openSheet": "Louvri griy kritè a"
   }
 }

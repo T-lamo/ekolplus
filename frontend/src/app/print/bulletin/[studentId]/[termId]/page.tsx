@@ -1,7 +1,8 @@
 import { verifyPrintToken } from '@/lib/server/bulletin-pdf/print-token';
 import { getStudentBulletinView } from '@/lib/server/bulletin-pdf/get-bulletin-view';
-import { BulletinCanvas, type BulletinRenderData } from '@/components/bulletin/BulletinCanvas';
-import type { BulletinTemplateConfig } from '@/app/(school)/configuration/modele-bulletin/types';
+import { normalizeConfig } from '@/lib/server/bulletin-templates';
+import { BulletinDocument } from '@/components/bulletin/BulletinDocument';
+import type { BulletinRenderData } from '@/components/bulletin/render-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // navigates here, see lib/server/bulletin-pdf/generate.ts). Authorized by a
 // short-lived signed token bound to exactly one (schoolId, studentId,
 // termId) tuple — never a session cookie, since headless Chromium has no
-// browser session. Renders the same BulletinCanvas the Viewer shows on
+// browser session. Renders the same BulletinDocument the Viewer shows on
 // screen, so the generated PDF is byte-for-byte what a school configured.
 export default async function PrintBulletinPage({
   params,
@@ -26,18 +27,22 @@ export default async function PrintBulletinPage({
     return <p style={{ padding: 24, fontFamily: 'sans-serif' }}>Lien invalide ou expiré.</p>;
   }
 
-  const view = await getStudentBulletinView(payload.schoolId, studentId, termId);
+  const view = await getStudentBulletinView(
+    payload.schoolId,
+    studentId,
+    termId,
+    payload.audience ?? 'staff',
+  );
   if (!view || !view.template) {
     return <p style={{ padding: 24, fontFamily: 'sans-serif' }}>Bulletin indisponible.</p>;
   }
 
-  const config = view.template.config as BulletinTemplateConfig;
-  const termLabel = view.terms.find((t) => t.id === view.resolvedTermId)?.label ?? '';
+  const config = normalizeConfig(view.template.config);
   const renderData: BulletinRenderData = {
     schoolName: view.schoolName,
     schoolLogoUrl: view.schoolLogoUrl,
     directorSignatureUrl: view.directorSignatureUrl,
-    period: termLabel,
+    period: view.termLabel,
     academicYear: view.academicYearLabel,
     studentName: `${view.firstName} ${view.lastName}`,
     className: view.className,
@@ -59,6 +64,16 @@ export default async function PrintBulletinPage({
     generalAppreciation: view.generalAppreciation,
     absencesDays: null,
     retards: null,
+    firstName: view.firstName,
+    lastName: view.lastName,
+    schoolAddress: view.schoolAddress,
+    schoolPhone: view.schoolPhone,
+    schoolEmail: view.schoolEmail,
+    termLabel: view.termLabel,
+    academicYearLabel: view.academicYearLabel,
+    qualitativeSubjects: view.qualitativeSubjects,
+    nisu: view.nisu,
+    ...(view.year ? { year: view.year } : {}),
   };
 
   return (
@@ -69,15 +84,16 @@ export default async function PrintBulletinPage({
           renders the bulletin edge-to-edge with no outer gutter. Any
           spacing the school wants around the content is authored inside
           the template itself (config.layout.pageMargin), not injected
-          here. chrome={false} on BulletinCanvas strips the on-screen card
-          look (shadow, rounded corners) so the PDF is the real page, not a
-          floating card. */}
+          here. chrome={false} strips the on-screen card look (shadow,
+          rounded corners) so the PDF is the real page, not a floating
+          card. Each sheet already carries its own break-after:page (see
+          BulletinDocument.tsx) except the last one. */}
       <style
         dangerouslySetInnerHTML={{
           __html: `@page{size:${config.pageFormat === 'LETTER' ? 'letter' : 'A4'} ${config.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait'};margin:0} body{margin:0}`,
         }}
       />
-      <BulletinCanvas config={config} data={renderData} chrome={false} />
+      <BulletinDocument config={config} data={renderData} chrome={false} />
     </>
   );
 }

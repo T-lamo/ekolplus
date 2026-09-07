@@ -47,11 +47,17 @@ function req(method: string, url: string, body?: unknown) {
 }
 
 const now = new Date('2026-08-17T00:00:00Z');
-const row = (id: string, name: string, order: number) => ({
+const row = (
+  id: string,
+  name: string,
+  order: number,
+  bulletinTemplateId: string | null = null,
+) => ({
   id,
   schoolId: 'school_1',
   name,
   order,
+  bulletinTemplateId,
   createdAt: now,
   updatedAt: now,
 });
@@ -64,6 +70,16 @@ beforeEach(() => {
   mockRequireAuth.mockResolvedValue(authUser as never);
   mockVerifyCsrf.mockReturnValue(null);
   mockResolveMySchool.mockResolvedValue(adminSchool);
+  // PATCH /[id] wraps the rename + Class.level cascade in a callback-form
+  // $transaction (F2) — pass `prismaMock` itself as `tx` so existing
+  // `prismaMock.gradeLevel.update` / `.class.updateMany` assertions still
+  // see the calls made inside it. Mirrors src/lib/server/portal-invite.test.ts.
+  prismaMock.$transaction.mockImplementation((cb: unknown) => {
+    if (typeof cb === 'function') {
+      return (cb as (tx: typeof prismaMock) => unknown)(prismaMock) as Promise<unknown>;
+    }
+    return Promise.resolve(cb);
+  });
 });
 
 describe('GET /api/school/grade-levels', () => {
@@ -87,21 +103,21 @@ describe('GET /api/school/grade-levels', () => {
     // The route `select`s id/name/order — mock what Prisma would hand back
     // for that select (the mock doesn't apply `select` itself).
     prismaMock.gradeLevel.findMany.mockResolvedValue([
-      { id: 'l1', name: '6ème', order: 0 },
-      { id: 'l2', name: '5ème', order: 1 },
+      { id: 'l1', name: '6ème', order: 0, bulletinTemplateId: null },
+      { id: 'l2', name: '5ème', order: 1, bulletinTemplateId: null },
     ] as never);
     const res = await GET(req('GET', '/api/school/grade-levels'));
     expect(res.status).toBe(200);
     expect(res.headers.get('x-request-id')).toBeTruthy();
     const body = (await res.json()) as { levels: unknown[] };
     expect(body.levels).toEqual([
-      { id: 'l1', name: '6ème', order: 0 },
-      { id: 'l2', name: '5ème', order: 1 },
+      { id: 'l1', name: '6ème', order: 0, bulletinTemplateId: null },
+      { id: 'l2', name: '5ème', order: 1, bulletinTemplateId: null },
     ]);
     expect(prismaMock.gradeLevel.findMany).toHaveBeenCalledWith({
       where: { schoolId: 'school_1' },
       orderBy: { order: 'asc' },
-      select: { id: true, name: true, order: true },
+      select: { id: true, name: true, order: true, bulletinTemplateId: true },
     });
   });
 });
@@ -247,11 +263,109 @@ describe('PATCH /api/school/grade-levels/[id]', () => {
     );
     expect(res.status).toBe(200);
     expect((await res.json()) as unknown).toEqual({
-      level: { id: 'l1', name: 'Sixième', order: 0 },
+      level: { id: 'l1', name: 'Sixième', order: 0, bulletinTemplateId: null },
     });
-    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'l1' }, data: { name: 'Sixième' } }),
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith({
+      where: { id: 'l1' },
+      data: { name: 'Sixième' },
+    });
+    // F2(a) — a rename cascades to every class displaying this level's label.
+    expect(prismaMock.class.updateMany).toHaveBeenCalledWith({
+      where: { gradeLevelId: 'l1' },
+      data: { level: 'Sixième' },
+    });
+  });
+
+  it('empty body (no name, no bulletinTemplateId) → 400 VALIDATION_FAILED', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    const res = await PATCH(req('PATCH', '/api/school/grade-levels/l1', {}), params('l1'));
+    expect(res.status).toBe(400);
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it('unknown bulletinTemplateId → 404 TEMPLATE_NOT_FOUND', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.bulletinTemplate.findUnique.mockResolvedValue(null);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: 'nope' }),
+      params('l1'),
     );
+    expect(res.status).toBe(404);
+    expect(((await res.json()) as { error: string }).error).toBe('TEMPLATE_NOT_FOUND');
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it("another school's own (non-global) template → 404 TEMPLATE_NOT_FOUND", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.bulletinTemplate.findUnique.mockResolvedValue({
+      id: 'tpl1',
+      schoolId: 'school_OTHER',
+    } as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: 'tpl1' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(404);
+    expect(prismaMock.gradeLevel.update).not.toHaveBeenCalled();
+  });
+
+  it('a global template is accepted → 200, bulletinTemplateId set', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.bulletinTemplate.findUnique.mockResolvedValue({
+      id: 'tpl-global',
+      schoolId: null,
+    } as never);
+    prismaMock.gradeLevel.update.mockResolvedValue(row('l1', '6ème', 0, 'tpl-global') as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: 'tpl-global' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith({
+      where: { id: 'l1' },
+      data: { bulletinTemplateId: 'tpl-global' },
+    });
+    // Assigning a template also adopts the classes still only labelled with
+    // the level's name, so the template applies to their students at once.
+    expect(prismaMock.class.updateMany).toHaveBeenCalledWith({
+      where: { schoolId: 'school_1', gradeLevelId: null, level: '6ème' },
+      data: { gradeLevelId: 'l1' },
+    });
+  });
+
+  it("the school's own template is accepted → 200, bulletinTemplateId set", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0) as never);
+    prismaMock.bulletinTemplate.findUnique.mockResolvedValue({
+      id: 'tpl-own',
+      schoolId: 'school_1',
+    } as never);
+    prismaMock.gradeLevel.update.mockResolvedValue(row('l1', '6ème', 0, 'tpl-own') as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: 'tpl-own' }),
+      params('l1'),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()) as unknown).toEqual({
+      level: { id: 'l1', name: '6ème', order: 0, bulletinTemplateId: 'tpl-own' },
+    });
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith({
+      where: { id: 'l1' },
+      data: { bulletinTemplateId: 'tpl-own' },
+    });
+  });
+
+  it('bulletinTemplateId: null clears the assignment → 200', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue(row('l1', '6ème', 0, 'tpl-global') as never);
+    prismaMock.gradeLevel.update.mockResolvedValue(row('l1', '6ème', 0, null) as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/grade-levels/l1', { bulletinTemplateId: null }),
+      params('l1'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.gradeLevel.update).toHaveBeenCalledWith({
+      where: { id: 'l1' },
+      data: { bulletinTemplateId: null },
+    });
   });
 });
 
@@ -293,7 +407,7 @@ describe('DELETE /api/school/grade-levels/[id]', () => {
 });
 
 describe('POST /api/school/grade-levels/reorder', () => {
-  const existing = [row('l1', '6ème', 0), row('l2', '5ème', 1), row('l3', '4ème', 2)];
+  const existing = [row('l1', '6ème', 0, 'tpl-1'), row('l2', '5ème', 1), row('l3', '4ème', 2)];
 
   beforeEach(() => {
     prismaMock.gradeLevel.findMany.mockResolvedValue(existing as never);
@@ -349,9 +463,9 @@ describe('POST /api/school/grade-levels/reorder', () => {
     expect(res.status).toBe(200);
     expect((await res.json()) as unknown).toEqual({
       levels: [
-        { id: 'l3', name: '4ème', order: 0 },
-        { id: 'l1', name: '6ème', order: 1 },
-        { id: 'l2', name: '5ème', order: 2 },
+        { id: 'l3', name: '4ème', order: 0, bulletinTemplateId: null },
+        { id: 'l1', name: '6ème', order: 1, bulletinTemplateId: 'tpl-1' },
+        { id: 'l2', name: '5ème', order: 2, bulletinTemplateId: null },
       ],
     });
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);

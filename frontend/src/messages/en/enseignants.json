@@ -98,8 +98,14 @@
       "genderSelect": "Select",
       "nationality": "Nationality",
       "nationalityPlaceholder": "e.g. Haitian",
-      "idNumber": "ID number",
-      "idNumberPlaceholder": "e.g. NIF-2024-0042"
+      "birthPlace": "Place of birth",
+      "birthPlacePlaceholder": "e.g. Port-au-Prince",
+      "diploma": "Diploma",
+      "diplomaPlaceholder": "e.g. Bachelor's in Education",
+      "nif": "NIF",
+      "nifPlaceholder": "Tax identification number",
+      "niu": "NIU",
+      "niuPlaceholder": "Unique identification number"
     },
     "contact": {
       "title": "Contact details",
@@ -157,7 +163,10 @@
       "dateOfBirth": "Date of birth",
       "gender": "Gender",
       "nationality": "Nationality",
-      "idNumber": "ID number",
+      "birthPlace": "Place of birth",
+      "diploma": "Diploma",
+      "nif": "NIF",
+      "niu": "NIU",
       "address": "Address",
       "status": "Status",
       "email": "Email address",

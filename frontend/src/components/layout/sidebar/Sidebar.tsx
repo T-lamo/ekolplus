@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { usePathname } from 'next/navigation';
@@ -52,13 +52,29 @@ export function Sidebar({
   currentSpace,
 }: SidebarProps) {
   const pathname = usePathname();
-  const [openSection, setOpenSection] = useState<string | null>(() =>
-    findActiveSection(pathname, sections),
-  );
+  // Several sections can be open at once: a section the user opened stays
+  // open until the user closes it (no accordion that swaps one for another).
+  // Navigation only guarantees that the section of the current page is open.
+  const [openSections, setOpenSections] = useState<string[]>(() => {
+    const active = findActiveSection(pathname, sections);
+    return active ? [active] : [];
+  });
+
+  // `sections` is rebuilt (new array/object references) whenever the role or
+  // permission-derived filtering recomputes — e.g. the school plan snapshot
+  // resolving right after login — which happens independently of navigation.
+  // Resyncing on every `sections` change (rather than only on real pathname
+  // changes) closed a section the user had just manually opened, the instant
+  // one of those unrelated recomputes landed. A ref keeps this effect scoped
+  // to actual navigation while still reading the latest sections.
+  const sectionsRef = useRef(sections);
+  sectionsRef.current = sections;
 
   useEffect(() => {
-    setOpenSection(findActiveSection(pathname, sections));
-  }, [pathname, sections]);
+    const active = findActiveSection(pathname, sectionsRef.current);
+    if (!active) return;
+    setOpenSections((prev) => (prev.includes(active) ? prev : [...prev, active]));
+  }, [pathname]);
 
   const activeHref = findActiveItem(pathname, sections)?.href ?? null;
   const bgClass =
@@ -104,7 +120,9 @@ export function Sidebar({
           </div>
         )}
 
-        <nav className="flex-1 overflow-y-auto">
+        {/* min-h-0 lets the nav shrink and scroll inside the column, so the
+            footer (plan card + profile) always stays in view. */}
+        <nav className="min-h-0 flex-1 overflow-y-auto">
           {collapsed ? (
             sections.map((section) => (
               <SidebarSection
@@ -117,19 +135,14 @@ export function Sidebar({
               />
             ))
           ) : (
-            <Accordion.Root
-              type="single"
-              collapsible
-              value={openSection ?? ''}
-              onValueChange={(v) => setOpenSection(v === '' ? null : v)}
-            >
+            <Accordion.Root type="multiple" value={openSections} onValueChange={setOpenSections}>
               {sections.map((section) => (
                 <SidebarSection
                   key={section.label}
                   section={section}
                   variant={variant}
                   collapsed={false}
-                  open={openSection === section.label}
+                  open={openSections.includes(section.label)}
                   activeHref={activeHref}
                   onNavigate={onNavigate}
                 />
@@ -138,7 +151,7 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className={footerClass}>
+        <div className={`shrink-0 ${footerClass}`}>
           {collapsed ? footerCollapsed : footer}
           <SidebarUserProfile
             variant={variant}

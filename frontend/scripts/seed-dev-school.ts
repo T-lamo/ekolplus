@@ -37,6 +37,15 @@ const OWNER_PASSWORD = 'TestEcole2026!';
 // in TEACHERS below) gets a real, already-active login so local testing
 // doesn't require going through the invite/accept-code flow each time.
 const TEACHER_PASSWORD = 'TeacherTest2026!';
+const STUDENT_PASSWORD = 'StudentTest2026!';
+// Personnel module test account (secrétariat) — a username-only staff
+// login (no email), the account shape POST /api/school/personnel's
+// username-mode branch produces: User.username/passwordHash set,
+// User.email left null, an OrganizationMember role MEMBER holding a
+// StaffRole. Manual QA account for the no-email login path (Task 9,
+// 2026-09-04 Personnel module spec).
+const SECRETARIAT_USERNAME = 'secretaire.demo';
+const SECRETARIAT_PASSWORD = 'SecretaireTest2026!';
 export const ETOILES = {
   // Same id as before the wipe so bookmarks / notes keep pointing at it.
   schoolId: 'cmsovzjgv00059xpfilkr2lyh',
@@ -477,6 +486,15 @@ const TEACHERS: TeacherSeed[] = [
     hiredYearsAgo: 3,
     weeklyHoursTarget: 24,
   },
+  {
+    key: 'silien',
+    civility: 'Mme',
+    firstName: 'Nadège',
+    lastName: 'Silien',
+    contractType: 'Temps plein',
+    hiredYearsAgo: 3,
+    weeklyHoursTarget: 30,
+  },
 ];
 // Per-level splits so no teacher exceeds the 30 weekly slots: maths collège →
 // M. Augustin / lycée → M. Pierre-Louis; français collège → Mme Dorcélus /
@@ -606,6 +624,14 @@ export const ROOMS: RoomSeed[] = [
     building: 'Bâtiment A',
     floor: 'Rez-de-chaussée',
     equipment: 'Instruments, matériel de dessin',
+  },
+  {
+    name: 'Salle Maternelle',
+    type: 'CLASSROOM',
+    capacity: 20,
+    building: 'Bâtiment A',
+    floor: 'Rez-de-chaussée',
+    equipment: 'Tapis, coin lecture, tableau blanc',
   },
 ];
 
@@ -829,6 +855,14 @@ export async function main(args: string[] = [], deps: SeedDeps = {}): Promise<vo
       await seedEtoiles(prisma, owner.id, now, today);
     }
 
+    // 4b. Espace Élève test account — idempotent, also on an existing dataset.
+    const studentEmail = await ensureStudentPortalAccount(
+      prisma,
+      ETOILES.schoolId,
+      await bcrypt.hash(STUDENT_PASSWORD, 12),
+    );
+    if (studentEmail) console.log(`— Compte espace élève : ${studentEmail}`);
+
     // 5. Second (empty) school.
     const existing2 = await prisma.organization.findUnique({
       where: { slug: HELP.slug },
@@ -847,6 +881,9 @@ export async function main(args: string[] = [], deps: SeedDeps = {}): Promise<vo
     console.log(
       '  carline.michel@lesetoiles.edu.ht  → espace enseignant (Mme Michel, Les Étoiles)',
     );
+    if (studentEmail) {
+      console.log(`  ${studentEmail}  → espace élève (premier élève de Les Étoiles)`);
+    }
   } finally {
     if (!deps.prisma) await prisma.$disconnect();
   }
@@ -898,6 +935,93 @@ async function upsertTeacherPortalAccount(
     create: { organizationId, userId: user.id, role: 'MEMBER' },
   });
   await prisma.teacher.update({ where: { id: teacherId }, data: { userId: user.id } });
+}
+
+// Personnel module test account (secrétariat) — a username-only staff
+// login: no email at all, modeled on how POST /api/school/personnel's
+// username-mode branch creates one (see that route's header comment) —
+// User.username/passwordHash set, User.email left null, an
+// OrganizationMember role MEMBER holding a StaffRole with a couple of
+// real grants (lib/permissions.ts). Only created when the school itself
+// is (same as the teacher portal account above); upserts by username so
+// a re-run without --reset still re-links it if the User row survived a
+// previous reset.
+async function ensureSecretariatStaffAccount(
+  prisma: PrismaClient,
+  organizationId: string,
+  schoolId: string,
+  passwordHash: string,
+): Promise<string> {
+  const user = await prisma.user.upsert({
+    where: { username: SECRETARIAT_USERNAME },
+    update: { passwordHash, name: 'Nadège Similien' },
+    create: {
+      username: SECRETARIAT_USERNAME,
+      name: 'Nadège Similien',
+      passwordHash,
+      role: 'USER',
+    },
+    select: { id: true },
+  });
+  const role = await prisma.staffRole.create({
+    data: {
+      schoolId,
+      name: 'Secrétariat',
+      description: 'Suivi des dossiers élèves — compte de démonstration sans email.',
+      grants: ['dashboard.view', 'eleves.view', 'eleves.edit'],
+    },
+    select: { id: true },
+  });
+  await prisma.organizationMember.upsert({
+    where: { organizationId_userId: { organizationId, userId: user.id } },
+    update: { role: 'MEMBER', staffRoles: { set: [{ id: role.id }] } },
+    create: {
+      organizationId,
+      userId: user.id,
+      role: 'MEMBER',
+      staffRoles: { connect: [{ id: role.id }] },
+    },
+  });
+  return SECRETARIAT_USERNAME;
+}
+
+// Espace Élève test account — the first student (by matricule) of Les
+// Étoiles gets a real, already-active login, the same seed-time shortcut
+// as the teacher account above (no invite code). Runs on every invocation,
+// with or without --reset, so an existing dev dataset gains the account
+// without being rebuilt. A student account never gets an
+// OrganizationMember row (Phase 1 design: that is exactly what keeps every
+// /api/school/* route closed to it). Idempotent: upsert the User by email,
+// then (re)link Student.userId. The PRNG is seeded, so the first student's
+// name (hence the email) is stable across --reset runs.
+async function ensureStudentPortalAccount(
+  prisma: PrismaClient,
+  schoolId: string,
+  passwordHash: string,
+): Promise<string | null> {
+  const student = await prisma.student.findFirst({
+    where: { schoolId },
+    orderBy: { studentNumber: 'asc' },
+    select: { id: true, firstName: true, lastName: true },
+  });
+  if (!student) return null;
+  const email = `${slugName(student.firstName)}.${slugName(student.lastName)}@eleves.lesetoiles.edu.ht`;
+  const name = `${student.firstName} ${student.lastName}`;
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { name, passwordHash, emailVerifiedAt: new Date(), status: 'ACTIVE' },
+    create: { name, email, passwordHash, emailVerifiedAt: new Date(), role: 'USER' },
+    select: { id: true },
+  });
+  // Student.userId is @unique: a previous run may have linked this User to
+  // a Student row that still exists (no --reset) — unlink it first so the
+  // update below cannot collide.
+  await prisma.student.updateMany({
+    where: { userId: user.id, NOT: { id: student.id } },
+    data: { userId: null },
+  });
+  await prisma.student.update({ where: { id: student.id }, data: { email, userId: user.id } });
+  return email;
 }
 
 async function createTenant(
@@ -1014,6 +1138,14 @@ async function seedEtoiles(
   await prisma.gradeLevel.createMany({
     data: LEVELS.map((name, i) => ({ schoolId, name, order: i + 1 })),
   });
+  // Classes below are linked to their catalog level (Class.gradeLevelId), the
+  // way the class form does it, so a bulletin template assigned to a level
+  // from the Niveaux screen reaches the seeded classes.
+  const levelIdByName = new Map(
+    (
+      await prisma.gradeLevel.findMany({ where: { schoolId }, select: { id: true, name: true } })
+    ).map((l) => [l.name, l.id] as const),
+  );
 
   // Rooms catalogue — created before classes / timetable sessions so both
   // link by roomId (the class-form / session-form catalogue selects).
@@ -1049,7 +1181,7 @@ async function seedEtoiles(
         phone: PHONE(),
         gender: t.civility === 'Mme' ? 'Féminin' : 'Masculin',
         nationality: 'Haïtienne',
-        idNumber: `NIF-${int(2010, 2024)}-${String(int(1, 999)).padStart(4, '0')}`,
+        nif: `NIF-${int(2010, 2024)}-${String(int(1, 999)).padStart(4, '0')}`,
         address: `${pick(NEIGHBOURHOODS)}, Port-au-Prince`,
         contractType: t.contractType,
         hiredAt: utc(now.getUTCFullYear() - t.hiredYearsAgo, 9, 1),
@@ -1081,6 +1213,15 @@ async function seedEtoiles(
     teacherPasswordHash,
   );
   console.log(`  compte espace enseignant : ${michelEmail}`);
+
+  const secretariatPasswordHash = await bcrypt.hash(SECRETARIAT_PASSWORD, 12);
+  const secretariatUsername = await ensureSecretariatStaffAccount(
+    prisma,
+    organizationId,
+    schoolId,
+    secretariatPasswordHash,
+  );
+  console.log(`  compte staff sans email (Personnel) : ${secretariatUsername}`);
 
   // Subjects.
   const subjectId = new Map<string, string>();
@@ -1188,6 +1329,7 @@ async function seedEtoiles(
         academicYearId: yearId,
         name: c.name,
         level: c.level,
+        gradeLevelId: levelIdByName.get(c.level) ?? null,
         room: c.room,
         roomId: roomId.get(c.room) ?? null,
         capacity: c.capacity,
@@ -1631,6 +1773,315 @@ async function seedEtoiles(
     data: { schoolId, lateFeeEnabled: true, autoRemindersEnabled: true, currency: 'HTG' },
   });
   console.log(`  ${payments.length} paiements, ${disputes.length} litiges`);
+
+  // Kindergarten (livret préscolaire) — spec §8/§12/§13. Deliberately built
+  // outside LEVELS/CLASSES/SUBJECTS (Ruling R1): the birth-year formula, the
+  // GradeLevel.order = 0 requirement, and "a qualitative subject must never
+  // get a numeric Evaluation" would each need special-casing inside the
+  // generic pipeline otherwise. teacherId/roomId reuse the 'silien'/'Salle
+  // Maternelle' entries appended to TEACHERS/ROOMS above.
+  const livretTemplate = await prisma.bulletinTemplate.findFirst({
+    where: { schoolId: null, name: 'Livret préscolaire' },
+    select: { id: true },
+  });
+  const kinderLevel = await prisma.gradeLevel.create({
+    data: {
+      schoolId,
+      name: 'Kindergarten',
+      order: 0,
+      bulletinTemplateId: livretTemplate?.id ?? null,
+    },
+    select: { id: true },
+  });
+  const kinderClass = await prisma.class.create({
+    data: {
+      schoolId,
+      academicYearId: yearId,
+      name: 'Kindergarten A',
+      level: 'Kindergarten',
+      gradeLevelId: kinderLevel.id,
+      room: 'Salle Maternelle',
+      roomId: roomId.get('Salle Maternelle') ?? null,
+      capacity: 20,
+      color: '#fbbf24',
+      track: null,
+      homeroomTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+
+  const COMPORTEMENT_CRITERIA = [
+    'Serviable',
+    'Obéissant',
+    'Attentif (ve)',
+    'Généreux (se)',
+    'Ordonné (e)',
+    'Propre',
+    'Poli (e)',
+    'Agressif (ve)',
+    'Timide',
+    'Gai (e)',
+    'Bavard (e)',
+    'Remuant (e)',
+    'Somnolent (e)',
+  ];
+  const PHYSIQUE_CRITERIA = [
+    'Exercices physiques',
+    'Rythmique',
+    'Perception visuelle',
+    'Perception auditive',
+    'Sens du toucher, du goût de l’odorat',
+    'Dessin – peinture',
+    'Coloriage',
+    'Découpage - collage',
+    'Modelage',
+    'Travaux manuels',
+  ];
+  const INTELLECTUEL_CRITERIA = [
+    'Langage',
+    'Poésie',
+    'Chant',
+    'Imagination',
+    'Observation',
+    'Schéma corporel',
+    'Exercices sensoriels',
+    'Connaissances des formes',
+    'Orientation spatiale',
+    'Orientation temporelle',
+    'Pré-lecture',
+    'Pré-écriture',
+    'Graphisme',
+    'Pré-calcul',
+    'Comptage',
+    'Bible',
+  ];
+  const COMPORTEMENT_SCALE = ['Toujours', 'Souvent', 'Parfois', 'Jamais'];
+  const DEVELOPPEMENT_SCALE = ['Excellent', 'Très bien', 'Bien', 'Assez bien'];
+
+  const comportement = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Comportement',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: COMPORTEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const developpementPhysique = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Développement physique',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: DEVELOPPEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const developpementIntellectuel = await prisma.subject.create({
+    data: {
+      schoolId,
+      name: 'Développement intellectuel',
+      domain: 'Développement',
+      level: 'Kindergarten',
+      kind: 'REQUIRED',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: DEVELOPPEMENT_SCALE,
+      responsibleTeacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+
+  await prisma.subjectCriterion.createMany({
+    data: [
+      ...COMPORTEMENT_CRITERIA.map((label, i) => ({
+        subjectId: comportement.id,
+        label,
+        order: i + 1,
+      })),
+      ...PHYSIQUE_CRITERIA.map((label, i) => ({
+        subjectId: developpementPhysique.id,
+        label,
+        order: i + 1,
+      })),
+      ...INTELLECTUEL_CRITERIA.map((label, i) => ({
+        subjectId: developpementIntellectuel.id,
+        label,
+        order: i + 1,
+      })),
+    ],
+  });
+  const [comportementCriteria, physiqueCriteria, intellectuelCriteria] = await Promise.all([
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: comportement.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: developpementPhysique.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+    prisma.subjectCriterion.findMany({
+      where: { subjectId: developpementIntellectuel.id },
+      orderBy: { order: 'asc' },
+      select: { id: true },
+    }),
+  ]);
+
+  // Created sequentially (not Promise.all) so createdAt ordering is
+  // deterministic — loadPublishedGrids (student-views/criteria.ts) orders
+  // grids by classSubject.createdAt asc, and the livret template expects
+  // Comportement, then Développement physique, then Développement
+  // intellectuel, matching the source document's order.
+  const csComportement = await prisma.classSubject.create({
+    data: { classId: kinderClass.id, subjectId: comportement.id, teacherId: tid('silien') },
+    select: { id: true },
+  });
+  const csPhysique = await prisma.classSubject.create({
+    data: {
+      classId: kinderClass.id,
+      subjectId: developpementPhysique.id,
+      teacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+  const csIntellectuel = await prisma.classSubject.create({
+    data: {
+      classId: kinderClass.id,
+      subjectId: developpementIntellectuel.id,
+      teacherId: tid('silien'),
+    },
+    select: { id: true },
+  });
+
+  const kinderBirthYear = yearStart - 5;
+  const kinderStudentInputs: Prisma.StudentCreateManyInput[] = [];
+  for (let i = 0; i < 6; i++) {
+    const female = chance(0.5);
+    let firstName = '';
+    let lastName = '';
+    do {
+      firstName = pick(female ? FIRST_NAMES_F : FIRST_NAMES_M);
+      lastName = pick(LAST_NAMES);
+    } while (usedNames.has(`${firstName} ${lastName}`));
+    usedNames.add(`${firstName} ${lastName}`);
+    counter += 1;
+    kinderStudentInputs.push({
+      schoolId,
+      studentNumber: `EL-${yearStart}-${String(counter).padStart(3, '0')}`,
+      firstName,
+      lastName,
+      gender: female ? 'Féminin' : 'Masculin',
+      dateOfBirth: utc(kinderBirthYear - (chance(0.25) ? 1 : 0), int(1, 12), int(1, 28)),
+      placeOfBirth: pick([
+        'Port-au-Prince',
+        'Pétion-Ville',
+        'Cap-Haïtien',
+        'Les Cayes',
+        'Jacmel',
+        'Gonaïves',
+      ]),
+      nationality: 'Haïtienne',
+      address: `${pick(NEIGHBOURHOODS)}, Port-au-Prince`,
+      motherTongue: pick(['Créole', 'Créole', 'Français']),
+      enrollmentType: 'Nouvelle inscription',
+      scholarship: chance(0.08),
+      enrolledAt: addDays(cal.start, int(-20, 10)),
+      status: 'ENROLLED',
+    });
+  }
+  await prisma.student.createMany({ data: kinderStudentInputs });
+  const kinderStudents = await prisma.student.findMany({
+    where: { schoolId, studentNumber: { in: kinderStudentInputs.map((s) => s.studentNumber) } },
+    orderBy: { studentNumber: 'asc' },
+    select: { id: true, firstName: true, lastName: true },
+  });
+
+  const kinderGuardians: Prisma.GuardianCreateManyInput[] = kinderStudents.map((s) => {
+    const motherFirst = pick(GUARDIAN_FIRST_F);
+    return {
+      studentId: s.id,
+      name: `${motherFirst} ${s.lastName}`,
+      relationship: 'Mère',
+      phone: PHONE(),
+      email: chance(0.6) ? `${slugName(motherFirst)}.${slugName(s.lastName)}@gmail.com` : null,
+      profession: pick(PROFESSIONS),
+      isPrimary: true,
+    };
+  });
+  await prisma.guardian.createMany({ data: kinderGuardians });
+  await prisma.enrollment.createMany({
+    data: kinderStudents.map((s) => ({
+      studentId: s.id,
+      classId: kinderClass.id,
+      academicYearId: yearId,
+      enrolledAt: cal.start,
+    })),
+  });
+  console.log(
+    `  Kindergarten : niveau, classe, 3 matières qualitatives, ${kinderStudents.length} élèves`,
+  );
+
+  const term1 = at(terms, 0);
+  const [assessComportement, assessPhysique, assessIntellectuel] = await Promise.all([
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csComportement.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csPhysique.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+    prisma.criteriaAssessment.create({
+      data: { classSubjectId: csIntellectuel.id, termId: term1.id, status: 'PUBLISHED' },
+      select: { id: true },
+    }),
+  ]);
+  const kinderRatings: Prisma.CriteriaRatingCreateManyInput[] = [];
+  for (const grid of [
+    { assessmentId: assessComportement.id, criteria: comportementCriteria },
+    { assessmentId: assessPhysique.id, criteria: physiqueCriteria },
+    { assessmentId: assessIntellectuel.id, criteria: intellectuelCriteria },
+  ]) {
+    for (const student of kinderStudents) {
+      for (const criterion of grid.criteria) {
+        kinderRatings.push({
+          assessmentId: grid.assessmentId,
+          studentId: student.id,
+          criterionId: criterion.id,
+          level: int(0, 3),
+        });
+      }
+    }
+  }
+  await prisma.criteriaRating.createMany({ data: kinderRatings });
+
+  const KINDER_APPRECIATIONS = [
+    'Une session bien remplie : l’enfant participe avec entrain et progresse à son rythme.',
+    'Bon trimestre dans l’ensemble, de la curiosité et de bons progrès au fil des semaines.',
+  ];
+  await prisma.appreciation.createMany({
+    data: kinderStudents.map((s) => ({
+      studentId: s.id,
+      termId: term1.id,
+      subjectId: null,
+      mention: 'BIEN',
+      text: pick(KINDER_APPRECIATIONS),
+      comportement: pick(['Excellent', 'Satisfaisant']),
+      investissement: pick(['Excellent', 'Satisfaisant']),
+      assiduite: 'Régulier',
+      status: 'PUBLISHED',
+      authorId: ownerId,
+    })),
+  });
+  console.log('  feuilles de critères publiées, trimestre 1');
 
   // Active bulletin template = a fork of the global "Académique Vert".
   const source = await prisma.bulletinTemplate.findFirst({

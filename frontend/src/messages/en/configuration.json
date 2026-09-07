@@ -15,6 +15,10 @@
     "levelAdded": "Grade level added.",
     "levelRenamed": "Grade level renamed.",
     "levelDeleted": "Grade level deleted.",
+    "levelTemplateUpdated": "Report card template updated.",
+    "templateDefault": "School's default template",
+    "templateAria": "Report card template for {name}",
+    "templatesUnavailable": "Template list unavailable: the \"Grades\" permission is required.",
     "addModalTitle": "Add a grade level",
     "addModalSubmit": "Add",
     "renameModalTitle": "Rename grade level",
@@ -27,7 +31,8 @@
       "nameTaken": "This grade level already exists.",
       "invalidSet": "The grade level list has changed: reload the page and try again.",
       "orgRoleInsufficient": "You don't have permission to edit grade levels.",
-      "validationFailed": "Invalid name (1 to 40 characters)."
+      "validationFailed": "Invalid name (1 to 40 characters).",
+      "templateNotFound": "Template not found."
     },
     "help": {
       "pageOverview": "Drag a row to reorder grade levels, from first to last. This order is used to automatically suggest promotions when moving to the next school year."
@@ -403,6 +408,12 @@
     "form": {
       "requiredHint": "Fields marked",
       "requiredHintSuffix": "are required",
+      "steps": {
+        "identity": "Identity",
+        "kind": "Teaching",
+        "evaluation": "Assessment",
+        "assignment": "Assignment"
+      },
       "identity": {
         "title": "Subject identity",
         "subtitle": "Basic information used to identify the subject in the application.",
@@ -429,7 +440,7 @@
       },
       "structure": {
         "title": "Curriculum structure and weighting",
-        "subtitle": "Coefficient, hourly volume, and assessment rules for this subject.",
+        "subtitle": "Coefficient, hourly volume, and seat capacity for this subject.",
         "coefficientLabel": "Coefficient",
         "coefficientHint": "Weight in the overall average",
         "coefficientPlaceholder": "4",
@@ -460,7 +471,35 @@
         "includeInAverageTitle": "Include in overall average",
         "includeInAverageDesc": "This subject will be factored into the average calculation",
         "showOnBulletinTitle": "Show on report card",
-        "showOnBulletinDesc": "The grade and comments will appear on the report card"
+        "showOnBulletinDesc": "The grade and comments will appear on the report card",
+        "evaluationModeLabel": "Assessment mode",
+        "evaluationModeHint": "By grades: scored assessments and an average. By criteria: a grid ticked on a scale, no grade and no average.",
+        "evaluationModeNumeric": "By grades",
+        "evaluationModeQualitative": "By criteria",
+        "ratingScaleLabel": "Rating scale",
+        "ratingScaleHint": "2 to 6 levels, best first. E.g. Always, Often, Sometimes, Never.",
+        "ratingScaleLevelPlaceholder": "Level {index}",
+        "ratingScaleAdd": "Add a level",
+        "ratingScaleRemove": "Remove this level",
+        "ratingScaleMoveUp": "Move up",
+        "ratingScaleMoveDown": "Move down",
+        "ratingScaleLocked": "Ratings already exist: levels can be renamed but no longer reordered.",
+        "criteriaTitle": "Assessed criteria",
+        "criteriaHint": "One line per criterion, in the order shown on the report card.",
+        "criteriaEmpty": "No criteria yet.",
+        "criteriaAfterSave": "Save the subject to add criteria.",
+        "criterionPlaceholder": "E.g. Follows instructions",
+        "criterionAdd": "Add",
+        "criterionRename": "Rename",
+        "criterionSave": "Save",
+        "criterionCancel": "Cancel",
+        "criterionDelete": "Delete",
+        "criterionInUse": "This criterion has ratings: it cannot be deleted.",
+        "criterionSaveError": "The criterion could not be saved."
+      },
+      "evaluationStep": {
+        "title": "Assessment and passing rules",
+        "subtitle": "Scale, passing thresholds, and assessment mode for this subject."
       },
       "assignment": {
         "title": "Assignment and logistics",
@@ -477,8 +516,6 @@
         "prerequisitesHint": "Subjects that must be validated beforehand (e.g. having passed MAT-001 for MATH202)"
       },
       "advanced": {
-        "title": "Advanced options and settings",
-        "subtitle": "Settings specific to the academic year and assessment thresholds.",
         "yearLabel": "Academic year / Semester",
         "yearHint": "Link to the current period",
         "yearActive": "Full year {year}",
@@ -523,7 +560,8 @@
         "coefficientRange": "Between 1 and 10.",
         "maxScoreRange": "Between 1 and 100.",
         "scoreRange": "Between 0 and {max}.",
-        "evaluationTypeRequired": "Choose an assessment type."
+        "evaluationTypeRequired": "Choose an assessment type.",
+        "ratingScaleInvalid": "2 to 6 levels, all filled in, distinct and 30 characters at most."
       }
     },
     "affectations": {
@@ -858,15 +896,16 @@
     "toast": {
       "forked": "Template duplicated: you can now customize it.",
       "forkError": "Error duplicating the template.",
-      "activated": "Template set as active.",
+      "activated": "Template set as default.",
       "activateError": "Error activating the template.",
       "deleted": "Template deleted.",
-      "deleteError": "Error deleting the template."
+      "deleteError": "Error deleting the template.",
+      "deleteInUseError": "Can't delete: this template is assigned to a grade level."
     },
     "deleteConfirm": "Delete this report card template?",
     "activeCard": {
-      "label": "Active template: {name}",
-      "description": "This template is currently used to generate report cards. Last modified: {date}",
+      "label": "Default template: {name}",
+      "description": "This template is used by default to generate report cards, except for grade levels with their own assigned template. Last modified: {date}",
       "edit": "Edit"
     },
     "tabs": {
@@ -879,20 +918,20 @@
       "global": "No global template available."
     },
     "menu": {
-      "setActive": "Set as active",
+      "setActive": "Set as default template",
       "fork": "Duplicate",
       "delete": "Delete"
     },
     "badge": {
-      "active": "Active",
+      "active": "Default template",
       "global": "Global",
       "predefined": "Predefined",
       "personal": "Personal"
     },
     "editLink": "Edit",
     "help": {
-      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own: global templates can't be edited directly. Only one personal template can be active at a time.",
-      "activeTemplate": "The active template is the one used to generate your students' official report cards. To activate a different one, open a personal template's menu and choose \"Set as active\"."
+      "pageOverview": "Pick a personal template, or use \"Duplicate\" on a global one to create your own: global templates can't be edited directly. Only one personal template can be set as default at a time.",
+      "activeTemplate": "The default template is used to generate your students' report cards, unless their grade level has its own assigned template (Configuration > Levels). To change the default template, open a personal template's menu and choose \"Set as default template\"."
     },
     "block": {
       "header": "Header",
@@ -901,7 +940,13 @@
       "notes": "Grades table",
       "absences": "Absences",
       "appreciation": "Remarks",
-      "signatures": "Signatures"
+      "signatures": "Signatures",
+      "text": "Free text",
+      "cover": "Cover",
+      "criteriaGrids": "Qualitative grids",
+      "yearGrid": "Annual grid",
+      "yearDecisions": "Year decisions",
+      "yearSignatures": "Signatures per period"
     },
     "editor": {
       "notFound": "Template not found.",
@@ -912,7 +957,7 @@
         "exportError": "Error exporting the PDF.",
         "forked": "Template duplicated: you can now customize it.",
         "forkError": "Error duplicating the template.",
-        "activated": "Template set as active.",
+        "activated": "Template set as default.",
         "activateError": "Error activating the template.",
         "renameError": "Error renaming the template.",
         "logoError": "Error saving the logo.",
@@ -930,7 +975,7 @@
         "landscape": "Landscape",
         "portrait": "Portrait"
       },
-      "setActive": "Set as active",
+      "setActive": "Set as default template",
       "exportPdf": "Export PDF",
       "exporting": "Exporting…",
       "save": "Save",
@@ -940,7 +985,26 @@
         "title": "Report card blocks",
         "hint": "Drag to reorder blocks",
         "hideBlock": "Hide block",
-        "showBlock": "Show block"
+        "showBlock": "Show block",
+        "removeBlock": "Remove block"
+      },
+      "pagesPanel": {
+        "title": "Pages",
+        "addPage": "Add a page",
+        "duplicatePage": "Duplicate page",
+        "deletePage": "Delete page",
+        "pageLabel": "Page {n}",
+        "layoutLabel": "Layout",
+        "layoutFull": "Full page",
+        "layoutHalves": "Two columns",
+        "layoutSidebar": "Side column",
+        "asideWidth": "Side column width",
+        "showPageNumber": "Show page number",
+        "overflowWarning": "Content overflows the page"
+      },
+      "blockPalette": {
+        "title": "Add a block",
+        "alreadyOnPage": "Already on this page"
       },
       "zoomOut": "Zoom out",
       "zoomIn": "Zoom in",
@@ -950,7 +1014,80 @@
       "tabs": {
         "style": "Style",
         "content": "Content",
-        "spacing": "Spacing"
+        "spacing": "Spacing",
+        "block": "This block"
+      },
+      "blockProperties": {
+        "appreciationTitle": "General comment",
+        "appreciationStyle": "Presentation",
+        "appreciationStyleBox": "Boxed",
+        "appreciationStyleLines": "Ruled lines",
+        "appreciationLines": "Number of lines",
+        "appreciationTitleLabel": "Displayed title",
+        "signaturesLabelsTitle": "Signatures",
+        "signaturesStyle": "Presentation",
+        "signaturesStyleBoxes": "Boxes",
+        "signaturesStyleLines": "Lines",
+        "signaturesHomeroomFirst": "Homeroom teacher first",
+        "signatureDirectorLabel": "Director signature label",
+        "signatureHomeroomLabel": "Homeroom signature label",
+        "signatureGuardianLabel": "Guardian signature label",
+        "textTitle": "Text",
+        "textAlign": "Alignment",
+        "alignLeft": "Left",
+        "alignCenter": "Center",
+        "alignJustify": "Justify",
+        "alignRight": "Right",
+        "textVerticalAlign": "Vertical alignment",
+        "verticalAlignTop": "Top",
+        "verticalAlignMiddle": "Middle",
+        "verticalAlignBottom": "Bottom",
+        "textFontSize": "Font size",
+        "textBold": "Bold",
+        "textItalic": "Italic",
+        "textVariablesHint": "Variables: '{'eleve'}', '{'classe'}', '{'annee'}', '{'periode'}', '{'ecole'}'",
+        "coverTitle": "Cover",
+        "coverSectionLabel": "Section label",
+        "coverTitlePattern": "Title (use {term} for the term)",
+        "coverShowLogo": "Show logo",
+        "coverFramed": "Rounded frame",
+        "coverFrameStyle": "Frame stroke",
+        "coverFrameDashed": "Dashed",
+        "coverFrameSolid": "Solid",
+        "coverFrameRounded": "Rounded",
+        "coverUppercase": "Capitals",
+        "coverLogoPosition": "Logo position",
+        "coverLogoTop": "Top",
+        "coverLogoBelowTitle": "Below the title",
+        "coverFields": "Identity lines",
+        "coverField": {
+          "lastName": "Last name",
+          "firstName": "First name",
+          "fullName": "Student (full name)",
+          "className": "Class",
+          "studentNumber": "Code",
+          "nisu": "NISU",
+          "academicYear": "Academic year"
+        },
+        "coverFieldLabel": "Label: {field}",
+        "criteriaGridsTitle": "Qualitative grids",
+        "gridStyle": "Grid style",
+        "gridStyleModern": "Modern",
+        "gridStyleGrid": "Gridded",
+        "gridSubjects": "Subjects shown",
+        "gridSubjectsPlaceholder": "One subject per line",
+        "gridSubjectsHint": "Empty: every qualitative subject. Otherwise only the listed ones, in this order.",
+        "showScaleHeader": "Show the scale header",
+        "yearGridTitle": "Annual grid",
+        "yearGridShowDomains": "Group by domain",
+        "yearGridNotesLabel": "Notes label",
+        "yearGridMaxLabel": "Max label",
+        "yearDecisionsTitle": "Year decisions",
+        "yearDecisionsHeading": "Title",
+        "yearSignaturesTitle": "Signatures per period",
+        "yearSignaturesHeading": "Title",
+        "yearSignaturesDirector": "Director label",
+        "yearSignaturesGuardian": "Parents label"
       },
       "style": {
         "colorsTitle": "Theme colors",
@@ -1003,7 +1140,8 @@
           "dotted": "Dotted"
         },
         "borderColor": "Border color",
-        "showBackgrounds": "Colored table backgrounds"
+        "showBackgrounds": "Colored table backgrounds",
+        "showDecoration": "Top and bottom page stripes"
       }
     }
   }

@@ -148,5 +148,15 @@ export function useClassFormData(enabled: boolean) {
     t,
   ]);
 
-  return { options, error, noSchool };
+  const levelCatalogRows = useMemo(
+    () =>
+      levelsData
+        ? [...levelsData.levels]
+            .sort((a, b) => a.order - b.order)
+            .map((l) => ({ id: l.id, name: l.name }))
+        : [],
+    [levelsData],
+  );
+
+  return { options, levelCatalogRows, error, noSchool };
 }

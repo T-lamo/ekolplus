@@ -191,7 +191,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // D-03: welcome notification on first OAuth account creation.
     // NOTIF-05 invariant — go through createNotification (never prisma.notification.create directly).
     if (isNewUser) {
-      await createNotification(prisma, welcomeNotification(u.id, u.email));
+      // claims.email (not u.email): an OAuth account always has a verified
+      // email at this point (email_verified check above), but User.email
+      // is nullable at the type level for username-only accounts — claims
+      // (from the ID token, in scope for the whole function) is the value
+      // guaranteed non-null here.
+      await createNotification(prisma, welcomeNotification(u.id, claims.email.toLowerCase()));
     }
 
     // Consume next cookie (defense-in-depth re-validation against same-origin).

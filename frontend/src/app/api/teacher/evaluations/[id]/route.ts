@@ -119,9 +119,23 @@ export async function PATCH(
       }
       const target = await prisma.classSubject.findUnique({
         where: { id: parsed.data.classSubjectId },
-        select: { class: { select: { academicYearId: true } } },
+        select: {
+          class: { select: { academicYearId: true } },
+          subject: { select: { evaluationMode: true } },
+        },
       });
       if (!target) return notFound(ctx.requestId);
+      // Same guard as POST: an Evaluation must never land on a qualitative
+      // subject, retargeting included — normalized averages assume otherwise.
+      if (target.subject.evaluationMode !== 'NUMERIC') {
+        return NextResponse.json(
+          {
+            error: 'SUBJECT_NOT_NUMERIC',
+            message: 'Cette matière est évaluée par critères, pas par notes.',
+          },
+          { status: 409, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
       targetYearId = target.class.academicYearId;
     }
     if (parsed.data.termId) {

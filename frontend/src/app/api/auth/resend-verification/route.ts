@@ -101,7 +101,10 @@ export async function POST(req: NextRequest): Promise<Response> {
         await enqueueOutbox(tx, {
           kind: 'email.verification_code',
           payload: {
-            to: user.email,
+            // email (not user.email): this is the exact value the user was
+            // just looked up by — guaranteed non-null, unlike User.email's
+            // nullable type.
+            to: email,
             code,
             expiresAt: expiresAt.toISOString(),
           },

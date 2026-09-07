@@ -8,7 +8,9 @@ const SECTIONS: NavSection[] = [
     label: 'Principal',
     items: [
       { label: 'Élèves', href: '/eleves', icon: Users },
-      { label: 'Enseignants', href: '/enseignants', icon: UserCheck },
+      // Personnel module (2026-09-04): replaces the old Enseignants nav
+      // entry at the same position, /enseignants now redirects here.
+      { label: 'Personnel', href: '/personnel', icon: UserCheck },
     ],
   },
   {
@@ -44,5 +46,9 @@ describe('getBreadcrumbTrail', () => {
 
   it('the checkout page under /abonnement stays under Compte › Abonnement', () => {
     expect(getBreadcrumbTrail('/abonnement/paiement', SECTIONS)).toEqual(['Compte', 'Abonnement']);
+  });
+
+  it('a Personnel fiche route stays under Principal › Personnel', () => {
+    expect(getBreadcrumbTrail('/personnel/abc123', SECTIONS)).toEqual(['Principal', 'Personnel']);
   });
 });

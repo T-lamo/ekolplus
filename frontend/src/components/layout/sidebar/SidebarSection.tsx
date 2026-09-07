@@ -40,18 +40,23 @@ export function SidebarSection({
   }
 
   return (
-    <Accordion.Item value={section.label} className="px-2.5 pt-3.5 pb-0.5">
+    <Accordion.Item value={section.label} className="px-2.5 pt-3 pb-0.5">
       <Accordion.Header>
+        {/* Section heads read as headings, clearly apart from the items under
+            them: bolder, wider letter-spacing, full-strength ink, a hairline
+            above, and the chevron in a rounded pill. */}
         <Accordion.Trigger
-          className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-[10px] font-semibold tracking-wide uppercase ${
-            variant === 'light' ? 'text-muted-foreground' : 'text-white/28'
+          className={`group flex min-h-9 w-full items-center justify-between rounded-md px-2 py-1.5 text-[11px] font-extrabold tracking-[0.14em] uppercase ${
+            variant === 'light'
+              ? 'text-foreground hover:bg-muted'
+              : 'text-white/85 hover:bg-white/[0.06]'
           }`}
         >
           {section.label}
           <span
-            className={`inline-flex items-center transition-transform duration-150 ${
-              open ? 'rotate-90' : 'rotate-0'
-            }`}
+            className={`inline-flex h-5 w-5 items-center justify-center rounded-full transition-transform duration-150 ${
+              variant === 'light' ? 'bg-muted text-muted-foreground' : 'bg-white/10 text-white/70'
+            } ${open ? 'rotate-90' : 'rotate-0'}`}
           >
             <ChevronRight size={12} />
           </span>

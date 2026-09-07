@@ -21,6 +21,12 @@ import {
   splitSubjectInput,
   validateScoreBounds,
 } from '@/lib/server/subjects';
+import {
+  QUALITATIVE_CONFLICT_MESSAGES,
+  findQualitativeConflict,
+  resolveQualitativeProfile,
+} from '@/lib/server/qualitative';
+import type { EvaluationMode } from '@/lib/qualitative';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 async function assertOwnedSubject(id: string, schoolId: string) {
@@ -131,7 +137,29 @@ export async function PATCH(
       }
     }
 
-    const { data, prerequisiteIds } = splitSubjectInput(input);
+    const { data, prerequisiteIds, qualitativeInput } = splitSubjectInput(input);
+    if (qualitativeInput) {
+      const resolved = resolveQualitativeProfile({
+        evaluationMode:
+          qualitativeInput.evaluationMode ?? (existing.evaluationMode as EvaluationMode),
+        ratingScale: qualitativeInput.ratingScale ?? existing.ratingScale,
+      });
+      if (!resolved.ok) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: resolved.message },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      const conflict = await findQualitativeConflict(id, existing, resolved.profile);
+      if (conflict) {
+        return NextResponse.json(
+          { error: conflict, message: QUALITATIVE_CONFLICT_MESSAGES[conflict] },
+          { status: 409, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      data.evaluationMode = resolved.profile.evaluationMode;
+      data.ratingScale = resolved.profile.ratingScale;
+    }
     const subject = await prisma.subject.update({
       where: { id },
       data: {

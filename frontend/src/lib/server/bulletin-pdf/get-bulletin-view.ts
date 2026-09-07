@@ -5,6 +5,12 @@
 // docs/superpowers/specs/2026-08-13-bulletin-pdf-and-editor-design.md).
 // Extracted so both callers share one query path rather than risking drift
 // between "what the Viewer shows" and "what the PDF prints".
+//
+// `audience` (default `staff`, the historical behaviour): the Espace Élève
+// passes `student` (GET /api/student/bulletin and, through the print
+// token, its PDF) to apply the portal rules — no prev/next classmate ids
+// or roster index, and only PUBLISHED appreciations and evaluations, so a
+// teacher's draft comment never reaches a student, on screen or on paper.
 import 'server-only';
 import { prisma } from '@/lib/server/prisma';
 import {
@@ -13,12 +19,19 @@ import {
   resolveCurrentTerm,
   subjectAverageFor,
 } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
+import { normalizeConfig, templateNeedsYear } from '@/lib/server/bulletin-templates';
+import { loadPublishedGrids } from '@/lib/server/student-views/criteria';
+import { buildYearData } from './year-data';
+import type { ViewAudience } from '@/lib/server/student-views/audience';
+import type { YearData } from '@/components/bulletin/render-data';
 
 export interface StudentBulletinView {
   studentId: string;
   firstName: string;
   lastName: string;
   studentNumber: string;
+  nisu: string | null;
   dateOfBirth: Date | null;
   classId: string;
   className: string;
@@ -31,6 +44,7 @@ export interface StudentBulletinView {
   schoolLogoUrl: string | null;
   directorSignatureUrl: string | null;
   academicYearLabel: string;
+  termLabel: string;
   terms: { id: string; label: string; order: number }[];
   resolvedTermId: string | null;
   studentIndex: number | null;
@@ -51,16 +65,28 @@ export interface StudentBulletinView {
     max: number | null;
     appreciation: string | null;
   }[];
+  // Published qualitative grids of this student for the resolved term
+  // (spec §10.2 shape; plan 2 renders them). Empty when no term resolves.
+  qualitativeSubjects: {
+    subjectName: string;
+    ratingScale: string[];
+    criteria: { label: string; level: number | null }[];
+  }[];
   generalAppreciation: string | null;
+  // Annual carnet payload (spec 2026-09-06 §3), only when the resolved
+  // template holds an annual block; absent otherwise.
+  year?: YearData | undefined;
 }
 
 export async function getStudentBulletinView(
   schoolId: string,
   studentId: string,
   termIdParam: string | null,
+  audience: ViewAudience = 'staff',
 ): Promise<StudentBulletinView | null> {
   const student = await prisma.student.findUnique({ where: { id: studentId } });
   if (!student || student.schoolId !== schoolId) return null;
+  const publishedOnly = audience === 'student' ? { status: 'PUBLISHED' as const } : {};
 
   const [school, enrollment] = await Promise.all([
     prisma.school.findUnique({ where: { id: schoolId } }),
@@ -72,8 +98,10 @@ export async function getStudentBulletinView(
           select: {
             id: true,
             name: true,
+            level: true,
             academicYearId: true,
             homeroomTeacher: { select: { id: true, name: true } },
+            gradeLevel: { select: { bulletinTemplate: true } },
           },
         },
       },
@@ -98,24 +126,49 @@ export async function getStudentBulletinView(
     orderBy: [{ student: { lastName: 'asc' } }, { student: { firstName: 'asc' } }],
   });
   const idx = classmates.findIndex((cm) => cm.studentId === studentId);
-  const prevStudentId = idx > 0 ? classmates[idx - 1]!.studentId : null;
-  const nextStudentId =
-    idx >= 0 && idx < classmates.length - 1 ? classmates[idx + 1]!.studentId : null;
+  const rosterNav =
+    audience === 'student'
+      ? { studentIndex: null, prevStudentId: null, nextStudentId: null }
+      : {
+          studentIndex: idx >= 0 ? idx + 1 : null,
+          prevStudentId: idx > 0 ? classmates[idx - 1]!.studentId : null,
+          nextStudentId:
+            idx >= 0 && idx < classmates.length - 1 ? classmates[idx + 1]!.studentId : null,
+        };
 
-  const [activeTemplate, fallbackTemplate] = await Promise.all([
+  const [activeTemplate, fallbackTemplate, levelByLabel] = await Promise.all([
     prisma.bulletinTemplate.findFirst({ where: { schoolId, isActive: true } }),
     prisma.bulletinTemplate.findFirst({
       where: { schoolId: null },
       orderBy: { createdAt: 'asc' },
     }),
+    // A class created before the grade-level catalog (or seeded without the
+    // link) only carries its free-text `level`; the level's template still
+    // applies by matching that label, so a template assigned on the Niveaux
+    // screen reaches every class of the level without a manual re-link.
+    enrollment.class.gradeLevel == null && enrollment.class.level
+      ? prisma.gradeLevel.findFirst({
+          where: { schoolId, name: enrollment.class.level },
+          select: { bulletinTemplate: true },
+        })
+      : Promise.resolve(null),
   ]);
-  const template = activeTemplate ?? fallbackTemplate;
+  // Résolution spec §8 : niveau -> modèle actif de l'école -> plus ancien
+  // modèle global. Les deux premières requêtes restent inconditionnelles
+  // (même coût qu'avant l'ajout du niveau) — un repli bon marché, jamais sur
+  // le chemin critique d'un niveau qui a déjà son propre modèle.
+  const template =
+    enrollment.class.gradeLevel?.bulletinTemplate ??
+    levelByLabel?.bulletinTemplate ??
+    activeTemplate ??
+    fallbackTemplate;
 
   const shell = {
     studentId,
     firstName: student.firstName,
     lastName: student.lastName,
     studentNumber: student.studentNumber,
+    nisu: student.nisu ?? null,
     dateOfBirth: student.dateOfBirth,
     classId: enrollment.classId,
     className: enrollment.class.name,
@@ -128,16 +181,15 @@ export async function getStudentBulletinView(
     schoolLogoUrl: school?.logoUrl ?? null,
     directorSignatureUrl: school?.directorSignatureUrl ?? null,
     academicYearLabel: academicYear?.label ?? '',
+    termLabel: term?.label ?? '',
     terms: terms.map((t) => ({ id: t.id, label: t.label, order: t.order })),
     resolvedTermId: term?.id ?? null,
-    studentIndex: idx >= 0 ? idx + 1 : null,
-    prevStudentId,
-    nextStudentId,
+    ...rosterNav,
     template: template
       ? {
           id: template.id,
           name: template.name,
-          config: template.config,
+          config: normalizeConfig(template.config),
           isActive: template.isActive,
         }
       : null,
@@ -151,27 +203,40 @@ export async function getStudentBulletinView(
       rank: null,
       rankedCount: 0,
       subjects: [],
+      qualitativeSubjects: [],
       generalAppreciation: null,
     };
   }
 
   const classSubjects = await prisma.classSubject.findMany({
-    where: { classId: enrollment.classId },
+    where: { classId: enrollment.classId, ...NUMERIC_SUBJECT_FILTER },
     include: { subject: true, teacher: { select: { id: true, name: true } } },
     orderBy: [{ subject: { domain: 'asc' } }, { subject: { name: 'asc' } }],
   });
   const classSubjectIds = classSubjects.map((cs) => cs.id);
   const classmateIds = classmates.map((cm) => cm.studentId);
 
-  const [evaluations, appreciations] = await Promise.all([
+  // Annual templates need every period of the year: one wider query
+  // instead of a second one (Ruling R4); the per-term table below filters
+  // the current period in memory.
+  const needsYear = shell.template ? templateNeedsYear(shell.template.config) : false;
+  const termIds = terms.map((t) => t.id);
+  const [allEvaluations, appreciations] = await Promise.all([
     classSubjectIds.length === 0
       ? Promise.resolve([])
       : prisma.evaluation.findMany({
-          where: { classSubjectId: { in: classSubjectIds }, termId: term.id },
+          where: {
+            classSubjectId: { in: classSubjectIds },
+            termId: needsYear ? { in: termIds } : term.id,
+            ...publishedOnly,
+          },
           include: { grades: true },
         }),
-    prisma.appreciation.findMany({ where: { studentId, termId: term.id } }),
+    prisma.appreciation.findMany({ where: { studentId, termId: term.id, ...publishedOnly } }),
   ]);
+  const evaluations = needsYear
+    ? allEvaluations.filter((ev) => ev.termId === term.id)
+    : allEvaluations;
 
   const evalsByClassSubject = new Map<string, typeof evaluations>();
   for (const ev of evaluations) {
@@ -222,6 +287,33 @@ export async function getStudentBulletinView(
   const ranks = competitionRank(ranked, (r) => r.average);
   const rankEntry = ranked.findIndex((r) => r.studentId === studentId);
 
+  // Deliberately audience-blind: unlike `subjects`/`publishedOnly` above,
+  // both staff and student read PUBLISHED-only grids here, since a
+  // criteria sheet is always the student's own ticks either way.
+  const qualitativeSubjects = (
+    await loadPublishedGrids({ classId: enrollment.classId, studentId, termId: term.id })
+  ).map((g) => ({
+    subjectName: g.subjectName,
+    ratingScale: g.ratingScale,
+    criteria: g.criteria.map((c) => ({ label: c.label, level: c.level })),
+  }));
+
+  const year: YearData | undefined = needsYear
+    ? buildYearData({
+        terms: terms.map((t) => ({ id: t.id, label: t.label, order: t.order })),
+        classSubjects: classSubjects.map((cs) => ({
+          id: cs.id,
+          subjectName: cs.subject.name,
+          domain: cs.subject.domain,
+          maxScore: cs.subject.maxScore,
+          coefficient: cs.coefficient,
+        })),
+        evaluations: allEvaluations,
+        studentId,
+        classmateIds,
+      })
+    : undefined;
+
   return {
     ...shell,
     overallAverage,
@@ -229,6 +321,8 @@ export async function getStudentBulletinView(
     rank: rankEntry >= 0 ? ranks[rankEntry]! : null,
     rankedCount: ranked.length,
     subjects,
+    qualitativeSubjects,
     generalAppreciation: generalRow?.text ?? null,
+    ...(year ? { year } : {}),
   };
 }

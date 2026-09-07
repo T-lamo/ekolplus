@@ -35,7 +35,7 @@
   "modules": {
     "dashboard": { "label": "Tablodbò", "sub": "Akèy & Apèsi jeneral" },
     "eleves": { "label": "Elèv", "sub": "Dosye & Enskripsyon" },
-    "enseignants": { "label": "Anseyan", "sub": "Pèsonèl & Afektasyon" },
+    "enseignants": { "label": "Pèsonèl", "sub": "Pèsonèl & Afektasyon" },
     "notes": { "label": "Nòt & Bilten", "sub": "Evalyasyon & Rezilta" },
     "appreciations": { "label": "Apresyasyon", "sub": "Kòmantè bilten" },
     "presences": { "label": "Prezans", "sub": "Absans & Reta" },

@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Pencil,
   FileText,
+  FolderOpen,
   Hash,
   School as SchoolIcon,
   Calendar,
@@ -12,6 +13,11 @@ import {
   BarChart2,
   CalendarCheck,
   Star,
+  Mail,
+  Send,
+  UserCircle,
+  PlusCircle,
+  KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -21,16 +27,20 @@ import { useApi } from '@/lib/useApi';
 import { usePermissions } from '@/lib/usePermissions';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { LOCALE_BCP47 } from '@/lib/locales';
+import { TemporaryPasswordPanel } from '@/components/personnel/TemporaryPasswordPanel';
+import { UsernameField, type UsernameFieldStatus } from '@/components/personnel/UsernameField';
 import { NotesResultatsTab } from './NotesResultatsTab';
 import { AppreciationsTab } from './AppreciationsTab';
 import { PresencesTab } from './PresencesTab';
 import { BulletinsTab } from './BulletinsTab';
+import { DocumentsTab } from './DocumentsTab';
 import { StudentFormModal } from '../StudentFormModal';
 import { studentStatusLabel } from '../status-label';
 import { formatOrdinal } from '../ordinal';
@@ -51,6 +61,14 @@ const STATUS_DOT: Record<StudentStatus, string> = {
 type StudentWithAccess = StudentDetail & {
   userId: string | null;
   userEmailVerifiedAt: string | null;
+  // Task 7 (bloc Accès - personnel module plan): the linked account's own
+  // email/username, distinct from `email` above (the student's own contact
+  // address, used to resolve the email-invite target - not necessarily what
+  // the account logs in with). `userEmail === null && userId !== null` is
+  // exactly the username-only state the new "Réinitialiser le mot de passe"
+  // action targets.
+  userEmail: string | null;
+  username: string | null;
 };
 
 function fmtDate(d: string, locale: string): string {
@@ -70,7 +88,14 @@ function ageFrom(dateOfBirth: string): number {
   return age;
 }
 
-const TAB_KEYS = ['info', 'grades', 'attendance', 'appreciations', 'bulletins'] as const;
+const TAB_KEYS = [
+  'info',
+  'grades',
+  'attendance',
+  'appreciations',
+  'bulletins',
+  'documents',
+] as const;
 
 export default function StudentProfilePage() {
   return (
@@ -87,6 +112,7 @@ function StudentProfile() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab');
   const { toast } = useToast();
+  const confirm = useConfirm();
   const t = useTranslations('Eleves.profile');
   const tStatus = useTranslations('Eleves.status');
   const tOrdinal = useTranslations('Eleves.ordinal');
@@ -102,6 +128,18 @@ function StudentProfile() {
   );
   const [editing, setEditing] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
+  // Bloc Accès — "Créer un accès par nom d'utilisateur" (spec §6.7): the
+  // username field is only revealed once the person clicks in, mirroring
+  // the Banani mockup's collapsed secondary option.
+  const [showUsernameForm, setShowUsernameForm] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [usernameFieldStatus, setUsernameFieldStatus] = useState<UsernameFieldStatus>('idle');
+  const [creatingAccess, setCreatingAccess] = useState(false);
+  const [submittedUsername, setSubmittedUsername] = useState('');
+  const [createdTempPassword, setCreatedTempPassword] = useState<string | null>(null);
+  // Admin-generated reset for an existing username-only account (§6.5/§6.7).
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetTempPassword, setResetTempPassword] = useState<string | null>(null);
 
   function handleLoadError(err: unknown) {
     if (err instanceof ApiError && err.code === 'NO_SCHOOL') {
@@ -132,7 +170,7 @@ function StudentProfile() {
     if (student) setLoadError(null);
   }, [student]);
   const error = loadError;
-  const { canSee } = usePermissions();
+  const { canSee, can } = usePermissions();
   if (!canSee('eleves')) return <AccessDenied />;
 
   const TABS = [
@@ -141,6 +179,7 @@ function StudentProfile() {
     { key: 'attendance' as const, label: t('tabs.attendance'), icon: CalendarCheck },
     { key: 'appreciations' as const, label: t('tabs.appreciations'), icon: Star },
     { key: 'bulletins' as const, label: t('tabs.bulletins'), icon: FileText },
+    { key: 'documents' as const, label: t('tabs.documents'), icon: FolderOpen },
   ];
 
   if (!user || (student === null && !error)) {
@@ -355,51 +394,58 @@ function StudentProfile() {
                 {t('edit')}
               </button>
             </div>
-            <div className="mb-3.5 flex items-center justify-between border-b border-border pb-3">
-              {student.userId === null ? (
-                <Button
-                  size="sm"
-                  className="w-fit"
-                  disabled={
-                    !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
-                  }
-                  title={
-                    !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
-                      ? tInvite('buttonDisabledNoEmail')
-                      : undefined
-                  }
-                  loading={inviteSending}
-                  onClick={async () => {
-                    setInviteSending(true);
-                    try {
-                      await api(`/api/school/students/${student.id}/invite`, { method: 'POST' });
-                      toast(tInvite('sentToast'), 'success');
-                      void refreshStudent();
-                    } catch (err) {
-                      toast(
-                        err instanceof ApiError && err.code === 'EMAIL_ALREADY_IN_USE'
-                          ? tInvite('errorEmailInUse')
-                          : err instanceof ApiError && err.code === 'NO_INVITE_TARGET'
-                            ? tInvite('errorNoTarget')
-                            : tCommon('errors.network'),
-                        'error',
-                      );
-                    } finally {
-                      setInviteSending(false);
-                    }
+            {createdTempPassword ? (
+              <div className="mb-3.5 border-b border-border pb-3.5">
+                <TemporaryPasswordPanel
+                  name={`${student.firstName} ${student.lastName}`.trim()}
+                  username={submittedUsername}
+                  temporaryPassword={createdTempPassword}
+                  onClose={() => {
+                    setCreatedTempPassword(null);
+                    setShowUsernameForm(false);
+                    setNewUsername('');
+                    void refreshStudent();
                   }}
-                >
-                  {tInvite('button')}
-                </Button>
-              ) : student.userEmailVerifiedAt ? (
-                <span className="text-xs text-muted-foreground">{tInvite('activeSince')}</span>
-              ) : (
-                <>
-                  <span className="text-xs text-muted-foreground">{tInvite('pendingSince')}</span>
+                />
+              </div>
+            ) : resetTempPassword ? (
+              <div className="mb-3.5 border-b border-border pb-3.5">
+                <TemporaryPasswordPanel
+                  name={`${student.firstName} ${student.lastName}`.trim()}
+                  username={student.username}
+                  temporaryPassword={resetTempPassword}
+                  onClose={() => setResetTempPassword(null)}
+                />
+              </div>
+            ) : student.userId === null ? (
+              // No account yet — two side-by-side options (Banani mockup
+              // .planning/banani/fetches/personnel-module/acces-eleve-bloc.html,
+              // "Variante 1"): the pre-existing email invite (unchanged
+              // behaviour) beside the new username-access creation.
+              <div className="mb-3.5 grid grid-cols-1 gap-2.5 border-b border-border pb-3.5 sm:grid-cols-2">
+                <div className="flex flex-col items-start gap-2 rounded-lg border border-border bg-muted p-3.5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-info text-info-foreground">
+                    <Mail size={16} />
+                  </span>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {tInvite('emailOption.label')}
+                    </div>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">
+                      {tInvite('emailOption.description')}
+                    </p>
+                  </div>
                   <Button
                     size="sm"
-                    variant="ghost"
                     className="w-fit"
+                    disabled={
+                      !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
+                    }
+                    title={
+                      !student.email && !student.guardians.some((g) => g.isPrimary && g.email)
+                        ? tInvite('buttonDisabledNoEmail')
+                        : undefined
+                    }
                     loading={inviteSending}
                     onClick={async () => {
                       setInviteSending(true);
@@ -407,20 +453,180 @@ function StudentProfile() {
                         await api(`/api/school/students/${student.id}/invite`, {
                           method: 'POST',
                         });
-                        toast(tInvite('resentToast'), 'success');
+                        toast(tInvite('sentToast'), 'success');
                         void refreshStudent();
-                      } catch {
-                        toast(tCommon('errors.network'), 'error');
+                      } catch (err) {
+                        toast(
+                          err instanceof ApiError && err.code === 'EMAIL_ALREADY_IN_USE'
+                            ? tInvite('errorEmailInUse')
+                            : err instanceof ApiError && err.code === 'NO_INVITE_TARGET'
+                              ? tInvite('errorNoTarget')
+                              : tCommon('errors.network'),
+                          'error',
+                        );
                       } finally {
                         setInviteSending(false);
                       }
                     }}
                   >
-                    {tInvite('resendButton')}
+                    <Send size={13} />
+                    {tInvite('button')}
                   </Button>
-                </>
-              )}
-            </div>
+                </div>
+
+                <div className="flex flex-col items-start gap-2 rounded-lg border border-border bg-muted p-3.5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-primary">
+                    <UserCircle size={16} />
+                  </span>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {tInvite('usernameOption.label')}
+                    </div>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">
+                      {tInvite('usernameOption.description')}
+                    </p>
+                  </div>
+                  {!showUsernameForm ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-fit"
+                      onClick={() => setShowUsernameForm(true)}
+                    >
+                      <PlusCircle size={13} />
+                      {tInvite('usernameOption.button')}
+                    </Button>
+                  ) : (
+                    <div className="flex w-full flex-col gap-2">
+                      <UsernameField
+                        value={newUsername}
+                        onChange={setNewUsername}
+                        firstName={student.firstName}
+                        lastName={student.lastName}
+                        onStatusChange={setUsernameFieldStatus}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="w-fit"
+                          disabled={usernameFieldStatus !== 'available'}
+                          loading={creatingAccess}
+                          onClick={async () => {
+                            setCreatingAccess(true);
+                            try {
+                              const res = await api<{
+                                ok: true;
+                                userId: string;
+                                temporaryPassword: string;
+                              }>(`/api/school/students/${student.id}/access`, {
+                                method: 'POST',
+                                body: { username: newUsername },
+                              });
+                              setSubmittedUsername(newUsername);
+                              setCreatedTempPassword(res.temporaryPassword);
+                            } catch (err) {
+                              toast(
+                                err instanceof ApiError && err.code === 'USERNAME_TAKEN'
+                                  ? tInvite('usernameOption.errorTaken')
+                                  : tCommon('errors.network'),
+                                'error',
+                              );
+                            } finally {
+                              setCreatingAccess(false);
+                            }
+                          }}
+                        >
+                          {tInvite('usernameOption.submitButton')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="w-fit"
+                          onClick={() => {
+                            setShowUsernameForm(false);
+                            setNewUsername('');
+                          }}
+                        >
+                          {tInvite('usernameOption.cancelButton')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : student.userEmail == null ? (
+              // Active account, no email on file (created via the username
+              // path above, or by a future teacher/admin-driven access
+              // grant) — status line + admin reset, gated `eleves.edit`
+              // (Banani mockup "Variante 2").
+              <div className="mb-3.5 flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {tInvite('usernameActive.status', { username: student.username ?? '' })}
+                </span>
+                {can('eleves', 'edit') && (
+                  <Button
+                    size="sm"
+                    className="w-fit"
+                    loading={resettingPassword}
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: tInvite('usernameActive.resetConfirmTitle'),
+                        message: tInvite('usernameActive.resetConfirmBody', {
+                          name: `${student.firstName} ${student.lastName}`.trim(),
+                        }),
+                        confirmLabel: tInvite('usernameActive.resetConfirmButton'),
+                      });
+                      if (!ok) return;
+                      setResettingPassword(true);
+                      try {
+                        const res = await api<{ ok: true; temporaryPassword: string }>(
+                          `/api/school/accounts/${student.userId}/reset-password`,
+                          { method: 'POST' },
+                        );
+                        setResetTempPassword(res.temporaryPassword);
+                      } catch {
+                        toast(tCommon('errors.network'), 'error');
+                      } finally {
+                        setResettingPassword(false);
+                      }
+                    }}
+                  >
+                    <KeyRound size={13} />
+                    {tInvite('usernameActive.resetButton')}
+                  </Button>
+                )}
+              </div>
+            ) : student.userEmailVerifiedAt ? (
+              <div className="mb-3.5 flex items-center justify-between border-b border-border pb-3">
+                <span className="text-xs text-muted-foreground">{tInvite('activeSince')}</span>
+              </div>
+            ) : (
+              <div className="mb-3.5 flex items-center justify-between border-b border-border pb-3">
+                <span className="text-xs text-muted-foreground">{tInvite('pendingSince')}</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="w-fit"
+                  loading={inviteSending}
+                  onClick={async () => {
+                    setInviteSending(true);
+                    try {
+                      await api(`/api/school/students/${student.id}/invite`, {
+                        method: 'POST',
+                      });
+                      toast(tInvite('resentToast'), 'success');
+                      void refreshStudent();
+                    } catch {
+                      toast(tCommon('errors.network'), 'error');
+                    } finally {
+                      setInviteSending(false);
+                    }
+                  }}
+                >
+                  {tInvite('resendButton')}
+                </Button>
+              </div>
+            )}
             <InfoRow
               label={t('fields.fullName')}
               value={`${student.firstName} ${student.lastName}`}
@@ -482,6 +688,7 @@ function StudentProfile() {
       {tab === 'attendance' && <PresencesTab studentId={student.id} />}
       {tab === 'appreciations' && <AppreciationsTab studentId={student.id} />}
       {tab === 'bulletins' && <BulletinsTab studentId={student.id} />}
+      {tab === 'documents' && <DocumentsTab studentId={student.id} />}
 
       {editing && (
         <StudentFormModal

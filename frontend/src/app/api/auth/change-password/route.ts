@@ -80,8 +80,10 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       return auth;
     }
 
-    // 3. Lockout flag check.
-    if (await isLockedOut(auth.user.email)) {
+    // 3. Lockout flag check. Falls back to the user id for a username-only
+    //    account (no email) — the counter just needs a stable per-account key.
+    const lockoutKey = auth.user.email ?? auth.user.sub;
+    if (await isLockedOut(lockoutKey)) {
       log.warn('change-password blocked by lockout', { userId: auth.user.sub });
       return jsonError('LOCKED_OUT', 423, ctx.requestId, 'Account temporarily locked.');
     }
@@ -144,7 +146,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     //    threshold-breach attempt (mirrors login).
     const ok = await verifyPassword(body.currentPassword, user.passwordHash);
     if (!ok) {
-      const r = await recordFailure(user.email);
+      const r = await recordFailure(user.email ?? user.id);
       if (r.locked) {
         log.warn('change-password lockout triggered', { userId: user.id });
         return jsonError('LOCKED_OUT', 423, ctx.requestId, 'Account temporarily locked.');
@@ -171,7 +173,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     // who was at 4/5 failures on the old password and changes via a still-
     // authenticated session would otherwise get locked out by their first
     // typo on the new password.
-    await recordSuccess(updated.email);
+    await recordSuccess(updated.email ?? updated.id);
 
     // 10. Pitfall 9: mint NEW tokens with the BUMPED tokenVersion and call
     //     setAuthCookies + setCsrfCookie so the current browser stays logged

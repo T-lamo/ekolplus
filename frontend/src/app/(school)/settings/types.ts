@@ -40,6 +40,9 @@ export interface MemberData {
   userId: string;
   email: string;
   name: string | null;
+  avatarUrl: string | null;
+  /** INVITED = invitation sent, account never activated (no password, no verified email). */
+  status: 'ACTIVE' | 'INVITED';
   role: 'OWNER' | 'ADMIN' | 'MEMBER';
   staffRoleIds: string[];
   isTeacher: boolean;

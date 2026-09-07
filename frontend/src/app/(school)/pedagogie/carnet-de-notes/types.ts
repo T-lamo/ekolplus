@@ -1,3 +1,5 @@
+import type { EvaluationMode } from '@/lib/qualitative';
+
 export type EvaluationType = 'DS' | 'INTERROGATION' | 'EXAMEN' | 'AUTRE';
 export type EvaluationStatus = 'DRAFT' | 'PUBLISHED';
 
@@ -6,7 +8,7 @@ export interface ClassSubjectOption {
   classId: string;
   subjectId: string;
   class: { id: string; name: string };
-  subject: { id: string; name: string };
+  subject: { id: string; name: string; evaluationMode?: EvaluationMode };
   teacher: { id: string; name: string } | null;
   coefficient: number | null;
 }

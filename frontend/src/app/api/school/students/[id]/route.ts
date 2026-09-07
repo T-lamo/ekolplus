@@ -49,7 +49,7 @@ export async function GET(
           },
           take: 1,
         },
-        user: { select: { emailVerifiedAt: true } },
+        user: { select: { email: true, username: true, emailVerifiedAt: true } },
       },
     });
     if (!student || student.schoolId !== mySchool.schoolId) {
@@ -66,6 +66,13 @@ export async function GET(
           id: student.id,
           studentNumber: student.studentNumber,
           userId: student.userId,
+          // The linked login account's own email/username (Task 7 of the
+          // personnel module plan) - distinct from `email` below, which is
+          // the student's own contact address used to resolve the
+          // email-invite target, not necessarily what the account logs in
+          // with (the invite can land on a guardian's address instead).
+          userEmail: student.user?.email ?? null,
+          username: student.user?.username ?? null,
           userEmailVerifiedAt: student.user?.emailVerifiedAt ?? null,
           firstName: student.firstName,
           lastName: student.lastName,
@@ -81,6 +88,7 @@ export async function GET(
           enrollmentType: student.enrollmentType,
           previousSchool: student.previousSchool,
           transferNumber: student.transferNumber,
+          nisu: student.nisu,
           notes: student.notes,
           scholarship: student.scholarship,
           enrolledAt: student.enrolledAt,
@@ -102,6 +110,9 @@ const GuardianInput = z.object({
   email: zEmail.nullable().optional(),
   profession: z.string().trim().max(80).nullable().optional(),
   isPrimary: z.boolean().optional(),
+  nif: z.string().trim().max(40).nullable().optional(),
+  niu: z.string().trim().max(40).nullable().optional(),
+  vitalStatus: z.enum(['VIVANT', 'DECEDE']).nullable().optional(),
 });
 
 const UpdateStudentBody = z.object({
@@ -124,6 +135,7 @@ const UpdateStudentBody = z.object({
   enrolledAt: z.coerce.date().optional(),
   previousSchool: z.string().trim().max(120).nullable().optional(),
   transferNumber: z.string().trim().max(60).nullable().optional(),
+  nisu: z.string().trim().max(40).nullable().optional(),
   notes: z.string().trim().max(1000).nullable().optional(),
   scholarship: z.boolean().optional(),
 });
@@ -205,6 +217,9 @@ export async function PATCH(
                 email: g.email ?? null,
                 profession: g.profession ?? null,
                 isPrimary: g.isPrimary ?? false,
+                nif: g.nif ?? null,
+                niu: g.niu ?? null,
+                vitalStatus: g.vitalStatus ?? null,
               })),
             });
           }

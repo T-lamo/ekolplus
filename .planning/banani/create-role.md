@@ -1,5 +1,18 @@
 # Create Role (modal) — Banani → Next.js 16 / Tailwind v4 (SchoolGesti)
 
+> **Note 2026-09-05 (partial supersession)** — `RoleFormModal` itself
+> (create/edit a `StaffRole`, described below) is unchanged and still lives
+> at `/settings/permissions` (role panel + permission matrix), per
+> CLAUDE.md's Permission manager section. What moved is the **downstream
+> assignment** of a role to a staff member: the old Administrateurs tab of
+> `/settings` (a per-member "Rôles" checkbox popover) is retired
+> (`0f85493`, "retire the Administrateurs tab, absorbed into Personnel") —
+> that same popover now lives as the "Rôles" column on the unified
+> `/personnel` list (`docs/superpowers/plans/2026-09-04-personnel-module.md`,
+> spec `docs/superpowers/specs/2026-09-04-personnel-module-design.md`; see
+> `STATUS.md`'s Personnel-module entry). Creating a role here still ends
+> with assigning it to someone from `/personnel`, not from Administrateurs.
+
 ## Source
 - Banani screen ID: `OlsuHWlZ3rkJ` (flow `2oB_n5kLBeuy`, "Separate Screen Regen")
 - Fetched: 2026-09-01

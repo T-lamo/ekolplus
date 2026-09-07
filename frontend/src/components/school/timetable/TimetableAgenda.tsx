@@ -26,7 +26,8 @@ export function TimetableAgenda({
   days: string[];
   sessions: TimetableSession[];
   today: string;
-  /** Absent → read-only agenda (teacher portal): rows render without button semantics. */
+  /** Absent → read-only agenda (teacher and student portals): rows render
+   * without button semantics and the empty state drops « Ajoutez un cours ». */
   onSessionClick?: (session: TimetableSession) => void;
 }) {
   const locale = useLocale();
@@ -37,7 +38,11 @@ export function TimetableAgenda({
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-10 text-center">
         <CalendarX2 size={22} className="text-muted-foreground" />
         <p className="text-caption font-semibold text-foreground">{t('emptyTitle')}</p>
-        <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
+        {/* Read-only callers (student and teacher portals) cannot add a
+            course, so their hint only mentions the arrows. */}
+        <p className="text-xs text-muted-foreground">
+          {t(onSessionClick ? 'emptyHint' : 'emptyHintReadOnly')}
+        </p>
       </div>
     );
   }

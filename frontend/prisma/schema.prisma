@@ -10,10 +10,20 @@ datasource db {
 
 model User {
   id                String    @id @default(cuid())
-  email             String    @unique
+  // Nullable: a username-only staff/teacher/student account (Personnel
+  // module, no-email schools) never sets one. App-level invariant: email
+  // and username are never both null (enforced in the routes that create
+  // or edit either — see lib/username.ts and lib/server/personnel/).
+  email             String?   @unique
+  // Nullable: a username-only account logs in with this instead of email.
+  // Normalized lowercase (lib/username.ts), never contains "@" so a login
+  // identifier can be routed to the right lookup by that character alone.
+  username          String?   @unique
   // Nullable: OAuth-only users (e.g. signed up with Google) never set a
   // password. Email/password signup still requires it; the auth route
-  // enforces presence at runtime.
+  // enforces presence at runtime. A username-only account gets one
+  // immediately at creation (system-generated, shown once — never null
+  // for that kind of account).
   passwordHash      String?
   // Set on every successful change-password/set-password — "Dernière
   // modification" on the Profil tab's password card. Not touched by any
@@ -58,21 +68,22 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  verificationCodes   VerificationCode[]
-  uploads             FileUpload[]
-  notifications       Notification[]
-  notifPrefs          NotificationPreferences?
-  orders              Order[]
-  withdrawals         Withdrawal[]
-  oauthAccounts       OAuthAccount[]
-  adminActions        AdminAction[]
-  appreciations       Appreciation[]
-  teacherProfile      Teacher?
-  studentProfile      Student?
-  attendanceMarks     Attendance[]
-  recordedFeePayments FeePayment[]
-  openedFeeDisputes   FeeDispute[]
-  loginEvents         LoginEvent[]
+  verificationCodes        VerificationCode[]
+  uploads                  FileUpload[]
+  notifications            Notification[]
+  notifPrefs               NotificationPreferences?
+  orders                   Order[]
+  withdrawals              Withdrawal[]
+  oauthAccounts            OAuthAccount[]
+  adminActions             AdminAction[]
+  appreciations            Appreciation[]
+  teacherProfile           Teacher?
+  studentProfile           Student?
+  attendanceMarks          Attendance[]
+  recordedFeePayments      FeePayment[]
+  uploadedStudentDocuments StudentDocument[]
+  openedFeeDisputes        FeeDispute[]
+  loginEvents              LoginEvent[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -194,7 +205,7 @@ model School {
   gradeLevels           GradeLevel[]
   timetableSessions     TimetableSession[]
   rooms                 Room[]
-  staffRoles StaffRole[]
+  staffRoles            StaffRole[]
 
   @@index([organizationId])
 }
@@ -266,8 +277,16 @@ model GradeLevel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Modèle de bulletin assignable par niveau (spec 2026-09-05 §8) — repli sur
+  // le modèle actif de l'école puis le plus ancien modèle global si absent
+  // (voir getStudentBulletinView).
+  bulletinTemplateId String?
+  bulletinTemplate   BulletinTemplate? @relation(fields: [bulletinTemplateId], references: [id], onDelete: SetNull)
+  classes            Class[]
+
   @@unique([schoolId, name])
   @@index([schoolId, order])
+  @@index([bulletinTemplateId])
 }
 
 // Trimestre/Semestre. `status` (Terminé/En cours/À venir) is NOT stored —
@@ -293,6 +312,7 @@ model Term {
   goals         Goal[]
   appreciations Appreciation[]
   chapters      SubjectChapter[]
+  criteriaAssessments CriteriaAssessment[]
 
   @@index([academicYearId, order])
 }
@@ -322,14 +342,14 @@ model OrganizationMember {
 // OWNER/ADMIN n'utilisent pas de StaffRole (accès total implicite).
 // m2m implicite avec OrganizationMember (table _OrganizationMemberToStaffRole).
 model StaffRole {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school      School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  grants      String[] @default([])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  grants      String[]             @default([])
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
   members     OrganizationMember[]
 
   @@unique([schoolId, name])
@@ -382,6 +402,14 @@ model Subject {
   color                String? // hex from the form's fixed swatch catalog
   responsibleTeacherId String?
   responsibleTeacher   Teacher? @relation("SubjectResponsible", fields: [responsibleTeacherId], references: [id], onDelete: SetNull)
+  // NUMERIC | QUALITATIVE. A qualitative subject has no evaluations and no
+  // numeric grades, is skipped by every average, and is rated criterion by
+  // criterion on `ratingScale` (spec 2026-09-05 §4).
+  evaluationMode       String   @default("NUMERIC")
+  // Ordered scale of a QUALITATIVE subject, 2 to 6 labels, e.g.
+  // ["Toujours","Souvent","Parfois","Jamais"]. Ratings store the index into
+  // this array. Empty in NUMERIC mode.
+  ratingScale          String[] @default([])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -389,6 +417,7 @@ model Subject {
   goals         Goal[]
   appreciations Appreciation[]
   chapters      SubjectChapter[]
+  criteria      SubjectCriterion[]
   // Implicit self m2m: subjects that must be validated before this one.
   prerequisites Subject[]        @relation("SubjectPrerequisites")
   requiredBy    Subject[]        @relation("SubjectPrerequisites")
@@ -442,7 +471,10 @@ model Teacher {
   dateOfBirth       DateTime?
   gender            String?
   nationality       String?
-  idNumber          String? // ex "NIF-2024-0042"
+  birthPlace        String? // aligné sur Student.placeOfBirth
+  diploma           String? // texte libre, ex. "Licence en Sciences de l'Éducation"
+  nif               String? // Numéro d'Identification Fiscale — anciennement idNumber
+  niu               String? // Numéro d'Identifiant Unique
   secondaryPhone    String?
   address           String?
   contractType      String? // Temps plein | Temps partiel | Vacataire — free text
@@ -479,6 +511,14 @@ model Class {
   room              String?
   roomId            String?
   roomRef           Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  // Niveau scolaire (catalogue) — `level` reste le libellé affiché, non
+  // supprimé ; ce lien est ce qui permet de résoudre un modèle de bulletin
+  // par niveau (spec 2026-09-05 §8). Nullable : une classe créée avant ce
+  // champ, ou dont le niveau ne correspond à aucune entrée du catalogue,
+  // reste sans lien tant que backfill-class-grade-level.ts ou une
+  // ré-affectation manuelle ne le remplit pas.
+  gradeLevelId      String?
+  gradeLevel        GradeLevel?  @relation(fields: [gradeLevelId], references: [id], onDelete: SetNull)
   capacity          Int?
   homeroomTeacherId String?
   homeroomTeacher   Teacher?     @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
@@ -498,6 +538,7 @@ model Class {
   @@unique([academicYearId, name])
   @@index([schoolId])
   @@index([roomId])
+  @@index([gradeLevelId])
 }
 
 // Catalogue des salles de l'école (configuration/salles). Référencé par
@@ -524,6 +565,58 @@ model Room {
   @@index([schoolId])
 }
 
+// One criterion of a QUALITATIVE subject ("Respecte les consignes", ...).
+// Ordered by `order`; deleting a criterion that has ratings is refused by the
+// API (409 CRITERION_IN_USE), the cascade only fires with the subject.
+model SubjectCriterion {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ratings CriteriaRating[]
+
+  @@index([subjectId, order])
+}
+
+// One sheet per class-subject and term, mirror of Evaluation for qualitative
+// subjects. DRAFT | PUBLISHED; only PUBLISHED sheets reach students and the
+// bulletin.
+model CriteriaAssessment {
+  id             String       @id @default(cuid())
+  classSubjectId String
+  classSubject   ClassSubject @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  termId         String
+  term           Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  status         String       @default("DRAFT")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  ratings CriteriaRating[]
+
+  @@unique([classSubjectId, termId])
+}
+
+// One tick per student and criterion on a sheet, mirror of Grade.
+// `level` is the index into Subject.ratingScale.
+model CriteriaRating {
+  id           String             @id @default(cuid())
+  assessmentId String
+  assessment   CriteriaAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  criterionId  String
+  criterion    SubjectCriterion   @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  level        Int
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([assessmentId, studentId, criterionId])
+  @@index([studentId])
+}
+
 model ClassSubject {
   id          String   @id @default(cuid())
   classId     String
@@ -538,6 +631,7 @@ model ClassSubject {
   updatedAt   DateTime @updatedAt
 
   evaluations Evaluation[]
+  criteriaAssessments CriteriaAssessment[]
 
   @@unique([classId, subjectId])
   @@index([subjectId])
@@ -573,12 +667,14 @@ model Student {
   enrollmentType String? // Nouvelle inscription | Réinscription | Transfert — free text
   previousSchool String?
   transferNumber String?
+  nisu           String? // Numéro d'Identification Scolaire Unique (MENFP)
   notes          String? // internal observations, staff-only
   scholarship    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   guardians       Guardian[]
+  documents       StudentDocument[]
   enrollments     Enrollment[]
   grades          Grade[]
   goals           Goal[]
@@ -587,10 +683,44 @@ model Student {
   feePayments     FeePayment[]
   feeDisputes     FeeDispute[]
   feeReminderLogs FeeReminderLog[]
-  userId          String? @unique
-  user            User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  criteriaRatings CriteriaRating[]
+  userId          String?           @unique
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([schoolId])
+}
+
+enum StudentDocumentType {
+  BIRTH_CERTIFICATE
+  VACCINATION_RECORD
+  PREVIOUS_SCHOOL_RECORD
+}
+
+// Documents administratifs scannés de l'élève (spec 2026-09-02-dossiers-enrichis).
+// Un seul fichier "courant" par type et par élève — un nouvel upload sur un
+// type déjà présent REMPLACE la ligne (upsert), même convention à un seul
+// slot que Student.photoUrl. `fileKey` est le public_id Cloudinary,
+// JAMAIS une URL : ces documents sont uploadés en delivery type
+// "authenticated" et ne sont servis qu'au travers d'une route serveur
+// authentifiée qui génère une URL signée à courte durée. `resourceType`
+// (image | raw) est celui renvoyé par Cloudinary à l'upload — nécessaire
+// pour reconstruire l'URL signée au téléchargement.
+model StudentDocument {
+  id           String              @id @default(cuid())
+  studentId    String
+  student      Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type         StudentDocumentType
+  fileKey      String
+  fileName     String
+  mimeType     String
+  resourceType String
+  sizeBytes    Int
+  uploadedAt   DateTime            @default(now())
+  uploadedById String?
+  uploadedBy   User?               @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, type])
+  @@index([studentId])
 }
 
 model Guardian {
@@ -603,6 +733,9 @@ model Guardian {
   email        String?
   profession   String?
   isPrimary    Boolean  @default(false)
+  nif          String? // Numéro d'Identification Fiscale
+  niu          String? // Numéro d'Identifiant Unique
+  vitalStatus  String? // "VIVANT" | "DECEDE" — texte libre, pas de catalogue fixe
   createdAt    DateTime @default(now())
 
   @@index([studentId])
@@ -780,6 +913,8 @@ model BulletinTemplate {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  gradeLevels GradeLevel[]
+
   @@index([schoolId])
 }
 
@@ -881,16 +1016,16 @@ model FeeDispute {
 // are the granular rules (Relances' "Automatisation" card) that only fire
 // once the master switch is on.
 model FeeAutomationSettings {
-  id                      String  @id @default(cuid())
-  schoolId                String  @unique
-  school                  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  lateFeeEnabled          Boolean @default(true)
-  autoRemindersEnabled    Boolean @default(false)
-  reminderBefore5Days     Boolean @default(true)
-  reminderOnDueDate       Boolean @default(true)
-  reminderWeeklyOverdue   Boolean @default(false)
-  reminderCriticalOverdue Boolean @default(true)
-  currency                String  @default("HTG")
+  id                       String  @id @default(cuid())
+  schoolId                 String  @unique
+  school                   School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  lateFeeEnabled           Boolean @default(true)
+  autoRemindersEnabled     Boolean @default(false)
+  reminderBefore5Days      Boolean @default(true)
+  reminderOnDueDate        Boolean @default(true)
+  reminderWeeklyOverdue    Boolean @default(false)
+  reminderCriticalOverdue  Boolean @default(true)
+  currency                 String  @default("HTG")
   // Email is the default/free channel (Resend, already wired for the rest of
   // the app). WhatsApp costs a per-message Meta fee on top of Twilio's own
   // fee — schools opt in per school, not a global switch, since the platform

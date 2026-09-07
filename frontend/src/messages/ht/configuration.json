@@ -16,6 +16,10 @@
     "levelAdded": "Nivo ajoute.",
     "levelRenamed": "Non nivo a chanje.",
     "levelDeleted": "Nivo efase.",
+    "levelTemplateUpdated": "Modèl bilten an mete ajou.",
+    "templateDefault": "Modèl pa default lekòl la",
+    "templateAria": "Modèl bilten pou {name}",
+    "templatesUnavailable": "Lis modèl yo pa disponib : ou bezwen dwa \"Nòt\" la.",
     "addModalTitle": "Ajoute yon nivo",
     "addModalSubmit": "Ajoute",
     "renameModalTitle": "Chanje non nivo a",
@@ -28,7 +32,8 @@
       "nameTaken": "Nivo sa a egziste deja.",
       "invalidSet": "Lis nivo yo chanje : rechaje paj la epi eseye ankò.",
       "orgRoleInsufficient": "Ou pa gen dwa pou modifye nivo yo.",
-      "validationFailed": "Non envalid (1 rive 40 karaktè)."
+      "validationFailed": "Non envalid (1 rive 40 karaktè).",
+      "templateNotFound": "Nou pa jwenn modèl la."
     },
     "help": {
       "pageOverview": "Trennen yon liy pou reòdone nivo yo, soti nan premye a rive nan dènye a. Lòd sa a sèvi pou sijere pwomosyon yo otomatikman lè n ap pase nan ane eskolè k ap vini an."
@@ -404,6 +409,12 @@
     "form": {
       "requiredHint": "Chan make ak",
       "requiredHintSuffix": "obligatwa",
+      "steps": {
+        "identity": "Idantite",
+        "kind": "Pedagoji",
+        "evaluation": "Evalyasyon",
+        "assignment": "Afektasyon"
+      },
       "identity": {
         "title": "Idantite matyè a",
         "subtitle": "Enfòmasyon debaz pou idantifye matyè a nan aplikasyon an.",
@@ -423,14 +434,14 @@
         "domainOtherPlaceholder": "Non depatman an",
         "levelLabel": "Nivo / Ane etid",
         "levelPlaceholder": "3yèm / 4yèm",
-        "kindLabel": "Estati",
+        "kindLabel": "Kalite pedagojik",
         "kindHint": "Obligatwa, Opsyonèl (elektif) oswa Fakiltatif",
         "descriptionLabel": "Deskripsyon / Silabis",
         "descriptionPlaceholder": "Yon ti deskripsyon pwogram anseyman an, objektif pedagojik jeneral yo..."
       },
       "structure": {
         "title": "Estrikti pedagojik ak ponderasyon",
-        "subtitle": "Kwefisyan, volim orè ak règ evalyasyon pou matyè sa a.",
+        "subtitle": "Kwefisyan, volim orè ak kapasite pou matyè sa a.",
         "coefficientLabel": "Kwefisyan",
         "coefficientHint": "Pwa nan mwayèn jeneral la",
         "coefficientPlaceholder": "4",
@@ -461,7 +472,35 @@
         "includeInAverageTitle": "Enkli nan mwayèn jeneral la",
         "includeInAverageDesc": "Matyè sa a ap konte nan kalkil mwayèn nan",
         "showOnBulletinTitle": "Montre sou bilten an",
-        "showOnBulletinDesc": "Nòt la ak apresyasyon an ap parèt sou bilten lekòl la"
+        "showOnBulletinDesc": "Nòt la ak apresyasyon an ap parèt sou bilten lekòl la",
+        "evaluationModeLabel": "Mòd evalyasyon",
+        "evaluationModeHint": "Pa nòt : evalyasyon ak chif ak mwayèn. Pa kritè : yon griy yo tcheke sou yon echèl, san nòt ni mwayèn.",
+        "evaluationModeNumeric": "Pa nòt",
+        "evaluationModeQualitative": "Pa kritè",
+        "ratingScaleLabel": "Echèl apresyasyon",
+        "ratingScaleHint": "2 a 6 nivo, pi bon an anvan. Egz. : Toujou, Souvan, Pafwa, Jamè.",
+        "ratingScaleLevelPlaceholder": "Nivo {index}",
+        "ratingScaleAdd": "Ajoute yon nivo",
+        "ratingScaleRemove": "Retire nivo sa a",
+        "ratingScaleMoveUp": "Monte",
+        "ratingScaleMoveDown": "Desann",
+        "ratingScaleLocked": "Gen kwa ki egziste deja : ou ka chanje non nivo yo, men ou pa ka chanje lòd yo ankò.",
+        "criteriaTitle": "Kritè yo evalye",
+        "criteriaHint": "Yon liy pou chak kritè, nan lòd yo parèt sou bilten an.",
+        "criteriaEmpty": "Poko gen kritè.",
+        "criteriaAfterSave": "Anrejistre matyè a pou ajoute kritè.",
+        "criterionPlaceholder": "Egz. : Respekte konsiy yo",
+        "criterionAdd": "Ajoute",
+        "criterionRename": "Chanje non",
+        "criterionSave": "Anrejistre",
+        "criterionCancel": "Anile",
+        "criterionDelete": "Efase",
+        "criterionInUse": "Kritè sa a gen kwa : ou pa ka efase l.",
+        "criterionSaveError": "Nou pa t ka anrejistre kritè a."
+      },
+      "evaluationStep": {
+        "title": "Evalyasyon ak règ pou pase",
+        "subtitle": "Baram, sèy pou pase ak mòd evalyasyon pou matyè sa a."
       },
       "assignment": {
         "title": "Afektasyon ak lojistik",
@@ -478,8 +517,6 @@
         "prerequisitesHint": "Matyè ki dwe validè anvan (egz. avwa validè MAT-001 pou MATH202)"
       },
       "advanced": {
-        "title": "Opsyon avanse ak paramèt",
-        "subtitle": "Paramèt espesifik ki gen rapò ak ane akademik la ak sèy evalyasyon yo.",
         "yearLabel": "Ane akademik / Semès",
         "yearHint": "Atachman ak peryòd aktyèl la",
         "yearActive": "Ane konplè {year}",
@@ -524,7 +561,8 @@
         "coefficientRange": "Ant 1 ak 10.",
         "maxScoreRange": "Ant 1 ak 100.",
         "scoreRange": "Ant 0 ak {max}.",
-        "evaluationTypeRequired": "Chwazi yon tip evalyasyon."
+        "evaluationTypeRequired": "Chwazi yon tip evalyasyon.",
+        "ratingScaleInvalid": "2 a 6 nivo, tout ranpli, diferan, 30 karaktè maksimòm."
       }
     },
     "affectations": {
@@ -859,15 +897,16 @@
     "toast": {
       "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
       "forkError": "Erè pandan y ap dupike modèl la.",
-      "activated": "Modèl defini kòm aktif.",
+      "activated": "Modèl defini kòm modèl pa default.",
       "activateError": "Erè pandan aktivasyon modèl la.",
       "deleted": "Modèl efase.",
-      "deleteError": "Erè pandan efasman an."
+      "deleteError": "Erè pandan efasman an.",
+      "deleteInUseError": "Nou pa kapab efase l : modèl sa a asiyen a yon nivo eskolè."
     },
     "deleteConfirm": "Efase modèl bilten sa a ?",
     "activeCard": {
-      "label": "Modèl aktif : {name}",
-      "description": "Modèl sa a itilize kounye a pou jenere bilten yo. Dènye modifikasyon : {date}",
+      "label": "Modèl pa default : {name}",
+      "description": "Modèl sa a itilize pa default pou jenere bilten yo, eksepte pou nivo ki gen pwòp modèl pa yo. Dènye modifikasyon : {date}",
       "edit": "Modifye"
     },
     "tabs": {
@@ -880,20 +919,20 @@
       "global": "Pa gen modèl global disponib."
     },
     "menu": {
-      "setActive": "Defini kòm aktif",
+      "setActive": "Defini kòm modèl pa default",
       "fork": "Dupike",
       "delete": "Efase"
     },
     "badge": {
-      "active": "Aktif",
+      "active": "Modèl pa default",
       "global": "Global",
       "predefined": "Predefini",
       "personal": "Pèsonèl"
     },
     "editLink": "Modifye",
     "help": {
-      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou : ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka aktif nan yon moman.",
-      "activeTemplate": "Modèl aktif la se sa k ap sèvi pou jenere bilten ofisyèl elèv ou yo. Pou aktive yon lòt, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm aktif »."
+      "pageOverview": "Chwazi yon modèl pèsonèl, oswa itilize « Dupike » sou yon modèl global pou kreye pa ou : ou pa ka modifye yon modèl global dirèkteman. Se yon sèl modèl pèsonèl ki ka defini kòm modèl pa default nan yon moman.",
+      "activeTemplate": "Modèl pa default la sèvi pou jenere bilten elèv ou yo, sof si nivo eskolè yo genyen pwòp modèl yo chwazi (Konfigirasyon › Nivo). Pou chanje modèl pa default la, louvri meni yon modèl pèsonèl epi chwazi « Defini kòm modèl pa default »."
     },
     "block": {
       "header": "Antèt",
@@ -902,7 +941,13 @@
       "notes": "Tablo nòt yo",
       "absences": "Absans",
       "appreciation": "Apresyasyon",
-      "signatures": "Siyati"
+      "signatures": "Siyati",
+      "text": "Tèks lib",
+      "cover": "Kouvèti",
+      "criteriaGrids": "Grij kalitatif",
+      "yearGrid": "Griy anyèl",
+      "yearDecisions": "Desizyon ane a",
+      "yearSignatures": "Siyati pa peryòd"
     },
     "editor": {
       "notFound": "Modèl pa jwenn.",
@@ -913,7 +958,7 @@
         "exportError": "Erè pandan ekspòtasyon PDF la.",
         "forked": "Modèl la dupike : kounye a ou ka pèsonalize l.",
         "forkError": "Erè pandan y ap dupike modèl la.",
-        "activated": "Modèl defini kòm aktif.",
+        "activated": "Modèl defini kòm modèl pa default.",
         "activateError": "Erè pandan aktivasyon modèl la.",
         "renameError": "Erè pandan chanjman non modèl la.",
         "logoError": "Erè pandan anrejistreman logo a.",
@@ -931,7 +976,7 @@
         "landscape": "Peyizaj",
         "portrait": "Pòtrè"
       },
-      "setActive": "Defini kòm aktif",
+      "setActive": "Defini kòm modèl pa default",
       "exportPdf": "Ekspòte PDF",
       "exporting": "Ekspòte…",
       "save": "Anrejistre",
@@ -941,7 +986,26 @@
         "title": "Blòk bilten an",
         "hint": "Trennen pou reòganize blòk yo",
         "hideBlock": "Kache blòk la",
-        "showBlock": "Montre blòk la"
+        "showBlock": "Montre blòk la",
+        "removeBlock": "Efase blòk la"
+      },
+      "pagesPanel": {
+        "title": "Paj",
+        "addPage": "Ajoute yon paj",
+        "duplicatePage": "Double paj la",
+        "deletePage": "Efase paj la",
+        "pageLabel": "Paj {n}",
+        "layoutLabel": "Dispozisyon",
+        "layoutFull": "Paj antye",
+        "layoutHalves": "De kolòn",
+        "layoutSidebar": "Kolòn sou kote",
+        "asideWidth": "Lajè kolòn sou kote a",
+        "showPageNumber": "Montre nimewo paj la",
+        "overflowWarning": "Kontni a depase paj la"
+      },
+      "blockPalette": {
+        "title": "Ajoute yon blòk",
+        "alreadyOnPage": "Deja sou paj sa a"
       },
       "zoomOut": "Zoom aryè",
       "zoomIn": "Zoom devan",
@@ -951,7 +1015,80 @@
       "tabs": {
         "style": "Style",
         "content": "Kontni",
-        "spacing": "Espasman"
+        "spacing": "Espasman",
+        "block": "Blòk sa a"
+      },
+      "blockProperties": {
+        "appreciationTitle": "Apresyasyon jeneral",
+        "appreciationStyle": "Prezantasyon",
+        "appreciationStyleBox": "Ankadre",
+        "appreciationStyleLines": "Liy regle",
+        "appreciationLines": "Kantite liy",
+        "appreciationTitleLabel": "Tit ki parèt",
+        "signaturesLabelsTitle": "Siyati",
+        "signaturesStyle": "Prezantasyon",
+        "signaturesStyleBoxes": "Kad",
+        "signaturesStyleLines": "Liy",
+        "signaturesHomeroomFirst": "Titilè an premye",
+        "signatureDirectorLabel": "Etikèt siyati direktè",
+        "signatureHomeroomLabel": "Etikèt siyati titilè",
+        "signatureGuardianLabel": "Etikèt siyati paran",
+        "textTitle": "Tèks",
+        "textAlign": "Alinyman",
+        "alignLeft": "Goch",
+        "alignCenter": "Sant",
+        "alignJustify": "Jistifye",
+        "alignRight": "Dwat",
+        "textVerticalAlign": "Alinyman vètikal",
+        "verticalAlignTop": "Anwo",
+        "verticalAlignMiddle": "Mitan",
+        "verticalAlignBottom": "Anba",
+        "textFontSize": "Gwosè polis",
+        "textBold": "Gra",
+        "textItalic": "Italik",
+        "textVariablesHint": "Varyab : '{'eleve'}', '{'classe'}', '{'annee'}', '{'periode'}', '{'ecole'}'",
+        "coverTitle": "Kouvèti",
+        "coverSectionLabel": "Etikèt seksyon",
+        "coverTitlePattern": "Tit (itilize {term} pou trimès la)",
+        "coverShowLogo": "Montre logo a",
+        "coverFramed": "Ankadreman won",
+        "coverFrameStyle": "Liy ankadreman an",
+        "coverFrameDashed": "Pwentiye",
+        "coverFrameSolid": "Plen",
+        "coverFrameRounded": "Awondi",
+        "coverUppercase": "Lèt majiskil",
+        "coverLogoPosition": "Pozisyon logo a",
+        "coverLogoTop": "Anwo",
+        "coverLogoBelowTitle": "Anba tit la",
+        "coverFields": "Liy idantite",
+        "coverField": {
+          "lastName": "Non",
+          "firstName": "Prenon",
+          "fullName": "Elèv (non konplè)",
+          "className": "Klas",
+          "studentNumber": "Kòd",
+          "nisu": "NISU",
+          "academicYear": "Ane akademik"
+        },
+        "coverFieldLabel": "Etikèt : {field}",
+        "criteriaGridsTitle": "Grij kalitatif",
+        "gridStyle": "Estil grij",
+        "gridStyleModern": "Modèn",
+        "gridStyleGrid": "Kadriye",
+        "gridSubjects": "Matyè ki parèt",
+        "gridSubjectsPlaceholder": "Yon matyè pa liy",
+        "gridSubjectsHint": "Vid : tout matyè kalitatif yo. Sinon, sèlman sa ki nan lis la, nan lòd sa a.",
+        "showScaleHeader": "Montre antèt echèl la",
+        "yearGridTitle": "Griy anyèl",
+        "yearGridShowDomains": "Gwoupe pa domèn",
+        "yearGridNotesLabel": "Etikèt Nòt",
+        "yearGridMaxLabel": "Etikèt Sou",
+        "yearDecisionsTitle": "Desizyon ane a",
+        "yearDecisionsHeading": "Tit",
+        "yearSignaturesTitle": "Siyati pa peryòd",
+        "yearSignaturesHeading": "Tit",
+        "yearSignaturesDirector": "Etikèt direksyon",
+        "yearSignaturesGuardian": "Etikèt paran"
       },
       "style": {
         "colorsTitle": "Koulè tèm nan",
@@ -1004,7 +1141,8 @@
           "dotted": "Pwentiye"
         },
         "borderColor": "Koulè kad",
-        "showBackgrounds": "Fon koulè nan tablo a"
+        "showBackgrounds": "Fon koulè nan tablo a",
+        "showDecoration": "Bann anwo ak anba paj la"
       }
     }
   }

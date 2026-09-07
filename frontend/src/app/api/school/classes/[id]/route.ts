@@ -24,6 +24,7 @@ const UpdateClassBody = z.object({
   roomId: z.string().min(1).nullable().optional(),
   capacity: z.number().int().positive().max(500).nullable().optional(),
   homeroomTeacherId: z.string().nullable().optional(),
+  gradeLevelId: z.string().min(1).nullable().optional(),
   color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
@@ -168,6 +169,16 @@ export async function PATCH(
       if (!teacher || teacher.schoolId !== mySchool.schoolId) {
         return NextResponse.json(
           { error: 'VALIDATION_FAILED', message: 'Invalid homeroomTeacherId' },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+    }
+
+    if (parsed.data.gradeLevelId) {
+      const level = await prisma.gradeLevel.findUnique({ where: { id: parsed.data.gradeLevelId } });
+      if (!level || level.schoolId !== mySchool.schoolId) {
+        return NextResponse.json(
+          { error: 'VALIDATION_FAILED', message: 'Invalid gradeLevelId' },
           { status: 400, headers: { 'x-request-id': ctx.requestId } },
         );
       }

@@ -15,6 +15,10 @@
     "levelAdded": "Niveau ajouté.",
     "levelRenamed": "Niveau renommé.",
     "levelDeleted": "Niveau supprimé.",
+    "levelTemplateUpdated": "Modèle de bulletin mis à jour.",
+    "templateDefault": "Modèle par défaut de l'école",
+    "templateAria": "Modèle de bulletin de {name}",
+    "templatesUnavailable": "Liste des modèles indisponible : droit \"Notes\" requis.",
     "addModalTitle": "Ajouter un niveau",
     "addModalSubmit": "Ajouter",
     "renameModalTitle": "Renommer le niveau",
@@ -27,7 +31,8 @@
       "nameTaken": "Ce niveau existe déjà.",
       "invalidSet": "La liste des niveaux a changé : rechargez la page et réessayez.",
       "orgRoleInsufficient": "Vous n'avez pas les droits pour modifier les niveaux.",
-      "validationFailed": "Nom invalide (1 à 40 caractères)."
+      "validationFailed": "Nom invalide (1 à 40 caractères).",
+      "templateNotFound": "Modèle introuvable."
     },
     "help": {
       "pageOverview": "Glissez une ligne pour réordonner les niveaux, du premier au dernier. Cet ordre sert à suggérer automatiquement les promotions lors du passage à l'année scolaire suivante."
@@ -403,6 +408,12 @@
     "form": {
       "requiredHint": "Les champs marqués",
       "requiredHintSuffix": "sont obligatoires",
+      "steps": {
+        "identity": "Identité",
+        "kind": "Pédagogie",
+        "evaluation": "Évaluation",
+        "assignment": "Affectation"
+      },
       "identity": {
         "title": "Identité de la matière",
         "subtitle": "Informations de base permettant d'identifier la matière dans l'application.",
@@ -422,14 +433,14 @@
         "domainOtherPlaceholder": "Nom du département",
         "levelLabel": "Niveau / Année d'étude",
         "levelPlaceholder": "3ème / 4ème",
-        "kindLabel": "Statut",
+        "kindLabel": "Type pédagogique",
         "kindHint": "Obligatoire, Optionnelle (élective) ou Facultative",
         "descriptionLabel": "Description / Syllabi",
         "descriptionPlaceholder": "Brève description du programme d'enseignement, objectifs pédagogiques généraux..."
       },
       "structure": {
         "title": "Structure pédagogique et pondération",
-        "subtitle": "Coefficient, volume horaire et règles d'évaluation pour cette matière.",
+        "subtitle": "Coefficient, volume horaire et capacité d'accueil pour cette matière.",
         "coefficientLabel": "Coefficient",
         "coefficientHint": "Poids dans la moyenne générale",
         "coefficientPlaceholder": "4",
@@ -460,7 +471,35 @@
         "includeInAverageTitle": "Inclure dans la moyenne générale",
         "includeInAverageDesc": "Cette matière sera prise en compte dans le calcul de la moyenne",
         "showOnBulletinTitle": "Afficher dans le bulletin",
-        "showOnBulletinDesc": "La note et l'appréciation apparaîtront sur le bulletin scolaire"
+        "showOnBulletinDesc": "La note et l'appréciation apparaîtront sur le bulletin scolaire",
+        "evaluationModeLabel": "Mode d'évaluation",
+        "evaluationModeHint": "Par notes : évaluations chiffrées et moyenne. Par critères : grille cochée sur une échelle, sans note ni moyenne.",
+        "evaluationModeNumeric": "Par notes",
+        "evaluationModeQualitative": "Par critères",
+        "ratingScaleLabel": "Échelle d'appréciation",
+        "ratingScaleHint": "De 2 à 6 niveaux, du meilleur au moins bon. Ex : Toujours, Souvent, Parfois, Jamais.",
+        "ratingScaleLevelPlaceholder": "Niveau {index}",
+        "ratingScaleAdd": "Ajouter un niveau",
+        "ratingScaleRemove": "Retirer ce niveau",
+        "ratingScaleMoveUp": "Monter",
+        "ratingScaleMoveDown": "Descendre",
+        "ratingScaleLocked": "Des coches existent déjà : les niveaux peuvent être renommés, plus réordonnés.",
+        "criteriaTitle": "Critères évalués",
+        "criteriaHint": "Une ligne par critère, dans l'ordre d'affichage sur le bulletin.",
+        "criteriaEmpty": "Aucun critère pour le moment.",
+        "criteriaAfterSave": "Enregistrez la matière pour ajouter des critères.",
+        "criterionPlaceholder": "Ex : Respecte les consignes",
+        "criterionAdd": "Ajouter",
+        "criterionRename": "Renommer",
+        "criterionSave": "Enregistrer",
+        "criterionCancel": "Annuler",
+        "criterionDelete": "Supprimer",
+        "criterionInUse": "Ce critère a des coches : il ne peut pas être supprimé.",
+        "criterionSaveError": "Impossible d'enregistrer le critère."
+      },
+      "evaluationStep": {
+        "title": "Évaluation et réussite",
+        "subtitle": "Barème, seuils de réussite et mode d'évaluation de cette matière."
       },
       "assignment": {
         "title": "Assignation et logistique",
@@ -477,8 +516,6 @@
         "prerequisitesHint": "Matières devant être validées au préalable (ex. avoir validé MAT-001 pour MATH202)"
       },
       "advanced": {
-        "title": "Options avancées et paramètres",
-        "subtitle": "Paramètres spécifiques liés à l'année académique et aux seuils d'évaluation.",
         "yearLabel": "Année académique / Semestre",
         "yearHint": "Rattachement à la période en cours",
         "yearActive": "Année complète {year}",
@@ -523,7 +560,8 @@
         "coefficientRange": "Entre 1 et 10.",
         "maxScoreRange": "Entre 1 et 100.",
         "scoreRange": "Entre 0 et {max}.",
-        "evaluationTypeRequired": "Choisissez un type d'évaluation."
+        "evaluationTypeRequired": "Choisissez un type d'évaluation.",
+        "ratingScaleInvalid": "Entre 2 et 6 niveaux, tous remplis, distincts et de 30 caractères maximum."
       }
     },
     "affectations": {
@@ -858,15 +896,16 @@
     "toast": {
       "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
       "forkError": "Erreur lors de la duplication du modèle.",
-      "activated": "Modèle défini comme actif.",
+      "activated": "Modèle défini comme modèle par défaut.",
       "activateError": "Erreur lors de l'activation du modèle.",
       "deleted": "Modèle supprimé.",
-      "deleteError": "Erreur lors de la suppression."
+      "deleteError": "Erreur lors de la suppression.",
+      "deleteInUseError": "Impossible de supprimer : ce modèle est assigné à un niveau scolaire."
     },
     "deleteConfirm": "Supprimer ce modèle de bulletin ?",
     "activeCard": {
-      "label": "Modèle actif : {name}",
-      "description": "Ce modèle est actuellement utilisé pour la génération des bulletins. Dernière modification : {date}",
+      "label": "Modèle par défaut : {name}",
+      "description": "Ce modèle est utilisé par défaut pour la génération des bulletins, sauf pour les niveaux qui ont leur propre modèle assigné. Dernière modification : {date}",
       "edit": "Modifier"
     },
     "tabs": {
@@ -879,20 +918,20 @@
       "global": "Aucun modèle global disponible."
     },
     "menu": {
-      "setActive": "Définir comme actif",
+      "setActive": "Définir comme modèle par défaut",
       "fork": "Dupliquer",
       "delete": "Supprimer"
     },
     "badge": {
-      "active": "Actif",
+      "active": "Modèle par défaut",
       "global": "Global",
       "predefined": "Prédéfini",
       "personal": "Personnel"
     },
     "editLink": "Éditer",
     "help": {
-      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre : les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être actif à la fois.",
-      "activeTemplate": "Le modèle actif est celui utilisé pour générer les bulletins officiels de vos élèves. Pour en activer un autre, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme actif »."
+      "pageOverview": "Choisissez un modèle personnel ou dupliquez (« Dupliquer ») un modèle global pour créer le vôtre : les modèles globaux ne sont pas modifiables directement. Un seul modèle personnel peut être défini par défaut à la fois.",
+      "activeTemplate": "Le modèle par défaut est utilisé pour générer les bulletins de vos élèves, sauf si leur niveau scolaire a son propre modèle assigné (Configuration › Niveaux). Pour changer le modèle par défaut, ouvrez le menu d'un modèle personnel puis choisissez « Définir comme modèle par défaut »."
     },
     "block": {
       "header": "En-tête",
@@ -901,7 +940,13 @@
       "notes": "Tableau de notes",
       "absences": "Absences",
       "appreciation": "Appréciation",
-      "signatures": "Signatures"
+      "signatures": "Signatures",
+      "text": "Texte libre",
+      "cover": "Couverture",
+      "criteriaGrids": "Grilles qualitatives",
+      "yearGrid": "Grille annuelle",
+      "yearDecisions": "Décisions de l'année",
+      "yearSignatures": "Signatures par période"
     },
     "editor": {
       "notFound": "Modèle introuvable.",
@@ -912,7 +957,7 @@
         "exportError": "Erreur lors de l'export PDF.",
         "forked": "Modèle dupliqué : vous pouvez maintenant le personnaliser.",
         "forkError": "Erreur lors de la duplication du modèle.",
-        "activated": "Modèle défini comme actif.",
+        "activated": "Modèle défini comme modèle par défaut.",
         "activateError": "Erreur lors de l'activation du modèle.",
         "renameError": "Erreur lors du renommage du modèle.",
         "logoError": "Erreur lors de l'enregistrement du logo.",
@@ -930,7 +975,7 @@
         "landscape": "Paysage",
         "portrait": "Portrait"
       },
-      "setActive": "Définir comme actif",
+      "setActive": "Définir comme modèle par défaut",
       "exportPdf": "Exporter PDF",
       "exporting": "Export…",
       "save": "Enregistrer",
@@ -940,7 +985,26 @@
         "title": "Blocs du bulletin",
         "hint": "Glissez pour réorganiser les blocs",
         "hideBlock": "Masquer le bloc",
-        "showBlock": "Afficher le bloc"
+        "showBlock": "Afficher le bloc",
+        "removeBlock": "Supprimer le bloc"
+      },
+      "pagesPanel": {
+        "title": "Pages",
+        "addPage": "Ajouter une page",
+        "duplicatePage": "Dupliquer la page",
+        "deletePage": "Supprimer la page",
+        "pageLabel": "Page {n}",
+        "layoutLabel": "Disposition",
+        "layoutFull": "Pleine page",
+        "layoutHalves": "Deux colonnes",
+        "layoutSidebar": "Colonne latérale",
+        "asideWidth": "Largeur de la colonne latérale",
+        "showPageNumber": "Afficher le numéro de page",
+        "overflowWarning": "Le contenu dépasse la page"
+      },
+      "blockPalette": {
+        "title": "Ajouter un bloc",
+        "alreadyOnPage": "Déjà sur cette page"
       },
       "zoomOut": "Zoom arrière",
       "zoomIn": "Zoom avant",
@@ -950,7 +1014,80 @@
       "tabs": {
         "style": "Style",
         "content": "Contenu",
-        "spacing": "Espacement"
+        "spacing": "Espacement",
+        "block": "Ce bloc"
+      },
+      "blockProperties": {
+        "appreciationTitle": "Appréciation générale",
+        "appreciationStyle": "Présentation",
+        "appreciationStyleBox": "Encadré",
+        "appreciationStyleLines": "Lignes réglées",
+        "appreciationLines": "Nombre de lignes",
+        "appreciationTitleLabel": "Titre affiché",
+        "signaturesLabelsTitle": "Signatures",
+        "signaturesStyle": "Présentation",
+        "signaturesStyleBoxes": "Cadres",
+        "signaturesStyleLines": "Traits",
+        "signaturesHomeroomFirst": "Titulaire en premier",
+        "signatureDirectorLabel": "Libellé signature directeur",
+        "signatureHomeroomLabel": "Libellé signature titulaire",
+        "signatureGuardianLabel": "Libellé signature parent",
+        "textTitle": "Texte",
+        "textAlign": "Alignement",
+        "alignLeft": "Gauche",
+        "alignCenter": "Centré",
+        "alignJustify": "Justifié",
+        "alignRight": "Droite",
+        "textVerticalAlign": "Alignement vertical",
+        "verticalAlignTop": "Haut",
+        "verticalAlignMiddle": "Milieu",
+        "verticalAlignBottom": "Bas",
+        "textFontSize": "Taille de police",
+        "textBold": "Gras",
+        "textItalic": "Italique",
+        "textVariablesHint": "Variables : '{'eleve'}', '{'classe'}', '{'annee'}', '{'periode'}', '{'ecole'}'",
+        "coverTitle": "Couverture",
+        "coverSectionLabel": "Libellé de section",
+        "coverTitlePattern": "Titre (utilisez {term} pour le trimestre)",
+        "coverShowLogo": "Afficher le logo",
+        "coverFramed": "Cadre arrondi",
+        "coverFrameStyle": "Trait du cadre",
+        "coverFrameDashed": "Pointillé",
+        "coverFrameSolid": "Plein",
+        "coverFrameRounded": "Arrondi",
+        "coverUppercase": "Capitales",
+        "coverLogoPosition": "Position du logo",
+        "coverLogoTop": "En haut",
+        "coverLogoBelowTitle": "Sous le titre",
+        "coverFields": "Lignes d'identité",
+        "coverField": {
+          "lastName": "Nom",
+          "firstName": "Prénom",
+          "fullName": "Élève (nom complet)",
+          "className": "Classe",
+          "studentNumber": "Code",
+          "nisu": "NISU",
+          "academicYear": "Année académique"
+        },
+        "coverFieldLabel": "Libellé : {field}",
+        "criteriaGridsTitle": "Grilles qualitatives",
+        "gridStyle": "Style de grille",
+        "gridStyleModern": "Moderne",
+        "gridStyleGrid": "Quadrillé",
+        "gridSubjects": "Matières affichées",
+        "gridSubjectsPlaceholder": "Une matière par ligne",
+        "gridSubjectsHint": "Vide : toutes les matières qualitatives. Sinon, seules celles listées, dans cet ordre.",
+        "showScaleHeader": "Afficher l'en-tête de l'échelle",
+        "yearGridTitle": "Grille annuelle",
+        "yearGridShowDomains": "Grouper par domaine",
+        "yearGridNotesLabel": "Libellé Notes",
+        "yearGridMaxLabel": "Libellé Sur",
+        "yearDecisionsTitle": "Décisions de l'année",
+        "yearDecisionsHeading": "Titre",
+        "yearSignaturesTitle": "Signatures par période",
+        "yearSignaturesHeading": "Titre",
+        "yearSignaturesDirector": "Libellé direction",
+        "yearSignaturesGuardian": "Libellé parents"
       },
       "style": {
         "colorsTitle": "Couleurs du thème",
@@ -1003,7 +1140,8 @@
           "dotted": "Pointillés"
         },
         "borderColor": "Couleur de bordure",
-        "showBackgrounds": "Fonds colorés du tableau"
+        "showBackgrounds": "Fonds colorés du tableau",
+        "showDecoration": "Bandeaux en haut et en bas de page"
       }
     }
   }

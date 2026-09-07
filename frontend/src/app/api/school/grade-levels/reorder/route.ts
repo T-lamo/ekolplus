@@ -12,6 +12,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { LEVEL_SELECT } from '../route';
 
 const ReorderBody = z.object({
   orderedIds: z.array(z.string().min(1)).min(1),
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const existing = await prisma.gradeLevel.findMany({
       where: { schoolId: mySchool.schoolId },
-      select: { id: true, name: true },
+      select: LEVEL_SELECT,
     });
     const byId = new Map(existing.map((l) => [l.id, l]));
     const sameSet =
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           // `sameSet` above guarantees every id is in the map.
           name: byId.get(id)?.name ?? '',
           order,
+          bulletinTemplateId: byId.get(id)?.bulletinTemplateId ?? null,
         })),
       },
       { headers: { 'x-request-id': ctx.requestId } },

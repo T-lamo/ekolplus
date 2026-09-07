@@ -1,0 +1,187 @@
+{
+  "list": {
+    "title": "Personnel",
+    "subtitle": "Gérez les enseignants et le personnel administratif de votre établissement.",
+    "searchPlaceholder": "Rechercher par nom, email ou nom d'utilisateur...",
+    "filter": {
+      "all": "Tous",
+      "teacher": "Enseignants",
+      "staff": "Personnel administratif"
+    },
+    "table": {
+      "name": "Nom",
+      "profiles": "Profil(s)",
+      "account": "Statut du compte",
+      "login": "Connexion",
+      "actions": "Actions"
+    },
+    "profileBadge": {
+      "teacher": "Enseignant",
+      "admin": "Administrateur"
+    },
+    "accountStatus": {
+      "none": "Aucun compte",
+      "pending": "En attente",
+      "pendingFull": "En attente d'activation",
+      "active": "Actif"
+    },
+    "loginMode": {
+      "email": "E-mail",
+      "username": "Identifiant",
+      "both": "Les deux"
+    },
+    "menu": {
+      "viewProfile": "Voir le profil"
+    },
+    "addButton": "Ajouter",
+    "loadError": "Impossible de charger le personnel.",
+    "emptyNone": "Aucun membre du personnel pour le moment.",
+    "emptyFiltered": "Aucun résultat pour cette recherche."
+  },
+  "fiche": {
+    "backToList": "Retour au personnel",
+    "notFound": "Membre du personnel introuvable.",
+    "noTabAccess": "Vous n'avez pas accès aux détails de ce profil.",
+    "header": {
+      "giveTeachingAccess": "Donner un accès enseignement",
+      "giveManagementAccess": "Donner un accès de gestion",
+      "confirmTeachingTitle": "Donner un accès enseignement",
+      "confirmTeachingBody": "{name} pourra être assigné(e) à des matières et des classes comme un enseignant.",
+      "confirmTeachingButton": "Donner l'accès",
+      "confirmManagementTitle": "Donner un accès de gestion",
+      "confirmManagementBody": "{name} pourra se voir attribuer un rôle dans l'espace de gestion de l'établissement.",
+      "confirmManagementButton": "Donner l'accès",
+      "teachingGranted": "Accès enseignement ajouté.",
+      "managementGranted": "Accès de gestion ajouté."
+    },
+    "tabs": {
+      "access": "Accès & rôles",
+      "compte": "Compte"
+    },
+    "accesRoles": {
+      "sectionTitle": "Accès système",
+      "summaryTitle": "Résumé des droits"
+    },
+    "compte": {
+      "noAccount": {
+        "description": "Cette personne n'a pas encore de compte de connexion."
+      },
+      "pending": {
+        "title": "Invitation envoyée",
+        "description": "Un e-mail d'activation a été envoyé à {email}. En attente de confirmation.",
+        "resendButton": "Renvoyer l'invitation",
+        "resent": "Invitation renvoyée."
+      },
+      "usernameOnly": {
+        "title": "Connexion par identifiant",
+        "description": "Cette personne utilise un nom d'utilisateur pour se connecter.",
+        "resetButton": "Réinitialiser le mot de passe",
+        "confirmTitle": "Réinitialiser le mot de passe",
+        "confirmBody": "Un nouveau mot de passe temporaire sera généré pour {name}. L'ancien mot de passe cessera immédiatement de fonctionner.",
+        "confirmButton": "Réinitialiser"
+      },
+      "emailActive": {
+        "description": "Compte actif et vérifié.",
+        "footerNote": "Cette personne peut réinitialiser son mot de passe elle-même via « Mot de passe oublié »."
+      },
+      "tempPasswordPanel": {
+        "title": "Compte prêt pour {name}",
+        "subtitle": "Notez ces identifiants avant de fermer ce panneau.",
+        "usernameLabel": "Nom d'utilisateur",
+        "passwordLabel": "Mot de passe temporaire",
+        "copyButton": "Copier",
+        "warning": "Ce mot de passe ne sera plus affiché. Transmettez-le à la personne, elle pourra le changer dans ses paramètres.",
+        "closeButton": "J'ai noté, fermer"
+      }
+    }
+  },
+  "usernameField": {
+    "label": "Nom d'utilisateur",
+    "placeholder": "prenom.nom",
+    "available": "Disponible",
+    "taken": "Ce nom d'utilisateur est déjà pris.",
+    "invalidFormat": "Doit commencer par une lettre et ne contenir que des lettres, chiffres, points, tirets ou underscores (3 à 30 caractères)."
+  },
+  "nouveau": {
+    "title": "Ajouter un membre du personnel",
+    "steps": {
+      "identite": "Identité",
+      "profils": "Profils",
+      "connexion": "Connexion"
+    },
+    "identite": {
+      "title": "Identité du membre",
+      "subtitle": "Renseignez les informations de base de la personne que vous souhaitez ajouter.",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Marie",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Kévin",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "emailOptional": "(optionnel)",
+      "emailPlaceholder": "ex : marie.k@ecole.edu.ht",
+      "emailHint": "Si renseigné, ce champ pourra servir à l'étape Connexion.",
+      "nameRequired": "Le prénom et le nom sont obligatoires."
+    },
+    "profils": {
+      "title": "Profils du membre",
+      "subtitle": "Sélectionnez les profils qui correspondent au rôle de cette personne dans l'établissement.",
+      "teacherCard": {
+        "title": "Enseigne dans l'établissement",
+        "description": "Ce membre enseigne des matières à des classes de l'école.",
+        "picker": {
+          "matieresLabel": "Matières assignées",
+          "matieresSearchPlaceholder": "Rechercher une matière…",
+          "matieresEmpty": "Aucune matière",
+          "classesLabel": "Classes",
+          "classesSearchPlaceholder": "Rechercher une classe…",
+          "classesEmpty": "Aucune classe",
+          "add": "Ajouter",
+          "unavailable": "Vous pourrez assigner les matières et les classes depuis la fiche de ce membre après sa création."
+        }
+      },
+      "staffCard": {
+        "title": "A accès à l'application de gestion",
+        "description": "Ce membre peut se connecter à l'espace de gestion de l'établissement.",
+        "roleLabel": "Rôle d'organisation",
+        "roleMember": "Membre",
+        "roleAdmin": "Administrateur",
+        "roleAdminHint": "Accès complet à la gestion de l'établissement.",
+        "roleMemberHint": "Accès limité aux rôles staff assignés ci-dessous.",
+        "staffRolesLabel": "Rôles staff",
+        "staffRolesHint": "Optionnel. Les droits effectifs sont l'union de tous les rôles assignés."
+      },
+      "atLeastOneError": "Sélectionnez au moins un profil pour continuer."
+    },
+    "connexion": {
+      "title": "Mode de connexion",
+      "subtitle": "Choisissez comment ce membre accédera à son espace. Vous pourrez modifier cela plus tard depuis sa fiche.",
+      "noneCard": {
+        "title": "Pas de compte pour l'instant",
+        "description": "Aucun accès numérique. La fiche sera créée sans identifiants.",
+        "disabledHint": "Disponible uniquement si le membre n'a pas d'accès de gestion."
+      },
+      "emailCard": {
+        "title": "Par e-mail",
+        "description": "Un lien d'activation sera envoyé à l'adresse e-mail renseignée.",
+        "disabledHint": "Renseignez un e-mail à l'étape Identité pour activer ce mode.",
+        "inviteLabel": "E-mail d'invitation"
+      },
+      "usernameCard": {
+        "title": "Par nom d'utilisateur",
+        "description": "Le membre se connecte avec un identifiant et un mot de passe local."
+      },
+      "modeRequiredError": "Choisissez un mode de connexion."
+    },
+    "submit": "Créer le compte",
+    "submitting": "Création en cours...",
+    "successEmail": "Invitation envoyée à {email}.",
+    "successNone": "Fiche créée sans compte de connexion.",
+    "errors": {
+      "USERNAME_TAKEN": "Ce nom d'utilisateur est déjà pris.",
+      "EMAIL_ALREADY_IN_USE": "Cet e-mail est déjà utilisé par un autre compte.",
+      "PERMISSION_DENIED": "Vous n'avez pas la permission d'effectuer cette action.",
+      "VALIDATION_FAILED": "Certaines informations sont invalides. Vérifiez le formulaire."
+    }
+  }
+}

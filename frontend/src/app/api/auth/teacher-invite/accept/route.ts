@@ -1,6 +1,9 @@
 // POST /api/auth/teacher-invite/accept — AUTH-style code consumption.
 //
-// Consumes a TEACHER_INVITE code, hashes the submitted password into
+// Consumes a TEACHER_INVITE or a STAFF_INVITE code (the staff invitation of
+// Paramètres › Administrateurs reuses this route and the same
+// /definir-mot-de-passe page — the route name predates it), hashes the
+// submitted password into
 // User.passwordHash, marks emailVerifiedAt (the invite link itself is the
 // verification, matching how OAuth sign-in already treats a verified
 // provider email), marks the code usedAt, and issues all three auth
@@ -111,7 +114,12 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     const codeRow = await prisma.verificationCode.findFirst({
-      where: { userId: user.id, code, type: 'TEACHER_INVITE', usedAt: null },
+      where: {
+        userId: user.id,
+        code,
+        type: { in: ['TEACHER_INVITE', 'STAFF_INVITE'] },
+        usedAt: null,
+      },
       select: { id: true, code: true, expiresAt: true },
     });
     if (!codeRow) {

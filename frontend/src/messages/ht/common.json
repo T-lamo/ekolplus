@@ -70,5 +70,23 @@
     "cancel": "Anile",
     "confirmAction": "Konfime",
     "deleteAction": "Efase"
+  },
+  "richText": {
+    "bold": "Gra",
+    "italic": "Italik",
+    "underline": "Souliye",
+    "bulletList": "Lis ak pwen",
+    "numberedList": "Lis ak nimewo",
+    "alignLeft": "Aliyen agoch",
+    "alignCenter": "Mete nan mitan",
+    "alignRight": "Aliyen adwat",
+    "alignJustify": "Jistifye",
+    "edit": "Modifye tèks la",
+    "editorTitle": "Tèks anrichi",
+    "editorHint": "Chwazi yon pati nan tèks la, epi sèvi ak ba zouti a. Varyab yo toujou disponib.",
+    "done": "Fini",
+    "empty": "Pa gen tèks",
+    "size": "Gwosè tèks la",
+    "sizeDefault": "Gwosè blòk la"
   }
 }

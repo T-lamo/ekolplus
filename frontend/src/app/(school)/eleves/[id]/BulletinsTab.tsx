@@ -20,11 +20,19 @@ function fmt(n: number | null): string {
   return n == null ? '—' : n.toFixed(1);
 }
 
-export function BulletinsTab({ studentId }: { studentId: string }) {
+export function BulletinsTab({
+  studentId,
+  apiBase = `/api/school/students/${studentId}`,
+  viewerHrefBase = `/bulletins/${studentId}`,
+}: {
+  studentId: string;
+  /** API prefix of the bulletins list and PDF (`${apiBase}/bulletins`, `${apiBase}/bulletin/pdf`). */
+  apiBase?: string;
+  /** Viewer page prefix (`${viewerHrefBase}/${termId}`). Default: the school viewer. */
+  viewerHrefBase?: string;
+}) {
   const t = useTranslations('Eleves.bulletins');
-  const { data, error: dataErr } = useApi<{ terms: TermBulletinSummary[] }>(
-    `/api/school/students/${studentId}/bulletins`,
-  );
+  const { data, error: dataErr } = useApi<{ terms: TermBulletinSummary[] }>(`${apiBase}/bulletins`);
   const rows = data ? [...data.terms].sort((a, b) => a.order - b.order) : null;
   const error = dataErr ? t('loadError') : null;
 
@@ -96,14 +104,14 @@ export function BulletinsTab({ studentId }: { studentId: string }) {
             </div>
             <div className="flex items-center gap-2">
               <Link
-                href={`/bulletins/${studentId}/${r.termId}`}
+                href={`${viewerHrefBase}/${r.termId}`}
                 className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-caption font-semibold text-foreground"
               >
                 <Eye size={13} />
                 {t('view')}
               </Link>
               <a
-                href={`/api/school/students/${studentId}/bulletin/pdf?termId=${r.termId}`}
+                href={`${apiBase}/bulletin/pdf?termId=${r.termId}`}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-caption font-semibold ${
                   generated
                     ? 'bg-primary text-primary-foreground'

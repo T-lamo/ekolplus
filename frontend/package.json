@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.0.1",
   "private": true,
+  "license": "UNLICENSED",
   "browserslist": [
     "chrome >= 100",
     "edge >= 100",
@@ -35,6 +36,8 @@
     "stripe:sync-coupons:live": "tsx --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local --env-file-if-exists=.env.production.local scripts/stripe-sync-coupons.ts --live",
     "db:backfill-bulletin-content-layout": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-content-layout.ts",
     "db:backfill-bulletin-density-typography": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-density-typography.ts",
+    "db:backfill-bulletin-pages": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-bulletin-template-pages.ts",
+    "db:backfill-class-grade-level": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/backfill-class-grade-level.ts",
     "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",
     "seed:dev-school": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev-school.ts",
     "smoke:auth": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/smoke-auth.ts",

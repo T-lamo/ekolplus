@@ -34,7 +34,11 @@ export function EvaluationConfigForm({
 
   const current = classSubjects.find((cs) => cs.id === value.classSubjectId) ?? null;
   const classId = current?.classId ?? classSubjects[0]?.classId ?? '';
-  const subjectsForClass = classSubjects.filter((cs) => cs.classId === classId);
+  // A qualitative subject is graded by criteria, never by an evaluation, so
+  // it must not be offered here (creation modal and edit page alike).
+  const subjectsForClass = classSubjects.filter(
+    (cs) => cs.classId === classId && cs.subject.evaluationMode !== 'QUALITATIVE',
+  );
 
   function set<K extends keyof EvaluationConfig>(key: K, v: EvaluationConfig[K]) {
     onChange({ ...value, [key]: v });

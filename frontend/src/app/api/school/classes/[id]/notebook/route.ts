@@ -19,6 +19,7 @@ import {
   subjectAverageFor,
   weightedAverage,
 } from '@/lib/server/grades';
+import { NUMERIC_SUBJECT_FILTER } from '@/lib/server/qualitative';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(
@@ -76,7 +77,7 @@ export async function GET(
     }
 
     const classSubjects = await prisma.classSubject.findMany({
-      where: { classId },
+      where: { classId, ...NUMERIC_SUBJECT_FILTER },
       include: { subject: true },
       orderBy: [{ subject: { domain: 'asc' } }, { subject: { name: 'asc' } }],
     });

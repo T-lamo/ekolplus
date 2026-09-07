@@ -51,8 +51,15 @@ export function useSchoolSections(): NavSection[] {
           },
           { label: t('main.students'), href: '/eleves', icon: Users, module: 'eleves' },
           {
-            label: t('main.teachers'),
-            href: '/enseignants',
+            // Sidebar rename (spec 2026-09-04-personnel-module-design.md
+            // §6.1): the module's permission key stays 'enseignants'
+            // (renaming it would rewrite every school's StaffRole.grants
+            // array), only the nav label + href change. Icon kept as-is —
+            // the Banani mockup for this task fetched the list *screen*
+            // only, its sidebar chrome (which drew a distinct briefcase
+            // icon) was explicitly out of scope.
+            label: t('main.personnel'),
+            href: '/personnel',
             icon: UserCheck,
             module: 'enseignants',
           },

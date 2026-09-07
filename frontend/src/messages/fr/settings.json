@@ -8,13 +8,28 @@
     "langue": "Langue",
     "etablissement": "Établissement",
     "annee": "Année scolaire",
-    "admins": "Administrateurs",
     "notifications": "Notifications"
   },
   "administrateurs": {
-    "title": "Administrateurs",
-    "description": "Comptes ayant accès à l'espace de gestion de l'établissement.",
-    "since": "Depuis le {date}"
+    "actions": {
+      "promote": "Promouvoir administrateur",
+      "promoteTitle": "Promouvoir en administrateur",
+      "promoteBody": "{name} obtiendra un accès complet à l'espace de gestion. Ses rôles actuels seront retirés.",
+      "promoted": "Membre promu administrateur.",
+      "demote": "Rétrograder en membre",
+      "demoteTitle": "Rétrograder en membre",
+      "demoteBody": "{name} perdra l'accès complet. Attribuez-lui ensuite un ou plusieurs rôles.",
+      "demoted": "Administrateur rétrogradé en membre."
+    },
+    "modal": {
+      "roleLabel": "Type de compte",
+      "roleAdmin": "Administrateur / Administratrice",
+      "roleAdminHint": "Accès complet à tous les modules.",
+      "roleMember": "Membre",
+      "roleMemberHint": "Accès limité aux rôles attribués ci-dessous.",
+      "staffRolesLabel": "Rôles",
+      "staffRolesHint": "Sans rôle, le membre ne verra aucun écran jusqu'à ce qu'un rôle lui soit attribué."
+    }
   },
   "anneeScolaire": {
     "title": "Année scolaire & Calendrier",

@@ -69,7 +69,10 @@ function makeGet(url: string): NextRequest {
 // Matches USER_SELECT in route.ts.
 interface UserListRow {
   id: string;
-  email: string;
+  // Null for a username-only account (module Personnel) — this route
+  // passes User.email through unchanged, so its real response reflects
+  // that too.
+  email: string | null;
   name: string | null;
   avatarUrl: string | null;
   role: string;

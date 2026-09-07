@@ -8,13 +8,28 @@
     "langue": "Language",
     "etablissement": "School",
     "annee": "School year",
-    "admins": "Administrators",
     "notifications": "Notifications"
   },
   "administrateurs": {
-    "title": "Administrators",
-    "description": "Accounts with access to the school's management workspace.",
-    "since": "Since {date}"
+    "actions": {
+      "promote": "Promote to administrator",
+      "promoteTitle": "Promote to administrator",
+      "promoteBody": "{name} will get full access to the management workspace. Their current roles will be removed.",
+      "promoted": "Member promoted to administrator.",
+      "demote": "Demote to member",
+      "demoteTitle": "Demote to member",
+      "demoteBody": "{name} will lose full access. Assign them one or more roles afterwards.",
+      "demoted": "Administrator demoted to member."
+    },
+    "modal": {
+      "roleLabel": "Account type",
+      "roleAdmin": "Administrator",
+      "roleAdminHint": "Full access to every module.",
+      "roleMember": "Member",
+      "roleMemberHint": "Access limited to the roles assigned below.",
+      "staffRolesLabel": "Roles",
+      "staffRolesHint": "Without a role, the member will not see any screen until one is assigned."
+    }
   },
   "anneeScolaire": {
     "title": "School Year & Calendar",

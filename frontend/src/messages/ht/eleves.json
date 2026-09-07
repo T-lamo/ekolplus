@@ -142,6 +142,8 @@
       "previousSchoolPlaceholder": "Non ansyen lekòl la...",
       "transferNumber": "Nimewo transfè",
       "transferNumberPlaceholder": "Opsyonèl",
+      "nisu": "NISU",
+      "nisuPlaceholder": "Nimewo idantifikasyon eskolè inik",
       "notes": "Obsèvasyon / Nòt entèn"
     },
     "statusSection": {
@@ -159,7 +161,16 @@
       "relationship": "Lyen fanmi",
       "phone": "Telefòn",
       "email": "Imèl",
-      "profession": "Pwofesyon"
+      "profession": "Pwofesyon",
+      "nif": "NIF",
+      "nifPlaceholder": "Nimewo idantifikasyon fiskal",
+      "niu": "NIU",
+      "niuPlaceholder": "Nimewo idantifikasyon inik",
+      "vitalStatus": "Estati",
+      "vitalStatusOptions": {
+        "VIVANT": "Vivan(t)",
+        "DECEDE": "Dekede"
+      }
     },
     "options": {
       "title": "Opsyon & Aksè",
@@ -195,7 +206,8 @@
       "grades": "Nòt & Rezilta",
       "attendance": "Prezans",
       "appreciations": "Apresyasyon",
-      "bulletins": "Bilten"
+      "bulletins": "Bilten",
+      "documents": "Dokiman"
     },
     "stats": {
       "overallAverage": "Mwayèn jeneral",
@@ -309,7 +321,8 @@
       "teacher": "Pwofesè"
     },
     "overallAverage": "Mwayèn jeneral",
-    "rank": "· Ran : {rank} / {rankedCount}"
+    "rank": "· Ran : {rank} / {rankedCount}",
+    "loadError": "Nou pa ka chaje apresyasyon yo."
   },
   "attendanceTab": {
     "journal": "Jounal prezans",
@@ -318,7 +331,8 @@
       "date": "Dat",
       "status": "Estati",
       "justification": "Jistifikasyon"
-    }
+    },
+    "loadError": "Nou pa ka chaje prezans yo."
   },
   "bulletins": {
     "loadError": "Nou pa ka chaje bilten yo.",
@@ -337,6 +351,42 @@
     "sentToast": "Envitasyon voye.",
     "resentToast": "Envitasyon voye ankò.",
     "errorEmailInUse": "Imèl sa a deja itilize pa yon lòt kont.",
-    "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite."
+    "errorNoTarget": "Ajoute yon imèl (elèv oswa tutè prensipal) anvan w envite.",
+    "emailOption": {
+      "label": "Envite pa imèl",
+      "description": "Yon lyen aktivasyon voye nan imèl la. Elèv la chwazi pwòp modpas li."
+    },
+    "usernameOption": {
+      "label": "Kreye yon aksè ak non itilizatè",
+      "description": "Ideyal pou elèv ki pa gen imèl. Yo jenere yon non itilizatè ak yon modpas tanporè.",
+      "button": "Kreye aksè a",
+      "submitButton": "Kreye kont lan",
+      "cancelButton": "Anile",
+      "errorTaken": "Non itilizatè sa a deja pran."
+    },
+    "usernameActive": {
+      "status": "Konekte ak non itilizatè {username}",
+      "resetButton": "Reyajiste modpas la",
+      "resetConfirmTitle": "Reyajiste modpas la?",
+      "resetConfirmBody": "Y ap jenere yon nouvo modpas tanporè pou {name}. W ap oblije bay elèv la li nan men.",
+      "resetConfirmButton": "Reyajiste"
+    }
+  },
+  "documents": {
+    "types": {
+      "BIRTH_CERTIFICATE": "Batistè",
+      "VACCINATION_RECORD": "Kanè vaksinasyon",
+      "PREVIOUS_SCHOOL_RECORD": "Dosye ansyen lekòl la"
+    },
+    "provided": "Bay",
+    "missing": "Manke",
+    "upload": "Voye",
+    "replace": "Ranplase",
+    "uploading": "N ap voye",
+    "download": "Telechaje",
+    "unsupportedFormat": "Fòma pa sipòte. Sèlman PDF, JPG oswa PNG.",
+    "tooLarge": "Fichye twò gwo, {maxSizeMb} Mo maksimòm.",
+    "uploadError": "Voye a echwe. Eseye ankò.",
+    "loadError": "Pa ka chaje dokiman yo."
   }
 }

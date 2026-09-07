@@ -168,6 +168,39 @@ describe('POST /api/school/classes (fiche classe)', () => {
     expect(res.status).toBe(403);
     expect(prismaMock.class.create).not.toHaveBeenCalled();
   });
+
+  it("unknown or another school's gradeLevelId → 400 VALIDATION_FAILED", async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce(null);
+    let res = await POST(
+      req('POST', '/api/school/classes', { name: '6ème A', level: '6ème', gradeLevelId: 'nope' }),
+    );
+    expect(res.status).toBe(400);
+
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce({
+      id: 'gl1',
+      schoolId: 'school_OTHER',
+    } as never);
+    res = await POST(
+      req('POST', '/api/school/classes', { name: '6ème A', level: '6ème', gradeLevelId: 'gl1' }),
+    );
+    expect(res.status).toBe(400);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('valid gradeLevelId is persisted on create', async () => {
+    prismaMock.gradeLevel.findUnique.mockResolvedValue({
+      id: 'gl1',
+      schoolId: 'school_1',
+    } as never);
+    prismaMock.class.create.mockResolvedValue(createdClass as never);
+    const res = await POST(
+      req('POST', '/api/school/classes', { name: '6ème A', level: '6ème', gradeLevelId: 'gl1' }),
+    );
+    expect(res.status).toBe(201);
+    expect(prismaMock.class.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ gradeLevelId: 'gl1' }) }),
+    );
+  });
 });
 
 describe('GET /api/school/classes/[id]', () => {
@@ -253,6 +286,62 @@ describe('PATCH /api/school/classes/[id]', () => {
     expect(res.status).toBe(200);
     expect(prismaMock.class.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { color: '#388e3c', track: 'Sciences' } }),
+    );
+  });
+
+  // F2(b) — the gradeLevelId ownership guard on edit, mirroring the POST
+  // coverage above (final-review, no separate [id]/route.test.ts: PATCH was
+  // already exercised in this file, so these join that existing describe
+  // block instead of duplicating the mocks/helpers in a new file).
+  it('valid own-school gradeLevelId is persisted', async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.gradeLevel.findUnique.mockResolvedValue({
+      id: 'gl1',
+      schoolId: 'school_1',
+    } as never);
+    prismaMock.class.update.mockResolvedValue({ ...createdClass, gradeLevelId: 'gl1' } as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'gl1' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.class.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { gradeLevelId: 'gl1' } }),
+    );
+  });
+
+  it("unknown or another school's gradeLevelId → 400 VALIDATION_FAILED, no update", async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce(null);
+    let res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'nope' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toBe('VALIDATION_FAILED');
+
+    prismaMock.gradeLevel.findUnique.mockResolvedValueOnce({
+      id: 'gl1',
+      schoolId: 'school_OTHER',
+    } as never);
+    res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: 'gl1' }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(400);
+    expect(prismaMock.class.update).not.toHaveBeenCalled();
+  });
+
+  it('gradeLevelId: null clears the link', async () => {
+    prismaMock.class.findUnique.mockResolvedValue(createdClass as never);
+    prismaMock.class.update.mockResolvedValue({ ...createdClass, gradeLevelId: null } as never);
+    const res = await PATCH(
+      req('PATCH', '/api/school/classes/cls_new', { gradeLevelId: null }),
+      params('cls_new'),
+    );
+    expect(res.status).toBe(200);
+    expect(prismaMock.class.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { gradeLevelId: null } }),
     );
   });
 });

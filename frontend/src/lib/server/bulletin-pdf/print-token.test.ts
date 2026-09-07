@@ -21,6 +21,17 @@ describe('print-token (bulletin PDF authorization)', () => {
     expect(payload).toMatchObject({ schoolId: 's1', studentId: 'st1', termId: 't1' });
   });
 
+  it('round-trips the optional audience and leaves it undefined when omitted', () => {
+    const student = verifyPrintToken(
+      signPrintToken({ schoolId: 's1', studentId: 'st1', termId: 't1', audience: 'student' }),
+    );
+    expect(student?.audience).toBe('student');
+    const staff = verifyPrintToken(
+      signPrintToken({ schoolId: 's1', studentId: 'st1', termId: 't1' }),
+    );
+    expect(staff?.audience).toBeUndefined();
+  });
+
   it('rejects a payload tampered after signing', () => {
     const token = signPrintToken({ schoolId: 's1', studentId: 'st1', termId: 't1' });
     const [, sig] = token.split('.');

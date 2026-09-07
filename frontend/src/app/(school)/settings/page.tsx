@@ -11,22 +11,13 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ProfilTab } from './ProfilTab';
 import { EtablissementTab } from './EtablissementTab';
 import { AnneeScolaireTab } from './AnneeScolaireTab';
-import { AdministrateursTab } from './AdministrateursTab';
 import { NotificationsTab } from './NotificationsTab';
 import { ApparenceTab } from './ApparenceTab';
 import { LangueTab } from './LangueTab';
 import { ZoneDangereuseSection } from './ZoneDangereuseSection';
 import type { SchoolResponse, TermData } from './types';
 
-const TAB_KEYS = [
-  'profil',
-  'apparence',
-  'langue',
-  'etablissement',
-  'annee',
-  'admins',
-  'notifications',
-];
+const TAB_KEYS = ['profil', 'apparence', 'langue', 'etablissement', 'annee', 'notifications'];
 // « Abonnement » left this page on 2026-08-18 — it is now its own screen at
 // /abonnement (sidebar Compte › Abonnement); next.config.ts redirects the
 // old ?tab=subscription deep links there.
@@ -55,7 +46,6 @@ function SettingsForm() {
     { key: 'langue', label: t('tabs.langue') },
     { key: 'etablissement', label: t('tabs.etablissement') },
     { key: 'annee', label: t('tabs.annee') },
-    { key: 'admins', label: t('tabs.admins') },
     { key: 'notifications', label: t('tabs.notifications') },
   ];
 
@@ -161,9 +151,6 @@ function SettingsForm() {
                 mutate({ ...data, academicYear: { ...data.academicYear, gradingScale } });
               }}
             />
-          )}
-          {tab === 'admins' && data && (
-            <AdministrateursTab members={data.members} myRole={myRole} />
           )}
           {tab === 'notifications' && <NotificationsTab />}
         </>

@@ -26,7 +26,7 @@ vi.mock('@/lib/server/school', async () => {
 import { requireAuth } from '@/lib/server/middleware';
 import { verifyCsrf } from '@/lib/server/auth';
 import { resolveMySchool } from '@/lib/server/school';
-import { DELETE } from './route';
+import { PATCH, DELETE } from './route';
 
 const authUser = { user: { sub: 'user_1', email: 'admin@test.local' } };
 const adminSchool = { organizationId: 'org_1', schoolId: 'school_1', role: 'ADMIN' as const };
@@ -95,5 +95,40 @@ describe('DELETE /api/school/teachers/[id]', () => {
       where: { userId: 'user_linked', organizationId: 'org_1' },
     });
     expect(prismaMock.teacher.delete).toHaveBeenCalledWith({ where: { id: 't1' } });
+  });
+});
+
+describe('PATCH /api/school/teachers/[id]', () => {
+  const patchReq = (body: unknown) =>
+    new NextRequest('http://localhost/api/school/teachers/t1', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  it('persists birthPlace, diploma, nif and niu', async () => {
+    prismaMock.teacher.findUnique.mockResolvedValue({ id: 't1', schoolId: 'school_1' } as never);
+    prismaMock.teacher.update.mockResolvedValue({ id: 't1' } as never);
+
+    const res = await PATCH(
+      patchReq({
+        birthPlace: 'Jacmel',
+        diploma: 'Licence en Pédagogie',
+        nif: 'NIF-9',
+        niu: 'NIU-9',
+      }),
+      params,
+    );
+
+    expect(res.status).toBe(200);
+    const updateArgs = prismaMock.teacher.update.mock.calls[0]?.[0] as {
+      data: { birthPlace?: string; diploma?: string; nif?: string; niu?: string };
+    };
+    expect(updateArgs.data).toMatchObject({
+      birthPlace: 'Jacmel',
+      diploma: 'Licence en Pédagogie',
+      nif: 'NIF-9',
+      niu: 'NIU-9',
+    });
   });
 });

@@ -2,6 +2,7 @@
   "name": "izikit",
   "version": "0.0.1",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Solo-dev SaaS monolith starter — Next.js 16 (full-stack: API routes + Server Actions) + Prisma + Auth (cookie/CSRF/JWT) — fork via gh repo create --template",
   "engines": {
     "node": ">=20",
@@ -31,6 +32,9 @@
     "db:migrate:status": "pnpm --filter frontend run db:migrate:status",
     "db:studio": "pnpm --filter frontend run db:studio",
     "db:make-superadmin": "pnpm --filter frontend run db:make-superadmin",
+    "db:seed-bulletin-templates": "pnpm --filter frontend run db:seed-bulletin-templates",
+    "db:seed-plans": "pnpm --filter frontend run db:seed-plans",
+    "db:backfill-class-grade-level": "pnpm --filter frontend run db:backfill-class-grade-level",
     "seed:dev": "pnpm --filter frontend run seed:dev",
     "seed:dev-school": "pnpm --filter frontend run seed:dev-school",
     "stripe:migrate-price": "pnpm --filter frontend run stripe:migrate-price",

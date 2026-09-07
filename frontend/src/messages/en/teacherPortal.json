@@ -36,5 +36,8 @@
       "subjects": "Subjects taught",
       "students": "Students"
     }
+  },
+  "settings": {
+    "profileSubtitle": "Your teacher account information"
   }
 }

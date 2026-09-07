@@ -14,7 +14,12 @@ import { prisma } from '@/lib/server/prisma';
 import { requireSchoolPermission } from '@/lib/server/school-permissions';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
-export const LEVEL_SELECT = { id: true, name: true, order: true } as const;
+export const LEVEL_SELECT = {
+  id: true,
+  name: true,
+  order: true,
+  bulletinTemplateId: true,
+} as const;
 
 export const LevelNameBody = z.object({
   name: z.string().trim().min(1).max(40),

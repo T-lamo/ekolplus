@@ -16,7 +16,8 @@
     "teacher": "Pwofesè",
     "studentParent": "Elèv / Paran"
   },
-  "emailLabel": "Adrès imel",
+  "identifierLabel": "Imel oswa non itilizatè",
+  "identifierPlaceholder": "ou@lekol.com oswa marie.k",
   "passwordLabel": "Modpas",
   "showPassword": "Montre modpas",
   "hidePassword": "Kache modpas",
@@ -30,7 +31,7 @@
   "errors": {
     "TOO_MANY_LOGIN_ATTEMPTS": "Twòp tantativ. Eseye ankò nan kèk minit.",
     "LOCKED_OUT": "Kont lan bloke pou kèk tan apre plizyè eseye ki echwe. Eseye ankò nan kèk minit.",
-    "INVALID_CREDENTIALS": "Imel oswa modpas pa kòrèk.",
+    "INVALID_CREDENTIALS": "Idantifyan oswa modpas pa kòrèk.",
     "EMAIL_NOT_VERIFIED": "Tanpri verifye imel ou anvan ou konekte.",
     "ACCOUNT_SUSPENDED": "Kont sa a sispann. Kontakte sipò a."
   }

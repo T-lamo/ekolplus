@@ -26,7 +26,14 @@ function fmtDate(iso: string, locale: string): string {
   });
 }
 
-export function PresencesTab({ studentId }: { studentId: string }) {
+export function PresencesTab({
+  studentId,
+  apiBase = `/api/school/students/${studentId}`,
+}: {
+  studentId: string;
+  /** API prefix of the attendance read (`${apiBase}/attendance`). Default: the fiche's school route. */
+  apiBase?: string;
+}) {
   const t = useTranslations('Eleves.attendanceTab');
   const tFilterBy = useTranslations('Eleves');
   const tPresences = useTranslations('Presences.summary');
@@ -36,8 +43,8 @@ export function PresencesTab({ studentId }: { studentId: string }) {
   const bcp47 = LOCALE_BCP47[locale];
   const [termId, setTermId] = useState('');
   const qs = termId ? `?termId=${termId}` : '';
-  const attendancePath = `/api/school/students/${studentId}/attendance${qs}`;
-  const { data, loading } = useApi<StudentAttendanceResponse>(attendancePath);
+  const attendancePath = `${apiBase}/attendance${qs}`;
+  const { data, loading, error } = useApi<StudentAttendanceResponse>(attendancePath);
 
   // `termId` is local state, not a URL param, so this component never
   // remounts on term change — gate the auto-seed on `getCache(...) === data`
@@ -51,6 +58,14 @@ export function PresencesTab({ studentId }: { studentId: string }) {
       setTermId(data.resolvedTermId ?? '');
     }
   }, [data, attendancePath]);
+
+  if (!data && error) {
+    return (
+      <Card className="items-center gap-2 p-10 text-center">
+        <p className="text-sm text-destructive-foreground">{t('loadError')}</p>
+      </Card>
+    );
+  }
 
   if (!data) {
     return (

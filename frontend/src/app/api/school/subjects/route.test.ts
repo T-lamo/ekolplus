@@ -238,3 +238,68 @@ describe('PATCH /api/school/subjects/[id]', () => {
     expect(prismaMock.subject.update).not.toHaveBeenCalled();
   });
 });
+
+describe('POST /api/school/subjects (created directly as QUALITATIVE)', () => {
+  it('creates the subject with a normalized scale', async () => {
+    prismaMock.subject.count.mockResolvedValue(0); // code-uniqueness check, if any
+    prismaMock.subject.create.mockResolvedValue({
+      id: 'subj_new',
+      name: 'Comportement',
+      evaluationMode: 'QUALITATIVE',
+      ratingScale: ['Toujours', 'Souvent'],
+    } as never);
+    const res = await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Comportement',
+        code: 'COMP-001',
+        domain: 'Vie scolaire',
+        level: 'Kindergarten',
+        evaluationType: 'Observation continue',
+        evaluationMode: 'QUALITATIVE',
+        ratingScale: [' Toujours ', 'Souvent'],
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect(prismaMock.subject.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          evaluationMode: 'QUALITATIVE',
+          ratingScale: ['Toujours', 'Souvent'],
+        }),
+      }),
+    );
+  });
+
+  it('400s an invalid scale before touching the database', async () => {
+    const res = await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Comportement',
+        code: 'COMP-001',
+        domain: 'Vie scolaire',
+        level: 'Kindergarten',
+        evaluationType: 'Observation continue',
+        evaluationMode: 'QUALITATIVE',
+        ratingScale: ['Seul'],
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: 'VALIDATION_FAILED' });
+    expect(prismaMock.subject.create).not.toHaveBeenCalled();
+  });
+
+  it('a body with neither field still creates a NUMERIC subject unchanged', async () => {
+    prismaMock.subject.create.mockResolvedValue({ id: 'subj_new2' } as never);
+    await POST(
+      req('POST', '/api/school/subjects', {
+        name: 'Mathématiques',
+        code: 'MATH-001',
+        domain: 'Sciences',
+        level: '6ème',
+        evaluationType: 'Contrôle continu',
+      }),
+    );
+    const call = prismaMock.subject.create.mock.calls[0]?.[0];
+    expect(call?.data).not.toHaveProperty('evaluationMode');
+    expect(call?.data).not.toHaveProperty('ratingScale');
+  });
+});

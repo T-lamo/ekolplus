@@ -39,6 +39,10 @@ function SetPasswordForm() {
   const tLogin = useTranslations('Login');
   const email = searchParams.get('email') ?? '';
   const code = searchParams.get('code') ?? '';
+  // `?portal=staff` = invitation from Paramètres › Administrateurs (same
+  // accept route, different copy and landing: the account may hold several
+  // espaces, so route by `spaces` the way /login does).
+  const portal = searchParams.get('portal') === 'staff' ? 'staff' : 'teacher';
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,8 +57,20 @@ function SetPasswordForm() {
         body: { email, code: code.trim().toUpperCase(), newPassword: password },
       });
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
-      await refresh();
-      router.push('/espace-enseignant');
+      const me = await refresh();
+      if (portal === 'teacher') {
+        router.push('/espace-enseignant');
+      } else {
+        const spaces = me?.spaces;
+        const available = [
+          ...(spaces?.school ? ['/dashboard'] : []),
+          ...(spaces?.teacher ? ['/espace-enseignant'] : []),
+          ...(spaces?.student ? ['/eleve'] : []),
+        ];
+        router.push(
+          available.length >= 2 ? '/espaces?pref=school' : (available[0] ?? '/dashboard'),
+        );
+      }
     } catch (err) {
       if (err instanceof ApiError) {
         // Static, literal keys on purpose — next-intl's typed t() validates
@@ -140,7 +156,9 @@ function SetPasswordForm() {
           <h2 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-foreground">
             {t('title')}
           </h2>
-          <p className="mb-6 text-caption leading-relaxed text-muted-foreground">{t('subtitle')}</p>
+          <p className="mb-6 text-caption leading-relaxed text-muted-foreground">
+            {portal === 'staff' ? t('subtitleStaff') : t('subtitle')}
+          </p>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Field
               label={t('passwordLabel')}

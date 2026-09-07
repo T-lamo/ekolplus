@@ -16,10 +16,7 @@ import {
   Lock,
   LogIn,
   Mail,
-  Shield,
   ShieldCheck,
-  User,
-  Users,
 } from 'lucide-react';
 import { api, ApiError, storeCsrfToken } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,8 +25,6 @@ import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import { LocaleQuickSwitcher } from '@/components/settings/LanguagePicker';
 
-const ROLE_TAB_KEYS = ['admin', 'teacher', 'studentParent'] as const;
-const ROLE_TAB_ICONS = { admin: Shield, teacher: User, studentParent: Users } as const;
 const FEATURE_KEYS = ['grades', 'attendance', 'bulletins', 'stats'] as const;
 const FEATURE_ICONS = {
   grades: BookOpen,
@@ -48,7 +43,6 @@ export default function LoginPage() {
   const { refresh } = useAuth();
   const t = useTranslations('Login');
   const tCommon = useTranslations('Common');
-  const [role, setRole] = useState<(typeof ROLE_TAB_KEYS)[number]>('admin');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -68,9 +62,8 @@ export default function LoginPage() {
       if (res.csrfToken) storeCsrfToken(res.csrfToken);
       const me = await refresh();
       // Multi-espaces (spec 2026-09-01 §6) : plateforme (ADMIN/SUPERADMIN)
-      // d'abord ; 1 seul espace → entrée directe (l'onglet est ignoré) ;
-      // ≥ 2 espaces → page « Choisissez votre espace », l'onglet du login
-      // pré-sélectionnant la carte ; 0 espace → /dashboard (écran « pas
+      // d'abord ; 1 seul espace → entrée directe ; ≥ 2 espaces → page
+      // « Choisissez votre espace » ; 0 espace → /dashboard (écran « pas
       // d'école » existant). `/` reste la landing publique.
       const isPlatformStaff = me?.role === 'SUPERADMIN' || me?.role === 'ADMIN';
       const spaces = me?.spaces;
@@ -79,11 +72,10 @@ export default function LoginPage() {
         ...(spaces?.teacher ? ['/espace-enseignant'] : []),
         ...(spaces?.student ? ['/eleve'] : []),
       ];
-      const pref = role === 'studentParent' ? 'student' : role;
       const destination = isPlatformStaff
         ? '/admin'
         : available.length >= 2
-          ? `/espaces?pref=${pref}`
+          ? '/espaces'
           : (available[0] ?? '/dashboard');
       router.push(destination);
     } catch (err) {
@@ -180,7 +172,7 @@ export default function LoginPage() {
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center bg-background p-4 sm:p-6 lg:p-10">
         <Card className="w-full max-w-[430px] px-6 py-7 sm:px-9 sm:pt-9 sm:pb-7">
-          <div className="mb-2 flex flex-col items-start gap-2">
+          <div className="mb-2 flex flex-col items-center gap-2">
             <Image
               src="/logos/schoolgesti-lockup.svg"
               alt="Schoolgesti"
@@ -191,37 +183,12 @@ export default function LoginPage() {
             <LocaleQuickSwitcher className="lg:hidden" />
           </div>
 
-          <h2 className="mb-1.5 text-[26px] font-extrabold tracking-tight text-foreground">
+          <h2 className="mb-1.5 text-center text-[26px] font-extrabold tracking-tight text-foreground">
             {t('welcome')}
           </h2>
-          <p className="mb-6 text-[13px] leading-relaxed text-muted-foreground">
+          <p className="mb-6 text-center text-[13px] leading-relaxed text-muted-foreground">
             {t('formSubtitle')}
           </p>
-
-          <div
-            role="tablist"
-            aria-label={t('accountTypeLabel')}
-            className="mb-6 flex gap-0.5 rounded-md bg-muted p-1"
-          >
-            {ROLE_TAB_KEYS.map((key) => {
-              const Icon = ROLE_TAB_ICONS[key];
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={role === key}
-                  onClick={() => setRole(key)}
-                  className={`flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-sm px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                    role === key ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'
-                  }`}
-                >
-                  <Icon size={11} />
-                  {t(`roleTabs.${key}`)}
-                </button>
-              );
-            })}
-          </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Field

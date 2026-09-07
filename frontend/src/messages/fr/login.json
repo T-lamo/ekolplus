@@ -9,12 +9,6 @@
   },
   "welcome": "Bienvenue 👋",
   "formSubtitle": "Connectez-vous à votre espace pour accéder au tableau de bord de votre établissement.",
-  "accountTypeLabel": "Type de compte",
-  "roleTabs": {
-    "admin": "Administrateur",
-    "teacher": "Enseignant",
-    "studentParent": "Élève / Parent"
-  },
   "identifierLabel": "Email ou nom d'utilisateur",
   "identifierPlaceholder": "vous@ecole.com ou marie.k",
   "passwordLabel": "Mot de passe",

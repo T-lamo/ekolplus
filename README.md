@@ -116,6 +116,14 @@ ekolplus/
 └── .planning/                      Notes de specs et de migration ponctuelles
 ```
 
+## Architecture
+
+Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour une vue d'ensemble du système (multi-tenant, multi-espaces, RBAC, bulletins, tâches de fond).
+
+## Référence API
+
+Voir [API.md](API.md) pour la liste des routes par domaine.
+
 ## Déploiement
 
 Deux projets Vercel séparés, tous deux avec `frontend/` comme root directory :
@@ -123,7 +131,7 @@ Deux projets Vercel séparés, tous deux avec `frontend/` comme root directory :
 - **Production** — branche `main` → schoolgesti.com
 - **Test / staging** — branche `develop` → testing.schoolgesti.com
 
-`frontend/vercel.json` déclare les schedules cron ; Vercel les enregistre automatiquement au déploiement.
+`frontend/vercel.json` déclare les schedules cron ; Vercel les enregistre automatiquement au déploiement. Détails complets (variables d'environnement, migrations, webhook Stripe, rollback) dans [DEPLOY.md](DEPLOY.md).
 
 ## Tests
 

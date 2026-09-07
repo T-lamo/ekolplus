@@ -408,6 +408,12 @@
     "form": {
       "requiredHint": "Fields marked",
       "requiredHintSuffix": "are required",
+      "steps": {
+        "identity": "Identity",
+        "kind": "Teaching",
+        "evaluation": "Assessment",
+        "assignment": "Assignment"
+      },
       "identity": {
         "title": "Subject identity",
         "subtitle": "Basic information used to identify the subject in the application.",
@@ -434,7 +440,7 @@
       },
       "structure": {
         "title": "Curriculum structure and weighting",
-        "subtitle": "Coefficient, hourly volume, and assessment rules for this subject.",
+        "subtitle": "Coefficient, hourly volume, and seat capacity for this subject.",
         "coefficientLabel": "Coefficient",
         "coefficientHint": "Weight in the overall average",
         "coefficientPlaceholder": "4",
@@ -491,6 +497,10 @@
         "criterionInUse": "This criterion has ratings: it cannot be deleted.",
         "criterionSaveError": "The criterion could not be saved."
       },
+      "evaluationStep": {
+        "title": "Assessment and passing rules",
+        "subtitle": "Scale, passing thresholds, and assessment mode for this subject."
+      },
       "assignment": {
         "title": "Assignment and logistics",
         "subtitle": "Lead teacher, room, and academic prerequisites.",
@@ -506,8 +516,6 @@
         "prerequisitesHint": "Subjects that must be validated beforehand (e.g. having passed MAT-001 for MATH202)"
       },
       "advanced": {
-        "title": "Advanced options and settings",
-        "subtitle": "Settings specific to the academic year and assessment thresholds.",
         "yearLabel": "Academic year / Semester",
         "yearHint": "Link to the current period",
         "yearActive": "Full year {year}",

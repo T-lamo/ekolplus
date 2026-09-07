@@ -408,6 +408,12 @@
     "form": {
       "requiredHint": "Les champs marqués",
       "requiredHintSuffix": "sont obligatoires",
+      "steps": {
+        "identity": "Identité",
+        "kind": "Pédagogie",
+        "evaluation": "Évaluation",
+        "assignment": "Affectation"
+      },
       "identity": {
         "title": "Identité de la matière",
         "subtitle": "Informations de base permettant d'identifier la matière dans l'application.",
@@ -427,14 +433,14 @@
         "domainOtherPlaceholder": "Nom du département",
         "levelLabel": "Niveau / Année d'étude",
         "levelPlaceholder": "3ème / 4ème",
-        "kindLabel": "Statut",
+        "kindLabel": "Type pédagogique",
         "kindHint": "Obligatoire, Optionnelle (élective) ou Facultative",
         "descriptionLabel": "Description / Syllabi",
         "descriptionPlaceholder": "Brève description du programme d'enseignement, objectifs pédagogiques généraux..."
       },
       "structure": {
         "title": "Structure pédagogique et pondération",
-        "subtitle": "Coefficient, volume horaire et règles d'évaluation pour cette matière.",
+        "subtitle": "Coefficient, volume horaire et capacité d'accueil pour cette matière.",
         "coefficientLabel": "Coefficient",
         "coefficientHint": "Poids dans la moyenne générale",
         "coefficientPlaceholder": "4",
@@ -491,6 +497,10 @@
         "criterionInUse": "Ce critère a des coches : il ne peut pas être supprimé.",
         "criterionSaveError": "Impossible d'enregistrer le critère."
       },
+      "evaluationStep": {
+        "title": "Évaluation et réussite",
+        "subtitle": "Barème, seuils de réussite et mode d'évaluation de cette matière."
+      },
       "assignment": {
         "title": "Assignation et logistique",
         "subtitle": "Enseignant responsable, salle et prérequis pédagogiques.",
@@ -506,8 +516,6 @@
         "prerequisitesHint": "Matières devant être validées au préalable (ex. avoir validé MAT-001 pour MATH202)"
       },
       "advanced": {
-        "title": "Options avancées et paramètres",
-        "subtitle": "Paramètres spécifiques liés à l'année académique et aux seuils d'évaluation.",
         "yearLabel": "Année académique / Semestre",
         "yearHint": "Rattachement à la période en cours",
         "yearActive": "Année complète {year}",

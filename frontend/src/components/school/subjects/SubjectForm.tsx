@@ -4,15 +4,25 @@
 // (add-matiere.md), also the first tab of the subject detail page. Pure
 // presentation over `useSubjectForm`; the page owns the header/footer
 // buttons.
+//
+// The left column's fields are split into 4 steps (2026-09-06 — one flat
+// page held ~20 fields, too dense to scan) navigated with FormStepsBar; the
+// right column (Apparence / Statut / Classes) stays a persistent aside since
+// it's visual pickers, not fields to fill in. Free step navigation (no
+// per-step gating): unlike a creation wizard, this is one already-existing
+// entity's fields, editable in any order.
+import { type ReactNode, useEffect, useRef } from 'react';
 import {
   ArrowRight,
   BookOpen,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
   Info,
   Lightbulb,
   Palette,
   School,
-  Settings2,
   SlidersHorizontal,
   ToggleRight,
   UserCheck,
@@ -23,6 +33,7 @@ import { ASIDE_GRID } from '@/lib/layout';
 import { getSubjectVisual, SUBJECT_COLORS, SUBJECT_ICONS, tintOf } from '@/lib/subject-visuals';
 import { cn } from '@/lib/utils';
 import type { EvaluationMode } from '@/lib/qualitative';
+import { FormStepsBar, type FormStep } from '@/components/school/FormStepsBar';
 import {
   ALL_LEVELS,
   EVALUATION_TYPES,
@@ -49,7 +60,11 @@ import { PrerequisitesPicker, type PrerequisiteOption } from './PrerequisitesPic
 import { RatingScaleEditor } from './RatingScaleEditor';
 import { CriteriaEditor } from './CriteriaEditor';
 import { SubjectStatusBadge } from './SubjectPageShell';
-import type { SubjectFormController } from './useSubjectForm';
+import {
+  SUBJECT_FORM_STEPS,
+  type SubjectFormController,
+  type SubjectFormStep,
+} from './useSubjectForm';
 
 export interface SubjectFormOptions {
   teachers: { id: string; name: string; photoUrl: string | null }[];
@@ -87,6 +102,52 @@ export function SubjectForm({
   const t = useTranslations('Configuration.matieres.form');
   const tKind = useTranslations('Configuration.matieres.kind');
   const tStatus = useTranslations('Configuration.matieres.status');
+  const tWizard = useTranslations('Common.wizardNav');
+  const STEP_LIST: FormStep[] = SUBJECT_FORM_STEPS.map((id) => ({ id, label: t(`steps.${id}`) }));
+  const STEP_META: Record<SubjectFormStep, { icon: ReactNode; title: string; subtitle: string }> = {
+    identity: {
+      icon: <BookOpen size={15} />,
+      title: t('identity.title'),
+      subtitle: t('identity.subtitle'),
+    },
+    kind: {
+      icon: <SlidersHorizontal size={15} />,
+      title: t('structure.title'),
+      subtitle: t('structure.subtitle'),
+    },
+    evaluation: {
+      icon: <ClipboardCheck size={15} />,
+      title: t('evaluationStep.title'),
+      subtitle: t('evaluationStep.subtitle'),
+    },
+    assignment: {
+      icon: <UserCheck size={15} />,
+      title: t('assignment.title'),
+      subtitle: t('assignment.subtitle'),
+    },
+  };
+  const activeIndex = SUBJECT_FORM_STEPS.indexOf(form.activeStep);
+  const goPrev = () => {
+    const prev = SUBJECT_FORM_STEPS[activeIndex - 1];
+    if (prev) form.setActiveStep(prev);
+  };
+  const goNext = () => {
+    const next = SUBJECT_FORM_STEPS[activeIndex + 1];
+    if (next) form.setActiveStep(next);
+  };
+  const stepCardRef = useRef<HTMLDivElement>(null);
+  // Only an actual step change (Suivant/Précédent/stepper click) scrolls —
+  // comparing against the previous value (rather than a one-shot "first
+  // render" flag) survives React Strict Mode's dev-only double effect
+  // invocation on mount, which would otherwise still fire the scroll once
+  // and push the page header and the stepper themselves out of view.
+  const prevStepRef = useRef(form.activeStep);
+  useEffect(() => {
+    if (prevStepRef.current !== form.activeStep) {
+      stepCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    prevStepRef.current = form.activeStep;
+  }, [form.activeStep]);
   const STATUS_DESC: Record<SubjectStatus, string> = {
     ACTIVE: tStatus('activeDesc'),
     DRAFT: tStatus('draftDesc'),
@@ -115,6 +176,419 @@ export function SubjectForm({
     onToggleClass?.(classId, checked);
   }
 
+  let stepBody: ReactNode;
+  if (form.activeStep === 'identity') {
+    stepBody = (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <FormGroup
+          label={t('identity.nameLabel')}
+          required
+          htmlFor="subject-name"
+          hint={t('identity.nameHint')}
+          error={errors.name}
+        >
+          <TextInput
+            id="subject-name"
+            value={v.name}
+            onChange={(e) => setField('name', e.target.value)}
+            placeholder={t('identity.namePlaceholder')}
+            autoFocus={mode === 'create'}
+          />
+        </FormGroup>
+        <FormGroup
+          label={t('identity.codeLabel')}
+          required
+          htmlFor="subject-code"
+          hint={t('identity.codeHint')}
+          error={errors.code}
+        >
+          <TextInput
+            id="subject-code"
+            value={v.code}
+            onChange={(e) => setField('code', e.target.value.toUpperCase())}
+            placeholder={t('identity.codePlaceholder')}
+          />
+        </FormGroup>
+        <FormGroup
+          label={t('identity.abbreviationLabel')}
+          optional
+          htmlFor="subject-abbr"
+          hint={t('identity.abbreviationHint')}
+        >
+          <TextInput
+            id="subject-abbr"
+            value={v.abbreviation}
+            onChange={(e) => setField('abbreviation', e.target.value.toUpperCase())}
+            placeholder={t('identity.abbreviationPlaceholder')}
+            maxLength={12}
+          />
+        </FormGroup>
+        <FormGroup
+          label={t('identity.domainLabel')}
+          required
+          error={errors.domain ?? errors.domainOther}
+        >
+          <BareSelect
+            value={v.domain}
+            onValueChange={(val) => setField('domain', val)}
+            placeholder={t('identity.domainPlaceholder')}
+          >
+            {domainOptions.map((d) => (
+              <SelectItem key={d} value={d}>
+                {d}
+              </SelectItem>
+            ))}
+            <SelectItem value={OTHER_DOMAIN}>{t('identity.domainOther')}</SelectItem>
+          </BareSelect>
+          {v.domain === OTHER_DOMAIN && (
+            <TextInput
+              aria-label={t('identity.domainOtherAria')}
+              value={v.domainOther}
+              onChange={(e) => setField('domainOther', e.target.value)}
+              placeholder={t('identity.domainOtherPlaceholder')}
+              className="mt-1"
+            />
+          )}
+        </FormGroup>
+        <FormGroup label={t('identity.levelLabel')} required error={errors.level}>
+          <BareSelect
+            value={v.level}
+            onValueChange={(val) => setField('level', val)}
+            placeholder={t('identity.levelPlaceholder')}
+          >
+            <SelectItem value={ALL_LEVELS}>{ALL_LEVELS}</SelectItem>
+            {options.levels.map((l) => (
+              <SelectItem key={l} value={l}>
+                {l}
+              </SelectItem>
+            ))}
+          </BareSelect>
+        </FormGroup>
+        <FormGroup
+          label={t('identity.descriptionLabel')}
+          optional
+          htmlFor="subject-description"
+          className="md:col-span-2"
+        >
+          <TextArea
+            id="subject-description"
+            value={v.description}
+            onChange={(e) => setField('description', e.target.value)}
+            placeholder={t('identity.descriptionPlaceholder')}
+          />
+        </FormGroup>
+        <FormGroup
+          label={t('advanced.yearLabel')}
+          hint={t('advanced.yearHint')}
+          className="md:col-span-2"
+        >
+          <BareSelect value="current" onValueChange={() => undefined} disabled>
+            <SelectItem value="current">
+              {options.yearLabel
+                ? t('advanced.yearActive', { year: options.yearLabel })
+                : t('advanced.yearNone')}
+            </SelectItem>
+          </BareSelect>
+        </FormGroup>
+      </div>
+    );
+  } else if (form.activeStep === 'kind') {
+    stepBody = (
+      <>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormGroup label={t('identity.kindLabel')} required hint={t('identity.kindHint')}>
+            <BareSelect
+              value={v.kind}
+              onValueChange={(val) => setField('kind', val as typeof v.kind)}
+            >
+              {SUBJECT_KIND_OPTIONS.map((k) => (
+                <SelectItem key={k.value} value={k.value}>
+                  {subjectKindLabel(k.value, tKind)}
+                </SelectItem>
+              ))}
+            </BareSelect>
+          </FormGroup>
+          <FormGroup
+            label={t('structure.coefficientLabel')}
+            required
+            htmlFor="subject-coeff"
+            hint={t('structure.coefficientHint')}
+            error={errors.defaultCoefficient}
+          >
+            <TextInput
+              id="subject-coeff"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={10}
+              value={v.defaultCoefficient}
+              onChange={(e) => setField('defaultCoefficient', e.target.value)}
+              placeholder={t('structure.coefficientPlaceholder')}
+            />
+          </FormGroup>
+        </div>
+        <div className="mt-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <FormGroup
+            label={t('structure.totalHoursLabel')}
+            labelHint={t('structure.totalHoursLabelHint')}
+            htmlFor="subject-hours"
+            hint={t('structure.totalHoursHint')}
+          >
+            <TextInput
+              id="subject-hours"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={v.totalHours}
+              onChange={(e) => setField('totalHours', e.target.value)}
+              placeholder={t('structure.totalHoursPlaceholder')}
+            />
+          </FormGroup>
+          <FormGroup label={t('structure.cmTdTpLabel')} hint={t('structure.cmTdTpHint')}>
+            <div className="flex gap-1.5">
+              <TextInput
+                aria-label={t('structure.cmAria')}
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={v.hoursCM}
+                onChange={(e) => setField('hoursCM', e.target.value)}
+                placeholder={t('structure.cmPlaceholder')}
+                className="flex-1"
+              />
+              <TextInput
+                aria-label={t('structure.tdAria')}
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={v.hoursTD}
+                onChange={(e) => setField('hoursTD', e.target.value)}
+                placeholder={t('structure.tdPlaceholder')}
+                className="flex-1"
+              />
+              <TextInput
+                aria-label={t('structure.tpAria')}
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={v.hoursTP}
+                onChange={(e) => setField('hoursTP', e.target.value)}
+                placeholder={t('structure.tpPlaceholder')}
+                className="flex-1"
+              />
+            </div>
+          </FormGroup>
+        </div>
+        <div className="mt-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <FormGroup
+            label={t('structure.maxCapacityLabel')}
+            optional
+            htmlFor="subject-capacity"
+            hint={t('structure.maxCapacityHint')}
+          >
+            <TextInput
+              id="subject-capacity"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={v.maxCapacity}
+              onChange={(e) => setField('maxCapacity', e.target.value)}
+              placeholder={t('structure.maxCapacityPlaceholder')}
+            />
+          </FormGroup>
+        </div>
+      </>
+    );
+  } else if (form.activeStep === 'evaluation') {
+    stepBody = (
+      <>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <FormGroup
+            label={t('structure.evaluationTypeLabel')}
+            required
+            hint={t('structure.evaluationTypeHint')}
+            error={errors.evaluationType}
+          >
+            <BareSelect
+              value={v.evaluationType}
+              onValueChange={(val) => setField('evaluationType', val)}
+              placeholder={t('structure.evaluationTypePlaceholder')}
+            >
+              {EVALUATION_TYPES.map((evalType) => (
+                <SelectItem key={evalType} value={evalType}>
+                  {evalType}
+                </SelectItem>
+              ))}
+            </BareSelect>
+          </FormGroup>
+          <FormGroup
+            label={t('structure.maxScoreLabel')}
+            htmlFor="subject-max"
+            hint={t('structure.maxScoreHint')}
+            error={errors.maxScore}
+          >
+            <TextInput
+              id="subject-max"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100}
+              value={v.maxScore}
+              onChange={(e) => setField('maxScore', e.target.value)}
+              placeholder={t('structure.maxScorePlaceholder')}
+            />
+          </FormGroup>
+        </div>
+        <div className="mt-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <FormGroup
+            label={t('structure.passingScoreLabel')}
+            htmlFor="subject-pass"
+            hint={t('structure.passingScoreHint')}
+            error={errors.passingScore}
+          >
+            <TextInput
+              id="subject-pass"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={v.passingScore}
+              onChange={(e) => setField('passingScore', e.target.value)}
+              placeholder={t('structure.passingScorePlaceholder')}
+            />
+          </FormGroup>
+          <FormGroup
+            label={t('advanced.eliminatoryLabel')}
+            optional
+            htmlFor="subject-elim"
+            hint={t('advanced.eliminatoryHint')}
+            error={errors.eliminatoryScore}
+          >
+            <TextInput
+              id="subject-elim"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={v.eliminatoryScore}
+              onChange={(e) => setField('eliminatoryScore', e.target.value)}
+              placeholder={t('advanced.eliminatoryPlaceholder', {
+                max: v.maxScore || 20,
+              })}
+            />
+          </FormGroup>
+        </div>
+        <SectionDivider />
+        <FormGroup
+          label={t('structure.evaluationModeLabel')}
+          hint={t('structure.evaluationModeHint')}
+          error={errors.evaluationMode}
+          htmlFor="subject-evaluation-mode"
+        >
+          <BareSelect
+            id="subject-evaluation-mode"
+            value={v.evaluationMode}
+            onValueChange={(value) => {
+              const mode = value as EvaluationMode;
+              setField('evaluationMode', mode);
+              if (mode === 'QUALITATIVE' && v.ratingScale.length === 0) {
+                setField('ratingScale', ['', '']);
+              }
+            }}
+          >
+            <SelectItem value="NUMERIC">{t('structure.evaluationModeNumeric')}</SelectItem>
+            <SelectItem value="QUALITATIVE">{t('structure.evaluationModeQualitative')}</SelectItem>
+          </BareSelect>
+        </FormGroup>
+        {v.evaluationMode === 'QUALITATIVE' && (
+          <>
+            <FormGroup
+              label={t('structure.ratingScaleLabel')}
+              required
+              hint={t('structure.ratingScaleHint')}
+              error={errors.ratingScale}
+            >
+              <RatingScaleEditor
+                value={v.ratingScale}
+                onChange={(scale) => setField('ratingScale', scale)}
+                lockedOrder={qualitative?.hasRatings ?? false}
+              />
+            </FormGroup>
+            {qualitative ? (
+              <CriteriaEditor
+                subjectId={qualitative.subjectId}
+                criteria={qualitative.criteria}
+                onChanged={qualitative.onChanged}
+              />
+            ) : (
+              <p className="text-2xs text-muted-foreground">{t('structure.criteriaAfterSave')}</p>
+            )}
+          </>
+        )}
+        <SectionDivider />
+        <ToggleRow
+          title={t('structure.includeInAverageTitle')}
+          description={t('structure.includeInAverageDesc')}
+          checked={v.includeInAverage}
+          onChange={(c) => setField('includeInAverage', c)}
+        />
+        <ToggleRow
+          title={t('structure.showOnBulletinTitle')}
+          description={t('structure.showOnBulletinDesc')}
+          checked={v.showOnBulletin}
+          onChange={(c) => setField('showOnBulletin', c)}
+        />
+      </>
+    );
+  } else {
+    stepBody = (
+      <>
+        <div className="mb-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <FormGroup label={t('assignment.teacherLabel')} hint={t('assignment.teacherHint')}>
+            <BareSelect
+              value={v.responsibleTeacherId ?? ''}
+              onValueChange={(val) => setField('responsibleTeacherId', val || null)}
+              placeholder={t('assignment.teacherPlaceholder')}
+            >
+              <SelectItem value="">{t('assignment.teacherNone')}</SelectItem>
+              {options.teachers.map((teacher) => (
+                <SelectItem key={teacher.id} value={teacher.id}>
+                  <span className="flex items-center gap-2">
+                    <Avatar name={teacher.name} src={teacher.photoUrl} size={22} />
+                    {teacher.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </BareSelect>
+          </FormGroup>
+          <FormGroup label={t('assignment.roomLabel')} optional hint={t('assignment.roomHint')}>
+            <BareSelect
+              value={v.room}
+              onValueChange={(val) => setField('room', val)}
+              placeholder={t('assignment.roomPlaceholder')}
+            >
+              <SelectItem value="">{t('assignment.roomNone')}</SelectItem>
+              {ROOM_TYPES.map((r) => (
+                <SelectItem key={r} value={r}>
+                  {r}
+                </SelectItem>
+              ))}
+            </BareSelect>
+          </FormGroup>
+        </div>
+        <FormGroup
+          label={t('assignment.prerequisitesLabel')}
+          optional
+          hint={t('assignment.prerequisitesHint')}
+        >
+          <PrerequisitesPicker
+            options={options.subjects}
+            value={v.prerequisiteIds}
+            onChange={(ids) => setField('prerequisiteIds', ids)}
+          />
+        </FormGroup>
+      </>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {/* Required-fields note above the grid so both columns start level. */}
@@ -136,427 +610,52 @@ export function SubjectForm({
       <div className={cn(ASIDE_GRID, 'items-start')}>
         {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
         <div className="flex min-w-0 flex-col gap-4">
-          <FormCard
-            id="card-identity"
-            icon={<BookOpen size={15} />}
-            title={t('identity.title')}
-            subtitle={t('identity.subtitle')}
-          >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormGroup
-                label={t('identity.nameLabel')}
-                required
-                htmlFor="subject-name"
-                hint={t('identity.nameHint')}
-                error={errors.name}
-              >
-                <TextInput
-                  id="subject-name"
-                  value={v.name}
-                  onChange={(e) => setField('name', e.target.value)}
-                  placeholder={t('identity.namePlaceholder')}
-                  autoFocus={mode === 'create'}
-                />
-              </FormGroup>
-              <FormGroup
-                label={t('identity.codeLabel')}
-                required
-                htmlFor="subject-code"
-                hint={t('identity.codeHint')}
-                error={errors.code}
-              >
-                <TextInput
-                  id="subject-code"
-                  value={v.code}
-                  onChange={(e) => setField('code', e.target.value.toUpperCase())}
-                  placeholder={t('identity.codePlaceholder')}
-                />
-              </FormGroup>
-              <FormGroup
-                label={t('identity.abbreviationLabel')}
-                optional
-                htmlFor="subject-abbr"
-                hint={t('identity.abbreviationHint')}
-              >
-                <TextInput
-                  id="subject-abbr"
-                  value={v.abbreviation}
-                  onChange={(e) => setField('abbreviation', e.target.value.toUpperCase())}
-                  placeholder={t('identity.abbreviationPlaceholder')}
-                  maxLength={12}
-                />
-              </FormGroup>
-              <FormGroup
-                label={t('identity.domainLabel')}
-                required
-                error={errors.domain ?? errors.domainOther}
-              >
-                <BareSelect
-                  value={v.domain}
-                  onValueChange={(val) => setField('domain', val)}
-                  placeholder={t('identity.domainPlaceholder')}
-                >
-                  {domainOptions.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value={OTHER_DOMAIN}>{t('identity.domainOther')}</SelectItem>
-                </BareSelect>
-                {v.domain === OTHER_DOMAIN && (
-                  <TextInput
-                    aria-label={t('identity.domainOtherAria')}
-                    value={v.domainOther}
-                    onChange={(e) => setField('domainOther', e.target.value)}
-                    placeholder={t('identity.domainOtherPlaceholder')}
-                    className="mt-1"
-                  />
-                )}
-              </FormGroup>
-              <FormGroup label={t('identity.levelLabel')} required error={errors.level}>
-                <BareSelect
-                  value={v.level}
-                  onValueChange={(val) => setField('level', val)}
-                  placeholder={t('identity.levelPlaceholder')}
-                >
-                  <SelectItem value={ALL_LEVELS}>{ALL_LEVELS}</SelectItem>
-                  {options.levels.map((l) => (
-                    <SelectItem key={l} value={l}>
-                      {l}
-                    </SelectItem>
-                  ))}
-                </BareSelect>
-              </FormGroup>
-              <FormGroup label={t('identity.kindLabel')} required hint={t('identity.kindHint')}>
-                <BareSelect
-                  value={v.kind}
-                  onValueChange={(val) => setField('kind', val as typeof v.kind)}
-                >
-                  {SUBJECT_KIND_OPTIONS.map((k) => (
-                    <SelectItem key={k.value} value={k.value}>
-                      {subjectKindLabel(k.value, tKind)}
-                    </SelectItem>
-                  ))}
-                </BareSelect>
-              </FormGroup>
-              <FormGroup
-                label={t('identity.descriptionLabel')}
-                optional
-                htmlFor="subject-description"
-                className="md:col-span-2"
-              >
-                <TextArea
-                  id="subject-description"
-                  value={v.description}
-                  onChange={(e) => setField('description', e.target.value)}
-                  placeholder={t('identity.descriptionPlaceholder')}
-                />
-              </FormGroup>
-            </div>
-          </FormCard>
+          <FormStepsBar
+            steps={STEP_LIST}
+            activeIndex={activeIndex}
+            maxReachedIndex={STEP_LIST.length - 1}
+            onStepSelect={(index) => {
+              const next = SUBJECT_FORM_STEPS[index];
+              if (next) form.setActiveStep(next);
+            }}
+          />
 
-          <FormCard
-            id="card-structure"
-            icon={<SlidersHorizontal size={15} />}
-            title={t('structure.title')}
-            subtitle={t('structure.subtitle')}
-          >
-            <div className="mb-3.5 grid grid-cols-1 gap-3 md:grid-cols-3">
-              <FormGroup
-                label={t('structure.coefficientLabel')}
-                required
-                htmlFor="subject-coeff"
-                hint={t('structure.coefficientHint')}
-                error={errors.defaultCoefficient}
-              >
-                <TextInput
-                  id="subject-coeff"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={10}
-                  value={v.defaultCoefficient}
-                  onChange={(e) => setField('defaultCoefficient', e.target.value)}
-                  placeholder={t('structure.coefficientPlaceholder')}
-                />
-              </FormGroup>
-              <FormGroup
-                label={t('structure.maxScoreLabel')}
-                htmlFor="subject-max"
-                hint={t('structure.maxScoreHint')}
-                error={errors.maxScore}
-              >
-                <TextInput
-                  id="subject-max"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={100}
-                  value={v.maxScore}
-                  onChange={(e) => setField('maxScore', e.target.value)}
-                  placeholder={t('structure.maxScorePlaceholder')}
-                />
-              </FormGroup>
-              <FormGroup
-                label={t('structure.passingScoreLabel')}
-                htmlFor="subject-pass"
-                hint={t('structure.passingScoreHint')}
-                error={errors.passingScore}
-              >
-                <TextInput
-                  id="subject-pass"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  value={v.passingScore}
-                  onChange={(e) => setField('passingScore', e.target.value)}
-                  placeholder={t('structure.passingScorePlaceholder')}
-                />
-              </FormGroup>
-            </div>
-            <div className="mb-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup
-                label={t('structure.totalHoursLabel')}
-                labelHint={t('structure.totalHoursLabelHint')}
-                htmlFor="subject-hours"
-                hint={t('structure.totalHoursHint')}
-              >
-                <TextInput
-                  id="subject-hours"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  value={v.totalHours}
-                  onChange={(e) => setField('totalHours', e.target.value)}
-                  placeholder={t('structure.totalHoursPlaceholder')}
-                />
-              </FormGroup>
-              <FormGroup label={t('structure.cmTdTpLabel')} hint={t('structure.cmTdTpHint')}>
-                <div className="flex gap-1.5">
-                  <TextInput
-                    aria-label={t('structure.cmAria')}
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    value={v.hoursCM}
-                    onChange={(e) => setField('hoursCM', e.target.value)}
-                    placeholder={t('structure.cmPlaceholder')}
-                    className="flex-1"
-                  />
-                  <TextInput
-                    aria-label={t('structure.tdAria')}
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    value={v.hoursTD}
-                    onChange={(e) => setField('hoursTD', e.target.value)}
-                    placeholder={t('structure.tdPlaceholder')}
-                    className="flex-1"
-                  />
-                  <TextInput
-                    aria-label={t('structure.tpAria')}
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    value={v.hoursTP}
-                    onChange={(e) => setField('hoursTP', e.target.value)}
-                    placeholder={t('structure.tpPlaceholder')}
-                    className="flex-1"
-                  />
-                </div>
-              </FormGroup>
-            </div>
-            <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup
-                label={t('structure.evaluationTypeLabel')}
-                required
-                hint={t('structure.evaluationTypeHint')}
-                error={errors.evaluationType}
-              >
-                <BareSelect
-                  value={v.evaluationType}
-                  onValueChange={(val) => setField('evaluationType', val)}
-                  placeholder={t('structure.evaluationTypePlaceholder')}
-                >
-                  {EVALUATION_TYPES.map((evalType) => (
-                    <SelectItem key={evalType} value={evalType}>
-                      {evalType}
-                    </SelectItem>
-                  ))}
-                </BareSelect>
-              </FormGroup>
-              <FormGroup
-                label={t('structure.maxCapacityLabel')}
-                optional
-                htmlFor="subject-capacity"
-                hint={t('structure.maxCapacityHint')}
-              >
-                <TextInput
-                  id="subject-capacity"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  value={v.maxCapacity}
-                  onChange={(e) => setField('maxCapacity', e.target.value)}
-                  placeholder={t('structure.maxCapacityPlaceholder')}
-                />
-              </FormGroup>
-            </div>
-            <SectionDivider />
-            <FormGroup
-              label={t('structure.evaluationModeLabel')}
-              hint={t('structure.evaluationModeHint')}
-              error={errors.evaluationMode}
-              htmlFor="subject-evaluation-mode"
+          <div ref={stepCardRef}>
+            <FormCard
+              icon={STEP_META[form.activeStep].icon}
+              title={STEP_META[form.activeStep].title}
+              subtitle={STEP_META[form.activeStep].subtitle}
             >
-              <BareSelect
-                id="subject-evaluation-mode"
-                value={v.evaluationMode}
-                onValueChange={(value) => {
-                  const mode = value as EvaluationMode;
-                  setField('evaluationMode', mode);
-                  if (mode === 'QUALITATIVE' && v.ratingScale.length === 0) {
-                    setField('ratingScale', ['', '']);
-                  }
-                }}
-              >
-                <SelectItem value="NUMERIC">{t('structure.evaluationModeNumeric')}</SelectItem>
-                <SelectItem value="QUALITATIVE">
-                  {t('structure.evaluationModeQualitative')}
-                </SelectItem>
-              </BareSelect>
-            </FormGroup>
-            {v.evaluationMode === 'QUALITATIVE' && (
-              <>
-                <FormGroup
-                  label={t('structure.ratingScaleLabel')}
-                  required
-                  hint={t('structure.ratingScaleHint')}
-                  error={errors.ratingScale}
-                >
-                  <RatingScaleEditor
-                    value={v.ratingScale}
-                    onChange={(scale) => setField('ratingScale', scale)}
-                    lockedOrder={qualitative?.hasRatings ?? false}
-                  />
-                </FormGroup>
-                {qualitative ? (
-                  <CriteriaEditor
-                    subjectId={qualitative.subjectId}
-                    criteria={qualitative.criteria}
-                    onChanged={qualitative.onChanged}
-                  />
-                ) : (
-                  <p className="text-2xs text-muted-foreground">
-                    {t('structure.criteriaAfterSave')}
-                  </p>
-                )}
-              </>
-            )}
-            <SectionDivider />
-            <ToggleRow
-              title={t('structure.includeInAverageTitle')}
-              description={t('structure.includeInAverageDesc')}
-              checked={v.includeInAverage}
-              onChange={(c) => setField('includeInAverage', c)}
-            />
-            <ToggleRow
-              title={t('structure.showOnBulletinTitle')}
-              description={t('structure.showOnBulletinDesc')}
-              checked={v.showOnBulletin}
-              onChange={(c) => setField('showOnBulletin', c)}
-            />
-          </FormCard>
+              {stepBody}
+            </FormCard>
+          </div>
 
-          <FormCard
-            id="card-assignation"
-            icon={<UserCheck size={15} />}
-            title={t('assignment.title')}
-            subtitle={t('assignment.subtitle')}
-          >
-            <div className="mb-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup label={t('assignment.teacherLabel')} hint={t('assignment.teacherHint')}>
-                <BareSelect
-                  value={v.responsibleTeacherId ?? ''}
-                  onValueChange={(val) => setField('responsibleTeacherId', val || null)}
-                  placeholder={t('assignment.teacherPlaceholder')}
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              {activeIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-[7px] text-caption font-medium text-foreground"
                 >
-                  <SelectItem value="">{t('assignment.teacherNone')}</SelectItem>
-                  {options.teachers.map((teacher) => (
-                    <SelectItem key={teacher.id} value={teacher.id}>
-                      <span className="flex items-center gap-2">
-                        <Avatar name={teacher.name} src={teacher.photoUrl} size={22} />
-                        {teacher.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </BareSelect>
-              </FormGroup>
-              <FormGroup label={t('assignment.roomLabel')} optional hint={t('assignment.roomHint')}>
-                <BareSelect
-                  value={v.room}
-                  onValueChange={(val) => setField('room', val)}
-                  placeholder={t('assignment.roomPlaceholder')}
+                  <ChevronLeft size={14} />
+                  {tWizard('previous')}
+                </button>
+              )}
+            </div>
+            <div>
+              {activeIndex < STEP_LIST.length - 1 && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-[7px] text-caption font-medium text-foreground"
                 >
-                  <SelectItem value="">{t('assignment.roomNone')}</SelectItem>
-                  {ROOM_TYPES.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                </BareSelect>
-              </FormGroup>
+                  {tWizard('next')}
+                  <ChevronRight size={14} />
+                </button>
+              )}
             </div>
-            <FormGroup
-              label={t('assignment.prerequisitesLabel')}
-              optional
-              hint={t('assignment.prerequisitesHint')}
-            >
-              <PrerequisitesPicker
-                options={options.subjects}
-                value={v.prerequisiteIds}
-                onChange={(ids) => setField('prerequisiteIds', ids)}
-              />
-            </FormGroup>
-          </FormCard>
-
-          <FormCard
-            id="card-advanced"
-            icon={<Settings2 size={15} />}
-            title={t('advanced.title')}
-            subtitle={t('advanced.subtitle')}
-          >
-            <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-              <FormGroup label={t('advanced.yearLabel')} hint={t('advanced.yearHint')}>
-                <BareSelect value="current" onValueChange={() => undefined} disabled>
-                  <SelectItem value="current">
-                    {options.yearLabel
-                      ? t('advanced.yearActive', { year: options.yearLabel })
-                      : t('advanced.yearNone')}
-                  </SelectItem>
-                </BareSelect>
-              </FormGroup>
-              <FormGroup
-                label={t('advanced.eliminatoryLabel')}
-                optional
-                htmlFor="subject-elim"
-                hint={t('advanced.eliminatoryHint')}
-                error={errors.eliminatoryScore}
-              >
-                <TextInput
-                  id="subject-elim"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  value={v.eliminatoryScore}
-                  onChange={(e) => setField('eliminatoryScore', e.target.value)}
-                  placeholder={t('advanced.eliminatoryPlaceholder', {
-                    max: v.maxScore || 20,
-                  })}
-                />
-              </FormGroup>
-            </div>
-          </FormCard>
+          </div>
 
           {/* Hint banner */}
           <div className="flex flex-col gap-3 rounded-lg bg-warning px-[18px] py-3.5 sm:flex-row sm:items-center">

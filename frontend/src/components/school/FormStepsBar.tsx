@@ -28,7 +28,12 @@ export function FormStepsBar({
   const t = useTranslations('Common.formStepsBar');
   const active = steps[activeIndex];
   return (
-    <div>
+    // min-w-0: as a flex item of a `flex-col` parent, this root would
+    // otherwise size to its content's min-content width (the default
+    // `min-width: auto` on flex items) and overflow that parent instead of
+    // respecting it — the overflow-x-auto below only has room to activate
+    // once this box is actually constrained to the parent's width.
+    <div className="min-w-0">
       {/* Compact variant — small screens: current step only */}
       <div className="flex items-center gap-3 sm:hidden">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[12px] font-bold text-primary-foreground">
@@ -48,8 +53,10 @@ export function FormStepsBar({
         </div>
       </div>
 
-      {/* Full variant — sm and up: every step */}
-      <div className="hidden items-center sm:flex">
+      {/* Full variant — sm and up: every step. overflow-x-auto is a no-op
+          when everything fits (no visible scrollbar); it only kicks in as a
+          safety net if a long label set ever overflows a narrow column. */}
+      <div className="hidden items-center overflow-x-auto sm:flex">
         {steps.map((step, i) => {
           const done = i < activeIndex;
           const isActive = i === activeIndex;
@@ -58,7 +65,12 @@ export function FormStepsBar({
             <div key={step.id} className="flex shrink-0 items-center">
               {i > 0 && (
                 <div
-                  className={`mx-3 h-px w-8 shrink-0 lg:mx-4 lg:w-12 ${done || isActive ? 'bg-primary' : 'bg-border'}`}
+                  // A fixed width regardless of viewport size: this bar lives
+                  // in variable-width columns (a full-width page column here,
+                  // a fixed-width modal elsewhere), not the viewport itself,
+                  // so widening the connector just because the browser window
+                  // is large doesn't track the space actually available.
+                  className={`mx-2 h-px w-8 shrink-0 ${done || isActive ? 'bg-primary' : 'bg-border'}`}
                 />
               )}
               <button
@@ -66,7 +78,7 @@ export function FormStepsBar({
                 onClick={() => reachable && onStepSelect(i)}
                 disabled={!reachable}
                 aria-current={isActive ? 'step' : undefined}
-                className={`flex shrink-0 items-center gap-2 ${reachable ? '' : 'cursor-default'}`}
+                className={`flex shrink-0 items-center gap-1.5 ${reachable ? '' : 'cursor-default'}`}
               >
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold ${

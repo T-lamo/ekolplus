@@ -409,6 +409,12 @@
     "form": {
       "requiredHint": "Chan make ak",
       "requiredHintSuffix": "obligatwa",
+      "steps": {
+        "identity": "Idantite",
+        "kind": "Pedagoji",
+        "evaluation": "Evalyasyon",
+        "assignment": "Afektasyon"
+      },
       "identity": {
         "title": "Idantite matyè a",
         "subtitle": "Enfòmasyon debaz pou idantifye matyè a nan aplikasyon an.",
@@ -428,14 +434,14 @@
         "domainOtherPlaceholder": "Non depatman an",
         "levelLabel": "Nivo / Ane etid",
         "levelPlaceholder": "3yèm / 4yèm",
-        "kindLabel": "Estati",
+        "kindLabel": "Kalite pedagojik",
         "kindHint": "Obligatwa, Opsyonèl (elektif) oswa Fakiltatif",
         "descriptionLabel": "Deskripsyon / Silabis",
         "descriptionPlaceholder": "Yon ti deskripsyon pwogram anseyman an, objektif pedagojik jeneral yo..."
       },
       "structure": {
         "title": "Estrikti pedagojik ak ponderasyon",
-        "subtitle": "Kwefisyan, volim orè ak règ evalyasyon pou matyè sa a.",
+        "subtitle": "Kwefisyan, volim orè ak kapasite pou matyè sa a.",
         "coefficientLabel": "Kwefisyan",
         "coefficientHint": "Pwa nan mwayèn jeneral la",
         "coefficientPlaceholder": "4",
@@ -492,6 +498,10 @@
         "criterionInUse": "Kritè sa a gen kwa : ou pa ka efase l.",
         "criterionSaveError": "Nou pa t ka anrejistre kritè a."
       },
+      "evaluationStep": {
+        "title": "Evalyasyon ak règ pou pase",
+        "subtitle": "Baram, sèy pou pase ak mòd evalyasyon pou matyè sa a."
+      },
       "assignment": {
         "title": "Afektasyon ak lojistik",
         "subtitle": "Pwofesè responsab, sal ak matyè prealab.",
@@ -507,8 +517,6 @@
         "prerequisitesHint": "Matyè ki dwe validè anvan (egz. avwa validè MAT-001 pou MATH202)"
       },
       "advanced": {
-        "title": "Opsyon avanse ak paramèt",
-        "subtitle": "Paramèt espesifik ki gen rapò ak ane akademik la ak sèy evalyasyon yo.",
         "yearLabel": "Ane akademik / Semès",
         "yearHint": "Atachman ak peryòd aktyèl la",
         "yearActive": "Ane konplè {year}",

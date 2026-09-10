@@ -58,6 +58,7 @@ export function PlanCards({
   selected,
   onSelect,
   onAction,
+  onOwnerDenied,
   schoolName,
   busy,
 }: {
@@ -71,6 +72,9 @@ export function PlanCards({
   onSelect: (plan: PlanKey) => void;
   /** The selected card's CTA was pressed — the screen dispatches by `kind`. */
   onAction: (transition: PlanTransition, plan: PlanKey) => void;
+  /** A non-owner pressed a CTA that's gated to the school owner — the screen
+   * surfaces `reason` (e.g. a toast) instead of performing the action. */
+  onOwnerDenied: (reason: string) => void;
   schoolName?: string | null | undefined;
   busy: PlanBusy;
 }) {
@@ -133,6 +137,7 @@ export function PlanCards({
     busy: busy !== null && BUSY_FOR[transitions[plan].kind] === busy,
     disabledByBusy: busy !== null,
     onAction: () => onAction(transitions[plan], plan),
+    onOwnerDenied: () => onOwnerDenied(transitions[plan].disabledReason ?? ''),
   });
 
   return (
@@ -268,6 +273,7 @@ function PlanCta({
   busy,
   disabledByBusy,
   onAction,
+  onOwnerDenied,
   gold = false,
   href,
   activeLabel,
@@ -276,6 +282,7 @@ function PlanCta({
   busy: boolean;
   disabledByBusy: boolean;
   onAction: () => void;
+  onOwnerDenied: () => void;
   gold?: boolean;
   href?: string | undefined;
   activeLabel: string;
@@ -296,7 +303,14 @@ function PlanCta({
     );
   }
 
-  const disabled = t.disabledReason !== null || disabledByBusy;
+  // A CTA disabled only because the caller isn't the owner stays a REAL
+  // clickable button — the click always explains why (a toast), instead of
+  // a native `disabled` button silently doing nothing with only a small
+  // caption underneath as the sole explanation. Anything else that's
+  // disabled (Stripe not configured, Enterprise contract…) stays inert for
+  // everyone, owner included.
+  const ownerBlocked = t.disabledByOwnership && !disabledByBusy;
+  const disabled = (t.disabledReason !== null && !t.disabledByOwnership) || disabledByBusy;
   const variant =
     t.tone === 'gold' ? 'gold' : t.tone === 'primary' ? 'primary' : ('outline' as const);
   return (
@@ -307,15 +321,17 @@ function PlanCta({
         className={cn(
           t.tone === 'destructive' &&
             'border-destructive-foreground/30 text-destructive-foreground hover:bg-destructive',
+          ownerBlocked && 'cursor-not-allowed opacity-50',
         )}
         onClick={(e) => {
           e.stopPropagation();
-          onAction();
+          if (ownerBlocked) onOwnerDenied();
+          else onAction();
         }}
         onKeyDown={(e) => e.stopPropagation()}
         disabled={disabled}
         loading={busy}
-        aria-disabled={disabled}
+        aria-disabled={disabled || ownerBlocked}
         {...(t.disabledReason ? { title: t.disabledReason } : {})}
       >
         {t.kind === 'contact' && <Send size={13} />}

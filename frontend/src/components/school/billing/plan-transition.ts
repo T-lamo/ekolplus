@@ -110,6 +110,16 @@ export interface PlanTransition {
   hint: string;
   /** When set, the CTA renders disabled and this text is its tooltip. */
   disabledReason: string | null;
+  /**
+   * True only when `disabledReason` comes from `ownerGated` (an ADMIN
+   * viewing a mutating transition) — the CTA stays clickable so the click
+   * always surfaces the reason (a toast), instead of a native `disabled`
+   * button silently swallowing the click with nothing but a small caption
+   * as the only explanation. Transitions that are disabled for every role
+   * (Stripe not configured, Enterprise contract…) leave this false and stay
+   * genuinely inert.
+   */
+  disabledByOwnership: boolean;
   tone: PlanTransitionTone;
 }
 
@@ -152,7 +162,7 @@ function ownerGated(
   t: PlanTransitionT,
 ): PlanTransition {
   if (canManage) return transition;
-  return { ...transition, disabledReason: t('ownerOnly') };
+  return { ...transition, disabledReason: t('ownerOnly'), disabledByOwnership: true };
 }
 
 export function planTransition(
@@ -174,6 +184,7 @@ export function planTransition(
           label: t('resumeLabel', { plan: proName }),
           hint: t('resumeHint', { date: fmtDateLong(b.renewsAt, bcp47), plan: proName }),
           disabledReason: null,
+          disabledByOwnership: false,
           tone: 'gold',
         },
         canManage,
@@ -204,7 +215,14 @@ export function planTransition(
     } else {
       hint = t('currentEnterprise');
     }
-    return { kind: 'current', label: null, hint, disabledReason: null, tone: 'outline' };
+    return {
+      kind: 'current',
+      label: null,
+      hint,
+      disabledReason: null,
+      disabledByOwnership: false,
+      tone: 'outline',
+    };
   }
 
   // ── Enterprise selected: always a quote ───────────────────────────────
@@ -214,6 +232,7 @@ export function planTransition(
       label: t('requestQuoteLabel'),
       hint: t('requestQuoteHint', { students: pluralStudents(b.studentCount, t) }),
       disabledReason: null,
+      disabledByOwnership: false,
       tone: 'outline',
     };
   }
@@ -225,6 +244,7 @@ export function planTransition(
       label: t('managedByContractLabel'),
       hint: t('managedByContractHint'),
       disabledReason: t('managedByContractDisabled'),
+      disabledByOwnership: false,
       tone: 'outline',
     };
   }
@@ -242,6 +262,7 @@ export function planTransition(
               students: pluralStudents(b.studentCount, t),
             }),
             disabledReason: null,
+            disabledByOwnership: false,
             tone: 'gold',
           },
           canManage,
@@ -253,6 +274,7 @@ export function planTransition(
         label: t('contactSuspendedLabel'),
         hint: t('contactSuspendedHint', { plan: proName }),
         disabledReason: null,
+        disabledByOwnership: false,
         tone: 'outline',
       };
     }
@@ -262,6 +284,7 @@ export function planTransition(
         label: t('unavailableLabel', { plan: proName }),
         hint: t('unavailableHint', { plan: proName }),
         disabledReason: t('unavailableDisabled'),
+        disabledByOwnership: false,
         tone: 'gold',
       };
     }
@@ -273,6 +296,7 @@ export function planTransition(
           label: t('reactivateLabel', { plan: proName }),
           hint: t('reactivateHint', { estimate: estimateSentence(b, interval, t, bcp47) }),
           disabledReason: null,
+          disabledByOwnership: false,
           tone: 'gold',
         },
         canManage,
@@ -288,6 +312,7 @@ export function planTransition(
           estimate: estimateSentence(b, interval, t, bcp47),
         }),
         disabledReason: null,
+        disabledByOwnership: false,
         tone: 'gold',
       },
       canManage,
@@ -302,6 +327,7 @@ export function planTransition(
       label: t('managedManuallyLabel'),
       hint: t('managedManuallyHint', { plan: proName }),
       disabledReason: t('managedManuallyDisabled'),
+      disabledByOwnership: false,
       tone: 'outline',
     };
   }
@@ -312,6 +338,7 @@ export function planTransition(
         label: t('downgradeScheduledLabel'),
         hint: t('downgradeScheduledHint', { date: fmtDateLong(b.renewsAt, bcp47), plan: proName }),
         disabledReason: null,
+        disabledByOwnership: false,
         tone: 'primary',
       },
       canManage,
@@ -328,6 +355,7 @@ export function planTransition(
       label: t('downgradeLabel'),
       hint: `${t('downgradeEffective', { date: fmtDateLong(b.renewsAt, bcp47) })} ${capSentence} ${t('downgradeSuffix')}`,
       disabledReason: null,
+      disabledByOwnership: false,
       tone: 'destructive',
     },
     canManage,

@@ -11,7 +11,9 @@
 // (never the OWNER's own row — see personnel/view.ts's genuineMemberProfile,
 // which excludes the OWNER from ever surfacing an organizationMember block).
 import { useEffect, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -196,6 +198,14 @@ export function AccesRolesTab({
             )}
           </div>
         </Card>
+
+        <Link
+          href="/settings/permissions"
+          className="flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3.5 text-[13px] font-semibold text-primary hover:bg-muted/60"
+        >
+          <ShieldCheck size={16} />
+          {tAdmins('manageLink')}
+        </Link>
       </div>
 
       <div className="flex flex-col gap-4">

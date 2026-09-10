@@ -286,6 +286,9 @@ describe('planTransition — Starter → Pro', () => {
       kind: 'unavailable',
       disabledReason: 'Facturation en ligne non activée',
     });
+    // Structurally unavailable (no Stripe on this deployment) stays inert
+    // for the owner too, unlike the owner-only gate below.
+    expect(tr.disabledByOwnership).toBe(false);
   });
   it('ADMIN (not owner): same transition, CTA disabled with the owner-only reason', () => {
     const tr = planTransition(
@@ -301,6 +304,9 @@ describe('planTransition — Starter → Pro', () => {
     );
     expect(tr.kind).toBe('upgrade');
     expect(tr.disabledReason).toBe('Réservé au propriétaire de l’établissement');
+    // The CTA stays a real clickable button (a toast explains the reason)
+    // rather than a native `disabled` element the click silently dies on.
+    expect(tr.disabledByOwnership).toBe(true);
   });
 });
 
@@ -376,6 +382,7 @@ describe('planTransition — Pro → Starter (downgrade)', () => {
     );
     expect(tr.kind).toBe('downgrade');
     expect(tr.disabledReason).toBe('Réservé au propriétaire de l’établissement');
+    expect(tr.disabledByOwnership).toBe(true);
   });
 });
 

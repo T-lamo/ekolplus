@@ -40,6 +40,7 @@ import {
 
 export function AbonnementScreen() {
   const t = useTranslations('Abonnement.screen');
+  const tErrors = useTranslations('Abonnement.errors');
   const tTransition = useTranslations('Abonnement.planTransition') as unknown as PlanTransitionT;
   const tPlan = useTranslations('BillingPlans.label');
   const locale = useLocale();
@@ -366,6 +367,7 @@ export function AbonnementScreen() {
         selected={selected ?? billing.plan}
         onSelect={setSelected}
         onAction={onPlanAction}
+        onOwnerDenied={() => toast(tErrors('ownerOnly'), 'error')}
         schoolName={schoolName}
         busy={busy}
       />

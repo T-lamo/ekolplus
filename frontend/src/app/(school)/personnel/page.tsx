@@ -10,12 +10,14 @@
 // pattern mirrored from app/admin/schools/page.tsx, this app's only other
 // server-paginated + search screen.
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ApiError } from '@/lib/api';
 import { useApi } from '@/lib/useApi';
 import { usePermissions } from '@/lib/usePermissions';
+import { useSchoolPlan } from '@/contexts/SchoolPlanContext';
 import { useUser } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Card } from '@/components/ui/Card';
@@ -64,6 +66,7 @@ export default function PersonnelPage() {
   const user = useUser();
   const router = useRouter();
   const t = useTranslations('Personnel.list');
+  const tAdmins = useTranslations('Permissions.adminsTab');
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -103,6 +106,8 @@ export default function PersonnelPage() {
   const error = dataErr ? t('loadError') : null;
 
   const { can, canSee } = usePermissions();
+  const { role: schoolRole } = useSchoolPlan();
+  const isAdminPlus = schoolRole === 'OWNER' || schoolRole === 'ADMIN';
   if (!canSee('enseignants')) return <AccessDenied />;
 
   const isFiltered = profile !== 'all' || debouncedSearch.length > 0;
@@ -122,12 +127,23 @@ export default function PersonnelPage() {
           <h1 className="text-xl font-extrabold tracking-tight text-foreground">{t('title')}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
-        {can('enseignants', 'create') && (
-          <Button className="w-fit" onClick={() => setAddOpen(true)}>
-            <Plus size={14} />
-            {t('addButton')}
-          </Button>
-        )}
+        <div className="flex w-fit flex-wrap items-center gap-2">
+          {isAdminPlus && (
+            <Link
+              href="/settings/permissions"
+              className="flex h-9 w-fit items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground"
+            >
+              <ShieldCheck size={14} />
+              {tAdmins('manageLink')}
+            </Link>
+          )}
+          {can('enseignants', 'create') && (
+            <Button className="w-fit" onClick={() => setAddOpen(true)}>
+              <Plus size={14} />
+              {t('addButton')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
